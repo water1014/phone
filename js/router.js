@@ -191,7 +191,7 @@
     return chunks;
   }
 
-  function messageHtml(msg) {
+  function messageHtml(msg, compact) {
     if (msg.who === 'sys') {
       return '<div class="chat-event"><span>' + UI.esc(msg.text || '') + '</span></div>';
     }
@@ -220,10 +220,10 @@
       tag = '<div class="msg-tag">' + bits.join(' · ') + '</div>';
     }
 
-    return '<div class="msg-row ' + (mine ? 'me' : 'ta') + '">' +
-        '<div class="msg-ava">' + UI.esc(String(name).charAt(0)) + '</div>' +
+    return '<div class="msg-row ' + (mine ? 'me' : 'ta') + (compact ? ' compact' : '') + '">' +
+        '<div class="msg-ava' + (compact ? ' ghost' : '') + '">' + UI.esc(String(name).charAt(0)) + '</div>' +
         '<div class="msg-main">' +
-          '<div class="msg-name">' + UI.esc(name) + '</div>' +
+          (compact ? '' : '<div class="msg-name">' + UI.esc(name) + '</div>') +
           inner + tag +
         '</div>' +
       '</div>';
@@ -233,14 +233,18 @@
     const list = Array.isArray(XW.S.chat) ? XW.S.chat : [];
     let lastT = 0;
 
-    const rows = list.map(function (m) {
+    const rows = list.map(function (m, index) {
+      const prev = index > 0 ? list[index - 1] : null;
       let sep = '';
       const t = Number(m.t) || 0;
-      if (m.who !== 'sys' && t - lastT > 5 * 60 * 1000) {
+      const gap = t - lastT;
+      if (m.who !== 'sys' && gap > 5 * 60 * 1000) {
         sep = '<div class="chat-time"><span class="kicker">' + UI.esc(stamp(t)) + '</span></div>';
       }
       if (t) lastT = t;
-      return sep + messageHtml(m);
+
+      const same = prev && prev.who === m.who && m.who !== 'sys' && gap < 5 * 60 * 1000 && !prev._typing;
+      return sep + messageHtml(m, same);
     }).join('');
 
     const empty = list.length ? '' : '<div class="empty-state" style="margin-top:22%">还没说话。<br>在下面写一句，就有了。</div>';
@@ -254,23 +258,20 @@
     const provider = (PRESETS[XW.S.aiProvider] || PRESETS.deepseek).label;
 
     const head = '<div class="chat-status">' +
-        '<span class="kicker">' + UI.esc(XW.S.hisName || '他') + ' · ' + (keyed ? 'ONLINE' : 'OFFLINE') + '</span>' +
-        '<span class="kicker">' + UI.esc(keyed ? (provider + ' / ' + (XW.S.aiModel || 'model')) : '本地') + '</span>' +
+        '<span class="chat-who">' + UI.esc(XW.S.hisName || '他') + '</span>' +
+        '<span class="chat-flag">' + (keyed ? '<i class="dot"></i>ONLINE' : '本地') + '</span>' +
       '</div>';
 
     const top = keyed
       ? '<div class="chat-top">' +
           '<span class="num"><b>' + percent + '%</b></span>' +
           '<span class="num"><b>' + fmtK(used) + '</b><i>/' + fmtK(limit) + '</i></span>' +
-          '<span class="num"><i>命中</i><b>' + fmtK(usage.cached) + '</b><i>' + hitRate + '%</i></span>' +
+          '<span class="num"><i>命中</i><b>' + fmtK(usage.cached) + '</b></span>' +
           '<span class="num"><i>出</i><b>' + fmtK(usage.output) + '</b></span>' +
           '<span class="num"><b>' + usage.rounds + '</b><i>轮</i></span>' +
+          '<span class="num model">' + UI.esc(provider) + '</span>' +
         '</div><div class="usage-bar"><i style="width:' + Math.min(100, percent) + '%"></i></div>'
-      : '<div class="chat-top"><span class="num"><b>LOCAL</b><i>只存你自己的话</i></span></div><div class="usage-bar"><i style="width:0"></i></div>';
-
-    const meter = keyed
-      ? '输入 <b>' + fmtK(usage.input) + '</b> · 命中 <b>' + fmtK(usage.cached) + '</b>(' + hitRate + '%) · 输出 <b>' + fmtK(usage.output) + '</b> · <b>' + usage.rounds + '</b> 轮'
-      : '本地模式 · 不联网';
+      : '';
 
     const chips = QUICK.map(function (w) {
       return '<button type="button" class="quick-chip" data-quick="' + UI.esc(w) + '">' + UI.esc(w) + '</button>';
@@ -278,7 +279,6 @@
 
     return '<div class="chat-wrap">' + head + top +
         '<div class="chat-scroll" id="chat-scroll">' + rows + empty + '</div>' +
-        '<div class="chat-meter">' + meter + '</div>' +
         '<div class="quick">' + chips + '</div>' +
         '<div class="composer"><input id="chat-input" placeholder="写点什么…"><button type="button" id="chat-send" class="btn-solid">发</button></div>' +
       '</div>';
@@ -481,7 +481,7 @@
         fieldView('上下文上限（token）', 'set-ctx', String(XW.S.ctxLimit || 128000)) +
         '<div class="row-actions"><button type="button" id="set-ai-save" class="btn-solid">保存连接</button></div>' +
         (resolved ? '<div class="sheet-note">上次走通的地址：' + UI.esc(resolved) + '</div>' : '') +
-        (provider === 'opencode' ? '<div class="sheet-note">Go 入口填到 …/inference/go。浏览器直连会被跨域拦，需要时用 tools/proxy.py 在本机中转，地址改 http://127.0.0.1:8790/go。</div>' : '') +
+        (provider === 'opencode' ? '<div class="sheet-note">Go 入口填到 …/inference/go。浏览器直连会被跨域拦，需要时用 tools/proxy.py 在本机中转。</div>' : '') +
         '<div class="sheet-note">切换服务商时刚才那套会自动存起来，切回来还在。</div>' +
       '</div>';
 
