@@ -17,14 +17,20 @@
     windows: 'WINDOW GALLERY', mcp: 'CONNECTIONS', beautify: 'APPEARANCE', settings: 'SETTINGS'
   };
 
-  const OPENCODE_HEADERS = '{"HTTP-Referer":"https://water1014.github.io/phone/","X-Title":"XIAOWO"}';
-
   const PRESETS = {
-    deepseek: { label: 'DeepSeek', url: 'https://api.deepseek.com', model: 'deepseek-chat', headers: '' },
-    kimi: { label: 'Kimi', url: 'https://api.moonshot.cn/v1', model: 'kimi-latest', headers: '' },
-    opencode: { label: 'OpenCode Go', url: 'https://opencode.ai/zen/go', model: '', headers: OPENCODE_HEADERS },
-    openai: { label: 'OpenAI 兼容（自定义）', url: '', model: '', headers: '' }
+    deepseek: { label: 'DeepSeek', url: 'https://api.deepseek.com', model: 'deepseek-chat', headers: '', session: false },
+    kimi: { label: 'Kimi', url: 'https://api.moonshot.cn/v1', model: 'kimi-latest', headers: '', session: false },
+    opencode: { label: 'OpenCode Go', url: 'https://opencode.ai/inference/go', model: 'deepseek-v4.1-flash', headers: '', session: true },
+    openai: { label: 'OpenAI 兼容（自定义）', url: '', model: '', headers: '', session: false }
   };
+
+  function sessionId() {
+    if (!XW.S.sessionId) {
+      XW.S.sessionId = 'xw-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+      XW.save('sessionId');
+    }
+    return XW.S.sessionId;
+  }
 
   function ensure() {
     if (host) return;
@@ -91,12 +97,16 @@
     return clean;
   }
 
-  function authHeaders(keyText, headerText) {
+  function authHeaders(keyText, headerText, withSession) {
     const headers = { 'Content-Type': 'application/json' };
     const key = String(keyText || '').trim();
     if (key) headers.Authorization = 'Bearer ' + key;
     const extra = parseHeaders(headerText);
     Object.keys(extra).forEach(function (k) { headers[k] = extra[k]; });
+
+    if (withSession && !extra['x-opencode-session']) {
+      headers['x-opencode-session'] = sessionId();
+    }
     return headers;
   }
 
@@ -116,15 +126,17 @@
     const list = [];
     const raw = String(url || '').trim().replace(/\/+$/, '');
     if (/\/chat\/completions$/.test(raw)) list.push(raw);
+    list.push(base + '/v1/chat/completions');
     list.push(base + '/chat/completions');
-    if (!/\/v1$/.test(base)) list.push(base + '/v1/chat/completions');
+    if (!/\/v1$/.test(base)) list.push(base + '/v1/v1/chat/completions');
     return list;
   }
 
   function modelCandidates(url) {
     const base = stripTail(url);
     if (!base) return [];
-    return [base + '/models', base + '/v1/models'];
+    const list = [base + '/v1/models', base + '/models'];
+    return list;
   }
 
   function stamp(ts) {
@@ -277,6 +289,8 @@
     const model = String(XW.S.aiModel || '').trim();
     if (!model) throw new Error('没填模型名');
 
+    const withSession = (XW.S.aiProvider === 'opencode');
+
     const history = XW.S.chat
       .filter(function (m) { return !m._typing; })
       .slice(-20)
@@ -300,11 +314,11 @@
       try {
         res = await fetch(candidate, {
           method: 'POST',
-          headers: authHeaders(key, XW.S.aiHeaders),
+          headers: authHeaders(key, XW.S.aiHeaders, withSession),
           body: body
         });
       } catch (err) {
-        lastError = new Error('连不上 ' + candidate + '（' + (err.message || err) + '）');
+        lastError = new Error('连不上（可能被跨域挡了）：' + candidate);
         continue;
       }
 
@@ -502,7 +516,8 @@
         fieldView('上下文上限（token）', 'set-ctx', String(XW.S.ctxLimit || 128000)) +
         '<div class="row-actions"><button type="button" id="set-ai-save" class="btn-solid">保存连接</button></div>' +
         (resolved ? '<div class="sheet-note">上次走通的地址：' + UI.esc(resolved) + '</div>' : '') +
-        '<div class="sheet-note">地址填到前缀也行（如 https://opencode.ai/zen/go），会自己试 /chat/completions 与 /v1/chat/completions。拉取模型会试 /models 与 /v1/models。</div>' +
+        (provider === 'opencode' ? '<div class="sheet-note">Go 入口：地址填到 …/inference/go 就行，服务端会自己补 /v1。聊天请求会自动带一个稳定的 x-opencode-session，需要覆盖就在上面写同名字段。</div>' : '') +
+        '<div class="sheet-note">会依次试 /v1/chat/completions 与 /chat/completions；拉模型试 /v1/models 与 /models。</div>' +
       '</div>';
 
     const others = '<div class="sheet">' +
@@ -523,6 +538,7 @@
     const url = urlEl ? urlEl.value.trim() : '';
     const key = keyEl ? keyEl.value.trim() : '';
     const headers = headEl ? headEl.value : '';
+    const withSession = (XW.S.aiProvider === 'opencode');
 
     if (!url) { UI.toast('先填接口地址'); return; }
     if (hint) hint.textContent = '正在拉…';
@@ -534,9 +550,9 @@
       const candidate = candidates[i];
       let res = null;
       try {
-        res = await fetch(candidate, { method: 'GET', headers: authHeaders(key, headers) });
+        res = await fetch(candidate, { method: 'GET', headers: authHeaders(key, headers, withSession) });
       } catch (err) {
-        lastError = new Error('连不上 ' + candidate);
+        lastError = new Error('连不上（可能被跨域挡了）：' + candidate);
         continue;
       }
       if (res.status === 404 || res.status === 405) {
