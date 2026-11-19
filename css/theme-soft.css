@@ -1,8 +1,7 @@
 /* theme-soft.css · 软质极简（无毛玻璃）
-   只覆盖变量与圆角/字重，不动结构。最后加载。 */
+   只覆盖变量与圆角/字重/间距，不动结构。最后加载。 */
 
 :root {
-  /* 底色：极浅灰白 + 一点光晕（只为气氛，不再为玻璃准备） */
   --bg:
     radial-gradient(120% 70% at 88% -10%, rgba(213, 240, 224, .30) 0%, rgba(213, 240, 224, 0) 62%),
     radial-gradient(95% 65% at -8% 20%, rgba(240, 246, 240, .42) 0%, rgba(240, 246, 240, 0) 58%),
@@ -15,7 +14,6 @@
   --dark: #333333;
   --on-dark: #fbfbfb;
 
-  /* 卡片：纯白 + 淡阴影 */
   --glass: #ffffff;
   --glass-strong: #ffffff;
   --glass-brd: rgba(0, 0, 0, .05);
@@ -27,17 +25,15 @@
   --serif: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
 }
 
-/* 彻底关掉模糊（有些地方写死了 blur，也一并干掉） */
 * {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
 }
 
-/* App 全屏层：不透明，不再透出桌面 */
 .app { background: #fcfcfc; }
 html.dark .app { background: #131211; }
 
-/* 卡片：大圆角 + 轻悬浮 */
+/* 卡片 */
 .sheet,
 .wdg,
 .dcard,
@@ -60,9 +56,7 @@ html.dark .app { background: #131211; }
 
 /* 按钮与输入 */
 .btn-solid,
-.btn-glass {
-  border-radius: 999px;
-}
+.btn-glass { border-radius: 999px; }
 .btn-glass {
   background: #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
@@ -79,17 +73,24 @@ html.dark .app { background: #131211; }
 
 /* 气泡 */
 .bub {
+  max-width: 82%;
+  padding: .7rem .86rem;
+  font-size: .8rem;
+  line-height: 2;
   border-radius: 16px 16px 16px 6px;
   background: #ffffff;
+  border-color: rgba(0, 0, 0, .045);
   box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
 }
 .bub.me {
   border-radius: 16px 16px 6px 16px;
   background: #333333;
+  border-color: transparent;
   box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
 }
 
 .msg-ava {
+  border-radius: 50%;
   background: #ffffff;
   border-color: rgba(0, 0, 0, .06);
   box-shadow: none;
@@ -106,24 +107,82 @@ html.dark .app { background: #131211; }
   box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
 }
 
-/* 字重：正文细，标题略粗 */
+/* 字重 */
 body { font-weight: 400; }
 .hero-title,
 .sheet-title { font-weight: 600; }
 .wdg-days { font-weight: 600; }
 
-/* 图标：线性 1.5px */
 .app-ico i svg,
 .dock button svg { stroke-width: 1.5; }
 
-/* 留白 */
 .dcard,
 .sheet { margin-bottom: .9rem; }
 
-/* 用量胶囊 / 时间胶囊 */
+/* ══ 聊天页 ══ */
+.chat-scroll { padding: 1rem 0 .7rem; }
+.msg-row { margin-bottom: 1.15rem; }
+
+.chat-status .kicker {
+  color: #a0a0a0;
+  letter-spacing: .04em;
+}
+
+.chat-top { gap: .8rem; }
+.chat-top .num { color: #b0b0b0; }
+.chat-top .num b { color: #333333; font-weight: 600; }
+.chat-top .num i { color: #b8b8b8; }
+
+.usage-bar {
+  height: 3px;
+  margin-bottom: .8rem;
+  background: rgba(0, 0, 0, .05);
+}
+.usage-bar i {
+  background: #cccccc;
+  opacity: 1;
+}
+
+.msg-name {
+  color: #a8a8a8;
+  font-weight: 400;
+  letter-spacing: .03em;
+}
+
+.narr {
+  color: #9a9a9a;
+  border-left-color: rgba(0, 0, 0, .08);
+}
+
+.think > summary { color: #a8a8a8; }
+.think-body {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, .05);
+  border-left-color: rgba(0, 0, 0, .12);
+  box-shadow: none;
+}
+
 .msg-tag,
 .chat-time .kicker {
   background: #ffffff;
   border-color: rgba(0, 0, 0, .05);
   box-shadow: 0 1px 4px rgba(0, 0, 0, .03);
+  color: #a8a8a8;
+}
+
+.chat-meter {
+  color: #b0b0b0;
+  padding: .5rem .1rem .4rem;
+}
+.chat-meter b { color: #7a7a7a; font-weight: 500; }
+
+.composer { padding-top: .7rem; border-top-color: rgba(0, 0, 0, .05); }
+.composer input { padding: .72rem .9rem; font-size: .78rem; }
+.composer .btn-solid {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border-radius: 50%;
+  font-size: .62rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .10);
 }
