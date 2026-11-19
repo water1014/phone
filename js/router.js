@@ -21,7 +21,7 @@
   const PRESETS = {
     deepseek: { label: 'DeepSeek', url: 'https://api.deepseek.com/chat/completions', model: 'deepseek-chat', headers: '' },
     kimi: { label: 'Kimi', url: 'https://api.moonshot.cn/v1/chat/completions', model: 'kimi-latest', headers: '' },
-    opencode: { label: 'OpenCode Go', url: 'https://opencode.ai/zen/v1/chat/completions', model: '', headers: '' },
+    opencode: { label: 'OpenCode Go', url: 'https://opencode.ai/zen/go', model: '', headers: '' },
     openai: { label: 'OpenAI 兼容（自定义）', url: '', model: '', headers: '' }
   };
 
@@ -106,13 +106,26 @@
     return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
   }
 
+  /* 地址补全：填前绝也能找到 chat/completions */
+  function urlCandidates(url) {
+    const base = String(url || '').trim().replace(/\/+$/, '');
+    if (!base) return [];
+    const list = [base];
+    if (!/\/chat\/completions$/.test(base)) {
+      list.push(base + '/chat/completions');
+      list.push(base + '/v1/chat/completions');
+    }
+    return list;
+  }
+
   /* ── 聊天 ── */
   function stamp(ts) {
     const d = new Date(ts || Date.now());
     if (d.toDateString() === new Date().toDateString()) {
       return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
     }
-    return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' +
+      String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
   }
 
   function renderText(text) {
@@ -130,8 +143,12 @@
       const t = line.trim();
       if (!t) { bubble.push(''); return; }
       const isNarr = /^[（(].*[）)]$/.test(t) || /^\*.*\*$/.test(t);
-      if (isNarr) { flush(); chunks.push({ kind: 'narr', text: t.replace(/^\*|\*$/g, '') }); }
-      else bubble.push(t);
+      if (isNarr) {
+        flush();
+        chunks.push({ kind: 'narr', text: t.replace(/^\*|\*$/g, '') });
+      } else {
+        bubble.push(t);
+      }
     });
     flush();
     return chunks;
@@ -149,8 +166,7 @@
         inner += '<details class="think"><summary>思考</summary>' +
           '<div class="think-body">' + UI.esc(msg.think) + '</div></details>';
       }
-      const chunks = renderText(msg.text);
-      chunks.forEach(function (c) {
+      renderText(msg.text).forEach(function (c) {
         if (c.kind === 'narr') inner += '<div class="narr">' + UI.esc(c.text) + '</div>';
         else inner += '<div class="bub' + (mine ? ' me' : '') + '">' + UI.esc(c.text) + '</div>';
       });
@@ -215,7 +231,7 @@
     if (box) box.scrollTop = box.scrollHeight;
   }
 
-  function readUsage(usage, rounds) {
+  function readUsage(usage) {
     const total = XW.S.usage || { rounds: 0, input: 0, cached: 0, output: 0 };
     const input = Number(usage && usage.prompt_tokens) || 0;
     const output = Number(usage && usage.completion_tokens) || 0;
@@ -225,7 +241,7 @@
     }
     const slice = { input: input, output: output, cached: cached };
     XW.S.usage = {
-      rounds: (Number(total.rounds) || 0) + (rounds || 1),
+      rounds: (Number(total.rounds) || 0) + 1,
       input: (Number(total.input) || 0) + input,
       cached: (Number(total.cached) || 0) + cached,
       output: (Number(total.output) || 0) + output
@@ -250,32 +266,59 @@
 
     const system = '你在「小窝」这个私人小手机里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。可以用（括号）写神情和动作当旁白，也可以直接说话，不要列条目。';
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: authHeaders(key, XW.S.aiHeaders),
-      body: JSON.stringify({
-        model: model,
-        messages: [{ role: 'system', content: system }].concat(history),
-        stream: false
-      })
+    const body = JSON.stringify({
+      model: model,
+      messages: [{ role: 'system', content: system }].concat(history),
+      stream: false
     });
 
-    if (!res.ok) {
-      const detail = await res.text().catch(function () { return ''; });
-      throw new Error('HTTP ' + res.status + (detail ? '：' + detail.slice(0, 120) : ''));
+    const candidates = urlCandidates(url);
+    let lastError = null;
+
+    for (let i = 0; i < candidates.length; i++) {
+      const candidate = candidates[i];
+      let res = null;
+      try {
+        res = await fetch(candidate, {
+          method: 'POST',
+          headers: authHeaders(key, XW.S.aiHeaders),
+          body: body
+        });
+      } catch (err) {
+        lastError = new Error('连不上 ' + candidate + '（' + (err.message || err) + '）');
+        continue;
+      }
+
+      if (res.status === 404 || res.status === 405) {
+        lastError = new Error('地址不认：' + candidate + ' (HTTP ' + res.status + ')');
+        continue;
+      }
+
+      if (!res.ok) {
+        const detail = await res.text().catch(function () { return ''; });
+        throw new Error('HTTP ' + res.status + (detail ? '：' + detail.slice(0, 160) : ''));
+      }
+
+      const data = await res.json();
+      const choice = (data && data.choices && data.choices[0]) || null;
+      const message = (choice && choice.message) || {};
+      let content = message.content;
+      if (Array.isArray(content)) {
+        content = content.map(function (p) { return typeof p === 'string' ? p : (p && p.text) || ''; }).join('');
+      }
+      const think = String(message.reasoning_content || message.reasoning || (choice && choice.reasoning) || '').trim();
+      const slice = readUsage(data.usage);
+
+      if (candidate !== url) {
+        XW.S.aiUrlResolved = candidate;
+        XW.save('aiUrlResolved');
+        if (UI.toast) UI.toast('地址自动补全：' + candidate.replace(/^https:\/\//, ''));
+      }
+
+      return { text: String(content || '').trim(), think: think, usage: slice };
     }
 
-    const data = await res.json();
-    const choice = (data && data.choices && data.choices[0]) || null;
-    const message = (choice && choice.message) || {};
-    let content = message.content;
-    if (Array.isArray(content)) {
-      content = content.map(function (p) { return typeof p === 'string' ? p : (p && p.text) || ''; }).join('');
-    }
-    const think = String(message.reasoning_content || message.reasoning || (choice && choice.reasoning) || '').trim();
-    const slice = readUsage(data.usage, 1);
-
-    return { text: String(content || '').trim(), think: think, usage: slice };
+    throw lastError || new Error('没找到能用的地址');
   }
 
   async function sendChat() {
@@ -307,7 +350,7 @@
       });
     } catch (err) {
       XW.S.chat = XW.S.chat.filter(function (m) { return !m._typing; });
-      XW.S.chat.push({ who: 'ta', text: '（连不上：' + (err.message || err) + '）', t: Date.now() });
+      XW.S.chat.push({ who: 'ta', text: '（' + (err.message || err) + '）', t: Date.now() });
     }
     XW.save('chat');
     paint('chat');
@@ -413,6 +456,7 @@
   function settingsView() {
     const apis = Array.isArray(XW.S.apis) ? XW.S.apis : [];
     const provider = XW.S.aiProvider || 'deepseek';
+    const resolved = XW.S.aiUrlResolved || '';
 
     const names = '<div class="sheet">' +
         '<div class="sheet-head"><span class="sheet-title">我们是谁</span><span class="kicker">NAMES</span></div>' +
@@ -431,7 +475,8 @@
         '<label class="field"><span>自定义请求头（JSON，可留空）</span><textarea id="set-ai-headers" rows="3" spellcheck="false" placeholder="{\"X-Title\":\"小窝\"}"></textarea></label>' +
         fieldView('上下文上限（token）', 'set-ctx', String(XW.S.ctxLimit || 128000)) +
         '<div class="row-actions"><button type="button" id="set-ai-save" class="btn-solid">保存连接</button></div>' +
-        '<div class="sheet-note">选完服务商地址和模型会自动填好，平时只改 Key。DeepSeek 地址不带 /v1，Kimi 带 /v1，OpenCode Go 走 zen 网关。</div>' +
+        (resolved ? '<div class="sheet-note">上次走通的地址：' + UI.esc(resolved) + '</div>' : '') +
+        '<div class="sheet-note">地址填到前缀也行（如 https://opencode.ai/zen/go），我会自己试 /chat/completions 与 /v1/chat/completions 两种接法。</div>' +
       '</div>';
 
     const others = '<div class="sheet">' +
@@ -520,7 +565,7 @@
           if (preset.model) modelEl.value = preset.model;
           XW.S.aiHeaders = preset.headers || '';
           XW.save('aiHeaders');
-          headBox.value = XW.S.aiHeaders;
+          if (headBox) headBox.value = XW.S.aiHeaders;
           UI.toast(preset.label + ' 已填好，只差 Key');
         });
       }
@@ -547,7 +592,8 @@
           XW.S.aiKey = read('set-ai-key');
           XW.S.aiHeaders = (D.getElementById('set-ai-headers').value || '').trim();
           XW.S.ctxLimit = Number(read('set-ctx')) || 128000;
-          ['aiUrl', 'aiModel', 'aiKey', 'aiHeaders', 'ctxLimit'].forEach(XW.save);
+          XW.S.aiUrlResolved = '';
+          ['aiUrl', 'aiModel', 'aiKey', 'aiHeaders', 'ctxLimit', 'aiUrlResolved'].forEach(XW.save);
           UI.toast('连接保存了');
         });
       }
