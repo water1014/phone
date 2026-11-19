@@ -10,7 +10,11 @@
     herName: '她',
     diary: [],
     photos: [],
-    notes: []
+    chat: [],
+    notes: [],
+    aiUrl: 'https://api.openai.com/v1/chat/completions',
+    aiModel: 'gpt-4o-mini',
+    aiKey: ''
   };
 
   const S = {};
@@ -29,7 +33,7 @@
     try { LS.setItem(PREFIX + key, JSON.stringify(S[key])); }
     catch (err) {
       console.warn('[store] write failed', key, err);
-      UI.toast('存不下了，删几张旧图试试');
+      if (window.UI && UI.toast) UI.toast('存不下了，删点旧内容试试');
     }
   }
 
