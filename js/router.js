@@ -24,6 +24,7 @@
   };
 
   const PROVIDER_ORDER = ['deepseek', 'opencode', 'openai'];
+  const QUICK = ['在吗', '抱抱', '晚安'];
 
   function readProfile(name) {
     const all = XW.S.profiles || {};
@@ -85,7 +86,6 @@
 
   function paint(id) {
     bodyEl.innerHTML = render(id);
-    if (bodyEl.scrollTop) bodyEl.scrollTop = 0;
     bind(id);
   }
 
@@ -192,6 +192,10 @@
   }
 
   function messageHtml(msg) {
+    if (msg.who === 'sys') {
+      return '<div class="chat-event"><span>' + UI.esc(msg.text || '') + '</span></div>';
+    }
+
     const mine = msg.who === 'me';
     const name = mine ? (XW.S.herName || '我') : (XW.S.hisName || '他');
 
@@ -232,14 +236,14 @@
     const rows = list.map(function (m) {
       let sep = '';
       const t = Number(m.t) || 0;
-      if (t - lastT > 5 * 60 * 1000) {
+      if (m.who !== 'sys' && t - lastT > 5 * 60 * 1000) {
         sep = '<div class="chat-time"><span class="kicker">' + UI.esc(stamp(t)) + '</span></div>';
       }
       if (t) lastT = t;
       return sep + messageHtml(m);
     }).join('');
 
-    const empty = list.length ? '' : '<div class="empty-state" style="margin-top:24%">还没说话。<br>在下面写一句，就有了。</div>';
+    const empty = list.length ? '' : '<div class="empty-state" style="margin-top:22%">还没说话。<br>在下面写一句，就有了。</div>';
 
     const keyed = String(XW.S.aiKey || '').trim();
     const usage = XW.S.usage || { rounds: 0, input: 0, cached: 0, output: 0 };
@@ -268,9 +272,14 @@
       ? '输入 <b>' + fmtK(usage.input) + '</b> · 命中 <b>' + fmtK(usage.cached) + '</b>(' + hitRate + '%) · 输出 <b>' + fmtK(usage.output) + '</b> · <b>' + usage.rounds + '</b> 轮'
       : '本地模式 · 不联网';
 
+    const chips = QUICK.map(function (w) {
+      return '<button type="button" class="quick-chip" data-quick="' + UI.esc(w) + '">' + UI.esc(w) + '</button>';
+    }).join('');
+
     return '<div class="chat-wrap">' + head + top +
         '<div class="chat-scroll" id="chat-scroll">' + rows + empty + '</div>' +
         '<div class="chat-meter">' + meter + '</div>' +
+        '<div class="quick">' + chips + '</div>' +
         '<div class="composer"><input id="chat-input" placeholder="写点什么…"><button type="button" id="chat-send" class="btn-solid">发</button></div>' +
       '</div>';
   }
@@ -310,7 +319,7 @@
     const withSession = (XW.S.aiProvider === 'opencode');
 
     const history = XW.S.chat
-      .filter(function (m) { return !m._typing; })
+      .filter(function (m) { return !m._typing && m.who !== 'sys'; })
       .slice(-20)
       .map(function (m) { return { role: m.who === 'ta' ? 'assistant' : 'user', content: String(m.text || '') }; })
       .filter(function (m) { return m.content; });
@@ -400,7 +409,7 @@
       });
     } catch (err) {
       XW.S.chat = XW.S.chat.filter(function (m) { return !m._typing; });
-      XW.S.chat.push({ who: 'ta', text: '（' + (err.message || err) + '）', t: Date.now() });
+      XW.S.chat.push({ who: 'sys', text: String(err.message || err), t: Date.now() });
     }
     XW.save('chat');
     paint('chat');
@@ -552,6 +561,13 @@
           if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
         });
       }
+      Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-quick]'), function (chip) {
+        chip.addEventListener('click', function () {
+          if (!input) return;
+          input.value = chip.dataset.quick;
+          input.focus();
+        });
+      });
       scrollChat();
       return;
     }
