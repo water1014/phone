@@ -72,28 +72,74 @@
     return '<div class="empty-state">这间还没开门。<br>骨架先立着，下一间再填它。</div>';
   }
 
-  /* ── 聊天 ── */
+  /* ── 聊天：头像 + 气泡 + 时间分隔 + 底部固定输入 ── */
+  function stamp(ts) {
+    const d = new Date(ts || Date.now());
+    const today = new Date();
+    const sameDay = d.toDateString() === today.toDateString();
+    const hm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    return sameDay ? hm : ((d.getMonth() + 1) + '/' + d.getDate() + ' ' + hm);
+  }
+
+  function avatar(who) {
+    const name = who === 'me' ? (XW.S.herName || '我') : (XW.S.hisName || '他');
+    const style = 'flex:0 0 auto;width:1.9rem;height:1.9rem;display:grid;place-items:center;' +
+      'border-radius:.55rem;font-size:.64rem;border:1px solid var(--line);' +
+      (who === 'me'
+        ? 'background:var(--card);color:var(--ink-2)'
+        : 'background:var(--dark);color:var(--on-dark)');
+    return '<div style="' + style + '">' + UI.esc(String(name).charAt(0)) + '</div>';
+  }
+
+  function bubble(text, mine) {
+    const style = 'max-width:76%;padding:.5rem .68rem;font-size:.72rem;line-height:1.75;white-space:pre-wrap;word-break:break-word;' +
+      'border:1px solid ' + (mine ? 'transparent' : 'var(--line)') + ';' +
+      'border-radius:' + (mine ? '.72rem .72rem .18rem .72rem' : '.72rem .72rem .72rem .18rem') + ';' +
+      'background:' + (mine ? 'var(--dark)' : 'var(--card)') + ';' +
+      'color:' + (mine ? 'var(--on-dark)' : 'var(--ink)');
+    return '<div style="' + style + '">' + UI.esc(text) + '</div>';
+  }
+
   function chatView() {
     const list = Array.isArray(XW.S.chat) ? XW.S.chat : [];
+    let lastT = 0;
+
     const rows = list.map(function (m) {
       if (m._typing) {
-        return '<div style="display:flex;justify-content:flex-start;margin-bottom:.5rem">' +
-          '<div style="padding:.5rem .66rem;border:1px solid var(--line);border-radius:.7rem .7rem .7rem .2rem;background:var(--card);color:var(--ink-3);font-size:.7rem">…</div>' +
-        '</div>';
+        return '<div style="display:flex;align-items:flex-start;gap:.4rem;margin-bottom:.55rem">' +
+            avatar('ta') +
+            '<div style="padding:.5rem .68rem;border:1px solid var(--line);border-radius:.72rem .72rem .72rem .18rem;background:var(--card);color:var(--ink-3);font-size:.7rem">…</div>' +
+          '</div>';
       }
+
+      let sep = '';
+      const t = Number(m.t) || 0;
+      if (t - lastT > 5 * 60 * 1000) {
+        sep = '<div style="text-align:center;margin:.9rem 0 .55rem"><span class="kicker">' + UI.esc(stamp(t)) + '</span></div>';
+      }
+      lastT = t || lastT;
+
       const mine = m.who === 'me';
-      return '<div style="display:flex;justify-content:' + (mine ? 'flex-end' : 'flex-start') + ';margin-bottom:.5rem">' +
-          '<div style="max-width:78%;padding:.5rem .66rem;white-space:pre-wrap;border:1px solid ' + (mine ? 'transparent' : 'var(--line)') + ';border-radius:' + (mine ? '.7rem .7rem .2rem .7rem' : '.7rem .7rem .7rem .2rem') + ';background:' + (mine ? 'var(--dark)' : 'var(--card)') + ';color:' + (mine ? 'var(--on-dark)' : 'var(--ink)') + ';font-size:.72rem;line-height:1.7">' + UI.esc(m.text) + '</div>' +
+      return sep +
+        '<div style="display:flex;align-items:flex-start;gap:.42rem;margin-bottom:.55rem;' + (mine ? 'flex-direction:row-reverse' : '') + '">' +
+          avatar(mine ? 'me' : 'ta') +
+          bubble(m.text, mine) +
         '</div>';
     }).join('');
 
-    const body = list.length ? rows : '<div class="empty-state" style="margin-top:2rem">还没说话。<br>在下面写一句，就有了。</div>';
-    const hint = XW.S.aiKey ? '' : '<p style="margin-top:.5rem;font-size:.48rem;color:var(--ink-3)">还没填接口，现在只存你自己说的话。</p>';
+    const empty = list.length
+      ? ''
+      : '<div class="empty-state" style="margin-top:26%">还没说话。<br>在下面写一句，就有了。</div>';
 
-    return '<div>' +
-        '<div id="chat-scroll" style="max-height:58vh;overflow-y:auto;padding-bottom:.6rem">' + body + '</div>' +
-        hint +
-        '<div style="display:flex;gap:.4rem;margin-top:.6rem;padding-top:.6rem;border-top:1px solid var(--line)">' +
+    const direct = XW.S.aiKey ? ((XW.S.aiModel || 'gpt-4o-mini') + ' · 已连接') : '本地 · 只存你自己的话';
+
+    return '<div style="display:flex;flex-direction:column;height:100%">' +
+        '<div style="flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding-bottom:.5rem;border-bottom:1px solid var(--line)">' +
+          '<span class="kicker">ONLINE</span>' +
+          '<span class="kicker">' + UI.esc(direct) + '</span>' +
+        '</div>' +
+        '<div id="chat-scroll" style="flex:1;min-height:0;overflow-y:auto;padding:.7rem 0">' + rows + empty + '</div>' +
+        '<div style="flex:0 0 auto;display:flex;gap:.4rem;padding-top:.55rem;border-top:1px solid var(--line)">' +
           '<input id="chat-input" placeholder="说一句…" style="' + INPUT + '">' +
           '<button type="button" id="chat-send" style="' + BTN + '">发</button>' +
         '</div>' +
