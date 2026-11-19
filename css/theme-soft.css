@@ -1,0 +1,75 @@
+/* theme-soft.css · 软质极简（按那份设计规范落地）
+   只覆盖变量与圆角/字重，不动任何结构。最后加载，优先级最高。 */
+
+:root {
+  /* 底色：极浅灰白 + 淡薄荷绿光晕（保留一点起伏，玻璃才有东西可糊） */
+  --bg:
+    radial-gradient(120% 75% at 88% -12%, rgba(213, 240, 224, .52) 0%, rgba(213, 240, 224, 0) 62%),
+    radial-gradient(95% 70% at -8% 18%, rgba(240, 246, 240, .70) 0%, rgba(240, 246, 240, 0) 58%),
+    radial-gradient(110% 80% at 50% 108%, rgba(246, 242, 234, .62) 0%, rgba(246, 242, 234, 0) 60%),
+    #fcfcfc;
+
+  --ink: #333333;
+  --ink-2: #4f4f4f;
+  --ink-3: #888888;
+  --line: rgba(0, 0, 0, .055);
+  --dark: #333333;
+  --on-dark: #fbfbfb;
+
+  --glass: rgba(255, 255, 255, .72);
+  --glass-strong: rgba(255, 255, 255, .88);
+  --glass-brd: rgba(0, 0, 0, .05);
+  --glass-hi: 0 2px 8px rgba(0, 0, 0, .04);
+  --blur: blur(14px) saturate(1.04);
+
+  --r-md: 18px;
+
+  /* 全站无衬线 */
+  --serif: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+
+/* 卡片：大圆角 + 轻悬浮，不带重阴影 */
+.sheet,
+.wdg,
+.dcard,
+.fold,
+.dock {
+  border-radius: 18px;
+}
+
+.album-cell,
+.app-ico i {
+  border-radius: 16px;
+}
+
+.think-body { border-radius: 14px; }
+
+/* 按钮与输入：胶囊 / 大圆角 */
+.btn-solid,
+.btn-glass {
+  border-radius: 999px;
+}
+
+.field input,
+.field textarea,
+.field select,
+.composer input {
+  border-radius: 14px;
+}
+
+.bub { border-radius: 16px 16px 16px 6px; }
+.bub.me { border-radius: 16px 16px 6px 16px; }
+
+/* 字重：正文细，标题略粗 */
+body { font-weight: 400; }
+.hero-title,
+.sheet-title { font-weight: 600; }
+.wdg-days { font-weight: 600; }
+
+/* 图标：线性 1.5px */
+.app-ico i svg,
+.dock button svg { stroke-width: 1.5; }
+
+/* 留白：卡片之间不少于 16px */
+.dcard { margin-bottom: .9rem; }
+.sheet { margin-bottom: .9rem; }
