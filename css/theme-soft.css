@@ -1,16 +1,16 @@
-/* theme-soft.css · 软质极简（无毛玻璃） */
+/* theme-soft.css · 软质极简 · 冷灰蓝 */
 
 :root {
   --bg:
-    radial-gradient(120% 70% at 88% -10%, rgba(213, 240, 224, .30) 0%, rgba(213, 240, 224, 0) 62%),
-    radial-gradient(95% 65% at -8% 20%, rgba(240, 246, 240, .42) 0%, rgba(240, 246, 240, 0) 58%),
+    radial-gradient(120% 70% at 88% -10%, rgba(206, 218, 231, .38) 0%, rgba(206, 218, 231, 0) 62%),
+    radial-gradient(95% 65% at -8% 20%, rgba(226, 232, 238, .44) 0%, rgba(226, 232, 238, 0) 58%),
     #fcfcfc;
 
   --ink: #333333;
   --ink-2: #4f4f4f;
   --ink-3: #888888;
   --line: rgba(0, 0, 0, .055);
-  --dark: #333333;
+  --dark: #70808f;
   --on-dark: #fbfbfb;
 
   --glass: #ffffff;
@@ -21,6 +21,10 @@
 
   --r-md: 18px;
   --serif: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+
+  --accent: #8d9aa8;
+  --accent-deep: #70808f;
+  --accent-mist: rgba(141, 154, 168, .10);
 }
 
 * {
@@ -53,6 +57,7 @@ html.dark .app { background: #131211; }
 
 .btn-solid,
 .btn-glass { border-radius: 999px; }
+.btn-solid { background: var(--accent-deep); }
 .btn-glass {
   background: #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
@@ -79,9 +84,9 @@ html.dark .app { background: #131211; }
 }
 .bub.me {
   border-radius: 16px 16px 6px 16px;
-  background: #333333;
+  background: var(--accent-deep);
   border-color: transparent;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+  box-shadow: 0 2px 8px rgba(112, 128, 143, .22);
 }
 
 .msg-ava {
@@ -91,7 +96,7 @@ html.dark .app { background: #131211; }
   box-shadow: none;
 }
 .msg-row.ta .msg-ava {
-  background: #333333;
+  background: var(--accent-deep);
   color: #fbfbfb;
   border-color: transparent;
 }
@@ -118,7 +123,6 @@ body { font-weight: 400; }
 .chat-scroll { padding: .7rem 0 .7rem; }
 .msg-row { margin-bottom: 1.1rem; }
 
-/* 顶部只用一行：谁 + 在不在 */
 .chat-status {
   align-items: center;
   padding: .1rem 0 .5rem;
@@ -143,7 +147,7 @@ body { font-weight: 400; }
   width: .3rem;
   height: .3rem;
   border-radius: 50%;
-  background: #8fc7a4;
+  background: var(--accent);
 }
 
 .chat-top { gap: .8rem; padding-top: .1rem; }
@@ -157,9 +161,8 @@ body { font-weight: 400; }
   margin-bottom: .7rem;
   background: rgba(0, 0, 0, .04);
 }
-.usage-bar i { background: #d8d8d8; opacity: 1; }
+.usage-bar i { background: var(--accent); opacity: .55; }
 
-/* 同一个人连着说的话：名字与头像不重复 */
 .msg-row.compact { margin-top: -.62rem; margin-bottom: .5rem; }
 .msg-row.compact .msg-main { gap: 0; }
 
@@ -170,13 +173,13 @@ body { font-weight: 400; }
   letter-spacing: .04em;
 }
 
-.narr { color: #9a9a9a; border-left-color: rgba(0, 0, 0, .08); }
+.narr { color: #9a9a9a; border-left-color: rgba(141, 154, 168, .40); }
 
 .think > summary { color: #a8a8a8; }
 .think-body {
   background: #ffffff;
   border-color: rgba(0, 0, 0, .05);
-  border-left-color: rgba(0, 0, 0, .12);
+  border-left-color: rgba(141, 154, 168, .45);
   box-shadow: none;
 }
 
@@ -206,7 +209,7 @@ body { font-weight: 400; }
   border-radius: 999px;
   background: #ffffff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, .03);
-  color: #6f6f6f;
+  color: #6f7f90;
   font: inherit;
   font-size: .56rem;
   letter-spacing: .02em;
@@ -240,5 +243,12 @@ body { font-weight: 400; }
   padding: 0;
   border-radius: 50%;
   font-size: .62rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .10);
+  box-shadow: 0 2px 8px rgba(112, 128, 143, .28);
 }
+
+/* 其它小面积用色 */
+.hero-sub,
+.sheet-note { color: #9aa5b1; }
+.hero-title b,
+.kicker { color: var(--accent); }
+.row-actions .btn-glass { color: #6f7f90; }
