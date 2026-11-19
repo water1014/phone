@@ -8,18 +8,18 @@
 
 .desk-head {
   flex: 0 0 auto;
-  padding: calc(.9rem + env(safe-area-inset-top)) 1.1rem .25rem;
+  padding: calc(.95rem + env(safe-area-inset-top)) 1.1rem .25rem;
 }
 .desk-clock {
   font-family: var(--serif);
-  font-size: 1.95rem;
+  font-size: 2.05rem;
   line-height: 1;
   letter-spacing: .01em;
 }
 .desk-date {
-  margin-top: .32rem;
+  margin-top: .34rem;
   font-family: var(--mono);
-  font-size: .44rem;
+  font-size: .46rem;
   letter-spacing: .16em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -48,7 +48,7 @@
   scroll-snap-stop: always;
   display: flex;
   flex-direction: column;
-  padding: .25rem var(--pad) calc(var(--dock-h) + 1.8rem);
+  padding: .2rem var(--pad) calc(var(--dock-h) + 1.9rem);
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
@@ -58,8 +58,8 @@
 /* ── 天数玻璃卡 ── */
 .wdg {
   flex: 0 0 auto;
-  margin-bottom: .85rem;
-  padding: .95rem;
+  margin-bottom: .9rem;
+  padding: 1rem;
   border: 1px solid var(--glass-brd);
   border-radius: var(--r-md);
   background: var(--glass);
@@ -68,46 +68,46 @@
   box-shadow: var(--glass-hi);
 }
 .wdg-days {
-  margin-top: .38rem;
+  margin-top: .4rem;
   font-family: var(--serif);
-  font-size: 2.5rem;
+  font-size: 2.65rem;
   line-height: 1;
 }
 .wdg-days small {
-  margin-left: .34rem;
+  margin-left: .36rem;
   font-family: var(--mono);
-  font-size: .48rem;
+  font-size: .5rem;
   letter-spacing: .14em;
   color: var(--ink-3);
 }
 .wdg-sub {
-  margin-top: .34rem;
+  margin-top: .36rem;
   font-family: var(--mono);
-  font-size: .46rem;
+  font-size: .48rem;
   letter-spacing: .08em;
   color: var(--ink-3);
 }
 .wdg-names {
   font-family: var(--serif);
-  font-size: .94rem;
+  font-size: 1rem;
   letter-spacing: .05em;
 }
 
-/* ── 图标：大一号，接近真机桌面 ── */
+/* ── 图标：再大一档 ── */
 .grid {
   flex: 0 0 auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: minmax(4.25rem, auto);
-  gap: .95rem .3rem;
-  padding: .55rem 0;
+  grid-auto-rows: minmax(5rem, auto);
+  gap: 1.1rem .3rem;
+  padding: .7rem 0;
   align-content: start;
 }
 .app-ico {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: .38rem;
+  gap: .42rem;
   border: 0;
   background: none;
   padding: 0;
@@ -118,10 +118,10 @@
 .app-ico i {
   display: grid;
   place-items: center;
-  width: 3.1rem;
-  height: 3.1rem;
+  width: 3.7rem;
+  height: 3.7rem;
   border: 1px solid var(--glass-brd);
-  border-radius: .92rem;
+  border-radius: 1.08rem;
   background: var(--glass);
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);
@@ -129,16 +129,16 @@
   color: var(--ink);
 }
 .app-ico i svg {
-  width: 1.38rem;
-  height: 1.38rem;
+  width: 1.66rem;
+  height: 1.66rem;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.45;
+  stroke-width: 1.4;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .app-ico span {
-  font-size: .5rem;
+  font-size: .54rem;
   letter-spacing: .02em;
   white-space: nowrap;
 }
@@ -168,7 +168,7 @@
   transform: scale(1.3);
 }
 
-/* ── dock：磨砂玻璃条 ── */
+/* ── dock ── */
 .dock {
   position: fixed;
   left: .9rem;
@@ -191,7 +191,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: .22rem;
+  gap: .24rem;
   border: 0;
   background: none;
   padding: 0;
@@ -200,17 +200,17 @@
   transition: color .2s;
 }
 .dock button svg {
-  width: 1.42rem;
-  height: 1.42rem;
+  width: 1.64rem;
+  height: 1.64rem;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.6;
+  stroke-width: 1.55;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .dock button span {
   font-family: var(--mono);
-  font-size: .42rem;
+  font-size: .44rem;
   letter-spacing: .06em;
 }
 .dock button.on { color: var(--ink); }
