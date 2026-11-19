@@ -1,12 +1,11 @@
-/* theme-soft.css · 软质极简（按那份设计规范落地）
-   只覆盖变量与圆角/字重，不动任何结构。最后加载，优先级最高。 */
+/* theme-soft.css · 软质极简（无毛玻璃）
+   只覆盖变量与圆角/字重，不动结构。最后加载。 */
 
 :root {
-  /* 底色：极浅灰白 + 淡薄荷绿光晕（保留一点起伏，玻璃才有东西可糊） */
+  /* 底色：极浅灰白 + 一点光晕（只为气氛，不再为玻璃准备） */
   --bg:
-    radial-gradient(120% 75% at 88% -12%, rgba(213, 240, 224, .52) 0%, rgba(213, 240, 224, 0) 62%),
-    radial-gradient(95% 70% at -8% 18%, rgba(240, 246, 240, .70) 0%, rgba(240, 246, 240, 0) 58%),
-    radial-gradient(110% 80% at 50% 108%, rgba(246, 242, 234, .62) 0%, rgba(246, 242, 234, 0) 60%),
+    radial-gradient(120% 70% at 88% -10%, rgba(213, 240, 224, .30) 0%, rgba(213, 240, 224, 0) 62%),
+    radial-gradient(95% 65% at -8% 20%, rgba(240, 246, 240, .42) 0%, rgba(240, 246, 240, 0) 58%),
     #fcfcfc;
 
   --ink: #333333;
@@ -16,38 +15,57 @@
   --dark: #333333;
   --on-dark: #fbfbfb;
 
-  --glass: rgba(255, 255, 255, .72);
-  --glass-strong: rgba(255, 255, 255, .88);
+  /* 卡片：纯白 + 淡阴影 */
+  --glass: #ffffff;
+  --glass-strong: #ffffff;
   --glass-brd: rgba(0, 0, 0, .05);
   --glass-hi: 0 2px 8px rgba(0, 0, 0, .04);
-  --blur: blur(14px) saturate(1.04);
+  --blur: none;
 
   --r-md: 18px;
 
-  /* 全站无衬线 */
   --serif: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
 }
 
-/* 卡片：大圆角 + 轻悬浮，不带重阴影 */
+/* 彻底关掉模糊（有些地方写死了 blur，也一并干掉） */
+* {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* App 全屏层：不透明，不再透出桌面 */
+.app { background: #fcfcfc; }
+html.dark .app { background: #131211; }
+
+/* 卡片：大圆角 + 轻悬浮 */
 .sheet,
 .wdg,
 .dcard,
 .fold,
 .dock {
   border-radius: 18px;
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, .05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
 }
 
 .album-cell,
 .app-ico i {
   border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
 }
 
 .think-body { border-radius: 14px; }
 
-/* 按钮与输入：胶囊 / 大圆角 */
+/* 按钮与输入 */
 .btn-solid,
 .btn-glass {
   border-radius: 999px;
+}
+.btn-glass {
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
 }
 
 .field input,
@@ -55,10 +73,38 @@
 .field select,
 .composer input {
   border-radius: 14px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .05);
 }
 
-.bub { border-radius: 16px 16px 16px 6px; }
-.bub.me { border-radius: 16px 16px 6px 16px; }
+/* 气泡 */
+.bub {
+  border-radius: 16px 16px 16px 6px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+}
+.bub.me {
+  border-radius: 16px 16px 6px 16px;
+  background: #333333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+}
+
+.msg-ava {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, .06);
+  box-shadow: none;
+}
+.msg-row.ta .msg-ava {
+  background: #333333;
+  color: #fbfbfb;
+  border-color: transparent;
+}
+
+.app-back {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, .06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+}
 
 /* 字重：正文细，标题略粗 */
 body { font-weight: 400; }
@@ -70,6 +116,14 @@ body { font-weight: 400; }
 .app-ico i svg,
 .dock button svg { stroke-width: 1.5; }
 
-/* 留白：卡片之间不少于 16px */
-.dcard { margin-bottom: .9rem; }
+/* 留白 */
+.dcard,
 .sheet { margin-bottom: .9rem; }
+
+/* 用量胶囊 / 时间胶囊 */
+.msg-tag,
+.chat-time .kicker {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, .05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .03);
+}
