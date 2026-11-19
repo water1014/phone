@@ -1,13 +1,27 @@
-/* tokens.css · 只放变量，页面里不写死色值 */
+/* tokens.css · 颜色与尺寸变量（唯一色值来源） */
 :root {
-  --bg: #f5f3ef;
-  --ink: #191817;
-  --ink-2: #6b6862;
-  --ink-3: #9d9a94;
-  --line: rgba(25, 24, 23, .1);
-  --card: rgba(255, 255, 255, .72);
-  --dark: #141312;
-  --on-dark: #f7f6f4;
+  --ink: #1a1917;
+  --ink-2: #6a6660;
+  --ink-3: #9a958d;
+
+  /* 玻璃 */
+  --glass: rgba(255, 255, 255, .42);
+  --glass-strong: rgba(255, 255, 255, .62);
+  --glass-brd: rgba(255, 255, 255, .60);
+  --glass-hi: inset 0 1px 0 rgba(255, 255, 255, .75);
+  --blur: blur(18px) saturate(1.18);
+
+  --card: rgba(255, 255, 255, .50);
+  --line: rgba(26, 25, 23, .10);
+  --dark: #171614;
+  --on-dark: #f8f7f4;
+
+  /* 底色：带光斑，玻璃才有东西可糊 */
+  --bg:
+    radial-gradient(900px 520px at 86% -6%, rgba(255, 255, 255, .92), transparent 62%),
+    radial-gradient(760px 480px at -8% 20%, rgba(198, 210, 226, .55), transparent 60%),
+    radial-gradient(820px 620px at 52% 110%, rgba(234, 216, 197, .48), transparent 62%),
+    linear-gradient(180deg, #f8f6f2 0%, #e9e5df 100%);
 
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --serif: "Songti SC", "Noto Serif SC", Georgia, serif;
@@ -22,12 +36,23 @@
 }
 
 html.dark {
-  --bg: #0e0d0c;
-  --ink: #eceae6;
-  --ink-2: #9a968f;
-  --ink-3: #5c5954;
+  --ink: #ecebe7;
+  --ink-2: #9b968e;
+  --ink-3: #5e5a54;
+
+  --glass: rgba(34, 33, 30, .48);
+  --glass-strong: rgba(38, 37, 34, .64);
+  --glass-brd: rgba(255, 255, 255, .10);
+  --glass-hi: inset 0 1px 0 rgba(255, 255, 255, .08);
+
+  --card: rgba(36, 35, 32, .52);
   --line: rgba(255, 255, 255, .12);
-  --card: rgba(32, 31, 29, .66);
-  --dark: #f2f0ec;
-  --on-dark: #121110;
+  --dark: #f4f2ee;
+  --on-dark: #131210;
+
+  --bg:
+    radial-gradient(900px 520px at 86% -8%, rgba(255, 255, 255, .09), transparent 62%),
+    radial-gradient(760px 480px at -6% 24%, rgba(150, 168, 190, .10), transparent 60%),
+    radial-gradient(820px 620px at 52% 112%, rgba(190, 165, 140, .08), transparent 62%),
+    linear-gradient(180deg, #0f0e0d 0%, #080807 100%);
 }

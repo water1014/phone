@@ -1,10 +1,11 @@
-/* base.css · 重置 / 屏幕容器 */
+/* base.css · 重置 / 屏幕容器 / 玻璃基础 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 html, body { height: 100%; }
 
 body {
   background: var(--bg);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--sans);
   overflow: hidden;
@@ -19,6 +20,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  background: transparent;
 }
 
 .kicker {
@@ -38,6 +40,15 @@ body {
   line-height: 1.95;
 }
 
+/* 玻璃通用 */
+.glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-brd);
+  box-shadow: var(--glass-hi);
+}
+
 #toast {
   position: fixed;
   left: 50%;
@@ -46,11 +57,15 @@ body {
   z-index: 90;
   max-width: 76vw;
   padding: .5rem .8rem;
-  border-radius: .5rem;
-  background: color-mix(in srgb, var(--dark) 88%, transparent);
-  color: var(--on-dark);
+  border-radius: .55rem;
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-brd);
+  color: var(--ink);
   font-size: .58rem;
   line-height: 1.6;
+  box-shadow: var(--glass-hi);
   opacity: 0;
   pointer-events: none;
   transition: opacity .2s, transform .2s;
