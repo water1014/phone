@@ -18,8 +18,12 @@
     aiModel: 'gpt-4o-mini',
     aiKey: '',
     aiHeaders: '',
+    ctxLimit: 128000,
 
-    /* 其它接口：生图 / 语音 / 识图 …… 每一项独立一套 */
+    /* token 用量：{ rounds, input, cached, output } */
+    usage: { rounds: 0, input: 0, cached: 0, output: 0 },
+
+    /* 其它接口：生图 / 语音 / 识图 …… 每项独立一套 */
     apis: []
   };
 
