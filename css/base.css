@@ -1,0 +1,58 @@
+/* base.css · 重置 / 屏幕容器 */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+#screen {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.kicker {
+  font-family: var(--mono);
+  font-size: .42rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.empty-state {
+  margin-top: 26vh;
+  padding: 0 2rem;
+  text-align: center;
+  color: var(--ink-3);
+  font-size: .6rem;
+  line-height: 1.95;
+}
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--dock-h) + 2.4rem);
+  transform: translateX(-50%) translateY(.4rem);
+  z-index: 90;
+  max-width: 76vw;
+  padding: .5rem .8rem;
+  border-radius: .5rem;
+  background: color-mix(in srgb, var(--dark) 88%, transparent);
+  color: var(--on-dark);
+  font-size: .58rem;
+  line-height: 1.6;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s, transform .2s;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
