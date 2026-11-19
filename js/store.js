@@ -9,6 +9,7 @@
     hisName: '他',
     herName: '她',
     diary: [],
+    photos: [],
     notes: []
   };
 
@@ -26,7 +27,10 @@
 
   function save(key) {
     try { LS.setItem(PREFIX + key, JSON.stringify(S[key])); }
-    catch (err) { console.warn('[store] write failed', key, err); }
+    catch (err) {
+      console.warn('[store] write failed', key, err);
+      UI.toast('存不下了，删几张旧图试试');
+    }
   }
 
   Object.keys(DEF).forEach(load);
