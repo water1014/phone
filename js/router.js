@@ -1,4 +1,4 @@
-/* router.js · 打开 App / 返回桌面；全部界面走玻璃卡 */
+/* router.js · App 打开层；聊天支持旁白 / 思考 / token 用量 */
 (function () {
   const D = document;
 
@@ -15,6 +15,14 @@
     cycle: 'CYCLE', study: 'STUDY', quotes: 'QUOTES', moments: 'MOMENTS',
     favorites: 'FAVORITES', games: 'GAMES', studio: 'STUDIO', worldbook: 'WORLDBOOK',
     windows: 'WINDOW GALLERY', mcp: 'CONNECTIONS', beautify: 'APPEARANCE', settings: 'SETTINGS'
+  };
+
+  /* 服务商预设：地址与模型固定，只换 Key */
+  const PRESETS = {
+    deepseek: { label: 'DeepSeek', url: 'https://api.deepseek.com/chat/completions', model: 'deepseek-chat', headers: '' },
+    kimi: { label: 'Kimi', url: 'https://api.moonshot.cn/v1/chat/completions', model: 'kimi-latest', headers: '' },
+    opencode: { label: 'OpenCode Go', url: 'https://opencode.ai/zen/v1/chat/completions', model: '', headers: '' },
+    openai: { label: 'OpenAI 兼容（自定义）', url: '', model: '', headers: '' }
   };
 
   function ensure() {
@@ -69,7 +77,7 @@
     return '<div class="sheet"><div class="empty-state" style="margin-top:1rem">这间还没开门。<br>骨架先立着，下一间再填它。</div></div>';
   }
 
-  /* ── 请求头 ── */
+  /* ── 小工具 ── */
   function parseHeaders(text) {
     const raw = String(text || '').trim();
     if (!raw) return {};
@@ -92,22 +100,76 @@
     return headers;
   }
 
+  function fmtK(n) {
+    const num = Number(n) || 0;
+    if (num < 1000) return String(num);
+    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  }
+
   /* ── 聊天 ── */
   function stamp(ts) {
     const d = new Date(ts || Date.now());
-    const sameDay = d.toDateString() === new Date().toDateString();
-    const hm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-    return sameDay ? hm : ((d.getMonth() + 1) + '/' + d.getDate() + ' ' + hm);
+    if (d.toDateString() === new Date().toDateString()) {
+      return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    }
+    return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
   }
 
-  function avatar(who) {
-    const name = who === 'me' ? (XW.S.herName || '我') : (XW.S.hisName || '他');
-    return '<div class="msg-ava">' + UI.esc(String(name).charAt(0)) + '</div>';
+  function renderText(text) {
+    const lines = String(text || '').split(/\n+/);
+    let bubble = [];
+    const chunks = [];
+
+    const flush = function () {
+      if (!bubble.length) return;
+      chunks.push({ kind: 'bubble', text: bubble.join('\n') });
+      bubble = [];
+    };
+
+    lines.forEach(function (line) {
+      const t = line.trim();
+      if (!t) { bubble.push(''); return; }
+      const isNarr = /^[（(].*[）)]$/.test(t) || /^\*.*\*$/.test(t);
+      if (isNarr) { flush(); chunks.push({ kind: 'narr', text: t.replace(/^\*|\*$/g, '') }); }
+      else bubble.push(t);
+    });
+    flush();
+    return chunks;
   }
 
-  function bubble(text, mine, typing) {
-    return '<div class="bub' + (mine ? ' me' : '') + (typing ? ' typing' : '') + '">' +
-      (typing ? '…' : UI.esc(text)) + '</div>';
+  function messageHtml(msg) {
+    const mine = msg.who === 'me';
+    const name = mine ? (XW.S.herName || '我') : (XW.S.hisName || '他');
+
+    let inner = '';
+    if (msg._typing) {
+      inner = '<div class="bub typing">…</div>';
+    } else {
+      if (msg.think) {
+        inner += '<details class="think"><summary>思考</summary>' +
+          '<div class="think-body">' + UI.esc(msg.think) + '</div></details>';
+      }
+      const chunks = renderText(msg.text);
+      chunks.forEach(function (c) {
+        if (c.kind === 'narr') inner += '<div class="narr">' + UI.esc(c.text) + '</div>';
+        else inner += '<div class="bub' + (mine ? ' me' : '') + '">' + UI.esc(c.text) + '</div>';
+      });
+    }
+
+    let tag = '';
+    if (msg.usage && !mine) {
+      tag = '<div class="msg-tag">入 ' + fmtK(msg.usage.input) + ' · 出 ' + fmtK(msg.usage.output) +
+        (msg.usage.cached ? ' · 命中 ' + fmtK(msg.usage.cached) : '') + '</div>';
+    }
+
+    const initial = String(name).charAt(0);
+    return '<div class="msg-row ' + (mine ? 'me' : 'ta') + '">' +
+        '<div class="msg-ava">' + UI.esc(initial) + '</div>' +
+        '<div class="msg-main">' +
+          '<div class="msg-name">' + UI.esc(name) + '</div>' +
+          inner + tag +
+        '</div>' +
+      '</div>';
   }
 
   function chatView() {
@@ -115,25 +177,36 @@
     let lastT = 0;
 
     const rows = list.map(function (m) {
-      if (m._typing) return '<div class="msg-row ta">' + avatar('ta') + bubble('', false, true) + '</div>';
-
       let sep = '';
       const t = Number(m.t) || 0;
-      if (t - lastT > 5 * 60 * 1000) sep = '<div class="chat-time"><span class="kicker">' + UI.esc(stamp(t)) + '</span></div>';
-      lastT = t || lastT;
-
-      const mine = m.who === 'me';
-      return sep + '<div class="msg-row' + (mine ? ' me' : ' ta') + '">' + avatar(mine ? 'me' : 'ta') + bubble(m.text, mine) + '</div>';
+      if (t - lastT > 5 * 60 * 1000) {
+        sep = '<div class="chat-time"><span class="kicker">' + UI.esc(stamp(t)) + '</span></div>';
+      }
+      if (t) lastT = t;
+      return sep + messageHtml(m);
     }).join('');
 
     const empty = list.length ? '' : '<div class="empty-state" style="margin-top:26%">还没说话。<br>在下面写一句，就有了。</div>';
+
     const keyed = String(XW.S.aiKey || '').trim();
-    const direct = keyed ? ((XW.S.aiModel || 'gpt-4o-mini') + ' · 已连接') : '本地 · 只存你自己的话';
+    const usage = XW.S.usage || { rounds: 0, input: 0, cached: 0, output: 0 };
+    const limit = Number(XW.S.ctxLimit) || 128000;
+    const used = Number(usage.input) || 0;
+    const percent = Math.min(999, Math.round(used / limit * 100));
+    const hitRate = used ? Math.round((Number(usage.cached) || 0) / used * 100) : 0;
+
+    const topLeft = keyed ? (XW.S.aiModel || 'model') : 'LOCAL';
+    const topRight = keyed ? (percent + '% · ' + fmtK(used) + ' / ' + fmtK(limit)) : '只存你自己的话';
+    const meter = keyed
+      ? '输入 ' + fmtK(usage.input) + ' · 命中 ' + fmtK(usage.cached) + '(' + hitRate + '%) · 输出 ' + fmtK(usage.output) + ' · ' + usage.rounds + ' 轮'
+      : '本地模式';
 
     return '<div class="chat-wrap">' +
-        '<div class="chat-status"><span class="kicker">ONLINE</span><span class="kicker">' + UI.esc(direct) + '</span></div>' +
+        '<div class="chat-status"><span class="kicker">' + UI.esc(topLeft) + '</span>' +
+          '<span class="kicker">' + UI.esc(topRight) + '</span></div>' +
         '<div class="chat-scroll" id="chat-scroll">' + rows + empty + '</div>' +
-        '<div class="composer"><input id="chat-input" placeholder="说一句…"><button type="button" id="chat-send" class="btn-solid">发</button></div>' +
+        '<div class="chat-meter">' + UI.esc(meter) + '</div>' +
+        '<div class="composer"><input id="chat-input" placeholder="写点什么…"><button type="button" id="chat-send" class="btn-solid">发</button></div>' +
       '</div>';
   }
 
@@ -142,11 +215,32 @@
     if (box) box.scrollTop = box.scrollHeight;
   }
 
+  function readUsage(usage, rounds) {
+    const total = XW.S.usage || { rounds: 0, input: 0, cached: 0, output: 0 };
+    const input = Number(usage && usage.prompt_tokens) || 0;
+    const output = Number(usage && usage.completion_tokens) || 0;
+    let cached = Number(usage && usage.prompt_cache_hit_tokens) || 0;
+    if (!cached && usage && usage.prompt_tokens_details) {
+      cached = Number(usage.prompt_tokens_details.cached_tokens) || 0;
+    }
+    const slice = { input: input, output: output, cached: cached };
+    XW.S.usage = {
+      rounds: (Number(total.rounds) || 0) + (rounds || 1),
+      input: (Number(total.input) || 0) + input,
+      cached: (Number(total.cached) || 0) + cached,
+      output: (Number(total.output) || 0) + output
+    };
+    XW.save('usage');
+    return slice;
+  }
+
   async function callAI() {
     const key = String(XW.S.aiKey || '').trim();
-    if (!key) return '';
-    const url = String(XW.S.aiUrl || 'https://api.openai.com/v1/chat/completions').trim();
-    const model = String(XW.S.aiModel || 'gpt-4o-mini').trim();
+    if (!key) throw new Error('没填 Key');
+    const url = String(XW.S.aiUrl || '').trim();
+    if (!url) throw new Error('没填接口地址');
+    const model = String(XW.S.aiModel || '').trim();
+    if (!model) throw new Error('没填模型名');
 
     const history = XW.S.chat
       .filter(function (m) { return !m._typing; })
@@ -154,7 +248,7 @@
       .map(function (m) { return { role: m.who === 'ta' ? 'assistant' : 'user', content: String(m.text || '') }; })
       .filter(function (m) { return m.content; });
 
-    const system = '你住在「小窝」这个私人小手机里。说话自然、简短，像真人在手机上回消息，不要列条目、不要客服腔。';
+    const system = '你在「小窝」这个私人小手机里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。可以用（括号）写神情和动作当旁白，也可以直接说话，不要列条目。';
 
     const res = await fetch(url, {
       method: 'POST',
@@ -165,16 +259,23 @@
         stream: false
       })
     });
+
     if (!res.ok) {
       const detail = await res.text().catch(function () { return ''; });
       throw new Error('HTTP ' + res.status + (detail ? '：' + detail.slice(0, 120) : ''));
     }
+
     const data = await res.json();
-    const choice = data && data.choices && data.choices[0];
-    const message = choice && choice.message;
-    let content = message && message.content;
-    if (Array.isArray(content)) content = content.map(function (p) { return typeof p === 'string' ? p : (p && p.text) || ''; }).join('');
-    return String(content || '').trim();
+    const choice = (data && data.choices && data.choices[0]) || null;
+    const message = (choice && choice.message) || {};
+    let content = message.content;
+    if (Array.isArray(content)) {
+      content = content.map(function (p) { return typeof p === 'string' ? p : (p && p.text) || ''; }).join('');
+    }
+    const think = String(message.reasoning_content || message.reasoning || (choice && choice.reasoning) || '').trim();
+    const slice = readUsage(data.usage, 1);
+
+    return { text: String(content || '').trim(), think: think, usage: slice };
   }
 
   async function sendChat() {
@@ -197,7 +298,13 @@
     try {
       const reply = await callAI();
       XW.S.chat = XW.S.chat.filter(function (m) { return !m._typing; });
-      XW.S.chat.push({ who: 'ta', text: reply || '（没说出话）', t: Date.now() });
+      XW.S.chat.push({
+        who: 'ta',
+        text: reply.text || '（没说话）',
+        think: reply.think,
+        usage: reply.usage,
+        t: Date.now()
+      });
     } catch (err) {
       XW.S.chat = XW.S.chat.filter(function (m) { return !m._typing; });
       XW.S.chat.push({ who: 'ta', text: '（连不上：' + (err.message || err) + '）', t: Date.now() });
@@ -266,9 +373,22 @@
   }
 
   /* ── 设置 ── */
-  function fieldView(label, id, value, type) {
+  function fieldView(label, id, value, type, placeholder) {
     return '<label class="field"><span>' + label + '</span>' +
-      '<input id="' + id + '" type="' + (type || 'text') + '" value="' + UI.esc(value) + '" spellcheck="false"></label>';
+      '<input id="' + id + '" type="' + (type || 'text') + '" value="' + UI.esc(value) + '" spellcheck="false"' +
+      (placeholder ? ' placeholder="' + UI.esc(placeholder) + '"' : '') + '></label>';
+  }
+
+  function providerOptions(current) {
+    const list = [
+      ['deepseek', 'DeepSeek'],
+      ['kimi', 'Kimi（Moonshot）'],
+      ['opencode', 'OpenCode Go'],
+      ['openai', 'OpenAI 兼容（自己填地址）']
+    ];
+    return list.map(function (pair) {
+      return '<option value="' + pair[0] + '"' + (pair[0] === current ? ' selected' : '') + '>' + pair[1] + '</option>';
+    }).join('');
   }
 
   function apiItem(api, i) {
@@ -281,7 +401,7 @@
           '<label class="field"><span>接口地址</span><input data-k="url" value="' + UI.esc(item.url || '') + '" spellcheck="false" placeholder="https://…"></label>' +
           '<label class="field"><span>模型（可留空）</span><input data-k="model" value="' + UI.esc(item.model || '') + '" spellcheck="false"></label>' +
           '<label class="field"><span>API Key</span><input data-k="key" type="password" value="' + UI.esc(item.key || '') + '" spellcheck="false"></label>' +
-          '<label class="field"><span>自定义请求头（JSON）</span><textarea data-k="headers" rows="3" spellcheck="false" placeholder="{}…">' + UI.esc(item.headers || '') + '</textarea></label>' +
+          '<label class="field"><span>自定义请求头（JSON）</span><textarea data-k="headers" rows="3" spellcheck="false" placeholder="{}">' + UI.esc(item.headers || '') + '</textarea></label>' +
           '<div class="row-actions">' +
             '<button type="button" class="btn-glass" data-api-del="' + i + '">删除</button>' +
             '<button type="button" class="btn-solid" data-api-save="' + i + '">保存这条</button>' +
@@ -292,6 +412,7 @@
 
   function settingsView() {
     const apis = Array.isArray(XW.S.apis) ? XW.S.apis : [];
+    const provider = XW.S.aiProvider || 'deepseek';
 
     const names = '<div class="sheet">' +
         '<div class="sheet-head"><span class="sheet-title">我们是谁</span><span class="kicker">NAMES</span></div>' +
@@ -303,19 +424,21 @@
 
     const chatApi = '<div class="sheet">' +
         '<div class="sheet-head"><span class="sheet-title">聊天的接口</span><span class="kicker">CHAT</span></div>' +
+        '<label class="field"><span>服务商</span><select id="set-ai-provider">' + providerOptions(provider) + '</select></label>' +
         fieldView('接口地址', 'set-ai-url', XW.S.aiUrl) +
-        fieldView('模型', 'set-ai-model', XW.S.aiModel) +
-        fieldView('API Key', 'set-ai-key', XW.S.aiKey, 'password') +
-        '<label class="field"><span>自定义请求头（JSON，可留空）</span><textarea id="set-ai-headers" rows="3" spellcheck="false" placeholder=\'{"X-Title":"小窝"}\'></textarea></label>' +
-        '<div class="row-actions"><button type="button" id="set-ai-save" class="btn-solid">保存聊天连接</button></div>' +
-        '<div class="sheet-note">走聚合站（OpenCode Go 之类）时，某些站需要额外的 X-Title / HTTP-Referer 之类，都写进上面那个框。浏览器不允许的 header 会被忽略。</div>' +
+        fieldView('模型', 'set-ai-model', XW.S.aiModel, 'text', '例：deepseek-chat') +
+        fieldView('API Key（只换这一项）', 'set-ai-key', XW.S.aiKey, 'password') +
+        '<label class="field"><span>自定义请求头（JSON，可留空）</span><textarea id="set-ai-headers" rows="3" spellcheck="false" placeholder="{\"X-Title\":\"小窝\"}"></textarea></label>' +
+        fieldView('上下文上限（token）', 'set-ctx', String(XW.S.ctxLimit || 128000)) +
+        '<div class="row-actions"><button type="button" id="set-ai-save" class="btn-solid">保存连接</button></div>' +
+        '<div class="sheet-note">选完服务商地址和模型会自动填好，平时只改 Key。DeepSeek 地址不带 /v1，Kimi 带 /v1，OpenCode Go 走 zen 网关。</div>' +
       '</div>';
 
     const others = '<div class="sheet">' +
         '<div class="sheet-head"><span class="sheet-title">其它接口</span><span class="kicker">' + apis.length + ' 套</span></div>' +
         apis.map(apiItem).join('') +
         '<div class="row-actions"><button type="button" id="api-add" class="btn-glass">＋ 新增一套</button></div>' +
-        '<div class="sheet-note">生图、语音、识图各存一套，各自带自己的 Key 和请求头。不填就不影响聊天。</div>' +
+        '<div class="sheet-note">生图、语音、识图各存一套，各自带自己的 Key 和请求头。不填不影响聊天。</div>' +
       '</div>';
 
     return names + chatApi + others;
@@ -326,9 +449,11 @@
       const btn = D.getElementById('chat-send');
       const input = D.getElementById('chat-input');
       if (btn) btn.addEventListener('click', sendChat);
-      if (input) input.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
-      });
+      if (input) {
+        input.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+        });
+      }
       scrollChat();
       return;
     }
@@ -383,35 +508,59 @@
       const headBox = D.getElementById('set-ai-headers');
       if (headBox) headBox.value = XW.S.aiHeaders || '';
 
+      const provider = D.getElementById('set-ai-provider');
+      if (provider) {
+        provider.addEventListener('change', function () {
+          const preset = PRESETS[provider.value] || PRESETS.openai;
+          XW.S.aiProvider = provider.value;
+          XW.save('aiProvider');
+          const urlEl = D.getElementById('set-ai-url');
+          const modelEl = D.getElementById('set-ai-model');
+          if (preset.url) urlEl.value = preset.url;
+          if (preset.model) modelEl.value = preset.model;
+          XW.S.aiHeaders = preset.headers || '';
+          XW.save('aiHeaders');
+          headBox.value = XW.S.aiHeaders;
+          UI.toast(preset.label + ' 已填好，只差 Key');
+        });
+      }
+
       const saveNames = D.getElementById('set-save');
-      if (saveNames) saveNames.addEventListener('click', function () {
-        const read = function (elId) { const el = D.getElementById(elId); return el && el.value ? el.value.trim() : ''; };
-        XW.S.hisName = read('set-his') || '他';
-        XW.S.herName = read('set-her') || '她';
-        XW.S.loveDate = read('set-love') || '2025-01-01';
-        ['hisName', 'herName', 'loveDate'].forEach(XW.save);
-        UI.toast('保存了');
-        if (window.Desktop) window.Desktop.rerender();
-      });
+      if (saveNames) {
+        saveNames.addEventListener('click', function () {
+          const read = function (elId) { const el = D.getElementById(elId); return el && el.value ? el.value.trim() : ''; };
+          XW.S.hisName = read('set-his') || '他';
+          XW.S.herName = read('set-her') || '她';
+          XW.S.loveDate = read('set-love') || '2025-01-01';
+          ['hisName', 'herName', 'loveDate'].forEach(XW.save);
+          UI.toast('保存了');
+          if (window.Desktop) window.Desktop.rerender();
+        });
+      }
 
       const saveChat = D.getElementById('set-ai-save');
-      if (saveChat) saveChat.addEventListener('click', function () {
-        const read = function (elId) { const el = D.getElementById(elId); return el && el.value ? el.value.trim() : ''; };
-        XW.S.aiUrl = read('set-ai-url') || 'https://api.openai.com/v1/chat/completions';
-        XW.S.aiModel = read('set-ai-model') || 'gpt-4o-mini';
-        XW.S.aiKey = read('set-ai-key');
-        XW.S.aiHeaders = (D.getElementById('set-ai-headers').value || '').trim();
-        ['aiUrl', 'aiModel', 'aiKey', 'aiHeaders'].forEach(XW.save);
-        UI.toast('聊天连接已保存');
-      });
+      if (saveChat) {
+        saveChat.addEventListener('click', function () {
+          const read = function (elId) { const el = D.getElementById(elId); return el && el.value ? el.value.trim() : ''; };
+          XW.S.aiUrl = read('set-ai-url');
+          XW.S.aiModel = read('set-ai-model');
+          XW.S.aiKey = read('set-ai-key');
+          XW.S.aiHeaders = (D.getElementById('set-ai-headers').value || '').trim();
+          XW.S.ctxLimit = Number(read('set-ctx')) || 128000;
+          ['aiUrl', 'aiModel', 'aiKey', 'aiHeaders', 'ctxLimit'].forEach(XW.save);
+          UI.toast('连接保存了');
+        });
+      }
 
       const addApi = D.getElementById('api-add');
-      if (addApi) addApi.addEventListener('click', function () {
-        XW.S.apis = Array.isArray(XW.S.apis) ? XW.S.apis : [];
-        XW.S.apis.push({ name: '', url: '', model: '', key: '', headers: '' });
-        XW.save('apis');
-        paint('settings');
-      });
+      if (addApi) {
+        addApi.addEventListener('click', function () {
+          XW.S.apis = Array.isArray(XW.S.apis) ? XW.S.apis : [];
+          XW.S.apis.push({ name: '', url: '', model: '', key: '', headers: '' });
+          XW.save('apis');
+          paint('settings');
+        });
+      }
 
       Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-api-save]'), function (btn) {
         btn.addEventListener('click', function () {
@@ -435,8 +584,7 @@
 
       Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-api-del]'), function (btn) {
         btn.addEventListener('click', function () {
-          const index = Number(btn.dataset.apiDel);
-          XW.S.apis.splice(index, 1);
+          XW.S.apis.splice(Number(btn.dataset.apiDel), 1);
           XW.save('apis');
           UI.toast('删掉了');
           paint('settings');
