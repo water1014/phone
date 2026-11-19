@@ -8,19 +8,19 @@
 
 .desk-head {
   flex: 0 0 auto;
-  padding: calc(.95rem + env(safe-area-inset-top)) 1.1rem .3rem;
+  padding: calc(.8rem + env(safe-area-inset-top)) 1.1rem .2rem;
 }
 .desk-clock {
   font-family: var(--serif);
-  font-size: 2rem;
+  font-size: 1.72rem;
   line-height: 1;
   letter-spacing: .01em;
 }
 .desk-date {
-  margin-top: .34rem;
+  margin-top: .3rem;
   font-family: var(--mono);
-  font-size: .44rem;
-  letter-spacing: .18em;
+  font-size: .42rem;
+  letter-spacing: .16em;
   text-transform: uppercase;
   color: var(--ink-3);
 }
@@ -48,7 +48,7 @@
   scroll-snap-stop: always;
   display: flex;
   flex-direction: column;
-  padding: .3rem var(--pad) calc(var(--dock-h) + 1.8rem);
+  padding: .25rem var(--pad) calc(var(--dock-h) + 1.8rem);
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
@@ -58,8 +58,8 @@
 /* ── 天数玻璃卡 ── */
 .wdg {
   flex: 0 0 auto;
-  margin-bottom: .85rem;
-  padding: .95rem;
+  margin-bottom: .8rem;
+  padding: .9rem;
   border: 1px solid var(--glass-brd);
   border-radius: var(--r-md);
   background: var(--glass);
@@ -68,45 +68,46 @@
   box-shadow: var(--glass-hi);
 }
 .wdg-days {
-  margin-top: .4rem;
+  margin-top: .34rem;
   font-family: var(--serif);
-  font-size: 2.6rem;
+  font-size: 2.35rem;
   line-height: 1;
 }
 .wdg-days small {
-  margin-left: .34rem;
+  margin-left: .32rem;
   font-family: var(--mono);
-  font-size: .48rem;
-  letter-spacing: .16em;
+  font-size: .46rem;
+  letter-spacing: .14em;
   color: var(--ink-3);
 }
 .wdg-sub {
-  margin-top: .36rem;
+  margin-top: .32rem;
   font-family: var(--mono);
-  font-size: .46rem;
-  letter-spacing: .1em;
+  font-size: .44rem;
+  letter-spacing: .08em;
   color: var(--ink-3);
 }
 .wdg-names {
   font-family: var(--serif);
-  font-size: .92rem;
-  letter-spacing: .06em;
+  font-size: .88rem;
+  letter-spacing: .05em;
 }
 
-/* ── 图标：玻璃方块 ── */
+/* ── 图标：小一号、间距松一点 ── */
 .grid {
   flex: 0 0 auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: minmax(3.9rem, auto);
-  gap: .95rem .4rem;
-  padding: .5rem 0;
+  grid-auto-rows: minmax(3.3rem, auto);
+  gap: .7rem .3rem;
+  padding: .35rem 0;
+  align-content: start;
 }
 .app-ico {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: .38rem;
+  gap: .3rem;
   border: 0;
   background: none;
   padding: 0;
@@ -117,10 +118,10 @@
 .app-ico i {
   display: grid;
   place-items: center;
-  width: 2.7rem;
-  height: 2.7rem;
+  width: 2.3rem;
+  height: 2.3rem;
   border: 1px solid var(--glass-brd);
-  border-radius: .86rem;
+  border-radius: .72rem;
   background: var(--glass);
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);
@@ -128,8 +129,8 @@
   color: var(--ink);
 }
 .app-ico i svg {
-  width: 1.24rem;
-  height: 1.24rem;
+  width: 1.04rem;
+  height: 1.04rem;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.5;
@@ -137,8 +138,9 @@
   stroke-linejoin: round;
 }
 .app-ico span {
-  font-size: .5rem;
-  letter-spacing: .03em;
+  font-size: .46rem;
+  letter-spacing: .02em;
+  white-space: nowrap;
 }
 .app-ico:active { transform: scale(.92); }
 
@@ -155,8 +157,8 @@
   pointer-events: none;
 }
 .dots span {
-  width: .23rem;
-  height: .23rem;
+  width: .22rem;
+  height: .22rem;
   border-radius: 50%;
   background: color-mix(in srgb, var(--ink) 22%, transparent);
   transition: background .2s, transform .2s;
@@ -189,7 +191,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: .22rem;
+  gap: .2rem;
   border: 0;
   background: none;
   padding: 0;
@@ -198,8 +200,8 @@
   transition: color .2s;
 }
 .dock button svg {
-  width: 1.32rem;
-  height: 1.32rem;
+  width: 1.2rem;
+  height: 1.2rem;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.6;
@@ -208,8 +210,8 @@
 }
 .dock button span {
   font-family: var(--mono);
-  font-size: .42rem;
-  letter-spacing: .08em;
+  font-size: .4rem;
+  letter-spacing: .06em;
 }
 .dock button.on { color: var(--ink); }
 .dock button:active { transform: scale(.93); }
