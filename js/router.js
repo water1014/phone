@@ -1,4 +1,4 @@
-/* router.js · App 打开层；聊天支持旁白 / 思考 / token 用量 */
+/* router.js · App 打开层；聊天 / 设置内建，日记相册交给 pages.js */
 (function () {
   const D = document;
 
@@ -17,7 +17,6 @@
     windows: 'WINDOW GALLERY', mcp: 'CONNECTIONS', beautify: 'APPEARANCE', settings: 'SETTINGS'
   };
 
-  /* 只留她常用的三家 */
   const PRESETS = {
     deepseek: { label: 'DeepSeek', url: 'https://api.deepseek.com', model: 'deepseek-chat', headers: '', session: false },
     opencode: { label: 'OpenCode Go', url: 'https://opencode.ai/inference/go', model: 'deepseek-v4.1-flash', headers: '', session: true },
@@ -26,7 +25,6 @@
 
   const PROVIDER_ORDER = ['deepseek', 'opencode', 'openai'];
 
-  /* 每家一套配置，切换不丢 Key */
   function readProfile(name) {
     const all = XW.S.profiles || {};
     const saved = all[name] || null;
@@ -87,6 +85,7 @@
 
   function paint(id) {
     bodyEl.innerHTML = render(id);
+    if (bodyEl.scrollTop) bodyEl.scrollTop = 0;
     bind(id);
   }
 
@@ -99,8 +98,8 @@
 
   function render(id) {
     if (id === 'chat') return chatView();
-    if (id === 'diary') return diaryView();
-    if (id === 'album') return albumView();
+    if (id === 'diary') return window.Pages.diary();
+    if (id === 'album') return window.Pages.album();
     if (id === 'settings') return settingsView();
     return '<div class="sheet"><div class="empty-state" style="margin-top:1rem">这间还没开门。<br>骨架先立着，下一间再填它。</div></div>';
   }
@@ -408,62 +407,6 @@
     scrollChat();
   }
 
-  function diaryView() {
-    const list = Array.isArray(XW.S.diary) ? XW.S.diary.slice().reverse() : [];
-    const rows = list.length
-      ? list.map(function (item) {
-          return '<div class="list-item"><div class="kicker">' + UI.esc(item.date || '') + '</div>' +
-            '<div class="list-text">' + UI.esc(item.text || '') + '</div></div>';
-        }).join('')
-      : '<div class="empty-state" style="margin-top:1rem">还没有第一篇。<br>今天我也还没动笔。</div>';
-
-    return '<div class="sheet">' +
-        '<label class="field"><span>今天</span><textarea id="diary-input" rows="4" placeholder="今天想留一句什么…"></textarea></label>' +
-        '<div class="row-actions"><button type="button" id="diary-save" class="btn-solid">落笔</button></div>' +
-      '</div>' +
-      '<div class="sheet"><div class="sheet-head"><span class="sheet-title">写过的东西</span><span class="kicker">' + list.length + ' 篇</span></div>' + rows + '</div>';
-  }
-
-  function albumView() {
-    const list = Array.isArray(XW.S.photos) ? XW.S.photos : [];
-    const cells = list.map(function (url, i) {
-      return '<figure class="album-cell"><img src="' + url + '" alt="">' +
-        '<button type="button" class="album-del" data-del="' + i + '" aria-label="删掉这张">×</button></figure>';
-    }).join('');
-
-    const body = list.length
-      ? '<div class="album-grid">' + cells + '</div>'
-      : '<div class="empty-state" style="margin-top:1rem">还没有照片。<br>放一张进来，这里就有东西了。</div>';
-
-    return '<div class="sheet">' +
-        '<div class="sheet-head"><span class="sheet-title">照片</span><button type="button" id="album-add" class="btn-glass">＋ 放一张</button></div>' +
-        '<input id="album-file" type="file" accept="image/*" multiple hidden>' +
-        '<div style="margin-top:.8rem">' + body + '</div>' +
-        '<div class="sheet-note">照片只存在这台设备的浏览器里，清缓存会丢。</div>' +
-      '</div>';
-  }
-
-  function shrink(file, maxSide, quality) {
-    return new Promise(function (resolve) {
-      const reader = new FileReader();
-      reader.onerror = function () { resolve(''); };
-      reader.onload = function () {
-        const img = new Image();
-        img.onerror = function () { resolve(''); };
-        img.onload = function () {
-          const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
-          const canvas = D.createElement('canvas');
-          canvas.width = Math.max(1, Math.round(img.width * scale));
-          canvas.height = Math.max(1, Math.round(img.height * scale));
-          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        };
-        img.src = reader.result;
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
   function fieldView(label, id, value, type, placeholder, listId) {
     return '<label class="field"><span>' + label + '</span>' +
       '<input id="' + id + '" type="' + (type || 'text') + '" value="' + UI.esc(value) + '" spellcheck="false"' +
@@ -502,6 +445,10 @@
     const resolved = XW.S.aiUrlResolved || '';
     const models = Array.isArray(XW.S.modelList) ? XW.S.modelList : [];
 
+    const modelDatalist = '<datalist id="model-list">' +
+      models.map(function (id) { return '<option value="' + UI.esc(id) + '"></option>'; }).join('') +
+      '</datalist>';
+
     const names = '<div class="sheet">' +
         '<div class="sheet-head"><span class="sheet-title">我们是谁</span><span class="kicker">NAMES</span></div>' +
         fieldView('他的称呼', 'set-his', XW.S.hisName) +
@@ -509,10 +456,6 @@
         fieldView('在一起从哪天开始', 'set-love', XW.S.loveDate) +
         '<div class="row-actions"><button type="button" id="set-save" class="btn-solid">保存</button></div>' +
       '</div>';
-
-    const modelDatalist = '<datalist id="model-list">' +
-      models.map(function (id) { return '<option value="' + UI.esc(id) + '"></option>'; }).join('') +
-      '</datalist>';
 
     const chatApi = '<div class="sheet">' +
         '<div class="sheet-head"><span class="sheet-title">聊天的接口</span><span class="kicker">CHAT</span></div>' +
@@ -529,8 +472,8 @@
         fieldView('上下文上限（token）', 'set-ctx', String(XW.S.ctxLimit || 128000)) +
         '<div class="row-actions"><button type="button" id="set-ai-save" class="btn-solid">保存连接</button></div>' +
         (resolved ? '<div class="sheet-note">上次走通的地址：' + UI.esc(resolved) + '</div>' : '') +
-        (provider === 'opencode' ? '<div class="sheet-note">Go 入口填到 …/inference/go 就行，服务端自己补 /v1。聊天会自动带稳定的 x-opencode-session。</div>' : '') +
-        '<div class="sheet-note">切换服务商时，刚才那份会自动存起来，切回来还在；第一次切先点保存。</div>' +
+        (provider === 'opencode' ? '<div class="sheet-note">Go 入口填到 …/inference/go。浏览器直连会被跨域拦，需要时用 tools/proxy.py 在本机中转，地址改 http://127.0.0.1:8790/go。</div>' : '') +
+        '<div class="sheet-note">切换服务商时刚才那套会自动存起来，切回来还在。</div>' +
       '</div>';
 
     const others = '<div class="sheet">' +
@@ -613,57 +556,13 @@
       return;
     }
 
-    if (id === 'diary') {
-      const input = D.getElementById('diary-input');
-      const saveBtn = D.getElementById('diary-save');
-      if (!saveBtn) return;
-      saveBtn.addEventListener('click', function () {
-        const text = (input.value || '').trim();
-        if (!text) { UI.toast('空着的，先写一句'); return; }
-        const now = new Date();
-        XW.S.diary.push({ text: text, date: UI.fmtYmd(now) + ' ' + UI.fmtClock(now), t: Date.now() });
-        XW.save('diary');
-        UI.toast('记下了');
-        paint('diary');
-      });
-      return;
-    }
-
-    if (id === 'album') {
-      const add = D.getElementById('album-add');
-      const file = D.getElementById('album-file');
-      if (add && file) {
-        add.addEventListener('click', function () { file.click(); });
-        file.addEventListener('change', async function () {
-          const files = Array.prototype.slice.call(file.files || []);
-          if (!files.length) return;
-          UI.toast('处理中…');
-          for (const f of files) {
-            const data = await shrink(f, 900, 0.82);
-            if (data) XW.S.photos.push(data);
-          }
-          XW.save('photos');
-          file.value = '';
-          UI.toast('放进来了');
-          paint('album');
-        });
-      }
-      Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-del]'), function (btn) {
-        btn.addEventListener('click', function () {
-          XW.S.photos.splice(Number(btn.dataset.del), 1);
-          XW.save('photos');
-          UI.toast('删掉了');
-          paint('album');
-        });
-      });
-      return;
-    }
+    if (id === 'diary') { window.Pages.diaryBind(bodyEl); return; }
+    if (id === 'album') { window.Pages.albumBind(bodyEl); return; }
 
     if (id === 'settings') {
       const headBox = D.getElementById('set-ai-headers');
       if (headBox) headBox.value = XW.S.aiHeaders || '';
 
-      /* 老数据迁移一次 */
       if (!XW.S.profiles) {
         XW.S.profiles = {};
         XW.S.profiles[XW.S.aiProvider || 'deepseek'] = {
@@ -690,7 +589,6 @@
             key: (keyEl.value || '').trim(),
             headers: (headBox ? headBox.value : '').trim()
           });
-          XW.save(prev === next ? 'profiles' : 'profiles');
 
           const prof = readProfile(next);
           urlEl.value = prof.url;
@@ -795,5 +693,10 @@
     }
   }
 
-  window.Router = { open: open, back: back, current: function () { return currentId; } };
+  function reopen(id) {
+    if (!host || currentId !== id) return;
+    paint(id);
+  }
+
+  window.Router = { open: open, back: back, reopen: reopen, current: function () { return currentId; } };
 })();
