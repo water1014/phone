@@ -1,0 +1,159 @@
+/* chat.css · 聊天页细化（在 app-shell.css 之后加载，覆盖其旧规则） */
+
+/* 顶部状态 */
+.chat-status {
+  padding-bottom: .35rem;
+  border-bottom: 0;
+}
+
+/* 统计条 */
+.chat-top {
+  display: flex;
+  align-items: baseline;
+  gap: .62rem;
+  padding: .1rem 0 .42rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+.chat-top::-webkit-scrollbar { display: none; }
+.chat-top .num {
+  font-family: var(--mono);
+  font-size: .52rem;
+  letter-spacing: .03em;
+  color: var(--ink-3);
+}
+.chat-top .num b {
+  font-weight: 500;
+  font-size: .7rem;
+  color: var(--ink);
+  letter-spacing: 0;
+}
+.chat-top .num i {
+  font-style: normal;
+  font-size: .4rem;
+  letter-spacing: .1em;
+  margin: 0 .1rem;
+  color: var(--ink-3);
+}
+
+/* 进度线 */
+.usage-bar {
+  height: 2px;
+  margin-bottom: .7rem;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, .07);
+  overflow: hidden;
+}
+.usage-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--ink);
+  opacity: .75;
+  transition: width .4s ease;
+}
+html.dark .usage-bar { background: rgba(255, 255, 255, .12); }
+
+/* 消息名字 */
+.msg-name {
+  font-size: .42rem;
+  letter-spacing: .18em;
+}
+
+/* 思考 */
+.think { margin-bottom: .12rem; }
+.think > summary {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: .44rem;
+  letter-spacing: .12em;
+  color: var(--ink-3);
+}
+.think > summary::before {
+  content: '›';
+  display: inline-block;
+  margin-right: .22rem;
+  font-size: .64rem;
+  line-height: 1;
+  transition: transform .18s ease;
+}
+.think[open] > summary::before { transform: rotate(90deg); }
+.think-body {
+  margin-top: .34rem;
+  padding: .5rem .62rem;
+  border: 1px solid var(--glass-brd);
+  border-left: 2px solid var(--ink-3);
+  border-radius: .5rem;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  font-size: .58rem;
+  line-height: 1.9;
+  color: var(--ink-2);
+}
+
+/* 旁白：左侧细竖线 */
+.narr {
+  max-width: 92%;
+  padding: .06rem 0 .06rem .52rem;
+  border-left: 1px solid rgba(0, 0, 0, .14);
+  font-size: .64rem;
+  line-height: 2;
+}
+html.dark .narr { border-left-color: rgba(255, 255, 255, .18); }
+
+/* 气泡加厚 */
+.bub {
+  padding: .64rem .82rem;
+  font-size: .76rem;
+  line-height: 1.95;
+  border-radius: .92rem .92rem .92rem .22rem;
+}
+.bub.me { border-radius: .92rem .92rem .22rem .92rem; }
+
+/* 每条消息的用量胶囊 */
+.msg-tag {
+  display: inline-block;
+  margin-top: .1rem;
+  padding: .15rem .46rem;
+  border: 1px solid var(--glass-brd);
+  border-radius: 2rem;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  font-size: .36rem;
+  letter-spacing: .08em;
+  color: var(--ink-3);
+}
+
+/* 底部用量 */
+.chat-meter {
+  padding: .42rem .1rem .34rem;
+  line-height: 1.9;
+  font-size: .42rem;
+  letter-spacing: .05em;
+}
+.chat-meter b {
+  font-weight: 500;
+  color: var(--ink-2);
+  letter-spacing: 0;
+}
+
+/* 时间分隔 */
+.chat-time { margin: 1.15rem 0 .7rem; }
+.chat-time .kicker {
+  display: inline-block;
+  padding: .12rem .5rem;
+  border: 1px solid var(--glass-brd);
+  border-radius: 2rem;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* 输入区 */
+.composer { padding-top: .62rem; }
+.composer input { padding: .62rem .72rem; font-size: .72rem; }
+.composer .btn-solid { padding: .5rem 1rem; }
