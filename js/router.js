@@ -17,12 +17,33 @@
     windows: 'WINDOW GALLERY', mcp: 'CONNECTIONS', beautify: 'APPEARANCE', settings: 'SETTINGS'
   };
 
+  /* 只留她常用的三家 */
   const PRESETS = {
     deepseek: { label: 'DeepSeek', url: 'https://api.deepseek.com', model: 'deepseek-chat', headers: '', session: false },
-    kimi: { label: 'Kimi', url: 'https://api.moonshot.cn/v1', model: 'kimi-latest', headers: '', session: false },
     opencode: { label: 'OpenCode Go', url: 'https://opencode.ai/inference/go', model: 'deepseek-v4.1-flash', headers: '', session: true },
-    openai: { label: 'OpenAI 兼容（自定义）', url: '', model: '', headers: '', session: false }
+    openai: { label: 'OpenAI 兼容', url: '', model: '', headers: '', session: false }
   };
+
+  const PROVIDER_ORDER = ['deepseek', 'opencode', 'openai'];
+
+  /* 每家一套配置，切换不丢 Key */
+  function readProfile(name) {
+    const all = XW.S.profiles || {};
+    const saved = all[name] || null;
+    const preset = PRESETS[name] || PRESETS.openai;
+    return {
+      url: saved && saved.url ? saved.url : (preset.url || ''),
+      model: saved && saved.model ? saved.model : (preset.model || ''),
+      key: saved && saved.key ? saved.key : '',
+      headers: saved && saved.headers !== undefined ? saved.headers : (preset.headers || '')
+    };
+  }
+
+  function writeProfile(name, data) {
+    XW.S.profiles = XW.S.profiles || {};
+    XW.S.profiles[name] = data;
+    XW.save('profiles');
+  }
 
   function sessionId() {
     if (!XW.S.sessionId) {
@@ -103,7 +124,6 @@
     if (key) headers.Authorization = 'Bearer ' + key;
     const extra = parseHeaders(headerText);
     Object.keys(extra).forEach(function (k) { headers[k] = extra[k]; });
-
     if (withSession && !extra['x-opencode-session']) {
       headers['x-opencode-session'] = sessionId();
     }
@@ -128,15 +148,13 @@
     if (/\/chat\/completions$/.test(raw)) list.push(raw);
     list.push(base + '/v1/chat/completions');
     list.push(base + '/chat/completions');
-    if (!/\/v1$/.test(base)) list.push(base + '/v1/v1/chat/completions');
     return list;
   }
 
   function modelCandidates(url) {
     const base = stripTail(url);
     if (!base) return [];
-    const list = [base + '/v1/models', base + '/models'];
-    return list;
+    return [base + '/v1/models', base + '/models'];
   }
 
   function stamp(ts) {
@@ -230,10 +248,11 @@
     const used = Number(usage.input) || 0;
     const percent = Math.min(999, Math.round(used / limit * 100));
     const hitRate = used ? Math.round((Number(usage.cached) || 0) / used * 100) : 0;
+    const provider = (PRESETS[XW.S.aiProvider] || PRESETS.deepseek).label;
 
     const head = '<div class="chat-status">' +
         '<span class="kicker">' + UI.esc(XW.S.hisName || '他') + ' · ' + (keyed ? 'ONLINE' : 'OFFLINE') + '</span>' +
-        '<span class="kicker">' + UI.esc(keyed ? (XW.S.aiModel || 'model') : '本地') + '</span>' +
+        '<span class="kicker">' + UI.esc(keyed ? (provider + ' / ' + (XW.S.aiModel || 'model')) : '本地') + '</span>' +
       '</div>';
 
     const top = keyed
@@ -453,14 +472,8 @@
   }
 
   function providerOptions(current) {
-    const list = [
-      ['deepseek', 'DeepSeek'],
-      ['kimi', 'Kimi（Moonshot）'],
-      ['opencode', 'OpenCode Go'],
-      ['openai', 'OpenAI 兼容（自己填地址）']
-    ];
-    return list.map(function (pair) {
-      return '<option value="' + pair[0] + '"' + (pair[0] === current ? ' selected' : '') + '>' + pair[1] + '</option>';
+    return PROVIDER_ORDER.map(function (key) {
+      return '<option value="' + key + '"' + (key === current ? ' selected' : '') + '>' + PRESETS[key].label + '</option>';
     }).join('');
   }
 
@@ -503,7 +516,7 @@
 
     const chatApi = '<div class="sheet">' +
         '<div class="sheet-head"><span class="sheet-title">聊天的接口</span><span class="kicker">CHAT</span></div>' +
-        '<label class="field"><span>服务商</span><select id="set-ai-provider">' + providerOptions(provider) + '</select></label>' +
+        '<label class="field"><span>服务商（每家各存一套）</span><select id="set-ai-provider">' + providerOptions(provider) + '</select></label>' +
         fieldView('接口地址', 'set-ai-url', XW.S.aiUrl) +
         fieldView('模型（选或填）', 'set-ai-model', XW.S.aiModel, 'text', '例：deepseek-chat', 'model-list') +
         modelDatalist +
@@ -511,13 +524,13 @@
           '<button type="button" id="set-pull-models" class="btn-glass">拉取模型</button>' +
           '<span class="kicker" id="model-hint">' + (models.length ? models.length + ' 个可选' : '还没拉过') + '</span>' +
         '</div>' +
-        fieldView('API Key（只换这一项）', 'set-ai-key', XW.S.aiKey, 'password') +
+        fieldView('API Key', 'set-ai-key', XW.S.aiKey, 'password') +
         '<label class="field"><span>自定义请求头（JSON）</span><textarea id="set-ai-headers" rows="3" spellcheck="false" placeholder="{}"></textarea></label>' +
         fieldView('上下文上限（token）', 'set-ctx', String(XW.S.ctxLimit || 128000)) +
         '<div class="row-actions"><button type="button" id="set-ai-save" class="btn-solid">保存连接</button></div>' +
         (resolved ? '<div class="sheet-note">上次走通的地址：' + UI.esc(resolved) + '</div>' : '') +
-        (provider === 'opencode' ? '<div class="sheet-note">Go 入口：地址填到 …/inference/go 就行，服务端会自己补 /v1。聊天请求会自动带一个稳定的 x-opencode-session，需要覆盖就在上面写同名字段。</div>' : '') +
-        '<div class="sheet-note">会依次试 /v1/chat/completions 与 /chat/completions；拉模型试 /v1/models 与 /models。</div>' +
+        (provider === 'opencode' ? '<div class="sheet-note">Go 入口填到 …/inference/go 就行，服务端自己补 /v1。聊天会自动带稳定的 x-opencode-session。</div>' : '') +
+        '<div class="sheet-note">切换服务商时，刚才那份会自动存起来，切回来还在；第一次切先点保存。</div>' +
       '</div>';
 
     const others = '<div class="sheet">' +
@@ -650,20 +663,51 @@
       const headBox = D.getElementById('set-ai-headers');
       if (headBox) headBox.value = XW.S.aiHeaders || '';
 
+      /* 老数据迁移一次 */
+      if (!XW.S.profiles) {
+        XW.S.profiles = {};
+        XW.S.profiles[XW.S.aiProvider || 'deepseek'] = {
+          url: XW.S.aiUrl || '',
+          model: XW.S.aiModel || '',
+          key: XW.S.aiKey || '',
+          headers: XW.S.aiHeaders || ''
+        };
+        XW.save('profiles');
+      }
+
       const provider = D.getElementById('set-ai-provider');
       if (provider) {
         provider.addEventListener('change', function () {
-          const preset = PRESETS[provider.value] || PRESETS.openai;
-          XW.S.aiProvider = provider.value;
-          XW.save('aiProvider');
           const urlEl = D.getElementById('set-ai-url');
           const modelEl = D.getElementById('set-ai-model');
-          if (preset.url) urlEl.value = preset.url;
-          if (preset.model) modelEl.value = preset.model;
-          XW.S.aiHeaders = preset.headers || '';
-          XW.save('aiHeaders');
-          if (headBox) headBox.value = XW.S.aiHeaders;
-          UI.toast(preset.label + ' 已填好，只差 Key');
+          const keyEl = D.getElementById('set-ai-key');
+          const prev = XW.S.aiProvider || 'deepseek';
+          const next = provider.value;
+
+          writeProfile(prev, {
+            url: (urlEl.value || '').trim(),
+            model: (modelEl.value || '').trim(),
+            key: (keyEl.value || '').trim(),
+            headers: (headBox ? headBox.value : '').trim()
+          });
+          XW.save(prev === next ? 'profiles' : 'profiles');
+
+          const prof = readProfile(next);
+          urlEl.value = prof.url;
+          modelEl.value = prof.model;
+          keyEl.value = prof.key;
+          if (headBox) headBox.value = prof.headers;
+
+          XW.S.aiProvider = next;
+          XW.S.aiUrl = prof.url;
+          XW.S.aiModel = prof.model;
+          XW.S.aiKey = prof.key;
+          XW.S.aiHeaders = prof.headers;
+          XW.S.aiUrlResolved = '';
+          ['aiProvider', 'aiUrl', 'aiModel', 'aiKey', 'aiHeaders', 'aiUrlResolved'].forEach(XW.save);
+
+          UI.toast(PRESETS[next].label + (prof.key ? ' 已载入' : ' 已填好，贴 Key 就行'));
+          paint('settings');
         });
       }
 
@@ -691,14 +735,22 @@
       if (saveChat) {
         saveChat.addEventListener('click', function () {
           const read = function (elId) { const el = D.getElementById(elId); return el && el.value ? el.value.trim() : ''; };
-          XW.S.aiUrl = read('set-ai-url');
-          XW.S.aiModel = read('set-ai-model');
-          XW.S.aiKey = read('set-ai-key');
-          XW.S.aiHeaders = (D.getElementById('set-ai-headers').value || '').trim();
+          const current = XW.S.aiProvider || 'deepseek';
+          const data = {
+            url: read('set-ai-url'),
+            model: read('set-ai-model'),
+            key: read('set-ai-key'),
+            headers: (D.getElementById('set-ai-headers').value || '').trim()
+          };
+          XW.S.aiUrl = data.url;
+          XW.S.aiModel = data.model;
+          XW.S.aiKey = data.key;
+          XW.S.aiHeaders = data.headers;
           XW.S.ctxLimit = Number(read('set-ctx')) || 128000;
           XW.S.aiUrlResolved = '';
+          writeProfile(current, data);
           ['aiUrl', 'aiModel', 'aiKey', 'aiHeaders', 'ctxLimit', 'aiUrlResolved'].forEach(XW.save);
-          UI.toast('连接保存了');
+          UI.toast(PRESETS[current].label + ' 保存了');
         });
       }
 
