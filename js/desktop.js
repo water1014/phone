@@ -1,6 +1,6 @@
-/* desktop.js · 桌面：时间 / widget 拼贴 / 分页图标 / dock
-   一页 8 个图标（4 x 2），横向 snap。
-   第一页顶部是拼贴 widget（天数 / 正在播放 / 访客）。 */
+/* desktop.js · 桌面：时间 / 天数 / 分页图标 / dock
+   一页只放一件事：第一页 = 天数 + 8 个图标，后面页 = 纯图标。
+   横向 snap 翻页，图标区或 dock 上滑都能翻。 */
 (function () {
   const D = document;
 
@@ -31,29 +31,16 @@
     dateEl = D.getElementById('desk-date');
   }
 
-  /* 拼贴：大块天数 + 两个小块 */
-  function widgetsHtml() {
-    const now = new Date();
+  /* 第一页只放一块：在一起多少天 */
+  function daysWidgetHtml() {
     const love = new Date(XW.S.loveDate || '2025-01-01');
-    const days = UI.diffDay(love, now);
-
-    return '<div class="widgets">' +
-        '<section class="wdg wdg-days">' +
-          '<div class="kicker">TOGETHER</div>' +
-          '<div class="wdg-days">' + days + '<small>DAYS</small></div>' +
-          '<div class="wdg-names">' + UI.esc(XW.S.hisName) + ' &amp; ' + UI.esc(XW.S.herName) + '</div>' +
-          '<div class="wdg-sub">SINCE ' + UI.fmtYmd(love) + '</div>' +
-        '</section>' +
-        '<section class="wdg wdg-play">' +
-          '<div class="kicker">NOW PLAYING</div>' +
-          '<div class="wdg-song">夏天的风</div>' +
-          '<div class="wdg-sub">温岚</div>' +
-        '</section>' +
-        '<section class="wdg wdg-guest">' +
-          '<div class="kicker">GUEST</div>' +
-          '<p class="wdg-text">门没锁。来过的人，都会在灯下坐一会儿。</p>' +
-        '</section>' +
-      '</div>';
+    const days = UI.diffDay(love, new Date());
+    return '<section class="wdg wdg-days">' +
+        '<div class="kicker">TOGETHER</div>' +
+        '<div class="wdg-days">' + days + '<small>DAYS</small></div>' +
+        '<div class="wdg-names">' + UI.esc(XW.S.hisName) + ' &amp; ' + UI.esc(XW.S.herName) + '</div>' +
+        '<div class="wdg-sub">SINCE ' + UI.fmtYmd(love) + '</div>' +
+      '</section>';
   }
 
   function iconHtml(app) {
@@ -67,7 +54,7 @@
     const groups = window.Apps.pages();
     pagesEl.innerHTML = groups.map(function (list, index) {
       return '<section class="page">' +
-          (index === 0 ? widgetsHtml() : '') +
+          (index === 0 ? daysWidgetHtml() : '') +
           '<nav class="grid">' + list.map(iconHtml).join('') + '</nav>' +
         '</section>';
     }).join('');
