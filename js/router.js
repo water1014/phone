@@ -1,4 +1,4 @@
-/* router.js · 打开 App / 返回桌面 */
+/* router.js · 打开 App / 返回桌面；全部界面走玻璃卡 */
 (function () {
   const D = document;
 
@@ -16,9 +16,6 @@
     favorites: 'FAVORITES', games: 'GAMES', studio: 'STUDIO', worldbook: 'WORLDBOOK',
     windows: 'WINDOW GALLERY', mcp: 'CONNECTIONS', beautify: 'APPEARANCE', settings: 'SETTINGS'
   };
-
-  const BTN = 'padding:.42rem .9rem;border:1px solid var(--ink);border-radius:2rem;background:var(--ink);color:var(--on-dark);font:inherit;font-size:.58rem';
-  const INPUT = 'width:100%;min-width:0;padding:.55rem .65rem;border:1px solid var(--glass-brd);border-radius:.6rem;background:var(--glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:var(--glass-hi);color:var(--ink);font:inherit;font-size:.7rem;outline:none';
 
   function ensure() {
     if (host) return;
@@ -69,10 +66,33 @@
     if (id === 'diary') return diaryView();
     if (id === 'album') return albumView();
     if (id === 'settings') return settingsView();
-    return '<div class="empty-state">这间还没开门。<br>骨架先立着，下一间再填它。</div>';
+    return '<div class="sheet"><div class="empty-state" style="margin-top:1rem">这间还没开门。<br>骨架先立着，下一间再填它。</div></div>';
   }
 
-  /* ── 聊天：头像 + 磨砂气泡 + 时间分隔 + 底部固定输入 ── */
+  /* ── 请求头 ── */
+  function parseHeaders(text) {
+    const raw = String(text || '').trim();
+    if (!raw) return {};
+    let obj = null;
+    try { obj = JSON.parse(raw); } catch (err) { return {}; }
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return {};
+    const clean = {};
+    Object.keys(obj).forEach(function (k) {
+      if (k && typeof obj[k] === 'string') clean[k] = obj[k];
+    });
+    return clean;
+  }
+
+  function authHeaders(keyText, headerText) {
+    const headers = { 'Content-Type': 'application/json' };
+    const key = String(keyText || '').trim();
+    if (key) headers.Authorization = 'Bearer ' + key;
+    const extra = parseHeaders(headerText);
+    Object.keys(extra).forEach(function (k) { headers[k] = extra[k]; });
+    return headers;
+  }
+
+  /* ── 聊天 ── */
   function stamp(ts) {
     const d = new Date(ts || Date.now());
     const sameDay = d.toDateString() === new Date().toDateString();
@@ -86,9 +106,8 @@
   }
 
   function bubble(text, mine, typing) {
-    const cls = 'bub' + (mine ? ' me' : '') + (typing ? ' typing' : '');
-    const content = typing ? '…' : UI.esc(text);
-    return '<div class="' + cls + '">' + content + '</div>';
+    return '<div class="bub' + (mine ? ' me' : '') + (typing ? ' typing' : '') + '">' +
+      (typing ? '…' : UI.esc(text)) + '</div>';
   }
 
   function chatView() {
@@ -96,38 +115,25 @@
     let lastT = 0;
 
     const rows = list.map(function (m) {
-      if (m._typing) {
-        return '<div class="msg-row ta">' + avatar('ta') + bubble('', false, true) + '</div>';
-      }
+      if (m._typing) return '<div class="msg-row ta">' + avatar('ta') + bubble('', false, true) + '</div>';
 
       let sep = '';
       const t = Number(m.t) || 0;
-      if (t - lastT > 5 * 60 * 1000) {
-        sep = '<div class="chat-time"><span class="kicker">' + UI.esc(stamp(t)) + '</span></div>';
-      }
+      if (t - lastT > 5 * 60 * 1000) sep = '<div class="chat-time"><span class="kicker">' + UI.esc(stamp(t)) + '</span></div>';
       lastT = t || lastT;
 
       const mine = m.who === 'me';
-      return sep +
-        '<div class="msg-row' + (mine ? ' me' : ' ta') + '">' +
-          avatar(mine ? 'me' : 'ta') +
-          bubble(m.text, mine) +
-        '</div>';
+      return sep + '<div class="msg-row' + (mine ? ' me' : ' ta') + '">' + avatar(mine ? 'me' : 'ta') + bubble(m.text, mine) + '</div>';
     }).join('');
 
-    const empty = list.length
-      ? ''
-      : '<div class="empty-state" style="margin-top:26%">还没说话。<br>在下面写一句，就有了。</div>';
-
-    const direct = XW.S.aiKey ? ((XW.S.aiModel || 'gpt-4o-mini') + ' · 已连接') : '本地 · 只存你自己的话';
+    const empty = list.length ? '' : '<div class="empty-state" style="margin-top:26%">还没说话。<br>在下面写一句，就有了。</div>';
+    const keyed = String(XW.S.aiKey || '').trim();
+    const direct = keyed ? ((XW.S.aiModel || 'gpt-4o-mini') + ' · 已连接') : '本地 · 只存你自己的话';
 
     return '<div class="chat-wrap">' +
         '<div class="chat-status"><span class="kicker">ONLINE</span><span class="kicker">' + UI.esc(direct) + '</span></div>' +
         '<div class="chat-scroll" id="chat-scroll">' + rows + empty + '</div>' +
-        '<div class="composer">' +
-          '<input id="chat-input" placeholder="说一句…">' +
-          '<button type="button" id="chat-send" style="' + BTN + '">发</button>' +
-        '</div>' +
+        '<div class="composer"><input id="chat-input" placeholder="说一句…"><button type="button" id="chat-send" class="btn-solid">发</button></div>' +
       '</div>';
   }
 
@@ -137,10 +143,11 @@
   }
 
   async function callAI() {
-    const key = (XW.S.aiKey || '').trim();
+    const key = String(XW.S.aiKey || '').trim();
     if (!key) return '';
-    const url = (XW.S.aiUrl || 'https://api.openai.com/v1/chat/completions').trim();
-    const model = (XW.S.aiModel || 'gpt-4o-mini').trim();
+    const url = String(XW.S.aiUrl || 'https://api.openai.com/v1/chat/completions').trim();
+    const model = String(XW.S.aiModel || 'gpt-4o-mini').trim();
+
     const history = XW.S.chat
       .filter(function (m) { return !m._typing; })
       .slice(-20)
@@ -148,16 +155,20 @@
       .filter(function (m) { return m.content; });
 
     const system = '你住在「小窝」这个私人小手机里。说话自然、简短，像真人在手机上回消息，不要列条目、不要客服腔。';
+
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
+      headers: authHeaders(key, XW.S.aiHeaders),
       body: JSON.stringify({
         model: model,
         messages: [{ role: 'system', content: system }].concat(history),
         stream: false
       })
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) {
+      const detail = await res.text().catch(function () { return ''; });
+      throw new Error('HTTP ' + res.status + (detail ? '：' + detail.slice(0, 120) : ''));
+    }
     const data = await res.json();
     const choice = data && data.choices && data.choices[0];
     const message = choice && choice.message;
@@ -177,7 +188,7 @@
     paint('chat');
     scrollChat();
 
-    if (!(XW.S.aiKey || '').trim()) return;
+    if (!String(XW.S.aiKey || '').trim()) return;
 
     XW.S.chat.push({ who: 'ta', text: '', t: Date.now(), _typing: true });
     paint('chat');
@@ -201,41 +212,36 @@
     const list = Array.isArray(XW.S.diary) ? XW.S.diary.slice().reverse() : [];
     const rows = list.length
       ? list.map(function (item) {
-          return '<article style="padding:.7rem 0;border-bottom:1px solid var(--line)">' +
-            '<div class="kicker">' + UI.esc(item.date || '') + '</div>' +
-            '<p style="margin-top:.35rem;font-size:.72rem;line-height:1.8">' + UI.esc(item.text || '') + '</p>' +
-          '</article>';
+          return '<div class="list-item"><div class="kicker">' + UI.esc(item.date || '') + '</div>' +
+            '<div class="list-text">' + UI.esc(item.text || '') + '</div></div>';
         }).join('')
-      : '<div class="empty-state" style="margin-top:2rem">还没有第一篇。<br>今天我也还没动笔。</div>';
+      : '<div class="empty-state" style="margin-top:1rem">还没有第一篇。<br>今天我也还没动笔。</div>';
 
-    return '<div>' +
-      '<textarea id="diary-input" rows="4" placeholder="今天想留一句什么…" style="' + INPUT + ';min-height:5.2rem;line-height:1.7;resize:vertical"></textarea>' +
-      '<div style="margin-top:.55rem;text-align:right"><button type="button" id="diary-save" style="' + BTN + '">落笔</button></div>' +
-      '<div id="diary-list" style="margin-top:1rem">' + rows + '</div>' +
-    '</div>';
+    return '<div class="sheet">' +
+        '<label class="field"><span>今天</span><textarea id="diary-input" rows="4" placeholder="今天想留一句什么…"></textarea></label>' +
+        '<div class="row-actions"><button type="button" id="diary-save" class="btn-solid">落笔</button></div>' +
+      '</div>' +
+      '<div class="sheet"><div class="sheet-head"><span class="sheet-title">写过的东西</span><span class="kicker">' + list.length + ' 篇</span></div>' + rows + '</div>';
   }
 
   /* ── 相册 ── */
   function albumView() {
     const list = Array.isArray(XW.S.photos) ? XW.S.photos : [];
-    const cellStyle = 'position:relative;margin:0;aspect-ratio:1/1;border:1px solid var(--glass-brd);border-radius:.5rem;overflow:hidden;background:var(--glass);box-shadow:var(--glass-hi)';
-    const imgStyle = 'width:100%;height:100%;object-fit:cover;display:block';
-    const delStyle = 'position:absolute;top:.16rem;right:.16rem;width:1.1rem;height:1.1rem;border:0;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-size:.62rem;line-height:1';
-
     const cells = list.map(function (url, i) {
-      return '<figure style="' + cellStyle + '"><img src="' + url + '" alt="" style="' + imgStyle + '"><button type="button" data-del="' + i + '" aria-label="删掉这张" style="' + delStyle + '">×</button></figure>';
+      return '<figure class="album-cell"><img src="' + url + '" alt="">' +
+        '<button type="button" class="album-del" data-del="' + i + '" aria-label="删掉这张">×</button></figure>';
     }).join('');
 
     const body = list.length
-      ? '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-top:.9rem">' + cells + '</div>'
-      : '<div class="empty-state" style="margin-top:2rem">还没有照片。<br>放一张进来，这里就有东西了。</div>';
+      ? '<div class="album-grid">' + cells + '</div>'
+      : '<div class="empty-state" style="margin-top:1rem">还没有照片。<br>放一张进来，这里就有东西了。</div>';
 
-    return '<div>' +
-      '<div style="text-align:right"><button type="button" id="album-add" style="' + BTN + '">＋ 放一张</button></div>' +
-      '<input id="album-file" type="file" accept="image/*" multiple hidden>' +
-      body +
-      '<p style="margin-top:1rem;font-size:.48rem;line-height:1.8;color:var(--ink-3)">照片只存在这台设备的浏览器里，清缓存会丢。</p>' +
-    '</div>';
+    return '<div class="sheet">' +
+        '<div class="sheet-head"><span class="sheet-title">照片</span><button type="button" id="album-add" class="btn-glass">＋ 放一张</button></div>' +
+        '<input id="album-file" type="file" accept="image/*" multiple hidden>' +
+        '<div style="margin-top:.8rem">' + body + '</div>' +
+        '<div class="sheet-note">照片只存在这台设备的浏览器里，清缓存会丢。</div>' +
+      '</div>';
   }
 
   function shrink(file, maxSide, quality) {
@@ -261,25 +267,58 @@
 
   /* ── 设置 ── */
   function fieldView(label, id, value, type) {
-    return '<label style="display:block;margin-top:.8rem">' +
-        '<span class="kicker">' + label + '</span>' +
-        '<input id="' + id + '" type="' + (type || 'text') + '" value="' + UI.esc(value) + '" style="' + INPUT + ';margin-top:.3rem">' +
-      '</label>';
+    return '<label class="field"><span>' + label + '</span>' +
+      '<input id="' + id + '" type="' + (type || 'text') + '" value="' + UI.esc(value) + '" spellcheck="false"></label>';
+  }
+
+  function apiItem(api, i) {
+    const item = api || {};
+    const title = (item.name || '未命名') + (item.model ? ' · ' + item.model : '');
+    return '<details class="fold">' +
+        '<summary><span>' + UI.esc(title) + '</span><i>' + (i + 1) + '</i></summary>' +
+        '<div class="fold-inner">' +
+          '<label class="field"><span>名字（生图 / 语音 / 识图…）</span><input data-k="name" value="' + UI.esc(item.name || '') + '" spellcheck="false"></label>' +
+          '<label class="field"><span>接口地址</span><input data-k="url" value="' + UI.esc(item.url || '') + '" spellcheck="false" placeholder="https://…"></label>' +
+          '<label class="field"><span>模型（可留空）</span><input data-k="model" value="' + UI.esc(item.model || '') + '" spellcheck="false"></label>' +
+          '<label class="field"><span>API Key</span><input data-k="key" type="password" value="' + UI.esc(item.key || '') + '" spellcheck="false"></label>' +
+          '<label class="field"><span>自定义请求头（JSON）</span><textarea data-k="headers" rows="3" spellcheck="false" placeholder="{}…">' + UI.esc(item.headers || '') + '</textarea></label>' +
+          '<div class="row-actions">' +
+            '<button type="button" class="btn-glass" data-api-del="' + i + '">删除</button>' +
+            '<button type="button" class="btn-solid" data-api-save="' + i + '">保存这条</button>' +
+          '</div>' +
+        '</div>' +
+      '</details>';
   }
 
   function settingsView() {
-    return '<div>' +
-      '<div class="kicker">名字</div>' +
-      fieldView('他的称呼', 'set-his', XW.S.hisName) +
-      fieldView('她的称呼', 'set-her', XW.S.herName) +
-      fieldView('在一起从哪天开始', 'set-love', XW.S.loveDate) +
-      '<div class="kicker" style="margin-top:1.5rem">AI 连接｜不填就只存你自己的话</div>' +
-      fieldView('接口地址', 'set-ai-url', XW.S.aiUrl) +
-      fieldView('模型', 'set-ai-model', XW.S.aiModel) +
-      fieldView('API Key', 'set-ai-key', XW.S.aiKey, 'password') +
-      '<div style="margin-top:1rem;text-align:right"><button type="button" id="set-save" style="' + BTN + '">保存</button></div>' +
-      '<p style="margin-top:1.2rem;font-size:.48rem;line-height:1.8;color:var(--ink-3)">所有东西都存在这台设备的浏览器里，不上传任何服务器。</p>' +
-    '</div>';
+    const apis = Array.isArray(XW.S.apis) ? XW.S.apis : [];
+
+    const names = '<div class="sheet">' +
+        '<div class="sheet-head"><span class="sheet-title">我们是谁</span><span class="kicker">NAMES</span></div>' +
+        fieldView('他的称呼', 'set-his', XW.S.hisName) +
+        fieldView('她的称呼', 'set-her', XW.S.herName) +
+        fieldView('在一起从哪天开始', 'set-love', XW.S.loveDate) +
+        '<div class="row-actions"><button type="button" id="set-save" class="btn-solid">保存</button></div>' +
+      '</div>';
+
+    const chatApi = '<div class="sheet">' +
+        '<div class="sheet-head"><span class="sheet-title">聊天的接口</span><span class="kicker">CHAT</span></div>' +
+        fieldView('接口地址', 'set-ai-url', XW.S.aiUrl) +
+        fieldView('模型', 'set-ai-model', XW.S.aiModel) +
+        fieldView('API Key', 'set-ai-key', XW.S.aiKey, 'password') +
+        '<label class="field"><span>自定义请求头（JSON，可留空）</span><textarea id="set-ai-headers" rows="3" spellcheck="false" placeholder=\'{"X-Title":"小窝"}\'></textarea></label>' +
+        '<div class="row-actions"><button type="button" id="set-ai-save" class="btn-solid">保存聊天连接</button></div>' +
+        '<div class="sheet-note">走聚合站（OpenCode Go 之类）时，某些站需要额外的 X-Title / HTTP-Referer 之类，都写进上面那个框。浏览器不允许的 header 会被忽略。</div>' +
+      '</div>';
+
+    const others = '<div class="sheet">' +
+        '<div class="sheet-head"><span class="sheet-title">其它接口</span><span class="kicker">' + apis.length + ' 套</span></div>' +
+        apis.map(apiItem).join('') +
+        '<div class="row-actions"><button type="button" id="api-add" class="btn-glass">＋ 新增一套</button></div>' +
+        '<div class="sheet-note">生图、语音、识图各存一套，各自带自己的 Key 和请求头。不填就不影响聊天。</div>' +
+      '</div>';
+
+    return names + chatApi + others;
   }
 
   function bind(id) {
@@ -341,19 +380,67 @@
     }
 
     if (id === 'settings') {
-      const saveBtn = D.getElementById('set-save');
-      if (!saveBtn) return;
-      saveBtn.addEventListener('click', function () {
-        const read = function (el) { return (el && el.value ? el.value : '').trim(); };
-        XW.S.hisName = read(D.getElementById('set-his')) || '他';
-        XW.S.herName = read(D.getElementById('set-her')) || '她';
-        XW.S.loveDate = read(D.getElementById('set-love')) || '2025-01-01';
-        XW.S.aiUrl = read(D.getElementById('set-ai-url')) || 'https://api.openai.com/v1/chat/completions';
-        XW.S.aiModel = read(D.getElementById('set-ai-model')) || 'gpt-4o-mini';
-        XW.S.aiKey = read(D.getElementById('set-ai-key'));
-        ['hisName', 'herName', 'loveDate', 'aiUrl', 'aiModel', 'aiKey'].forEach(XW.save);
+      const headBox = D.getElementById('set-ai-headers');
+      if (headBox) headBox.value = XW.S.aiHeaders || '';
+
+      const saveNames = D.getElementById('set-save');
+      if (saveNames) saveNames.addEventListener('click', function () {
+        const read = function (elId) { const el = D.getElementById(elId); return el && el.value ? el.value.trim() : ''; };
+        XW.S.hisName = read('set-his') || '他';
+        XW.S.herName = read('set-her') || '她';
+        XW.S.loveDate = read('set-love') || '2025-01-01';
+        ['hisName', 'herName', 'loveDate'].forEach(XW.save);
         UI.toast('保存了');
         if (window.Desktop) window.Desktop.rerender();
+      });
+
+      const saveChat = D.getElementById('set-ai-save');
+      if (saveChat) saveChat.addEventListener('click', function () {
+        const read = function (elId) { const el = D.getElementById(elId); return el && el.value ? el.value.trim() : ''; };
+        XW.S.aiUrl = read('set-ai-url') || 'https://api.openai.com/v1/chat/completions';
+        XW.S.aiModel = read('set-ai-model') || 'gpt-4o-mini';
+        XW.S.aiKey = read('set-ai-key');
+        XW.S.aiHeaders = (D.getElementById('set-ai-headers').value || '').trim();
+        ['aiUrl', 'aiModel', 'aiKey', 'aiHeaders'].forEach(XW.save);
+        UI.toast('聊天连接已保存');
+      });
+
+      const addApi = D.getElementById('api-add');
+      if (addApi) addApi.addEventListener('click', function () {
+        XW.S.apis = Array.isArray(XW.S.apis) ? XW.S.apis : [];
+        XW.S.apis.push({ name: '', url: '', model: '', key: '', headers: '' });
+        XW.save('apis');
+        paint('settings');
+      });
+
+      Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-api-save]'), function (btn) {
+        btn.addEventListener('click', function () {
+          const index = Number(btn.dataset.apiSave);
+          const box = btn.closest('.fold');
+          const read = function (k) {
+            const el = box ? box.querySelector('[data-k="' + k + '"]') : null;
+            return el && el.value ? el.value.trim() : '';
+          };
+          XW.S.apis[index] = {
+            name: read('name') || '未命名',
+            url: read('url'),
+            model: read('model'),
+            key: read('key'),
+            headers: read('headers')
+          };
+          XW.save('apis');
+          UI.toast('这一条保存了');
+        });
+      });
+
+      Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-api-del]'), function (btn) {
+        btn.addEventListener('click', function () {
+          const index = Number(btn.dataset.apiDel);
+          XW.S.apis.splice(index, 1);
+          XW.save('apis');
+          UI.toast('删掉了');
+          paint('settings');
+        });
       });
     }
   }
