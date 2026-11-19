@@ -12,9 +12,15 @@
     photos: [],
     chat: [],
     notes: [],
+
+    /* 主连接：聊天用 */
     aiUrl: 'https://api.openai.com/v1/chat/completions',
     aiModel: 'gpt-4o-mini',
-    aiKey: ''
+    aiKey: '',
+    aiHeaders: '',
+
+    /* 其它接口：生图 / 语音 / 识图 …… 每一项独立一套 */
+    apis: []
   };
 
   const S = {};
