@@ -17,7 +17,6 @@
     windows: 'WINDOW GALLERY', mcp: 'CONNECTIONS', beautify: 'APPEARANCE', settings: 'SETTINGS'
   };
 
-  /* 服务商预设：地址与模型固定，只换 Key */
   const PRESETS = {
     deepseek: { label: 'DeepSeek', url: 'https://api.deepseek.com/chat/completions', model: 'deepseek-chat', headers: '' },
     kimi: { label: 'Kimi', url: 'https://api.moonshot.cn/v1/chat/completions', model: 'kimi-latest', headers: '' },
@@ -77,7 +76,6 @@
     return '<div class="sheet"><div class="empty-state" style="margin-top:1rem">这间还没开门。<br>骨架先立着，下一间再填它。</div></div>';
   }
 
-  /* ── 小工具 ── */
   function parseHeaders(text) {
     const raw = String(text || '').trim();
     if (!raw) return {};
@@ -106,7 +104,6 @@
     return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
   }
 
-  /* 地址补全：填前绝也能找到 chat/completions */
   function urlCandidates(url) {
     const base = String(url || '').trim().replace(/\/+$/, '');
     if (!base) return [];
@@ -118,7 +115,6 @@
     return list;
   }
 
-  /* ── 聊天 ── */
   function stamp(ts) {
     const d = new Date(ts || Date.now());
     if (d.toDateString() === new Date().toDateString()) {
@@ -174,13 +170,13 @@
 
     let tag = '';
     if (msg.usage && !mine) {
-      tag = '<div class="msg-tag">入 ' + fmtK(msg.usage.input) + ' · 出 ' + fmtK(msg.usage.output) +
-        (msg.usage.cached ? ' · 命中 ' + fmtK(msg.usage.cached) : '') + '</div>';
+      const bits = ['入 ' + fmtK(msg.usage.input), '出 ' + fmtK(msg.usage.output)];
+      if (msg.usage.cached) bits.push('命中 ' + fmtK(msg.usage.cached));
+      tag = '<div class="msg-tag">' + bits.join(' · ') + '</div>';
     }
 
-    const initial = String(name).charAt(0);
     return '<div class="msg-row ' + (mine ? 'me' : 'ta') + '">' +
-        '<div class="msg-ava">' + UI.esc(initial) + '</div>' +
+        '<div class="msg-ava">' + UI.esc(String(name).charAt(0)) + '</div>' +
         '<div class="msg-main">' +
           '<div class="msg-name">' + UI.esc(name) + '</div>' +
           inner + tag +
@@ -202,7 +198,7 @@
       return sep + messageHtml(m);
     }).join('');
 
-    const empty = list.length ? '' : '<div class="empty-state" style="margin-top:26%">还没说话。<br>在下面写一句，就有了。</div>';
+    const empty = list.length ? '' : '<div class="empty-state" style="margin-top:24%">还没说话。<br>在下面写一句，就有了。</div>';
 
     const keyed = String(XW.S.aiKey || '').trim();
     const usage = XW.S.usage || { rounds: 0, input: 0, cached: 0, output: 0 };
@@ -211,17 +207,28 @@
     const percent = Math.min(999, Math.round(used / limit * 100));
     const hitRate = used ? Math.round((Number(usage.cached) || 0) / used * 100) : 0;
 
-    const topLeft = keyed ? (XW.S.aiModel || 'model') : 'LOCAL';
-    const topRight = keyed ? (percent + '% · ' + fmtK(used) + ' / ' + fmtK(limit)) : '只存你自己的话';
-    const meter = keyed
-      ? '输入 ' + fmtK(usage.input) + ' · 命中 ' + fmtK(usage.cached) + '(' + hitRate + '%) · 输出 ' + fmtK(usage.output) + ' · ' + usage.rounds + ' 轮'
-      : '本地模式';
+    const head = '<div class="chat-status">' +
+        '<span class="kicker">' + UI.esc(XW.S.hisName || '他') + ' · ' + (keyed ? 'ONLINE' : 'OFFLINE') + '</span>' +
+        '<span class="kicker">' + UI.esc(keyed ? (XW.S.aiModel || 'model') : '本地') + '</span>' +
+      '</div>';
 
-    return '<div class="chat-wrap">' +
-        '<div class="chat-status"><span class="kicker">' + UI.esc(topLeft) + '</span>' +
-          '<span class="kicker">' + UI.esc(topRight) + '</span></div>' +
+    const top = keyed
+      ? '<div class="chat-top">' +
+          '<span class="num"><b>' + percent + '%</b></span>' +
+          '<span class="num"><b>' + fmtK(used) + '</b><i>/' + fmtK(limit) + '</i></span>' +
+          '<span class="num"><i>命中</i><b>' + fmtK(usage.cached) + '</b><i>' + hitRate + '%</i></span>' +
+          '<span class="num"><i>出</i><b>' + fmtK(usage.output) + '</b></span>' +
+          '<span class="num"><b>' + usage.rounds + '</b><i>轮</i></span>' +
+        '</div><div class="usage-bar"><i style="width:' + Math.min(100, percent) + '%"></i></div>'
+      : '<div class="chat-top"><span class="num"><b>LOCAL</b><i>只存你自己的话</i></span></div><div class="usage-bar"><i style="width:0"></i></div>';
+
+    const meter = keyed
+      ? '输入 <b>' + fmtK(usage.input) + '</b> · 命中 <b>' + fmtK(usage.cached) + '</b>(' + hitRate + '%) · 输出 <b>' + fmtK(usage.output) + '</b> · <b>' + usage.rounds + '</b> 轮'
+      : '本地模式 · 不联网';
+
+    return '<div class="chat-wrap">' + head + top +
         '<div class="chat-scroll" id="chat-scroll">' + rows + empty + '</div>' +
-        '<div class="chat-meter">' + UI.esc(meter) + '</div>' +
+        '<div class="chat-meter">' + meter + '</div>' +
         '<div class="composer"><input id="chat-input" placeholder="写点什么…"><button type="button" id="chat-send" class="btn-solid">发</button></div>' +
       '</div>';
   }
@@ -357,7 +364,6 @@
     scrollChat();
   }
 
-  /* ── 日记 ── */
   function diaryView() {
     const list = Array.isArray(XW.S.diary) ? XW.S.diary.slice().reverse() : [];
     const rows = list.length
@@ -374,7 +380,6 @@
       '<div class="sheet"><div class="sheet-head"><span class="sheet-title">写过的东西</span><span class="kicker">' + list.length + ' 篇</span></div>' + rows + '</div>';
   }
 
-  /* ── 相册 ── */
   function albumView() {
     const list = Array.isArray(XW.S.photos) ? XW.S.photos : [];
     const cells = list.map(function (url, i) {
@@ -415,7 +420,6 @@
     });
   }
 
-  /* ── 设置 ── */
   function fieldView(label, id, value, type, placeholder) {
     return '<label class="field"><span>' + label + '</span>' +
       '<input id="' + id + '" type="' + (type || 'text') + '" value="' + UI.esc(value) + '" spellcheck="false"' +
@@ -476,7 +480,7 @@
         fieldView('上下文上限（token）', 'set-ctx', String(XW.S.ctxLimit || 128000)) +
         '<div class="row-actions"><button type="button" id="set-ai-save" class="btn-solid">保存连接</button></div>' +
         (resolved ? '<div class="sheet-note">上次走通的地址：' + UI.esc(resolved) + '</div>' : '') +
-        '<div class="sheet-note">地址填到前缀也行（如 https://opencode.ai/zen/go），我会自己试 /chat/completions 与 /v1/chat/completions 两种接法。</div>' +
+        '<div class="sheet-note">地址填到前缀也行（如 https://opencode.ai/zen/go），会自己试 /chat/completions 与 /v1/chat/completions 两种接法。</div>' +
       '</div>';
 
     const others = '<div class="sheet">' +
