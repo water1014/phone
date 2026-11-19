@@ -1,6 +1,6 @@
-/* desktop.js · 桌面：时间 / 分页图标 / dock / 翻页
-   一页 8 个（4 x 2），横向 snap。
-   手指落在图标区或 dock 上左右滑，都能翻页。 */
+/* desktop.js · 桌面：时间 / widget 拼贴 / 分页图标 / dock
+   一页 8 个图标（4 x 2），横向 snap。
+   第一页顶部是拼贴 widget（天数 / 正在播放 / 访客）。 */
 (function () {
   const D = document;
 
@@ -31,16 +31,29 @@
     dateEl = D.getElementById('desk-date');
   }
 
-  function widgetHtml() {
+  /* 拼贴：大块天数 + 两个小块 */
+  function widgetsHtml() {
     const now = new Date();
     const love = new Date(XW.S.loveDate || '2025-01-01');
     const days = UI.diffDay(love, now);
-    return '<section class="wdg">' +
-        '<div class="kicker">TOGETHER</div>' +
-        '<div class="wdg-days">' + days + '<small>DAYS</small></div>' +
-        '<div class="wdg-names">' + UI.esc(XW.S.hisName) + ' &amp; ' + UI.esc(XW.S.herName) + '</div>' +
-        '<div class="wdg-sub">SINCE ' + UI.fmtYmd(love) + '</div>' +
-      '</section>';
+
+    return '<div class="widgets">' +
+        '<section class="wdg wdg-days">' +
+          '<div class="kicker">TOGETHER</div>' +
+          '<div class="wdg-days">' + days + '<small>DAYS</small></div>' +
+          '<div class="wdg-names">' + UI.esc(XW.S.hisName) + ' &amp; ' + UI.esc(XW.S.herName) + '</div>' +
+          '<div class="wdg-sub">SINCE ' + UI.fmtYmd(love) + '</div>' +
+        '</section>' +
+        '<section class="wdg wdg-play">' +
+          '<div class="kicker">NOW PLAYING</div>' +
+          '<div class="wdg-song">夏天的风</div>' +
+          '<div class="wdg-sub">温岚</div>' +
+        '</section>' +
+        '<section class="wdg wdg-guest">' +
+          '<div class="kicker">GUEST</div>' +
+          '<p class="wdg-text">门没锁。来过的人，都会在灯下坐一会儿。</p>' +
+        '</section>' +
+      '</div>';
   }
 
   function iconHtml(app) {
@@ -54,7 +67,7 @@
     const groups = window.Apps.pages();
     pagesEl.innerHTML = groups.map(function (list, index) {
       return '<section class="page">' +
-          (index === 0 ? widgetHtml() : '') +
+          (index === 0 ? widgetsHtml() : '') +
           '<nav class="grid">' + list.map(iconHtml).join('') + '</nav>' +
         '</section>';
     }).join('');
@@ -80,10 +93,8 @@
     const now = new Date();
     clockEl.textContent = UI.fmtClock(now);
     dateEl.textContent = UI.greetWord(now.getHours()) + ' · ' + UI.fmtWeek(now) + ' ' + UI.fmtMonthDay(now);
-    dateEl.textContent = dateEl.textContent.toUpperCase();
   }
 
-  /* ── 翻页 ── */
   function pageWidth() {
     return Math.max(1, pagesEl.clientWidth);
   }
@@ -140,7 +151,6 @@
       goPage(currentPage() + (dx < 0 ? 1 : -1));
     }, { passive: false });
 
-    /* 滑完别把抬手当点击 */
     el.addEventListener('click', function (event) {
       if (!swallow) return;
       swallow = false;
@@ -163,8 +173,6 @@
     renderPages();
     renderDock();
     tick();
-    setInterval(tick, 15000);
-
     pagesEl.addEventListener('scroll', function () {
       requestAnimationFrame(syncDots);
     }, { passive: true });
@@ -173,7 +181,6 @@
     bindSwipe(dockEl);
     bindOpen();
 
-    /* 转屏或宽度变化后校正位置 */
     window.addEventListener('resize', function () {
       pagesEl.scrollTo({ left: currentPage() * pageWidth() });
     });
