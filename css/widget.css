@@ -1,0 +1,72 @@
+/* widget.css · 桌面小组件（月历 / 摘句） */
+.wdg-cal { padding: .85rem .9rem; }
+
+.cal-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: .16rem .08rem;
+  margin-top: .6rem;
+}
+
+.cal-dow {
+  font-family: var(--mono);
+  font-size: .38rem;
+  letter-spacing: .04em;
+  color: var(--ink-3);
+  text-align: center;
+  padding-bottom: .22rem;
+}
+
+.cal-d {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1 / 1;
+  border-radius: .42rem;
+  font-size: .52rem;
+  color: var(--ink-2);
+  border: 1px solid transparent;
+}
+
+.cal-d.out { color: transparent; }
+
+.cal-d.today {
+  border-color: color-mix(in srgb, var(--ink) 55%, transparent);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.cal-d.has::after {
+  content: '';
+  position: absolute;
+  bottom: .1rem;
+  left: 50%;
+  width: .13rem;
+  height: .13rem;
+  margin-left: -.065rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ink) 60%, transparent);
+}
+
+/* 摘句卡 */
+.wdg-quote {
+  margin-bottom: .85rem;
+  padding: .9rem;
+}
+.wdg-quote .quote-text {
+  margin: .5rem 0 0;
+  font-size: .68rem;
+  line-height: 1.95;
+  color: var(--ink-2);
+  letter-spacing: .01em;
+  word-break: break-word;
+}
+
+/* 第一页卡片之间收一点，别把图标全推下去 */
+#desk-pages .page > .wdg + .wdg { margin-top: -.15rem; }
