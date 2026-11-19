@@ -1,0 +1,71 @@
+/* pages.css · 内页版式（大标题 + 卡片列表） */
+
+.hero {
+  padding: .1rem .15rem 1rem;
+}
+.hero .kicker { display: block; }
+
+.hero-title {
+  margin-top: .34rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.hero-sub {
+  margin-top: .4rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .44rem;
+  letter-spacing: .06em;
+  color: var(--ink-3);
+}
+
+/* 日记卡片 */
+.dcard {
+  padding: .85rem .9rem;
+  margin-bottom: .6rem;
+  border: 1px solid var(--glass-brd);
+  border-radius: 1rem;
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--glass-hi);
+}
+
+.dcard-date {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .4rem;
+  letter-spacing: .08em;
+  color: var(--ink-3);
+}
+
+.dcard-text {
+  margin: .5rem 0 0;
+  font-size: .74rem;
+  line-height: 1.95;
+  letter-spacing: .01em;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.dcard-meta {
+  margin-top: .55rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .38rem;
+  letter-spacing: .08em;
+  color: var(--ink-3);
+}
+
+.cards { display: block; }
+
+/* 相册格子 */
+.album-date-band {
+  margin: .9rem .1rem .55rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .4rem;
+  letter-spacing: .1em;
+  color: var(--ink-3);
+}
