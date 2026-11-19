@@ -1,9 +1,19 @@
-/* chat.css · 聊天页细化（在 app-shell.css 之后加载，覆盖其旧规则） */
+/* chat.css · 聊天页细化（在 app-shell.css 之后加载） */
+
+/* App 内一律无衬线：只改作用域变量，不碰桌面首页 */
+.app {
+  --serif: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
 
 /* 顶部状态 */
 .chat-status {
   padding-bottom: .35rem;
   border-bottom: 0;
+}
+.chat-status .kicker {
+  font-family: ui-sans-serif, system-ui, -apple-system, "PingFang SC", sans-serif;
+  font-size: .46rem;
+  letter-spacing: .06em;
 }
 
 /* 统计条 */
@@ -18,21 +28,20 @@
 }
 .chat-top::-webkit-scrollbar { display: none; }
 .chat-top .num {
-  font-family: var(--mono);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: .52rem;
-  letter-spacing: .03em;
+  letter-spacing: 0;
   color: var(--ink-3);
 }
 .chat-top .num b {
-  font-weight: 500;
-  font-size: .7rem;
+  font-weight: 600;
+  font-size: .72rem;
   color: var(--ink);
-  letter-spacing: 0;
 }
 .chat-top .num i {
   font-style: normal;
   font-size: .4rem;
-  letter-spacing: .1em;
+  letter-spacing: .04em;
   margin: 0 .1rem;
   color: var(--ink-3);
 }
@@ -55,10 +64,13 @@
 }
 html.dark .usage-bar { background: rgba(255, 255, 255, .12); }
 
-/* 消息名字 */
+/* 消息名字：无衬线小字，不要拉开字距 */
 .msg-name {
-  font-size: .42rem;
-  letter-spacing: .18em;
+  font-family: ui-sans-serif, system-ui, -apple-system, "PingFang SC", sans-serif;
+  font-size: .48rem;
+  font-weight: 500;
+  letter-spacing: .02em;
+  color: var(--ink-3);
 }
 
 /* 思考 */
@@ -67,8 +79,9 @@ html.dark .usage-bar { background: rgba(255, 255, 255, .12); }
   border: 0;
   background: none;
   padding: 0;
-  font-size: .44rem;
-  letter-spacing: .12em;
+  font-family: ui-sans-serif, system-ui, -apple-system, "PingFang SC", sans-serif;
+  font-size: .46rem;
+  letter-spacing: .02em;
   color: var(--ink-3);
 }
 .think > summary::before {
@@ -89,29 +102,40 @@ html.dark .usage-bar { background: rgba(255, 255, 255, .12); }
   background: var(--glass);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
-  font-size: .58rem;
+  font-size: .6rem;
   line-height: 1.9;
   color: var(--ink-2);
 }
 
-/* 旁白：左侧细竖线 */
+/* 旁白：无斜体，小一号、淡一档，左侧一道短竖线 */
 .narr {
   max-width: 92%;
-  padding: .06rem 0 .06rem .52rem;
-  border-left: 1px solid rgba(0, 0, 0, .14);
+  padding: .04rem 0 .04rem .55rem;
+  border-left: 2px solid rgba(0, 0, 0, .12);
+  border-radius: 1px;
+  font-family: ui-sans-serif, system-ui, -apple-system, "PingFang SC", sans-serif;
+  font-style: normal;
   font-size: .64rem;
-  line-height: 2;
+  line-height: 1.95;
+  color: var(--ink-3);
+  letter-spacing: .01em;
 }
-html.dark .narr { border-left-color: rgba(255, 255, 255, .18); }
+html.dark .narr { border-left-color: rgba(255, 255, 255, .16); }
 
-/* 气泡加厚 */
+/* 气泡：无衬线、行高放松 */
 .bub {
   padding: .64rem .82rem;
+  font-family: ui-sans-serif, system-ui, -apple-system, "PingFang SC", sans-serif;
   font-size: .76rem;
-  line-height: 1.95;
+  line-height: 1.92;
+  letter-spacing: .01em;
   border-radius: .92rem .92rem .92rem .22rem;
 }
 .bub.me { border-radius: .92rem .92rem .22rem .92rem; }
+
+/* 同侧连续消息稍微贴紧 */
+.msg-row.ta + .msg-row.ta,
+.msg-row.me + .msg-row.me { margin-top: -.28rem; }
 
 /* 每条消息的用量胶囊 */
 .msg-tag {
@@ -123,8 +147,9 @@ html.dark .narr { border-left-color: rgba(255, 255, 255, .18); }
   background: var(--glass);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: .36rem;
-  letter-spacing: .08em;
+  letter-spacing: 0;
   color: var(--ink-3);
 }
 
@@ -132,13 +157,13 @@ html.dark .narr { border-left-color: rgba(255, 255, 255, .18); }
 .chat-meter {
   padding: .42rem .1rem .34rem;
   line-height: 1.9;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: .42rem;
-  letter-spacing: .05em;
+  letter-spacing: 0;
 }
 .chat-meter b {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--ink-2);
-  letter-spacing: 0;
 }
 
 /* 时间分隔 */
@@ -151,9 +176,30 @@ html.dark .narr { border-left-color: rgba(255, 255, 255, .18); }
   background: var(--glass);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
+  font-family: ui-sans-serif, system-ui, -apple-system, "PingFang SC", sans-serif;
+  font-size: .44rem;
+  letter-spacing: .04em;
 }
 
 /* 输入区 */
 .composer { padding-top: .62rem; }
-.composer input { padding: .62rem .72rem; font-size: .72rem; }
+.composer input {
+  padding: .62rem .72rem;
+  font-family: ui-sans-serif, system-ui, -apple-system, "PingFang SC", sans-serif;
+  font-size: .72rem;
+  letter-spacing: .01em;
+}
 .composer .btn-solid { padding: .5rem 1rem; }
+
+/* App 内标题也别用衬线 */
+.app-title,
+.app-title span {
+  font-family: ui-sans-serif, system-ui, -apple-system, "PingFang SC", sans-serif;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+.sheet-title {
+  font-family: ui-sans-serif, system-ui, -apple-system, "PingFang SC", sans-serif;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
