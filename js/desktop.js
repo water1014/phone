@@ -1,6 +1,5 @@
-/* desktop.js · 桌面：时间 / 天数 / 分页图标 / dock
-   一页只放一件事：第一页 = 天数 + 8 个图标，后面页 = 纯图标。
-   横向 snap 翻页，图标区或 dock 上滑都能翻。 */
+/* desktop.js · 桌面：手账首屏（天数/月历/摘句）+ 图标页 + dock
+   第一页只放“今天”，图标从第二页起。横向 snap 翻页。 */
 (function () {
   const D = document;
 
@@ -31,7 +30,6 @@
     dateEl = D.getElementById('desk-date');
   }
 
-  /* 第一页只放一块：在一起多少天 */
   function daysWidgetHtml() {
     const love = new Date(XW.S.loveDate || '2025-01-01');
     const days = UI.diffDay(love, new Date());
@@ -52,16 +50,22 @@
 
   function renderPages() {
     const groups = window.Apps.pages();
-    pagesEl.innerHTML = groups.map(function (list, index) {
-      return '<section class="page">' +
-          (index === 0 ? daysWidgetHtml() : '') +
-          '<nav class="grid">' + list.map(iconHtml).join('') + '</nav>' +
-        '</section>';
-    }).join('');
 
-    dotsEl.innerHTML = groups.map(function (_, index) {
-      return '<span' + (index === 0 ? ' class="on"' : '') + '></span>';
-    }).join('');
+    let html = '<section class="page page-today">' +
+        daysWidgetHtml() +
+        '<nav class="grid"></nav>' +
+      '</section>';
+
+    groups.forEach(function (list) {
+      html += '<section class="page"><nav class="grid">' + list.map(iconHtml).join('') + '</nav></section>';
+    });
+
+    pagesEl.innerHTML = html;
+
+    const count = groups.length + 1;
+    let dots = '';
+    for (let i = 0; i < count; i++) dots += '<span' + (i === 0 ? ' class="on"' : '') + '></span>';
+    dotsEl.innerHTML = dots;
   }
 
   function renderDock() {
@@ -160,6 +164,7 @@
     renderPages();
     renderDock();
     tick();
+
     pagesEl.addEventListener('scroll', function () {
       requestAnimationFrame(syncDots);
     }, { passive: true });
