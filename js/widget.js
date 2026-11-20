@@ -1,4 +1,4 @@
-/* widget.js · 桌面小组件：月历 + 摘句 */
+/* widget.js · 桌面小组件：三格 / 月历 / 天气 / 摘句 */
 (function () {
   const D = document;
 
@@ -18,6 +18,27 @@
       if (hit) marks[hit[1] + '-' + hit[2] + '-' + hit[3]] = true;
     });
     return marks;
+  }
+
+  function statCell(num, label) {
+    return '<div class="stat">' +
+        '<b>' + num + '</b>' +
+        '<span>' + label + '</span>' +
+      '</div>';
+  }
+
+  function statsHtml() {
+    const diary = (Array.isArray(XW.S.diary) ? XW.S.diary : []).length;
+    const photos = (Array.isArray(XW.S.photos) ? XW.S.photos : []).length;
+    const chat = (Array.isArray(XW.S.chat) ? XW.S.chat : []).filter(function (m) {
+      return m.who !== 'sys';
+    }).length;
+
+    return '<section class="wdg wdg-stats">' +
+        statCell(diary, '日记') +
+        statCell(photos, '相片') +
+        statCell(chat, '对话') +
+      '</section>';
   }
 
   function calendarHtml() {
@@ -51,6 +72,57 @@
       '</section>';
   }
 
+  function weatherHtml() {
+    return '<section class="wdg wdg-weather">' +
+        '<div class="quote-head">' +
+          '<span class="kicker">WEATHER</span>' +
+          '<span class="quote-date" id="ww-sub">看一眼天</span>' +
+        '</div>' +
+        '<div class="ww-body">' +
+          '<span class="ww-temp" id="ww-temp">--</span>' +
+          '<span class="ww-text" id="ww-text"></span>' +
+        '</div>' +
+      '</section>';
+  }
+
+  function wmo(code) {
+    if (code === 0) return '晴';
+    if (code <= 2) return '少云';
+    if (code === 3) return '阴';
+    if (code === 45 || code === 48) return '雾';
+    if (code >= 51 && code <= 57) return '毛毛雨';
+    if (code >= 61 && code <= 67) return '雨';
+    if (code >= 71 && code <= 77) return '雪';
+    if (code >= 80 && code <= 82) return '阵雨';
+    if (code >= 85 && code <= 86) return '阵雪';
+    if (code >= 95) return '雷雨';
+    return '—';
+  }
+
+  function loadWeather() {
+    const tempEl = D.getElementById('ww-temp');
+    const textEl = D.getElementById('ww-text');
+    const subEl = D.getElementById('ww-sub');
+    if (!tempEl || !textEl) return;
+
+    const lat = 26.88;
+    const lon = 112.67;
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
+      '&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Asia%2FShanghai';
+
+    fetch(url).then(function (res) { return res.json(); }).then(function (data) {
+      const cur = data && data.current;
+      if (!cur || cur.temperature_2m === undefined) throw new Error('no data');
+      tempEl.textContent = Math.round(cur.temperature_2m) + '°';
+      textEl.textContent = wmo(cur.weather_code);
+      if (subEl) subEl.textContent = '湿度 ' + Math.round(cur.relative_humidity_2m) + '%';
+    }).catch(function () {
+      tempEl.textContent = '—';
+      textEl.textContent = '没接到天气';
+      if (subEl) subEl.textContent = '';
+    });
+  }
+
   function quoteHtml() {
     const list = Array.isArray(XW.S.diary) ? XW.S.diary : [];
     const last = list.length ? list[list.length - 1] : null;
@@ -76,9 +148,17 @@
     const page = D.querySelector('#desk-pages .page');
     if (!page) return;
     if (page.querySelector('.wdg-cal')) return;
+
     const grid = page.querySelector('.grid');
     if (!grid) return;
-    grid.insertAdjacentHTML('beforebegin', calendarHtml() + quoteHtml());
+    grid.insertAdjacentHTML('beforebegin', calendarHtml() + weatherHtml() + quoteHtml());
+
+    const days = page.querySelector('.wdg-days');
+    if (days && !page.querySelector('.wdg-stats')) {
+      days.insertAdjacentHTML('afterend', statsHtml());
+    }
+
+    loadWeather();
   }
 
   function watch() {
