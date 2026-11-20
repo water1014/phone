@@ -1,6 +1,6 @@
 /* beautify.js · 美化
    外观偏好存 localStorage['xw_look']，开关落在 html 的 data-* 上；
-   自制小组件存 localStorage['xw_mods']，同时写进布局表。 */
+   自制小组件存 localStorage['xw_mods']：写字卡，或者直接写 HTML/CSS/JS。 */
 (function () {
   const D = document;
   const ROOT = D.documentElement;
@@ -20,7 +20,9 @@
     dots: 'on',
     mat: 'flat',
     wall: 'none',
-    mspan: '2'
+    mspan: '2',
+    mkind: 'text',
+    mheight: '140'
   };
 
   const ACCENT = {
@@ -33,10 +35,7 @@
   };
 
   const WALL = {
-    none: {
-      thumb: 'background:#fff',
-      css: ''
-    },
+    none: { thumb: 'background:#fff', css: '' },
     dawn: {
       thumb: 'background:linear-gradient(180deg,#f8f6f2,#e9e5df)',
       css: 'radial-gradient(900px 520px at 86% -6%, rgba(255,255,255,.92), transparent 62%),' +
@@ -66,6 +65,7 @@
 
   let st = load();
   let editId = '';
+  let pending = '';
 
   function load() {
     const out = {};
@@ -152,11 +152,16 @@
         ' data-k="wall" data-v="' + id + '" style="' + WALL[id].thumb + '"></button>';
     }).join('');
 
-    const up = '<button type="button" class="bz-wall bz-wall-up" data-k="wall" data-v="photo"' +
-      (img ? ' style="background-image:url(' + img + ')"' : '') + '>' +
-      (img ? '' : '＋图') + '</button>';
+    const picked = '<button type="button" class="bz-wall bz-wall-txt" data-wall-pick="1">' +
+      (img ? '换图' : '＋图') + '</button>';
 
-    return base + up;
+    const own = img
+      ? '<button type="button" class="bz-wall' + (st.wall === 'photo' ? ' on' : '') + '"' +
+        ' data-k="wall" data-v="photo" style="background-image:url(' + img + ')"></button>' +
+        '<button type="button" class="bz-wall bz-wall-txt" data-wall-clear="1">清掉</button>'
+      : '';
+
+    return base + picked + own;
   }
 
   function currentPreset() {
@@ -178,8 +183,12 @@
     }
 
     const rows = list.map(function (m) {
-      const t = m.title || '（没标题）';
-      const s = m.text ? String(m.text).replace(/\n/g, ' ') : '（没正文）';
+      const isCode = m.kind === 'code';
+      const t = m.title || (isCode ? '（没名字的代码卡）' : '（没标题）');
+      const s = isCode
+        ? ('代码 · ' + (m.span || '2') + ' 格宽 · ' + (m.height || '140') + 'px 高')
+        : (m.text ? String(m.text).replace(/\n/g, ' ') : '（没正文）');
+
       return '<div class="bz-mod">' +
           '<div class="bz-mod-i"><b>' + esc(t) + '</b><i>' + esc(s) + '</i></div>' +
           '<button type="button" class="bz-ed" data-mod-edit="' + esc(m.id) + '">改</button>' +
@@ -190,10 +199,58 @@
     return '<div class="bz-mods">' + rows + '</div>';
   }
 
-  function view() {
-    editId = '';
-    st.mspan = '2';
+  function spanOpts() {
+    return opt('mspan', '1', '一格') + opt('mspan', '2', '两格') + opt('mspan', '4', '一整行');
+  }
 
+  function saveRow() {
+    return '<div class="row-actions">' +
+        '<button type="button" id="bz-mcancel" class="btn-glass">取消</button>' +
+        '<button type="button" id="bz-msave" class="btn-solid">加到桌面</button></div>';
+  }
+
+  function textForm() {
+    return '<label class="field"><span>标题（可以空着）</span>' +
+        '<input id="bz-mt" type="text" placeholder="写在桌面上的标题"></label>' +
+      '<label class="field"><span>正文</span>' +
+        '<textarea id="bz-mb" rows="3" placeholder="想放桌面上的那句话"></textarea></label>' +
+      sec('宽度', 'WIDTH', spanOpts()) +
+      saveRow() +
+      '<div class="sheet-note">加好后在桌面上长按，就能拖到任意一页、任意位置。编辑时长按，自制的块左上角有 ×，点它就从桌面删掉。</div>';
+  }
+
+  function codeForm() {
+    return '<label class="field"><span>名字（列表里显示）</span>' +
+        '<input id="bz-mt" type="text" placeholder="比如：小钟"></label>' +
+
+      '<div class="bz-lab" style="margin-top:14px"><b>HTML</b><i>BODY</i></div>' +
+      '<textarea id="bz-mh" class="bz-ta" rows="5" spellcheck="false"' +
+        ' placeholder="&lt;div class=&#39;clock&#39;&gt;--:--&lt;/div&gt;"></textarea>' +
+
+      '<div class="bz-lab" style="margin-top:12px"><b>CSS</b><i>STYLE</i></div>' +
+      '<textarea id="bz-mc" class="bz-ta" rows="4" spellcheck="false"' +
+        ' placeholder=".clock{font:600 28px/1.2 system-ui;text-align:center}"></textarea>' +
+
+      '<div class="bz-lab" style="margin-top:12px"><b>JS</b><i>SCRIPT</i></div>' +
+      '<textarea id="bz-mj" class="bz-ta" rows="4" spellcheck="false"' +
+        ' placeholder="// document 就是这张卡自己"></textarea>' +
+
+      sec('宽度', 'WIDTH', spanOpts()) +
+      sec('高度', 'HEIGHT',
+        opt('mheight', '90', '矮') + opt('mheight', '140', '中') +
+        opt('mheight', '200', '高') + opt('mheight', '280', '很高')) +
+
+      '<div class="row-actions">' +
+        '<button type="button" id="bz-mprev" class="btn-glass">预览</button>' +
+        '<button type="button" id="bz-mcancel" class="btn-glass">取消</button>' +
+        '<button type="button" id="bz-msave" class="btn-solid">加到桌面</button></div>' +
+
+      '<div class="bz-prev" id="bz-pbox"><div class="bz-prev-box">写完点「预览」，就在这儿跑</div></div>' +
+
+      '<div class="sheet-note">它跑在一张独立的沙箱网页里：样式和脚本都不出这张卡，也读不到桌面上的东西。想让它不透明，就自己给 body 上底色。</div>';
+  }
+
+  function view() {
     return '<header class="hero">' +
         '<span class="kicker">APPEARANCE</span>' +
         '<h1 class="hero-title">美化</h1>' +
@@ -212,14 +269,8 @@
       '<div class="sheet">' +
         '<div class="sheet-head"><span class="sheet-title">小组件</span></div>' +
         modRows() +
-        '<label class="field"><span>标题（可以空着）</span>' +
-          '<input id="bz-mt" type="text" placeholder="写在桌面上的标题"></label>' +
-        '<label class="field"><span>正文</span>' +
-          '<textarea id="bz-mb" rows="3" placeholder="想放桌面上的那句话"></textarea></label>' +
-        sec('宽度', 'WIDTH', opt('mspan', '1', '一格') + opt('mspan', '2', '两格') + opt('mspan', '4', '一整行')) +
-        '<div class="row-actions"><button type="button" id="bz-mcancel" class="btn-glass">取消</button>' +
-          '<button type="button" id="bz-msave" class="btn-solid">加到桌面</button></div>' +
-        '<div class="sheet-note">加好后在桌面上长按，就能拖到任意一页、任意位置。编辑时长按，自制的块左上角有 ×，点它就从桌面删掉。</div>' +
+        sec('做法', 'HOW', opt('mkind', 'text', '写字') + opt('mkind', 'code', '写代码')) +
+        (st.mkind === 'code' ? codeForm() : textForm()) +
       '</div>' +
 
       '<div class="sheet">' +
@@ -258,9 +309,35 @@
     Array.prototype.forEach.call(root.querySelectorAll('.bz-opt,.bz-dot,.bz-wall'), function (el) {
       const k = el.getAttribute('data-k');
       const v = el.getAttribute('data-v');
+      if (!k || !v) return;
       const on = (k === 'preset') ? (pre === v) : (st[k] === v);
       el.classList.toggle('on', on);
     });
+  }
+
+  function fillForm(m) {
+    const ti = D.getElementById('bz-mt');
+    if (ti) ti.value = m.title || '';
+
+    if (m.kind === 'code') {
+      const mh = D.getElementById('bz-mh');
+      const mc = D.getElementById('bz-mc');
+      const mj = D.getElementById('bz-mj');
+      if (mh) mh.value = m.html || '';
+      if (mc) mc.value = m.css || '';
+      if (mj) mj.value = m.js || '';
+    } else {
+      const bo = D.getElementById('bz-mb');
+      if (bo) bo.value = m.text || '';
+    }
+
+    const btn = D.getElementById('bz-msave');
+    if (btn) btn.textContent = '存下改动';
+  }
+
+  function val(id) {
+    const el = D.getElementById(id);
+    return el ? el.value : '';
   }
 
   function shrink(file, maxSide, quality, done) {
@@ -282,7 +359,7 @@
     reader.readAsDataURL(file);
   }
 
-  function pick(root) {
+  function chooseWall() {
     const input = D.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -293,22 +370,19 @@
 
       shrink(file, 1100, .74, function (data) {
         if (!data) { UI.toast('这张读不出来'); return; }
+
         try {
           localStorage.setItem(IK, data);
         } catch (err) {
           UI.toast('太大了，换一张小点的');
           return;
         }
+
         st.wall = 'photo';
         save();
         apply();
-        const up = root.querySelector('.bz-wall-up');
-        if (up) {
-          up.style.backgroundImage = 'url(' + data + ')';
-          up.textContent = '';
-        }
-        mark(root);
         UI.toast('换上了');
+        if (window.Router && Router.reopen) Router.reopen('beautify');
       });
     });
 
@@ -323,10 +397,13 @@
   function bind(bodyEl) {
     if (!bodyEl) return;
 
+    editId = '';
+
     bodyEl.addEventListener('click', function (e) {
       const t = e.target;
+      if (!t || !t.closest) return;
 
-      const del = t.closest ? t.closest('[data-mod-del]') : null;
+      const del = t.closest('[data-mod-del]');
       if (del) {
         const id = del.getAttribute('data-mod-del');
         if (window.Mods) Mods.remove(id);
@@ -336,38 +413,63 @@
         return;
       }
 
-      const ed = t.closest ? t.closest('[data-mod-edit]') : null;
+      const ed = t.closest('[data-mod-edit]');
       if (ed) {
         const id = ed.getAttribute('data-mod-edit');
         const m = (window.Mods && Mods.find) ? Mods.find(id) : null;
         if (!m) return;
 
-        editId = id;
+        const need = (m.kind === 'code') ? 'code' : 'text';
         st.mspan = String(m.span || '2');
+        if (m.kind === 'code') st.mheight = String(m.height || '140');
 
-        const ti = D.getElementById('bz-mt');
-        const bo = D.getElementById('bz-mb');
-        const btn = D.getElementById('bz-msave');
-        if (ti) ti.value = m.title || '';
-        if (bo) bo.value = m.text || '';
-        if (btn) btn.textContent = '存下改动';
+        if (st.mkind !== need) {
+          st.mkind = need;
+          save();
+          pending = id;
+          redraw();
+          return;
+        }
 
+        editId = id;
+        fillForm(m);
         mark(bodyEl);
+        const ti = D.getElementById('bz-mt');
         if (ti && ti.scrollIntoView) ti.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
 
-      const btn = t.closest ? t.closest('.bz-opt,.bz-dot,.bz-wall') : null;
+      const pickBtn = t.closest('[data-wall-pick]');
+      if (pickBtn) { chooseWall(); return; }
+
+      const clr = t.closest('[data-wall-clear]');
+      if (clr) {
+        try { localStorage.removeItem(IK); } catch (err) {}
+        if (st.wall === 'photo') st.wall = 'none';
+        save();
+        apply();
+        if (window.Router && Router.reopen) Router.reopen('beautify');
+        return;
+      }
+
+      const btn = t.closest('.bz-opt,.bz-dot,.bz-wall');
       if (!btn) return;
 
       const k = btn.getAttribute('data-k');
       const v = btn.getAttribute('data-v');
       if (!k || !v) return;
 
-      if (k === 'mspan') {
-        st.mspan = v;
+      if (k === 'mspan' || k === 'mheight') {
+        st[k] = v;
         save();
         mark(bodyEl);
+        return;
+      }
+
+      if (k === 'mkind') {
+        st.mkind = v;
+        save();
+        if (window.Router && Router.reopen) Router.reopen('beautify');
         return;
       }
 
@@ -381,13 +483,7 @@
         return;
       }
 
-      if (k === 'wall' && v === 'photo' && !pic()) {
-        pick(bodyEl);
-        return;
-      }
-
       st[k] = v;
-
       if (k === 'wall' && v === 'night') st.skin = 'night';
       if (k === 'skin' && v === 'light' && st.wall === 'night') st.wall = 'none';
 
@@ -401,23 +497,61 @@
       msave.addEventListener('click', function () {
         if (!window.Mods) return;
 
-        const ti = D.getElementById('bz-mt');
-        const bo = D.getElementById('bz-mb');
-        const title = ti ? ti.value.trim() : '';
-        const text = bo ? bo.value.trim() : '';
+        const title = val('bz-mt').trim();
 
+        if (st.mkind === 'code') {
+          const html = val('bz-mh');
+          const css = val('bz-mc');
+          const js = val('bz-mj');
+
+          if (!html.trim() && !css.trim() && !js.trim()) {
+            UI.toast('还空着，先写点什么');
+            return;
+          }
+
+          if (editId) {
+            Mods.update(editId, { kind: 'code', title: title, html: html, css: css, js: js, span: st.mspan, height: st.mheight });
+            UI.toast('改好了');
+          } else {
+            const id = Mods.create({ kind: 'code', title: title, html: html, css: css, js: js, span: st.mspan, height: st.mheight });
+            if (window.Layout && Layout.addKey) Layout.addKey('mod:' + id);
+            UI.toast('加到桌面了');
+          }
+
+          redraw();
+          return;
+        }
+
+        const text = val('bz-mb').trim();
         if (!title && !text) { UI.toast('先写一句'); return; }
 
         if (editId) {
-          Mods.update(editId, { title: title, text: text, span: st.mspan });
+          Mods.update(editId, { kind: 'text', title: title, text: text, span: st.mspan });
           UI.toast('改好了');
         } else {
-          const id = Mods.create({ title: title, text: text, span: st.mspan });
+          const id = Mods.create({ kind: 'text', title: title, text: text, span: st.mspan });
           if (window.Layout && Layout.addKey) Layout.addKey('mod:' + id);
           UI.toast('加到桌面了');
         }
 
         redraw();
+      });
+    }
+
+    const mprev = D.getElementById('bz-mprev');
+    if (mprev) {
+      mprev.addEventListener('click', function () {
+        const box = D.getElementById('bz-pbox');
+        if (!box || !window.Mods) return;
+
+        const h = Number(st.mheight) || 140;
+        const doc = Mods.doc({ html: val('bz-mh'), css: val('bz-mc'), js: val('bz-mj') });
+
+        box.innerHTML = '<iframe sandbox="allow-scripts" scrolling="no"' +
+          ' style="height:' + h + 'px;width:100%;border:0;display:block;background:#fff"></iframe>';
+
+        const fr = box.querySelector('iframe');
+        if (fr) fr.srcdoc = doc;
       });
     }
 
@@ -428,10 +562,18 @@
         st.mspan = '2';
         const ti = D.getElementById('bz-mt');
         const bo = D.getElementById('bz-mb');
+        const mh = D.getElementById('bz-mh');
+        const mc = D.getElementById('bz-mc');
+        const mj = D.getElementById('bz-mj');
         const btn = D.getElementById('bz-msave');
         if (ti) ti.value = '';
         if (bo) bo.value = '';
+        if (mh) mh.value = '';
+        if (mc) mc.value = '';
+        if (mj) mj.value = '';
         if (btn) btn.textContent = '加到桌面';
+        const box = D.getElementById('bz-pbox');
+        if (box) box.innerHTML = '<div class="bz-prev-box">写完点「预览」，就在这儿跑</div>';
         mark(bodyEl);
       });
     }
@@ -443,17 +585,45 @@
         try { localStorage.removeItem(IK); } catch (e) {}
         save();
         apply();
-        const up = bodyEl.querySelector('.bz-wall-up');
-        if (up) { up.style.backgroundImage = ''; up.textContent = '＋图'; }
-        mark(bodyEl);
-        UI.toast('回到最初了');
+        UI.toast('外观回到最初了');
+        if (window.Router && Router.reopen) Router.reopen('beautify');
       });
+    }
+
+    if (pending && window.Mods && Mods.find) {
+      const m = Mods.find(pending);
+      const id = pending;
+      pending = '';
+
+      if (m) {
+        editId = id;
+        st.mspan = String(m.span || '2');
+        if (m.kind === 'code') st.mheight = String(m.height || '140');
+        fillForm(m);
+      }
     }
 
     mark(bodyEl);
   }
 
+  function watchMods() {
+    if (window.Mods && Mods.mount) Mods.mount(document);
+    if (!window.MutationObserver || !D.body) return;
+
+    let timer = null;
+    const mo = new MutationObserver(function () {
+      if (timer) return;
+      timer = setTimeout(function () {
+        timer = null;
+        if (window.Mods && Mods.mount) Mods.mount(document);
+      }, 60);
+    });
+
+    mo.observe(D.body, { childList: true, subtree: true });
+  }
+
   apply();
+  watchMods();
 
   window.Beautify = {
     view: view,
