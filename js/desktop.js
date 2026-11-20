@@ -1,12 +1,10 @@
-/* desktop.js · 桌面：组件与图标同一张网格，横向翻页，长按拖动换位 */
+/* desktop.js · 桌面：网格 + 横向翻页 + 长按拖动换位；时钟改为首屏组件 */
 (function () {
   const D = document;
 
   let pagesEl = null;
   let dotsEl = null;
   let dockEl = null;
-  let clockEl = null;
-  let dateEl = null;
   let suppressTap = false;
 
   const PER_PAGE = 8;
@@ -16,10 +14,6 @@
     if (!screen || pagesEl) return;
     screen.innerHTML =
       '<div class="desk">' +
-        '<header class="desk-head">' +
-          '<div class="desk-clock" id="desk-clock">--:--</div>' +
-          '<div class="desk-date" id="desk-date"></div>' +
-        '</header>' +
         '<div class="desk-pages" id="desk-pages"></div>' +
         '<div class="dots" id="dots"></div>' +
       '</div>' +
@@ -28,8 +22,6 @@
     pagesEl = D.getElementById('desk-pages');
     dotsEl = D.getElementById('dots');
     dockEl = D.getElementById('dock');
-    clockEl = D.getElementById('desk-clock');
-    dateEl = D.getElementById('desk-date');
   }
 
   function order() {
@@ -43,7 +35,7 @@
   function headFor(index) {
     const W = window.Widgets;
     if (!W) return '';
-    if (index === 0) return W.days() + W.stats();
+    if (index === 0) return W.clock() + W.days() + W.stats();
     if (index === 1) return W.calendar() + W.weatherCard() + W.quote();
     return '';
   }
@@ -81,6 +73,7 @@
     dotsEl.innerHTML = dots;
 
     if (window.Widgets && window.Widgets.after) window.Widgets.after(pagesEl);
+    tick();
   }
 
   function renderDock() {
@@ -95,10 +88,14 @@
   }
 
   function tick() {
-    if (!clockEl) return;
+    const clock = D.getElementById('desk-clock');
+    if (!clock) return;
+    const date = D.getElementById('desk-date');
     const now = new Date();
-    clockEl.textContent = UI.fmtClock(now);
-    dateEl.textContent = UI.greetWord(now.getHours()) + ' · ' + UI.fmtWeek(now) + ' ' + UI.fmtMonthDay(now);
+    clock.textContent = UI.fmtClock(now);
+    if (date) {
+      date.textContent = UI.greetWord(now.getHours()) + ' · ' + UI.fmtWeek(now) + ' ' + UI.fmtMonthDay(now);
+    }
   }
 
   function pageWidth() { return Math.max(1, pagesEl.clientWidth); }
@@ -234,7 +231,6 @@
       cancelTimer();
       if (!el) return;
 
-      const wasHolding = true;
       if (dragged && target && from >= 0) {
         const ids = order();
         const to = Number(target.dataset.idx);
@@ -249,7 +245,7 @@
 
       reset();
       renderPages();
-      if (wasHolding) suppressTap = true;
+      suppressTap = true;
     });
 
     pagesEl.addEventListener('touchcancel', function () {
@@ -275,7 +271,6 @@
     ensure();
     renderPages();
     renderDock();
-    tick();
 
     pagesEl.addEventListener('scroll', function () {
       requestAnimationFrame(syncDots);
@@ -285,6 +280,8 @@
     bindSwipe(dockEl);
     bindDrag();
     bindOpen();
+
+    setInterval(tick, 20000);
 
     window.addEventListener('resize', function () {
       pagesEl.scrollTo({ left: currentPage() * pageWidth() });
