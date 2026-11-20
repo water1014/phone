@@ -10,6 +10,8 @@
 
 #home .gi{
   min-width: 0;
+  position: relative;
+  overflow: visible;
 }
 
 #home .gi1{
@@ -86,6 +88,36 @@
 
 #home.editing .gi.lift{
   animation: none;
+}
+
+/* 自制小组件的删除点：只在编辑态出现 */
+.gi-del{
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 21px;
+  height: 21px;
+  padding: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: #2c2a27;
+  color: #ffffff;
+  font-family: -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1;
+  z-index: 14;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+}
+
+#home.editing .gi[data-key^="mod:"] .gi-del{
+  display: flex;
+}
+
+#home .gi.lift .gi-del{
+  display: none;
 }
 
 /* ============ 拖动 ============ */
