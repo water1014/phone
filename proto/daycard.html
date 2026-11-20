@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f7f6f3">
+<title>天数卡 · 四种摆法</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body{
+  background:#f7f6f3;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  color:#1a1917;
+  padding:20px 16px 40px;
+}
+.wrap{ max-width:420px; margin:0 auto; }
+h1{ font-size:17px; font-weight:700; letter-spacing:.2px; }
+.lead{ margin-top:7px; font-size:12.5px; line-height:1.7; color:#8f8a80; }
+.item{ margin-top:22px; }
+.tag{
+  display:inline-block;
+  font-size:10.5px; font-weight:600; letter-spacing:1.4px;
+  color:#a29c91; margin-bottom:8px;
+}
+.note{ margin-top:7px; font-size:11.5px; line-height:1.7; color:#a8a29a; }
+
+.card{
+  width:100%;
+  height:200px;
+  background:#fff;
+  border-radius:20px;
+  box-shadow:0 2px 10px rgba(0,0,0,.05);
+  padding:16px 18px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+}
+.k{ font-size:9.5px; letter-spacing:2.4px; color:#b6b0a6; font-weight:600; }
+.ava{
+  border-radius:50%;
+  background:#f1eee7;
+  border:1px solid #eee9df;
+  display:flex; align-items:center; justify-content:center;
+  color:#b8b2a6; font-weight:600;
+  flex:none;
+}
+
+/* ============ D1 三栏 · 人围着天数 ============ */
+.d1 .row{
+  display:flex; align-items:center; justify-content:center;
+  gap:20px; margin-top:14px; width:100%;
+}
+.d1 .who{
+  display:flex; flex-direction:column; align-items:center; gap:7px;
+}
+.d1 .ava{ width:40px; height:40px; font-size:13px; }
+.d1 .who b{ font-size:12.5px; font-weight:500; color:#3a3733; }
+.d1 .mid{ display:flex; flex-direction:column; align-items:center; }
+.d1 .num{ font-size:42px; line-height:1; font-weight:700; letter-spacing:-1.2px; }
+.d1 .mid small{ font-size:9px; letter-spacing:2px; color:#b6b0a6; font-weight:600; margin-top:4px; }
+
+/* ============ D2 双圆相叠 · 我们是一体 ============ */
+.d2 .pair{
+  display:flex; margin-top:13px;
+}
+.d2 .ava{
+  width:46px; height:46px; font-size:14px;
+  border:2px solid #fff;
+}
+.d2 .ava + .ava{ margin-left:-14px; }
+.d2 .names{ margin-top:10px; font-size:13px; color:#3a3733; letter-spacing:.3px; }
+.d2 .num{ margin-top:14px; font-size:40px; line-height:1; font-weight:700; letter-spacing:-1px; }
+.d2 .num small{ font-size:9px; letter-spacing:2px; color:#b6b0a6; font-weight:600; margin-left:6px; vertical-align:3px; }
+
+/* ============ D3 大字占左 · 人在右下 ============ */
+.d3{ align-items:flex-start; }
+.d3 .num{
+  font-size:58px; line-height:1; font-weight:700; letter-spacing:-2px;
+  margin-top:2px;
+}
+.d3 .num small{ font-size:9.5px; letter-spacing:2.2px; color:#b6b0a6; font-weight:600; margin-left:8px; vertical-align:6px; }
+.d3 .foot{
+  display:flex; align-items:center; gap:10px;
+  margin-top:16px; align-self:flex-end;
+}
+.d3 .who{ display:flex; align-items:center; gap:6px; }
+.d3 .ava{ width:26px; height:26px; font-size:10px; }
+.d3 .who b{ font-size:11.5px; font-weight:500; color:#4a4640; }
+.d3 .and{ font-size:10px; color:#c9c3b8; }
+
+/* ============ D4 极简无卡 · 签名 ============ */
+.d4{
+  background:transparent; box-shadow:none;
+  align-items:flex-start; padding:16px 2px;
+}
+.d4 .num{
+  font-size:70px; line-height:0.95; font-weight:700; letter-spacing:-3px;
+  margin-top:6px; color:#1a1917;
+}
+.d4 .unit{ font-size:9.5px; letter-spacing:2.4px; color:#b6b0a6; font-weight:600; margin-top:9px; }
+.d4 .line{ width:36px; height:1px; background:#ddd8cd; margin:15px 0 13px; }
+.d4 .sig{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:#4a4640; }
+.d4 .dot{ width:16px; height:16px; border-radius:50%; background:#f1eee7; border:1px solid #eee9df; flex:none; }
+.d4 .dot.sep{ width:3px; height:3px; background:#cfc9be; border:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>天数卡 · 四种摆法</h1>
+  <p class="lead">尺寸都一样，只有里面的排法不一样。四个都不对的话，回我一句：太挤 / 太空 / 太居中 / 太普通。</p>
+
+  <div class="item">
+    <span class="tag">D1 · 三栏，人围着天数</span>
+    <section class="card d1">
+      <span class="k">TOGETHER</span>
+      <div class="row">
+        <div class="who"><div class="ava">宋</div><b>宋祁</b></div>
+        <div class="mid"><div class="num">688</div><small>DAYS</small></div>
+        <div class="who"><div class="ava">淼</div><b>淼淼</b></div>
+      </div>
+    </section>
+    <p class="note">中间是日子，两边是你俩。像名字签在一张纸上。</p>
+  </div>
+
+  <div class="item">
+    <span class="tag">D2 · 两个头像叠在一起</span>
+    <section class="card d2">
+      <div class="pair"><div class="ava">宋</div><div class="ava">淼</div></div>
+      <div class="names">宋祁 &amp; 淼淼</div>
+      <div class="num">688<small>DAYS</small></div>
+    </section>
+    <p class="note">头像压着一半，表示靠在一起。字还是居中一行。</p>
+  </div>
+
+  <div class="item">
+    <span class="tag">D3 · 大字在左，人挤在右下</span>
+    <section class="card d3">
+      <span class="k">TOGETHER</span>
+      <div class="num">688<small>DAYS</small></div>
+      <div class="foot">
+        <div class="who"><span class="ava">宋</span><b>宋祁</b></div>
+        <span class="and">·</span>
+        <div class="who"><span class="ava">淼</span><b>淼淼</b></div>
+      </div>
+    </section>
+    <p class="note">数字最大，人头像小一号。适合想让天数当主角。</p>
+  </div>
+
+  <div class="item">
+    <span class="tag">D4 · 不要卡片，只留签名</span>
+    <section class="card d4">
+      <div class="num">688</div>
+      <div class="unit">TOGETHER · DAYS</div>
+      <div class="line"></div>
+      <div class="sig">
+        <span class="dot"></span><span>宋祁</span>
+        <span class="dot sep"></span>
+        <span class="dot"></span><span>淼淼</span>
+      </div>
+    </section>
+    <p class="note">没有白卡、没有阴影。跟小红书那种「敢空着」的版式最近，但会显得空。</p>
+  </div>
+
+</div>
+</body>
+</html>
