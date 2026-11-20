@@ -1,4 +1,4 @@
-/* desktop.js · 首页四页横滑（V4 封面在前，功能单独成页） */
+/* desktop.js · 首页四页横滑（封面 / 今天 / 记录 / 其余） */
 (function () {
   const D = document;
 
@@ -7,6 +7,9 @@
 
   const DOCK = ['chat', 'diary', 'album', 'memory'];
   const TOTAL = 4;
+
+  /* 第 4 页只放没在 dock 和前两页出现过的 */
+  const REST = ['weather', 'mcp', 'beautify', 'settings'];
 
   const RAIL_META = {
     chat: ['CHAT', '回到你们正在说的话'],
@@ -51,12 +54,14 @@
         '<i>ALBUM</i></div>';
   }
 
-  function allAppsHtml() {
-    const cells = window.Apps.ALL.map(function (app) {
-      return '<button type="button" class="appcell" data-app="' + app.id + '">' +
+  function restAppsHtml() {
+    const cells = REST.map(function (id) {
+      const app = window.Apps.find(id);
+      if (!app) return '';
+      return '<button type="button" class="appcell" data-app="' + id + '">' +
           UI.icon(app.icon) + '<span>' + app.name + '</span></button>';
     }).join('');
-    return '<div class="appall">' + cells + '</div>';
+    return '<div class="approw">' + cells + '</div>';
   }
 
   function pagesHtml() {
@@ -72,18 +77,16 @@
       '<section class="page">' +
         W.clock() +
         '<div class="duo">' + W.weatherCard() + W.quota() + '</div>' +
-        W.appGrid() +
       '</section>' +
 
       '<section class="page">' +
         W.calendar() +
         W.nowPlaying() +
-        W.rows() +
       '</section>' +
 
       '<section class="page">' +
-        '<div class="page-head"><span class="kicker">ALL</span><span class="page-sub">全部功能</span></div>' +
-        allAppsHtml() +
+        '<div class="page-head"><span class="kicker">MORE</span><span class="page-sub">剩下几个</span></div>' +
+        restAppsHtml() +
       '</section>';
   }
 
