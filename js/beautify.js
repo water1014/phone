@@ -1,6 +1,5 @@
 /* beautify.js · 美化
-   数值项全是滑杆，改一个值就写进 CSS 变量；
-   顶部一块实时预览；代码小组件只有一栏，整段粘就行。 */
+   预览固定在上方，下面一条横滑分类长条，内容只显示当前那一类。 */
 (function () {
   const D = document;
   const ROOT = D.documentElement;
@@ -8,6 +7,7 @@
   const IK = 'xw_wall_img';
 
   const DEF = {
+    tab: 'kit',
     skin: 'light',
     accent: 'ink',
     card: 'white',
@@ -27,6 +27,14 @@
     mkind: 'text',
     mheight: '140'
   };
+
+  const TABS = [
+    { k: 'kit', n: '成套' },
+    { k: 'look', n: '样子' },
+    { k: 'mat', n: '材质' },
+    { k: 'text', n: '字与桌面' },
+    { k: 'mods', n: '小组件' }
+  ];
 
   const RANGES = [
     { k: 'radius', cn: '圆角', en: 'RADIUS', min: 8, max: 28, unit: 'px' },
@@ -219,13 +227,10 @@
     const svg = app ? UI.icon(app.icon) : '';
     const cell = '<div class="pv-cell">' + svg + '</div>';
 
-    return '<div class="bz-pv-wrap">' +
-        '<div class="pv" id="bz-pv">' +
-          '<div class="pv-grid">' + cell + cell + cell + cell + cell + cell + cell + cell + '</div>' +
-          '<div class="pv-bar"><div class="pv-line"></div><div class="pv-line short"></div></div>' +
-          '<div class="pv-dock"><i></i><i></i><i></i><i></i></div>' +
-        '</div>' +
-        '<div class="pv-note">LIVE PREVIEW</div>' +
+    return '<div class="pv" id="bz-pv">' +
+        '<div class="pv-grid">' + cell + cell + cell + cell + '</div>' +
+        '<div class="pv-bar"><div class="pv-line"></div><div class="pv-line short"></div></div>' +
+        '<div class="pv-dock"><i></i><i></i><i></i><i></i></div>' +
       '</div>';
   }
 
@@ -289,8 +294,8 @@
         '<input id="bz-mt" type="text" placeholder="比如：小钟"></label>' +
 
       '<div class="bz-lab" style="margin-top:14px"><b>整段代码</b><i>PASTE</i></div>' +
-      '<textarea id="bz-mq" class="bz-ta" rows="14" spellcheck="false"' +
-        ' placeholder="整段粘进来就行。HTML、style、script 放一起：&#10;&#10;&lt;div id=&#39;t&#39;&gt;--&lt;/div&gt;&#10;&lt;style&gt;body{background:#fff}&lt;/style&gt;&#10;&lt;script&gt;...&lt;/script&gt;"></textarea>' +
+      '<textarea id="bz-mq" class="bz-ta" rows="12" spellcheck="false"' +
+        ' placeholder="整段粘进来就行。HTML、style、script 放一起&#10;&lt;div id=&#39;t&#39;&gt;--&lt;/div&gt;&#10;&lt;style&gt;body{background:#fff}&lt;/style&gt;&#10;&lt;script&gt;...&lt;/script&gt;"></textarea>' +
 
       '<div class="row-actions" style="justify-content:flex-start">' +
         '<button type="button" id="bz-mext" class="btn-glass">填一段示例</button></div>' +
@@ -307,61 +312,67 @@
 
       '<div class="bz-prev" id="bz-pbox"><div class="bz-prev-box">写完点「预览」，就在这儿跑</div></div>' +
 
-      '<div class="sheet-note">它跑在一张独立的沙箱网页里：样式和脚本都不出这张卡，也读不到桌面上的东西。写完整网页（带 &lt;!DOCTYPE&gt;）也能直接认。</div>';
+      '<div class="sheet-note">它跑在一张独立的沙箱网页里：样式和脚本都不出这张卡，也读不到桌面上的东西。写完整网页也能直接认。</div>';
+  }
+
+  function pane(k, inner) {
+    return '<div class="bz-pane' + (st.tab === k ? ' on' : '') + '" data-pane="' + k + '">' +
+      '<div class="sheet">' + inner + '</div></div>';
+  }
+
+  function kitPane() {
+    return sec('一按就走', 'ONE TAP', Object.keys(PRESET).map(function (id) {
+        return opt('preset', id, PRESET_NAME[id]);
+      }).join('')) +
+      '<div class="sheet-note">整套换。其他分类里每一项还能单独再调。</div>' +
+      '<div class="row-actions"><button type="button" id="bz-reset" class="btn-glass">全部回到最初</button></div>';
+  }
+
+  function lookPane() {
+    return sec('皮', 'SKIN', opt('skin', 'light', '光') + opt('skin', 'night', '夜') + opt('skin', 'paper', '纸')) +
+      sec('主色', 'ACCENT', accentDots()) +
+      sec('背景', 'WALLPAPER', walls());
+  }
+
+  function matPane() {
+    return sec('做法', 'MATERIAL',
+        opt('mat', 'flat', '素的') + opt('mat', 'frost', '磨砂') +
+        opt('mat', 'glass', '玻璃') + opt('mat', 'liquid', '液态')) +
+      RANGES.map(rangeRow).join('') +
+      '<div class="sheet-note">糊度、厚薄、光泽只在选了磨砂 / 玻璃 / 液态后看得出来。想要明显，先铺一张壁纸。</div>';
+  }
+
+  function textPane() {
+    return sec('卡片', 'CARD', opt('card', 'white', '纯白') + opt('card', 'paper', '米纸') + opt('card', 'line', '描边')) +
+      sec('字', 'TYPE', opt('cn', 'serif', '宋') + opt('cn', 'sans', '黑') + opt('cn', 'mono', '等宽')) +
+      sec('动效', 'MOTION', opt('motion', 'on', '开着') + opt('motion', 'off', '关掉')) +
+      sec('底部四格', 'DOCK', opt('dock', 'on', '留着') + opt('dock', 'off', '收起')) +
+      sec('页码点', 'DOTS', opt('dots', 'on', '显示') + opt('dots', 'off', '藏起')) +
+      '<div class="sheet-note">名字和纪念日在「设置」里改。</div>';
+  }
+
+  function modsPane() {
+    return modRows() +
+      sec('做法', 'HOW', opt('mkind', 'text', '写字') + opt('mkind', 'code', '写代码')) +
+      (st.mkind === 'code' ? codeForm() : textForm()) +
+      '<div class="bz-foot">XIAOWO · 改坏了就去「成套」点全部回到最初</div>';
   }
 
   function view() {
-    return '<header class="hero">' +
-        '<span class="kicker">APPEARANCE</span>' +
-        '<h1 class="hero-title">美化</h1>' +
-        '<div class="hero-sub">滑一下就能看出差别</div>' +
-      '</header>' +
-
-      preview() +
-
-      '<div class="sheet">' +
-        '<div class="sheet-head"><span class="sheet-title">成套</span>' +
-          '<button type="button" id="bz-reset" class="btn-glass">全部回到最初</button></div>' +
-        sec('一按就走', 'ONE TAP', Object.keys(PRESET).map(function (id) {
-          return opt('preset', id, PRESET_NAME[id]);
-        }).join('')) +
-        '<div class="sheet-note">整套换，下面每一项还能单独再调。</div>' +
-      '</div>' +
-
-      '<div class="sheet">' +
-        '<div class="sheet-head"><span class="sheet-title">样子</span></div>' +
-        sec('皮', 'SKIN', opt('skin', 'light', '光') + opt('skin', 'night', '夜') + opt('skin', 'paper', '纸')) +
-        sec('主色', 'ACCENT', accentDots()) +
-        sec('背景', 'WALLPAPER', walls()) +
-      '</div>' +
-
-      '<div class="sheet">' +
-        '<div class="sheet-head"><span class="sheet-title">材质</span></div>' +
-        sec('做法', 'MATERIAL',
-          opt('mat', 'flat', '素的') + opt('mat', 'frost', '磨砂') +
-          opt('mat', 'glass', '玻璃') + opt('mat', 'liquid', '液态')) +
-        RANGES.map(rangeRow).join('') +
-        '<div class="sheet-note">糊度、厚薄、光泽只在选了磨砂 / 玻璃 / 液态后看得出来；素的没有透明效果。</div>' +
-      '</div>' +
-
-      '<div class="sheet">' +
-        '<div class="sheet-head"><span class="sheet-title">字与桌面</span></div>' +
-        sec('卡片', 'CARD', opt('card', 'white', '纯白') + opt('card', 'paper', '米纸') + opt('card', 'line', '描边')) +
-        sec('字', 'TYPE', opt('cn', 'serif', '宋') + opt('cn', 'sans', '黑') + opt('cn', 'mono', '等宽')) +
-        sec('动效', 'MOTION', opt('motion', 'on', '开着') + opt('motion', 'off', '关掉')) +
-        sec('底部四格', 'DOCK', opt('dock', 'on', '留着') + opt('dock', 'off', '收起')) +
-        sec('页码点', 'DOTS', opt('dots', 'on', '显示') + opt('dots', 'off', '藏起')) +
-        '<div class="sheet-note">名字和纪念日在「设置」里改。</div>' +
-      '</div>' +
-
-      '<div class="sheet">' +
-        '<div class="sheet-head"><span class="sheet-title">小组件</span></div>' +
-        modRows() +
-        sec('做法', 'HOW', opt('mkind', 'text', '写字') + opt('mkind', 'code', '写代码')) +
-        (st.mkind === 'code' ? codeForm() : textForm()) +
-      '</div>' +
-
-      '<div class="bz-foot">XIAOWO · 改坏了就点上面「全部回到最初」</div>';
+    return '<div class="bz-stage">' +
+        '<div class="bz-preview">' + preview() + '</div>' +
+        '<div class="bz-tabs">' + TABS.map(function (t) {
+          return '<button type="button" class="bz-tab' + (st.tab === t.k ? ' on' : '') + '"' +
+            ' data-tab="' + t.k + '">' + t.n + '</button>';
+        }).join('') + '</div>' +
+        '<div class="bz-body">' +
+          pane('kit', kitPane()) +
+          pane('look', lookPane()) +
+          pane('mat', matPane()) +
+          pane('text', textPane()) +
+          pane('mods', modsPane()) +
+        '</div>' +
+      '</div>';
   }
 
   function mark(root) {
@@ -373,6 +384,16 @@
       if (!k || !v) return;
       const on = (k === 'preset') ? (pre === v) : (st[k] === v);
       el.classList.toggle('on', on);
+    });
+  }
+
+  function switchTab(root) {
+    Array.prototype.forEach.call(root.querySelectorAll('.bz-tab'), function (b) {
+      b.classList.toggle('on', b.getAttribute('data-tab') === st.tab);
+    });
+
+    Array.prototype.forEach.call(root.querySelectorAll('.bz-pane'), function (p) {
+      p.classList.toggle('on', p.getAttribute('data-pane') === st.tab);
     });
   }
 
@@ -475,6 +496,16 @@
     bodyEl.addEventListener('click', function (e) {
       const t = e.target;
       if (!t || !t.closest) return;
+
+      const tab = t.closest('[data-tab]');
+      if (tab) {
+        st.tab = tab.getAttribute('data-tab');
+        save();
+        switchTab(bodyEl);
+        const box = bodyEl.querySelector('.bz-body');
+        if (box) box.scrollTop = 0;
+        return;
+      }
 
       const del = t.closest('[data-mod-del]');
       if (del) {
@@ -651,18 +682,6 @@
       });
     }
 
-    const reset = D.getElementById('bz-reset');
-    if (reset) {
-      reset.addEventListener('click', function () {
-        Object.keys(DEF).forEach(function (k) { st[k] = DEF[k]; });
-        try { localStorage.removeItem(IK); } catch (e) {}
-        save();
-        apply();
-        UI.toast('外观回到最初了');
-        if (window.Router && Router.reopen) Router.reopen('beautify');
-      });
-    }
-
     if (pending && window.Mods && Mods.find) {
       const m = Mods.find(pending);
       const id = pending;
@@ -677,6 +696,7 @@
     }
 
     mark(bodyEl);
+    switchTab(bodyEl);
     apply();
   }
 
