@@ -239,7 +239,7 @@
           ids[from] = ids[to];
           ids[to] = tmp;
           XW.S.appOrder = ids;
-          XW.S.save('appOrder');
+          XW.save('appOrder');
         }
       }
 
