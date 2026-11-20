@@ -1,6 +1,7 @@
 /* layout.js · 首页布局表
    每页一个四列网格，组件与 App 都是网格上的一个块。
-   长按 450ms 拖动；拖到最近的块上松手就交换；拖到空白就落到该页末尾。 */
+   长按任一一块 → 进入编辑态（整桌轻抖），此时拖任何一块都直接跟手。
+   点空白处退出编辑。 */
 (function () {
   const D = document;
   const K = 'xw_layout';
@@ -23,6 +24,7 @@
 
   let st = null;
   let justDragged = false;
+  let editing = false;
 
   function valid(k) {
     if (SPAN[k] !== undefined) return true;
@@ -51,7 +53,6 @@
       }
     }
 
-    /* 个人信息卡改回天数卡（它现在住在侧栏里） */
     return saved.map(function (p) {
       return p.map(function (k) { return k === 'profile' ? 'days' : k; });
     });
@@ -97,6 +98,39 @@
   }
 
   function homeEl() { return D.getElementById('home'); }
+
+  /* ============ 编辑态 ============ */
+
+  function hint(on) {
+    let el = D.getElementById('edit-hint');
+    if (!on) {
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+      return;
+    }
+    if (el) return;
+    el = D.createElement('div');
+    el.id = 'edit-hint';
+    el.textContent = '拖动摆位置 · 点空白结束';
+    D.body.appendChild(el);
+  }
+
+  function enterEdit() {
+    if (editing) return;
+    editing = true;
+    const home = homeEl();
+    if (home) home.classList.add('editing');
+    hint(true);
+  }
+
+  function exitEdit() {
+    if (!editing) return;
+    editing = false;
+    const home = homeEl();
+    if (home) home.classList.remove('editing');
+    hint(false);
+  }
+
+  /* ============ 拖动 ============ */
 
   function pageAt(home, i) {
     const pages = home.querySelectorAll('.page');
@@ -161,14 +195,25 @@
       edge: null
     };
 
+    if (editing) {
+      lift(st);
+      return;
+    }
+
     st.timer = setTimeout(function () {
       if (!st) return;
-      st.active = true;
-      st.item.classList.add('lift');
-      st.home.classList.add('dragging');
-      st.home.style.scrollSnapType = 'none';
-      if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
-    }, 450);
+      st.timer = null;
+      enterEdit();
+      lift(st);
+    }, 420);
+  }
+
+  function lift(s) {
+    s.active = true;
+    s.item.classList.add('lift');
+    s.home.classList.add('dragging');
+    s.home.style.scrollSnapType = 'none';
+    if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
   }
 
   function onMove(ev) {
@@ -317,9 +362,21 @@
   }
 
   D.addEventListener('click', function (e) {
-    if (!justDragged) return;
-    e.stopPropagation();
-    e.preventDefault();
+    if (justDragged) {
+      e.stopPropagation();
+      e.preventDefault();
+      return;
+    }
+
+    if (!editing) return;
+
+    if (e.target.closest('.gi')) {
+      e.stopPropagation();
+      e.preventDefault();
+      return;
+    }
+
+    exitEdit();
   }, true);
 
   function bindWidgets(root) {
@@ -346,11 +403,14 @@
     read: read,
     bind: function (root) {
       if (!root) return;
+      exitEdit();
       bindWidgets(root);
       bindDrag(root);
     },
+    exit: exitEdit,
     reset: function () {
       try { localStorage.removeItem(K); } catch (e) {}
+      exitEdit();
     }
   };
 })();

@@ -12,7 +12,6 @@
   min-width: 0;
 }
 
-/* App 格子比列宽小一圈，居中摆，不再顶满 */
 #home .gi1{
   grid-column: span 1;
   justify-self: center;
@@ -48,7 +47,6 @@
   background: rgba(141, 154, 168, .06);
 }
 
-/* 图标：细线、圆头 */
 #home .gi .appcell svg{
   width: 21px;
   height: 21px;
@@ -67,6 +65,27 @@
 
 #home .gi2 > .wdg{
   min-height: 100%;
+}
+
+/* ============ 编辑态：整桌轻抖 ============ */
+
+@keyframes gi-wobble{
+  0%   { transform: rotate(-.55deg); }
+  50%  { transform: rotate(.55deg); }
+  100% { transform: rotate(-.55deg); }
+}
+
+#home.editing .gi{
+  animation: gi-wobble .34s ease-in-out infinite;
+}
+
+#home.editing .gi:nth-child(2n){
+  animation-duration: .29s;
+  animation-direction: reverse;
+}
+
+#home.editing .gi.lift{
+  animation: none;
 }
 
 /* ============ 拖动 ============ */
@@ -90,4 +109,23 @@
 #home.dragging{
   -webkit-user-select: none;
   user-select: none;
+}
+
+/* 顶部的编辑提示 */
+#edit-hint{
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 80;
+  padding: 7px 15px;
+  border-radius: 15px;
+  background: rgba(33, 31, 28, .88);
+  color: #f3efe7;
+  font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
+  font-size: 11.5px;
+  letter-spacing: .8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .18);
+  pointer-events: none;
+  white-space: nowrap;
 }
