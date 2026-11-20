@@ -1,6 +1,6 @@
 /* layout.js · 首页布局表 + dock
-   右上「编辑」进入编辑态；左上 ＋ 加块；每块右上 × 删除
-   轻点不算拖；删掉后不重排，页码也不跳 */
+   页面内拖动：直接换 DOM，不重建，所以不闪也不跳页
+   涉及 dock：重建，但页码会滚回去 */
 (function () {
   const D = document;
   const K = 'xw_layout';
@@ -105,6 +105,23 @@
     try { localStorage.setItem(K, JSON.stringify(list)); } catch (e) {}
   }
 
+  /* 从当前 DOM 把顺序写回表：页面内换位用这个，不重建 */
+  function save() {
+    const home = homeEl();
+    if (!home) return;
+
+    const out = [];
+    Array.prototype.forEach.call(home.querySelectorAll('.page'), function (pg) {
+      const keys = [];
+      Array.prototype.forEach.call(pg.querySelectorAll('.gi'), function (gi) {
+        keys.push(gi.getAttribute('data-key'));
+      });
+      out.push(keys);
+    });
+
+    write(out);
+  }
+
   /* ============ dock 顺序 ============ */
 
   function dockOrder() {
@@ -158,41 +175,6 @@
   }
 
   /* ============ 数据层的各种换法 ============ */
-
-  function swapPageKeys(aKey, bKey) {
-    if (aKey === bKey) return false;
-
-    const list = read();
-    let done = false;
-
-    list.forEach(function (p) {
-      const i = p.indexOf(aKey);
-      const j = p.indexOf(bKey);
-      if (i >= 0 && j >= 0) { p[i] = bKey; p[j] = aKey; done = true; return; }
-      if (i >= 0) { p[i] = bKey; done = true; }
-      if (j >= 0) { p[j] = aKey; done = true; }
-    });
-
-    if (done) write(list);
-    return done;
-  }
-
-  function moveKeyToPageEnd(key, pageIndex) {
-    const list = read();
-    let found = false;
-
-    list.forEach(function (p) {
-      const i = p.indexOf(key);
-      if (i >= 0) { p.splice(i, 1); found = true; }
-    });
-
-    if (!found) return false;
-
-    while (list.length <= pageIndex) list.push([]);
-    list[pageIndex].push(key);
-    write(list);
-    return true;
-  }
 
   function swapPageDock(giKey, dockId) {
     if (typeof giKey !== 'string' || giKey.indexOf('app:') !== 0) return false;
@@ -637,12 +619,35 @@
     if (hit.item) hit.item.classList.add('drop-target');
   }
 
+  /* ============ DOM 级换位（不重建） ============ */
+
+  function swapDom(a, b) {
+    if (!a || !b || a === b) return false;
+
+    const pa = a.parentNode;
+    const pb = b.parentNode;
+    if (!pa || !pb) return false;
+
+    const ma = D.createComment('sw');
+    const mb = D.createComment('sw');
+
+    pa.insertBefore(ma, a);
+    pb.insertBefore(mb, b);
+
+    pa.insertBefore(b, ma);
+    pb.insertBefore(a, mb);
+
+    pa.removeChild(ma);
+    pb.removeChild(mb);
+
+    return true;
+  }
+
   /* ============ 页面块拖动 ============ */
 
   function onStart(ev) {
     if (!ev.touches || ev.touches.length !== 1) return;
 
-    /* 点删除点、点顶部两个按钮都不算拖 */
     if (ev.target.closest && ev.target.closest('.gi-del')) return;
 
     const home = homeEl();
@@ -653,7 +658,6 @@
 
     const t = ev.touches[0];
     st = {
-      kind: 'page',
       item: item,
       home: home,
       sx: t.clientX, sy: t.clientY,
@@ -663,8 +667,6 @@
       hit: null,
       sig: '',
       side: 0,
-      flipped: false,
-      target: -1,
       timer: null,
       edge: null
     };
@@ -754,28 +756,8 @@
     const next = Math.max(0, Math.min(total - 1, cur + dir));
     if (next === cur) return;
 
-    st.flipped = true;
-    st.target = next;
     home.scrollTo({ left: next * w, behavior: 'smooth' });
     if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
-  }
-
-  function endPage(s) {
-    const key = s.item.getAttribute('data-key');
-    const pageIdx = currentIndex(s.home);
-    const hit = s.hit;
-    let changed = false;
-
-    if (hit && hit.kind === 'gi') {
-      if (hit.el !== s.item) changed = swapPageKeys(key, hit.el.getAttribute('data-key'));
-    } else if (hit && hit.kind === 'dock') {
-      if (hit.item) changed = swapPageDock(key, hit.item.getAttribute('data-app'));
-      else changed = pageToDockEnd(key);
-    } else {
-      changed = moveKeyToPageEnd(key, pageIdx);
-    }
-
-    return changed;
   }
 
   function onEnd() {
@@ -794,21 +776,41 @@
     s.home.classList.remove('dragging');
     clearMarks();
 
-    /* 只是轻点，没真的拖 —— 什么都不做，把点击让给 × 按钮 */
     if (!s.moved) return;
 
-    const changed = endPage(s);
+    const hit = s.hit;
+    const key = s.item.getAttribute('data-key');
+    let changed = false;
+    let rebuild = false;
+
+    if (hit && hit.kind === 'gi' && hit.el !== s.item) {
+      /* 页面里两块对调：直接换 DOM */
+      changed = swapDom(s.item, hit.el);
+    } else if (hit && hit.kind === 'dock') {
+      /* 跟 dock 有关：得重建 */
+      if (hit.item) changed = swapPageDock(key, hit.item.getAttribute('data-app'));
+      else changed = pageToDockEnd(key);
+      rebuild = true;
+    } else {
+      /* 挪到这一页末尾：直接移动 DOM */
+      const pg = pageAt(s.home, currentIndex(s.home));
+      if (pg && s.item.parentNode !== pg) {
+        pg.appendChild(s.item);
+        changed = true;
+      }
+    }
 
     justDragged = true;
     setTimeout(function () { justDragged = false; }, 380);
 
     keepEdit = editing;
 
-    if (changed) {
-      if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
-    }
+    if (!changed) return;
 
-    rerender();
+    if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
+
+    if (rebuild) rerender();
+    else save();
   }
 
   /* ============ dock 拖动 ============ */
@@ -818,7 +820,6 @@
     const home = homeEl();
 
     dst = {
-      kind: 'dock',
       id: item.getAttribute('data-app'),
       item: item,
       home: home,
@@ -933,9 +934,9 @@
 
     keepEdit = editing;
 
-    if (changed) {
-      if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
-    }
+    if (!changed) return;
+
+    if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
 
     rerender();
   }
@@ -982,7 +983,6 @@
       const key = gi && gi.getAttribute('data-key');
       if (!key) return;
 
-      /* 只从桌面拿掉，组件本体还在；不重建桌面，所以不会跳页 */
       delKey(key);
       if (gi.parentNode) gi.parentNode.removeChild(gi);
       if (navigator.vibrate) { try { navigator.vibrate(10); } catch (err) {} }
@@ -1059,24 +1059,30 @@
     home.addEventListener('touchcancel', onEnd);
   }
 
-  /* 重建时把页码保住，不再跳回第一页 */
+  /* 重建时把页码保住 */
   function rerender() {
     const home = homeEl();
     const idx = home ? currentIndex(home) : 0;
 
     if (window.Desktop && Desktop.rerender) Desktop.rerender();
 
-    const nh = homeEl();
-    if (!nh) return;
+    const back = function () {
+      const nh = homeEl();
+      if (!nh) return;
 
-    if (idx > 0) {
-      nh.scrollLeft = idx * (nh.clientWidth || 1);
+      const w = nh.clientWidth || 1;
+      if (idx > 0) nh.scrollTo({ left: idx * w, behavior: 'auto' });
+
       const pager = D.getElementById('pager');
       if (pager) {
         const dots = pager.children;
         for (let i = 0; i < dots.length; i++) dots[i].classList.toggle('on', i === idx);
       }
-    }
+    };
+
+    back();
+    window.requestAnimationFrame(back);
+    setTimeout(back, 60);
   }
 
   window.Layout = {
