@@ -1,0 +1,67 @@
+/* memory.css · 记忆这一间 */
+
+.mcard {
+  position: relative;
+  margin-bottom: .72rem;
+  padding: .8rem 1rem .78rem;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+}
+
+.mcard.pinned::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: .95rem;
+  bottom: .95rem;
+  width: 2px;
+  border-radius: 2px;
+  background: #8d9aa8;
+}
+
+.mcard-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .5rem;
+}
+
+.mstamp {
+  padding: .1rem .34rem .08rem;
+  border: 1px dashed rgba(141, 154, 168, .5);
+  border-radius: 3px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .4rem;
+  letter-spacing: .04em;
+  color: #8d9aa8;
+}
+
+.mdel {
+  width: 1.2rem;
+  height: 1.2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #c8c8c8;
+  font: inherit;
+  font-size: .8rem;
+  line-height: 1;
+}
+.mdel:active { background: rgba(0, 0, 0, .05); }
+
+.mtext {
+  font-size: .64rem;
+  line-height: 1.9;
+  letter-spacing: .01em;
+  color: #3f3f3f;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.btn-glass.on {
+  border-color: rgba(141, 154, 168, .6);
+  color: #5f6f7d;
+  background: rgba(141, 154, 168, .10);
+}

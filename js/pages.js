@@ -1,4 +1,4 @@
-/* pages.js · 日记 / 相册 / 日历 */
+/* pages.js · 日记 / 相册 / 日历 / 记忆 */
 (function () {
   const D = document;
 
@@ -174,6 +174,13 @@
   let calMonth = null;
   let calPick = '';
 
+  function calendarFocus(key) {
+    const hit = String(key || '').match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (!hit) return;
+    calPick = hit[1] + '-' + hit[2] + '-' + hit[3];
+    calMonth = new Date(Number(hit[1]), Number(hit[2]) - 1, 1);
+  }
+
   function calendar() {
     const list = Array.isArray(XW.S.diary) ? XW.S.diary : [];
     const set = {};
@@ -261,6 +268,101 @@
     });
   }
 
+  /* ── 记忆 ── */
+  let memPin = false;
+
+  function memCard(item, i) {
+    const date = String(item.date || '');
+    return '<article class="mcard' + (item.pinned ? ' pinned' : '') + '">' +
+        '<div class="mcard-top">' +
+          '<span class="mstamp">' + esc(date) + '</span>' +
+          '<button type="button" class="mdel" data-md="' + i + '" aria-label="删掉">×</button>' +
+        '</div>' +
+        '<p class="mtext">' + esc(String(item.text || '')) + '</p>' +
+      '</article>';
+  }
+
+  function memory() {
+    const list = Array.isArray(XW.S.notes) ? XW.S.notes : [];
+    const pinned = [];
+    const rest = [];
+
+    list.forEach(function (item, i) {
+      const row = { item: item, index: i };
+      if (item && item.pinned) pinned.push(row);
+      else rest.push(row);
+    });
+
+    rest.sort(function (a, b) { return (b.item.t || 0) - (a.item.t || 0); });
+
+    const sub = list.length
+      ? '共 ' + list.length + ' 条 · 钉住 ' + pinned.length + ' 条'
+      : '还空着。你说过的，我都记在这里。';
+
+    const pinnedBlock = pinned.length
+      ? '<div class="album-date-band">钉住的</div>' + pinned.map(function (r) { return memCard(r.item, r.index); }).join('')
+      : '';
+
+    const restBlock = rest.length
+      ? '<div class="album-date-band">全部</div>' + rest.map(function (r) { return memCard(r.item, r.index); }).join('')
+      : (pinned.length ? '' : '<div class="empty-state" style="margin-top:1rem">还没记下什么。<br>往上面写一句，我就存着。</div>');
+
+    return hero('MEMORY', '记忆', sub) +
+      '<div class="sheet">' +
+        '<label class="field"><span>记一条</span>' +
+          '<textarea id="mem-input" rows="3" placeholder="想让我一直记得的…"></textarea>' +
+        '</label>' +
+        '<div class="row-actions">' +
+          '<button type="button" id="mem-pin" class="btn-glass">钉永久</button>' +
+          '<button type="button" id="mem-save" class="btn-solid">记下</button>' +
+        '</div>' +
+        '<div class="sheet-note">钉住的那几条会置顶，提醒我别忘了。</div>' +
+      '</div>' +
+      pinnedBlock + restBlock;
+  }
+
+  function memoryBind(bodyEl) {
+    const input = D.getElementById('mem-input');
+    const save = D.getElementById('mem-save');
+    const pin = D.getElementById('mem-pin');
+
+    if (pin) {
+      pin.addEventListener('click', function () {
+        memPin = !memPin;
+        pin.textContent = memPin ? '已钉 ✓' : '钉永久';
+        pin.classList.toggle('on', memPin);
+      });
+    }
+
+    if (save && input) {
+      save.addEventListener('click', function () {
+        const text = (input.value || '').trim();
+        if (!text) { UI.toast('空着的'); return; }
+        const now = new Date();
+        XW.S.notes = Array.isArray(XW.S.notes) ? XW.S.notes : [];
+        XW.S.notes.push({
+          text: text,
+          date: UI.fmtYmd(now),
+          pinned: memPin,
+          t: Date.now()
+        });
+        XW.save('notes');
+        memPin = false;
+        UI.toast('记住了');
+        window.Router.reopen('memory');
+      });
+    }
+
+    Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-md]'), function (btn) {
+      btn.addEventListener('click', function () {
+        XW.S.notes.splice(Number(btn.dataset.md), 1);
+        XW.save('notes');
+        UI.toast('删了');
+        window.Router.reopen('memory');
+      });
+    });
+  }
+
   window.Pages = {
     diary: diary,
     diaryBind: diaryBind,
@@ -268,6 +370,9 @@
     albumBind: albumBind,
     calendar: calendar,
     calendarBind: calendarBind,
+    calendarFocus: calendarFocus,
+    memory: memory,
+    memoryBind: memoryBind,
     hero: hero
   };
 })();
