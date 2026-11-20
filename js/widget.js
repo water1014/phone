@@ -20,7 +20,6 @@
     return marks;
   }
 
-  /* 时钟（第一页顶部，不再固定） */
   function clockHtml() {
     return '<section class="wdg-clock">' +
         '<div class="dclock" id="desk-clock">--:--</div>' +
@@ -28,7 +27,6 @@
       '</section>';
   }
 
-  /* 天数 */
   function daysHtml() {
     const love = new Date(XW.S.loveDate || '2025-01-01');
     const days = UI.diffDay(love, new Date());
@@ -43,7 +41,6 @@
       '</section>';
   }
 
-  /* 三格 */
   function statCell(num, label, app) {
     return '<button type="button" class="stat" data-app="' + app + '">' +
         '<b>' + num + '</b>' +
@@ -65,7 +62,6 @@
       '</section>';
   }
 
-  /* 月历 */
   function calendarHtml() {
     const now = new Date();
     const year = now.getFullYear();
@@ -97,7 +93,6 @@
       '</section>';
   }
 
-  /* 天气 */
   function weatherHtml() {
     return '<section class="wdg wdg-weather" data-app="weather" role="button" tabindex="0">' +
         '<div class="quote-head">' +
@@ -147,7 +142,6 @@
     });
   }
 
-  /* 摘句 */
   function quoteHtml() {
     const list = Array.isArray(XW.S.diary) ? XW.S.diary : [];
     const last = list.length ? list[list.length - 1] : null;
@@ -169,6 +163,49 @@
       '</section>';
   }
 
+  /* 记忆：钉住的优先，没有就最近一条 */
+  function memoryHtml() {
+    const list = Array.isArray(XW.S.notes) ? XW.S.notes : [];
+    const pinned = list.filter(function (n) { return n && n.pinned; });
+    const last = pinned.length ? pinned[pinned.length - 1]
+      : (list.length ? list[list.length - 1] : null);
+
+    const head = '<div class="quote-head"><span class="kicker">MEMORY</span>' +
+      '<span class="quote-date">' + (last ? esc(String(last.date || '')) : '空着') + '</span></div>';
+
+    if (!last) {
+      return '<section class="wdg wdg-mem" data-app="memory" role="button" tabindex="0">' + head +
+          '<p class="quote-text">还没钉住什么。<br>点这里能写。</p>' +
+        '</section>';
+    }
+
+    return '<section class="wdg wdg-mem" data-app="memory" role="button" tabindex="0">' + head +
+        '<p class="quote-text">' + esc(String(last.text || '').slice(0, 56)) + '</p>' +
+      '</section>';
+  }
+
+  /* 额度：token 用量 */
+  function quotaHtml() {
+    const usage = XW.S.usage || { rounds: 0, input: 0 };
+    const limit = Number(XW.S.ctxLimit) || 128000;
+    const used = Number(usage.input) || 0;
+    const pct = Math.min(999, Math.round(used / limit * 100));
+
+    const fmt = function (n) {
+      if (n < 1000) return String(n);
+      return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    };
+
+    return '<section class="wdg wdg-quota">' +
+        '<div class="quote-head">' +
+          '<span class="kicker">QUOTA</span>' +
+          '<span class="quote-date">' + (Number(usage.rounds) || 0) + ' 轮</span>' +
+        '</div>' +
+        '<div class="q-line"><b>' + pct + '%</b><i>' + fmt(used) + ' / ' + fmt(limit) + '</i></div>' +
+        '<div class="q-bar"><i style="width:' + Math.min(100, pct) + '%"></i></div>' +
+      '</section>';
+  }
+
   function bindCalendar(root) {
     Array.prototype.forEach.call(root.querySelectorAll('.cal-d[data-day]'), function (btn) {
       btn.addEventListener('click', function () {
@@ -186,6 +223,8 @@
     calendar: calendarHtml,
     weatherCard: weatherHtml,
     quote: quoteHtml,
+    memoryCard: memoryHtml,
+    quota: quotaHtml,
     after: function (root) {
       bindCalendar(root);
       loadWeather();

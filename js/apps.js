@@ -1,6 +1,4 @@
-/* apps.js · App 注册表
-   桌面图标从这张表生成，每页 8 个，4 列 x 2 行。
-   想加/改/删 App、改名字，只改这里。 */
+/* apps.js · App 注册表 */
 (function () {
   const APPS = [
     { id: 'chat', name: '聊天', icon: ['M4 5h16v11H9l-5 4z'] },
@@ -31,8 +29,7 @@
     { id: 'settings', name: '设置', icon: ['M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z', 'M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7'] }
   ];
 
-  /* dock 和每页图标都从这里引，不另存一份 */
-  const DOCK_IDS = ['chat', 'diary', 'album', 'settings'];
+  const DOCK_IDS = ['chat', 'diary', 'album', 'memory', 'settings'];
 
   const PER_PAGE = 8;
 
