@@ -6,12 +6,12 @@
   const K = 'xw_layout';
 
   const SPAN = {
-    collage: 4, days: 4, quote: 4, clock: 4,
-    wx: 2, quota: 2, cal: 4, now: 4
+    collage: 4, profile: 4, days: 4, quote: 4,
+    clock: 4, wx: 2, quota: 2, cal: 4, now: 4
   };
 
   const DEF = [
-    ['collage', 'days', 'quote'],
+    ['collage', 'profile', 'quote'],
     ['clock', 'wx', 'quota',
       'app:calendar', 'app:plans', 'app:accounting', 'app:mood',
       'app:health', 'app:cycle', 'app:study', 'app:quotes'],
@@ -23,8 +23,6 @@
 
   let st = null;
   let justDragged = false;
-
-  /* ============ 位置表 ============ */
 
   function valid(k) {
     if (SPAN[k] !== undefined) return true;
@@ -53,19 +51,21 @@
       }
     }
 
-    return saved;
+    /* 旧位置表里的天数卡换成个人信息卡 */
+    return saved.map(function (p) {
+      return p.map(function (k) { return k === 'days' ? 'profile' : k; });
+    });
   }
 
   function write(list) {
     try { localStorage.setItem(K, JSON.stringify(list)); } catch (e) {}
   }
 
-  /* ============ 渲染 ============ */
-
   function htmlOf(k) {
     const W = window.Widgets || {};
 
     if (k === 'collage') return (window.Collage && Collage.html) ? Collage.html() : '';
+    if (k === 'profile') return (window.Profile && Profile.html) ? Profile.html() : '';
     if (k === 'days') return (window.DayCard && DayCard.html) ? DayCard.html() : '';
     if (k === 'quote') return W.quote ? W.quote() : '';
     if (k === 'clock') return W.clock ? W.clock() : '';
@@ -96,8 +96,6 @@
     }).join('');
   }
 
-  /* ============ 拖动 ============ */
-
   function homeEl() { return D.getElementById('home'); }
 
   function pageAt(home, i) {
@@ -114,7 +112,6 @@
     return Math.max(0, Math.min(pages.length - 1, i));
   }
 
-  /* 手指附近最近的那块（不要求正对着），140px 以内都算 */
   function targetAt(x, y) {
     const home = homeEl();
     if (!home) return null;
@@ -242,7 +239,6 @@
     if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
   }
 
-  /* 两块互换位置；跨页也能换 */
   function swap(a, b) {
     if (!a || !b || a === b) return;
 
@@ -326,11 +322,10 @@
     e.preventDefault();
   }, true);
 
-  /* ============ 挂载 ============ */
-
   function bindWidgets(root) {
     Array.prototype.forEach.call(root.querySelectorAll('#home .gi'), function (gi) {
       const k = gi.getAttribute('data-key');
+      if (k === 'profile' && window.Profile && Profile.bind) Profile.bind(gi);
       if (k === 'days' && window.DayCard && DayCard.bind) DayCard.bind(gi);
       if (k === 'collage' && window.Collage && Collage.bind) Collage.bind(gi);
     });
