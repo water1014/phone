@@ -32,30 +32,35 @@
 
   const WALL = {
     none: {
-      name: '不铺',
       thumb: 'background:#fff',
       css: ''
     },
     dawn: {
-      name: '晨',
       thumb: 'background:linear-gradient(180deg,#f8f6f2,#e9e5df)',
       css: 'radial-gradient(900px 520px at 86% -6%, rgba(255,255,255,.92), transparent 62%),' +
            'radial-gradient(760px 480px at -8% 20%, rgba(198,210,226,.55), transparent 60%),' +
            'linear-gradient(180deg,#f8f6f2 0%,#e9e5df 100%)'
     },
     dusk: {
-      name: '暮',
       thumb: 'background:linear-gradient(170deg,#f6ece7,#ded8ce)',
       css: 'radial-gradient(820px 520px at 88% -8%, rgba(255,241,236,.95), transparent 62%),' +
            'linear-gradient(170deg,#f6ece7 0%,#e9ded4 55%,#ded8ce 100%)'
     },
     night: {
-      name: '夜',
       thumb: 'background:linear-gradient(180deg,#232220,#121110)',
       css: 'radial-gradient(760px 460px at 82% -6%, rgba(255,255,255,.07), transparent 60%),' +
            'linear-gradient(180deg,#232220 0%,#121110 100%)'
     }
   };
+
+  const PRESET = {
+    dawn: { skin: 'light', accent: 'ink', card: 'white', radius: '16', wall: 'dawn' },
+    night: { skin: 'night', accent: 'lilac', card: 'white', radius: '22', wall: 'night' },
+    paper: { skin: 'paper', accent: 'sand', card: 'paper', radius: '16', wall: 'dusk' },
+    mist: { skin: 'light', accent: 'mist', card: 'line', radius: '12', wall: 'none' }
+  };
+
+  const PRESET_NAME = { dawn: '晨', night: '夜', paper: '纸', mist: '雾' };
 
   let st = load();
 
@@ -108,15 +113,8 @@
     }
   }
 
-  function esc(text) {
-    if (window.UI && UI.esc) return UI.esc(text);
-    return String(text == null ? '' : text).replace(/[&<>]/g, function (c) {
-      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c];
-    });
-  }
-
   function opt(k, v, label) {
-    return '<button type="button" class="bz-opt' + (st[k] === v ? ' on' : '') + '"' +
+    return '<button type="button" class="bz-opt"' +
       ' data-k="' + k + '" data-v="' + v + '">' + label + '</button>';
   }
 
@@ -129,7 +127,7 @@
 
   function accentDots() {
     return Object.keys(ACCENT).map(function (id) {
-      return '<button type="button" class="bz-dot' + (st.accent === id ? ' on' : '') + '"' +
+      return '<button type="button" class="bz-dot"' +
         ' data-k="accent" data-v="' + id + '" style="background:' + ACCENT[id] + '"' +
         ' aria-label="' + id + '"></button>';
     }).join('');
@@ -139,16 +137,26 @@
     const img = pic();
 
     const base = Object.keys(WALL).map(function (id) {
-      return '<button type="button" class="bz-wall' + (st.wall === id ? ' on' : '') + '"' +
+      return '<button type="button" class="bz-wall"' +
         ' data-k="wall" data-v="' + id + '" style="' + WALL[id].thumb + '"></button>';
     }).join('');
 
-    const up = '<button type="button" class="bz-wall bz-wall-up' + (st.wall === 'photo' ? ' on' : '') + '"' +
-      ' data-k="wall" data-v="photo"' +
+    const up = '<button type="button" class="bz-wall bz-wall-up" data-k="wall" data-v="photo"' +
       (img ? ' style="background-image:url(' + img + ')"' : '') + '>' +
       (img ? '' : '＋图') + '</button>';
 
     return base + up;
+  }
+
+  function currentPreset() {
+    const keys = Object.keys(PRESET);
+    for (let i = 0; i < keys.length; i++) {
+      const p = PRESET[keys[i]];
+      let same = true;
+      Object.keys(p).forEach(function (kk) { if (st[kk] !== p[kk]) same = false; });
+      if (same) return keys[i];
+    }
+    return '';
   }
 
   function view() {
@@ -159,8 +167,16 @@
       '</header>' +
 
       '<div class="sheet">' +
-        '<div class="sheet-head"><span class="sheet-title">样子</span>' +
+        '<div class="sheet-head"><span class="sheet-title">成套</span>' +
           '<button type="button" id="bz-reset" class="btn-glass">回到最初</button></div>' +
+        sec('一按就走', 'ONE TAP', Object.keys(PRESET).map(function (id) {
+          return opt('preset', id, PRESET_NAME[id]);
+        }).join('')) +
+        '<div class="sheet-note">整套换，下面每一项还能单独再调。</div>' +
+      '</div>' +
+
+      '<div class="sheet">' +
+        '<div class="sheet-head"><span class="sheet-title">样子</span></div>' +
         sec('皮', 'SKIN', opt('skin', 'light', '光') + opt('skin', 'night', '夜') + opt('skin', 'paper', '纸')) +
         sec('主色', 'ACCENT', accentDots()) +
         sec('背景', 'WALLPAPER', walls()) +
@@ -186,11 +202,14 @@
       '<div class="bz-foot">XIAOWO · 改坏了就点上面「回到最初」</div>';
   }
 
-  function refresh(root) {
+  function mark(root) {
+    const pre = currentPreset();
+
     Array.prototype.forEach.call(root.querySelectorAll('.bz-opt,.bz-dot,.bz-wall'), function (el) {
       const k = el.getAttribute('data-k');
       const v = el.getAttribute('data-v');
-      el.classList.toggle('on', st[k] === v);
+      const on = (k === 'preset') ? (pre === v) : (st[k] === v);
+      el.classList.toggle('on', on);
     });
   }
 
@@ -233,7 +252,13 @@
         st.wall = 'photo';
         save();
         apply();
-        refresh(root);
+        ROOT.setAttribute('data-wall-photo', '1');
+        const up = root.querySelector('.bz-wall-up');
+        if (up) {
+          up.style.backgroundImage = 'url(' + data + ')';
+          up.textContent = '';
+        }
+        mark(root);
         UI.toast('换上了');
       });
     });
@@ -252,6 +277,20 @@
       const v = btn.getAttribute('data-v');
       if (!k || !v) return;
 
+      if (k === 'preset') {
+        const p = PRESET[v];
+        if (!p) return;
+        const img = pic();
+        Object.keys(p).forEach(function (kk) { st[kk] = p[kk]; });
+        if (p.wall === 'night' || p.wall === 'dusk' || p.wall === 'dawn' || p.wall === 'none') {
+          if (!img) { try { localStorage.removeItem(IK); } catch (err) {} }
+        }
+        save();
+        apply();
+        mark(bodyEl);
+        return;
+      }
+
       if (k === 'wall' && v === 'photo' && !pic()) {
         pick(bodyEl);
         return;
@@ -264,26 +303,27 @@
 
       save();
       apply();
-      refresh(bodyEl);
+      mark(bodyEl);
     });
 
     const reset = D.getElementById('bz-reset');
     if (reset) {
       reset.addEventListener('click', function () {
-        const img = pic();
         Object.keys(DEF).forEach(function (k) { st[k] = DEF[k]; });
-        if (img) { try { localStorage.removeItem(IK); } catch (e) {} }
+        try { localStorage.removeItem(IK); } catch (e) {}
         save();
         apply();
-        refresh(bodyEl);
+        const up = bodyEl.querySelector('.bz-wall-up');
+        if (up) { up.style.backgroundImage = ''; up.textContent = '＋图'; }
+        mark(bodyEl);
         UI.toast('回到最初了');
       });
     }
+
+    mark(bodyEl);
   }
 
   apply();
-
-  if (D.body) D.body.setAttribute('data-hoc', '1');
 
   window.Beautify = {
     view: view,
