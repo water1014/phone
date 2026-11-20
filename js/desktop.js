@@ -1,28 +1,9 @@
-/* desktop.js · 桌面：网格 + 横向翻页 + 长按拖动换位 */
+/* desktop.js · 桌面：左栏图标 + 右侧内容流 */
 (function () {
   const D = document;
 
-  let pagesEl = null;
-  let dotsEl = null;
-  let dockEl = null;
+  let screenEl = null;
   let suppressTap = false;
-
-  const PER_PAGE = 8;
-
-  function ensure() {
-    const screen = D.getElementById('screen');
-    if (!screen || pagesEl) return;
-    screen.innerHTML =
-      '<div class="desk">' +
-        '<div class="desk-pages" id="desk-pages"></div>' +
-        '<div class="dots" id="dots"></div>' +
-      '</div>' +
-      '<nav class="dock" id="dock" aria-label="常用"></nav>';
-
-    pagesEl = D.getElementById('desk-pages');
-    dotsEl = D.getElementById('dots');
-    dockEl = D.getElementById('dock');
-  }
 
   function order() {
     const all = window.Apps.ALL.map(function (a) { return a.id; });
@@ -32,59 +13,34 @@
     return out;
   }
 
-  function headFor(index) {
-    const W = window.Widgets;
-    if (!W) return '';
-    if (index === 0) return W.clock() + W.days() + W.stats();
-    if (index === 1) return W.calendar() + W.weatherCard() + W.quote() + W.memoryCard() + W.quota();
-    return '';
-  }
-
-  function iconHtml(app, i) {
-    return '<button type="button" class="app-ico" data-app="' + app.id + '" data-idx="' + i + '">' +
-        '<i>' + UI.icon(app.icon) + '</i>' +
-        '<span>' + app.name + '</span>' +
-      '</button>';
-  }
-
-  function renderPages() {
-    const ids = order();
-    const chunks = [];
-    for (let i = 0; i < ids.length; i += PER_PAGE) chunks.push(ids.slice(i, i + PER_PAGE));
-    if (!chunks.length) chunks.push([]);
-
-    let html = '';
-    chunks.forEach(function (list, pageIndex) {
-      let cells = '';
-      list.forEach(function (id, k) {
-        const app = window.Apps.find(id);
-        if (app) cells += iconHtml(app, pageIndex * PER_PAGE + k);
-      });
-
-      html += '<section class="page">' +
-          '<div class="grid">' + headFor(pageIndex) + cells + '</div>' +
-        '</section>';
-    });
-
-    pagesEl.innerHTML = html;
-
-    let dots = '';
-    for (let i = 0; i < chunks.length; i++) dots += '<span' + (i === 0 ? ' class="on"' : '') + '></span>';
-    dotsEl.innerHTML = dots;
-
-    if (window.Widgets && window.Widgets.after) window.Widgets.after(pagesEl);
-    tick();
-  }
-
-  function renderDock() {
-    dockEl.innerHTML = window.Apps.DOCK.map(function (id) {
+  function railHtml() {
+    return order().map(function (id, i) {
       const app = window.Apps.find(id);
       if (!app) return '';
-      return '<button type="button" data-app="' + app.id + '">' +
+      return '<button type="button" class="rail-ico" data-app="' + id + '" data-idx="' + i + '">' +
           UI.icon(app.icon) +
           '<span>' + app.name + '</span>' +
         '</button>';
     }).join('');
+  }
+
+  function homeHtml() {
+    const W = window.Widgets;
+    if (!W) return '';
+    return W.clock() + W.days() + W.stats() +
+      W.calendar() + W.weatherCard() + W.quote() +
+      W.memoryCard() + W.quota();
+  }
+
+  function renderAll() {
+    screenEl.innerHTML =
+      '<div class="desk">' +
+        '<aside class="rail" id="rail">' + railHtml() + '</aside>' +
+        '<main class="home" id="home"><div class="grid">' + homeHtml() + '</div></main>' +
+      '</div>';
+
+    if (window.Widgets && window.Widgets.after) window.Widgets.after(screenEl);
+    tick();
   }
 
   function tick() {
@@ -96,62 +52,6 @@
     if (date) {
       date.textContent = UI.greetWord(now.getHours()) + ' · ' + UI.fmtWeek(now) + ' ' + UI.fmtMonthDay(now);
     }
-  }
-
-  function pageWidth() { return Math.max(1, pagesEl.clientWidth); }
-  function currentPage() { return Math.round(pagesEl.scrollLeft / pageWidth()); }
-  function totalPages() { return pagesEl.querySelectorAll('.page').length || 1; }
-
-  function goPage(index) {
-    const next = Math.min(totalPages() - 1, Math.max(0, index));
-    pagesEl.scrollTo({ left: next * pageWidth(), behavior: 'smooth' });
-  }
-
-  function syncDots() {
-    if (!dotsEl) return;
-    const index = currentPage();
-    Array.prototype.forEach.call(dotsEl.children, function (dot, i) {
-      dot.classList.toggle('on', i === index);
-    });
-  }
-
-  function bindSwipe(el) {
-    let start = null;
-    let swallow = false;
-
-    el.addEventListener('touchstart', function (event) {
-      if (!event.touches || event.touches.length !== 1) { start = null; return; }
-      const t = event.touches[0];
-      start = { x: t.clientX, y: t.clientY };
-      swallow = false;
-    }, { passive: true });
-
-    el.addEventListener('touchmove', function (event) {
-      if (!start) return;
-      const t = event.touches[0];
-      if (!t) return;
-      const dx = t.clientX - start.x;
-      const dy = t.clientY - start.y;
-      if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) swallow = true;
-    }, { passive: true });
-
-    el.addEventListener('touchend', function (event) {
-      if (!start || !event.changedTouches || event.changedTouches.length !== 1) { start = null; return; }
-      const t = event.changedTouches[0];
-      const dx = t.clientX - start.x;
-      const dy = t.clientY - start.y;
-      start = null;
-      if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
-      event.preventDefault();
-      goPage(currentPage() + (dx < 0 ? 1 : -1));
-    }, { passive: false });
-
-    el.addEventListener('click', function (event) {
-      if (!swallow) return;
-      swallow = false;
-      event.preventDefault();
-      event.stopPropagation();
-    }, true);
   }
 
   function bindDrag() {
@@ -166,26 +66,21 @@
     const cancelTimer = function () {
       if (timer) { clearTimeout(timer); timer = null; }
     };
-
     const clearTarget = function () {
       if (target) target.classList.remove('drop-target');
       target = null;
     };
-
     const reset = function () {
-      if (el) {
-        el.classList.remove('dragging');
-        el.style.transform = '';
-      }
+      if (el) { el.classList.remove('dragging'); el.style.transform = ''; }
       clearTarget();
       el = null;
       from = -1;
       dragged = false;
     };
 
-    pagesEl.addEventListener('touchstart', function (event) {
+    D.addEventListener('touchstart', function (event) {
       if (!event.touches || event.touches.length !== 1) return;
-      const ico = event.target.closest('.app-ico');
+      const ico = event.target.closest('.rail-ico');
       if (!ico) return;
       const t = event.touches[0];
       sx = t.clientX;
@@ -201,7 +96,7 @@
       }, 450);
     }, { passive: true });
 
-    pagesEl.addEventListener('touchmove', function (event) {
+    D.addEventListener('touchmove', function (event) {
       const t = event.touches && event.touches[0];
       if (!t) return;
 
@@ -212,10 +107,10 @@
 
       event.preventDefault();
       dragged = true;
-      el.style.transform = 'translate(' + (t.clientX - sx) + 'px,' + (t.clientY - sy) + 'px) scale(1.08)';
+      el.style.transform = 'translate(' + (t.clientX - sx) + 'px,' + (t.clientY - sy) + 'px) scale(1.1)';
 
       const hit = D.elementFromPoint(t.clientX, t.clientY);
-      const over = hit ? hit.closest('.app-ico') : null;
+      const over = hit ? hit.closest('.rail-ico') : null;
       if (over && over !== el) {
         if (target !== over) {
           clearTarget();
@@ -227,7 +122,7 @@
       }
     }, { passive: false });
 
-    pagesEl.addEventListener('touchend', function () {
+    D.addEventListener('touchend', function () {
       cancelTimer();
       if (!el) return;
 
@@ -244,11 +139,11 @@
       }
 
       reset();
-      renderPages();
+      renderAll();
       suppressTap = true;
     });
 
-    pagesEl.addEventListener('touchcancel', function () {
+    D.addEventListener('touchcancel', function () {
       cancelTimer();
       reset();
     });
@@ -268,25 +163,13 @@
   }
 
   function init() {
-    ensure();
-    renderPages();
-    renderDock();
-
-    pagesEl.addEventListener('scroll', function () {
-      requestAnimationFrame(syncDots);
-    }, { passive: true });
-
-    bindSwipe(pagesEl);
-    bindSwipe(dockEl);
+    screenEl = D.getElementById('screen');
+    if (!screenEl) return;
+    renderAll();
     bindDrag();
     bindOpen();
-
     setInterval(tick, 20000);
-
-    window.addEventListener('resize', function () {
-      pagesEl.scrollTo({ left: currentPage() * pageWidth() });
-    });
   }
 
-  window.Desktop = { init: init, goPage: goPage, rerender: renderPages };
+  window.Desktop = { init: init, goPage: function () {}, rerender: renderAll };
 })();
