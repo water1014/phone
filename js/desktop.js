@@ -1,5 +1,4 @@
-/* desktop.js · 桌面：手账首屏（天数/月历/摘句）+ 图标页 + dock
-   第一页只放“今天”，图标从第二页起。横向 snap 翻页。 */
+/* desktop.js · 桌面：手账封面（天数/月历/摘句）+ 图标页 + dock */
 (function () {
   const D = document;
 
@@ -34,10 +33,13 @@
     const love = new Date(XW.S.loveDate || '2025-01-01');
     const days = UI.diffDay(love, new Date());
     return '<section class="wdg wdg-days">' +
-        '<div class="kicker">TOGETHER</div>' +
-        '<div class="wdg-days">' + days + '<small>DAYS</small></div>' +
+        '<div class="days-top">' +
+          '<span class="kicker">TOGETHER</span>' +
+          '<span class="days-since">SINCE ' + UI.fmtYmd(love) + '</span>' +
+        '</div>' +
+        '<div class="days-num">' + days + '<small>DAYS</small></div>' +
+        '<div class="days-rule"></div>' +
         '<div class="wdg-names">' + UI.esc(XW.S.hisName) + ' &amp; ' + UI.esc(XW.S.herName) + '</div>' +
-        '<div class="wdg-sub">SINCE ' + UI.fmtYmd(love) + '</div>' +
       '</section>';
   }
 

@@ -1,5 +1,4 @@
-/* widget.js · 桌面小组件：月历 + 摘句
-   不碰 desktop.js 内部逻辑，只在 #desk-pages 重建后往第一页插两块卡。 */
+/* widget.js · 桌面小组件：月历 + 摘句 */
 (function () {
   const D = document;
 
@@ -40,13 +39,13 @@
       let cls = 'cal-d';
       if (day === now.getDate()) cls += ' today';
       if (marks[key]) cls += ' has';
-      cells += '<span class="' + cls + '">' + day + '</span>';
+      cells += '<span class="' + cls + '"><i>' + day + '</i></span>';
     }
 
     return '<section class="wdg wdg-cal">' +
         '<div class="cal-head">' +
           '<span class="kicker">CALENDAR</span>' +
-          '<span class="kicker">' + year + '.' + pad(month + 1) + '</span>' +
+          '<span class="cal-ym">' + (month + 1) + '月</span>' +
         '</div>' +
         '<div class="cal-grid">' + head + cells + '</div>' +
       '</section>';
@@ -59,12 +58,16 @@
 
     if (!line) {
       return '<section class="wdg wdg-quote">' +
-          '<div class="kicker">TODAY</div>' +
+          '<div class="quote-head"><span class="kicker">TODAY</span></div>' +
           '<p class="quote-text">还没写下什么。今天也可以就这么过。</p>' +
         '</section>';
     }
+
     return '<section class="wdg wdg-quote">' +
-        '<div class="kicker">' + esc(last.date || '') + '</div>' +
+        '<div class="quote-head">' +
+          '<span class="kicker">NOTE</span>' +
+          '<span class="quote-date">' + esc(String(last.date || '').slice(5)) + '</span>' +
+        '</div>' +
         '<p class="quote-text">' + esc(line) + '</p>' +
       '</section>';
   }
