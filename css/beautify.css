@@ -3,28 +3,38 @@
 
 :root { --xw-ac: #5c6a79; }
 
+/* ================= App 层不透底 ================= */
+.app {
+  background: #faf8f5 !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
 /* ================= 主色 ================= */
 #home .gi .appcell svg { stroke: var(--xw-ac); }
-#home .gi .appcell:active { background: color-mix(in srgb, var(--xw-ac) 8%, #fff); }
 
-/* ================= 卡片材质 ================= */
-html[data-card="paper"] #home .gi .appcell {
+/* ================= 卡片材质（白 / 米 / 描边） ================= */
+html[data-card="paper"] #home .gi .appcell,
+html[data-card="paper"] #home .mod {
   background: #faf7f1;
   border-color: rgba(120, 100, 70, .07);
 }
 
-html[data-card="line"] #home .gi .appcell {
+html[data-card="line"] #home .gi .appcell,
+html[data-card="line"] #home .mod {
   background: transparent;
   border-color: rgba(0, 0, 0, .10);
   box-shadow: none;
 }
 
 /* ================= 圆角 ================= */
-html[data-radius="12"] #home .gi .appcell { border-radius: 12px; }
+html[data-radius="12"] #home .gi .appcell,
+html[data-radius="12"] #home .mod { border-radius: 12px; }
 html[data-radius="12"] #home .gi.lift,
 html[data-radius="12"] #home .gi.dc-drop { border-radius: 12px; }
 
-html[data-radius="22"] #home .gi .appcell { border-radius: 22px; }
+html[data-radius="22"] #home .gi .appcell,
+html[data-radius="22"] #home .mod { border-radius: 22px; }
 html[data-radius="22"] #home .gi.lift,
 html[data-radius="22"] #home .gi.dc-drop { border-radius: 22px; }
 
@@ -32,15 +42,24 @@ html[data-radius="22"] #home .gi.dc-drop { border-radius: 22px; }
 html[data-icon="19"] #home .gi .appcell svg { width: 19px; height: 19px; }
 html[data-icon="23"] #home .gi .appcell svg { width: 23px; height: 23px; }
 
-/* ================= 中文字体 ================= */
+/* ================= 字体 ================= */
 html[data-cn="sans"] #home .gi .appcell span,
 html[data-cn="sans"] .rail-row b,
 html[data-cn="sans"] .rail-act,
 html[data-cn="sans"] .pf-name,
 html[data-cn="sans"] .pf-sign,
 html[data-cn="sans"] .dc-name,
-html[data-cn="sans"] .clg-cap {
+html[data-cn="sans"] .clg-cap,
+html[data-cn="sans"] .mod,
+html[data-cn="sans"] .bz-lab b,
+html[data-cn="sans"] .bz-mod-i b {
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+html[data-cn="mono"] .mod,
+html[data-cn="mono"] #home .gi .appcell span,
+html[data-cn="mono"] .bz-lab b {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
 /* ================= 间距 ================= */
@@ -60,6 +79,53 @@ html[data-dock="off"] .pager { bottom: calc(.9rem + env(safe-area-inset-bottom))
 html[data-dots="off"] .pager,
 html[data-dots="off"] .dots { display: none; }
 
+/* ================= 材质四档 ================= */
+
+html[data-mat="frost"] #home .gi .appcell,
+html[data-mat="frost"] #home .mod,
+html[data-mat="frost"] #home .clg,
+html[data-mat="frost"] #home .dc-front,
+html[data-mat="frost"] .pf-front,
+html[data-mat="frost"] .dock,
+html[data-mat="frost"] .sheet {
+  background: rgba(255, 255, 255, .68) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+  backdrop-filter: blur(16px) saturate(1.25);
+  border-color: rgba(255, 255, 255, .78) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .85), 0 2px 10px rgba(0, 0, 0, .05) !important;
+}
+
+html[data-mat="glass"] #home .gi .appcell,
+html[data-mat="glass"] #home .mod,
+html[data-mat="glass"] #home .clg,
+html[data-mat="glass"] #home .dc-front,
+html[data-mat="glass"] .pf-front,
+html[data-mat="glass"] .dock,
+html[data-mat="glass"] .sheet {
+  background: linear-gradient(150deg, rgba(255, 255, 255, .64), rgba(255, 255, 255, .26)) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(1.5);
+  backdrop-filter: blur(10px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, .85) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .95), 0 3px 12px rgba(0, 0, 0, .07) !important;
+}
+
+html[data-mat="liquid"] #home .gi .appcell,
+html[data-mat="liquid"] #home .mod,
+html[data-mat="liquid"] #home .clg,
+html[data-mat="liquid"] #home .dc-front,
+html[data-mat="liquid"] .pf-front,
+html[data-mat="liquid"] .dock,
+html[data-mat="liquid"] .sheet {
+  background: radial-gradient(125% 100% at 16% 0%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, .70) 40%, rgba(255, 255, 255, .48) 100%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  backdrop-filter: blur(18px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, .95) !important;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 1),
+    inset 0 -2px 3px rgba(0, 0, 0, .045),
+    0 6px 18px rgba(0, 0, 0, .08) !important;
+}
+
 /* ================= 夜 ================= */
 html[data-skin="night"] {
   --ink: #ecebe7;
@@ -78,9 +144,12 @@ html[data-skin="night"] {
   color: #e7e1d5;
 }
 
+html[data-skin="night"] .app { background: #141312 !important; }
+
 html[data-skin="night"] #home .clg,
 html[data-skin="night"] #home .dc-front,
-html[data-skin="night"] .pf-front {
+html[data-skin="night"] .pf-front,
+html[data-skin="night"] #home .mod {
   background: #201e1c !important;
   box-shadow: 0 2px 12px rgba(0, 0, 0, .38) !important;
 }
@@ -92,6 +161,8 @@ html[data-skin="night"] #home .gi .appcell {
 }
 
 html[data-skin="night"] #home .gi .appcell span { color: #8f887c; }
+html[data-skin="night"] .mod-t { color: #e4ded2; }
+html[data-skin="night"] .mod-b { color: #9a9387; }
 
 html[data-skin="night"] .clg-tab { background: #2a2724; color: #9a9387; }
 html[data-skin="night"] .clg-tab.active { background: #ece6da; color: #1a1917; }
@@ -117,7 +188,7 @@ html[data-skin="night"] .pf-pill {
 html[data-skin="night"] .pf-pink { color: #cf9a9a; border-color: rgba(200, 140, 140, .28); }
 
 html[data-skin="night"] .dock {
-  background: rgba(28, 26, 24, .88) !important;
+  background: rgba(28, 26, 24, .92) !important;
   border-color: rgba(255, 255, 255, .06) !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .4) !important;
 }
@@ -130,7 +201,6 @@ html[data-skin="night"] .dots span { background: rgba(255, 255, 255, .26); }
 html[data-skin="night"] .pager i.on,
 html[data-skin="night"] .dots span.on { background: rgba(255, 255, 255, .82); }
 
-html[data-skin="night"] .app { background: #141312 !important; }
 html[data-skin="night"] .sheet {
   background: #1e1c1a !important;
   border-color: rgba(255, 255, 255, .06) !important;
@@ -143,6 +213,11 @@ html[data-skin="night"] .bz-opt {
 }
 html[data-skin="night"] .bz-opt.on { background: #ece6da; border-color: #ece6da; color: #1a1917; }
 html[data-skin="night"] .bz-lab b { color: #ddd6c9; }
+html[data-skin="night"] .bz-opt,
+html[data-skin="night"] .bz-x,
+html[data-skin="night"] .bz-ed { border-color: rgba(255, 255, 255, .08); }
+html[data-skin="night"] .bz-x { background: #2a2724; color: #a49d90; }
+html[data-skin="night"] .bz-ed { background: #252220; color: #a49d90; }
 
 /* ================= 纸 ================= */
 html[data-skin="paper"] {
@@ -152,9 +227,12 @@ html[data-skin="paper"] {
   --bg: linear-gradient(180deg, #f4eee3 0%, #ebe4d6 100%);
 }
 
+html[data-skin="paper"] .app { background: #f4eee3 !important; }
+
 html[data-skin="paper"] #home .clg,
 html[data-skin="paper"] #home .dc-front,
-html[data-skin="paper"] .pf-front {
+html[data-skin="paper"] .pf-front,
+html[data-skin="paper"] #home .mod {
   background: #fbf7ef !important;
 }
 
@@ -163,19 +241,50 @@ html[data-skin="paper"] #home .gi .appcell {
   border-color: rgba(120, 100, 70, .08);
 }
 
-html[data-skin="paper"] .dock { background: rgba(249, 244, 234, .86) !important; }
+html[data-skin="paper"] .dock { background: rgba(249, 244, 234, .92) !important; }
 html[data-skin="paper"] .rail { background: #f8f2e7 !important; }
-html[data-skin="paper"] .app { background: #f4eee3 !important; }
+
+/* ================= 自制小组件 ================= */
+.mod {
+  box-sizing: border-box;
+  min-height: 68px;
+  padding: 13px 15px 14px;
+  border: 1px solid rgba(0, 0, 0, .035);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .035);
+  font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
+  overflow: hidden;
+}
+
+.mod-t {
+  font-size: 12.5px;
+  line-height: 1.45;
+  letter-spacing: .7px;
+  color: #3a3733;
+}
+
+.mod-b {
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.78;
+  letter-spacing: .3px;
+  color: #7d786f;
+  word-break: break-word;
+}
+
+.mod-t + .mod-b { margin-top: 6px; }
+.mod-b:first-child { margin-top: 0; }
+.mod-ph { color: #c6c2b9; }
+
+#home .gi1 .mod { padding: 11px 10px; }
+#home .gi1 .mod-t { font-size: 11.5px; letter-spacing: .4px; }
+#home .gi1 .mod-b { font-size: 11px; line-height: 1.65; }
 
 /* ================= 美化页本体 ================= */
 
-.bz-sec {
-  margin-top: 18px;
-}
-
-.bz-sec:first-of-type {
-  margin-top: 6px;
-}
+.bz-sec { margin-top: 18px; }
+.bz-sec:first-of-type { margin-top: 6px; }
 
 .bz-lab {
   display: flex;
@@ -209,7 +318,7 @@ html[data-skin="paper"] .app { background: #f4eee3 !important; }
 
 .bz-opt {
   min-width: 52px;
-  padding: 7px 13px;
+  padding: 7px 12px;
   border: 1px solid rgba(0, 0, 0, .07);
   border-radius: 11px;
   background: #fdfcfa;
@@ -255,13 +364,84 @@ html[data-skin="paper"] .app { background: #f4eee3 !important; }
   background-position: center;
 }
 
-.bz-wall.on {
-  box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #2c2a27;
-}
+.bz-wall.on { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #2c2a27; }
 
 .bz-wall-up {
   border: 1px dashed #ded8cc;
   background: #fdfcfa;
+}
+
+/* 小组件列表 */
+.bz-mods { margin-top: 4px; }
+
+.bz-mod {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, .05);
+}
+
+.bz-mod:last-child { border-bottom: 0; }
+
+.bz-mod-i { flex: 1 1 auto; min-width: 0; }
+
+.bz-mod-i b {
+  display: block;
+  font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
+  font-size: 12.5px;
+  font-weight: 400;
+  letter-spacing: .5px;
+  color: #3a3733;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bz-mod-i i {
+  display: block;
+  margin-top: 3px;
+  font-style: normal;
+  font-size: 11px;
+  letter-spacing: .2px;
+  color: #a8a196;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bz-ed {
+  flex: none;
+  height: 26px;
+  padding: 0 11px;
+  border: 1px solid rgba(0, 0, 0, .07);
+  border-radius: 13px;
+  background: #fdfcfa;
+  font: inherit;
+  font-size: 11.5px;
+  color: #6a6660;
+}
+
+.bz-x {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #f2efe9;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+  color: #8a8578;
+}
+
+.bz-empty {
+  padding: 16px 0;
+  text-align: center;
+  font-size: 11.5px;
+  letter-spacing: .3px;
+  color: #b8b2a7;
 }
 
 .bz-foot {
