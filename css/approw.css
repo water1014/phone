@@ -1,13 +1,17 @@
-/* approw.css · 页内的 App 入口行（四列） */
+/* approw.css · 页内 App 入口行（四列）
+   .approw  第 2、3 页追加的那行
+   .appgrid 第 2 页那块 2x2（现在也排成一行四个） */
 
-#home .approw {
+#home .approw,
+#home .appgrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px 10px;
   width: 100%;
 }
 
-#home .approw .appcell {
+#home .approw .appcell,
+#home .appgrid .appcell {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -21,9 +25,13 @@
   font: inherit;
 }
 
-#home .approw .appcell:active { background: rgba(141, 154, 168, .06); }
+#home .approw .appcell:active,
+#home .appgrid .appcell:active {
+  background: rgba(141, 154, 168, .06);
+}
 
-#home .approw .appcell svg {
+#home .approw .appcell svg,
+#home .appgrid .appcell svg {
   width: 21px;
   height: 21px;
   fill: none;
@@ -33,7 +41,8 @@
   stroke-linejoin: round;
 }
 
-#home .approw .appcell span {
+#home .approw .appcell span,
+#home .appgrid .appcell span {
   font-size: 11.5px;
   letter-spacing: .2px;
   color: #7d8894;
