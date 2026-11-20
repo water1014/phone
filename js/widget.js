@@ -20,6 +20,14 @@
     return marks;
   }
 
+  /* 时钟（第一页顶部，不再固定） */
+  function clockHtml() {
+    return '<section class="wdg-clock">' +
+        '<div class="dclock" id="desk-clock">--:--</div>' +
+        '<div class="ddate" id="desk-date"></div>' +
+      '</section>';
+  }
+
   /* 天数 */
   function daysHtml() {
     const love = new Date(XW.S.loveDate || '2025-01-01');
@@ -172,6 +180,7 @@
   }
 
   window.Widgets = {
+    clock: clockHtml,
     days: daysHtml,
     stats: statsHtml,
     calendar: calendarHtml,

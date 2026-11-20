@@ -1,4 +1,4 @@
-/* desk-hand.css · 桌面：组件与图标同一网格（最后加载） */
+/* desk-hand.css · 桌面网格（最后加载） */
 
 .desk {
   background-image: radial-gradient(rgba(0, 0, 0, .042) 1px, transparent 1px);
@@ -8,36 +8,9 @@ html.dark .desk {
   background-image: radial-gradient(rgba(255, 255, 255, .05) 1px, transparent 1px);
 }
 
-/* ── 顶部 ── */
-.desk-head {
-  padding: calc(1.15rem + env(safe-area-inset-top)) 1.35rem .1rem;
-}
-.desk-clock {
-  font-size: 2.15rem;
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: -.02em;
-  color: #282828;
-}
-.desk-date {
-  margin-top: .42rem;
-  font-size: .42rem;
-  letter-spacing: .2em;
-  color: #a8b2bd;
-}
-.desk-head::after {
-  content: '';
-  display: block;
-  margin-top: .7rem;
-  height: 1px;
-  background-image: linear-gradient(to right, rgba(0, 0, 0, .13) 50%, transparent 0);
-  background-size: 5px 1px;
-  background-repeat: repeat-x;
-}
-
 /* ── 网格：4 列，组件跨满 ── */
 .page {
-  padding: .85rem var(--pad) calc(var(--dock-h) + 1.7rem);
+  padding: calc(1rem + env(safe-area-inset-top)) var(--pad) calc(var(--dock-h) + 1.7rem);
 }
 
 .grid {
@@ -48,9 +21,40 @@ html.dark .desk {
   align-content: start;
 }
 
-.grid > .wdg {
+.grid > .wdg,
+.grid > .wdg-clock {
   grid-column: 1 / -1;
   margin-bottom: .1rem;
+}
+
+/* ── 时钟组件 ── */
+.grid > .wdg-clock {
+  padding: .1rem .2rem .35rem;
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+}
+.wdg-clock .dclock {
+  font-size: 2.2rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -.02em;
+  color: #282828;
+}
+.wdg-clock .ddate {
+  margin-top: .38rem;
+  font-size: .42rem;
+  letter-spacing: .2em;
+  color: #a8b2bd;
+}
+.wdg-clock::after {
+  content: '';
+  display: block;
+  margin-top: .62rem;
+  height: 1px;
+  background-image: linear-gradient(to right, rgba(0, 0, 0, .13) 50%, transparent 0);
+  background-size: 5px 1px;
+  background-repeat: repeat-x;
 }
 
 /* ── 天数卡 ── */
@@ -336,7 +340,6 @@ html.dark .desk {
   z-index: 20;
   opacity: .94;
   transition: none;
-  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, .16));
 }
 .app-ico.dragging i { box-shadow: 0 8px 20px rgba(0, 0, 0, .16); }
 .app-ico.drop-target i {
