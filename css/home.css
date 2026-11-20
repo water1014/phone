@@ -1,0 +1,500 @@
+/* home.css · 主页唯一一份样式（前面的覆盖层全部作废）
+   形态：通宽单列 + 三格 + 一处并排
+   底色：白卡 // 冷灰蓝线 // 极淡阴影 */
+
+#home {
+  display: block !important;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: .95rem .9rem calc(5.9rem + env(safe-area-inset-bottom, 0px));
+  background: transparent;
+}
+
+#home .grid {
+  display: flex !important;
+  flex-direction: column;
+  gap: .65rem;
+  width: 100%;
+}
+
+/* ── 卡片基座 ── */
+#home .wdg,
+#home .wdg-clock,
+#home .wdg-days,
+#home .wdg-cal,
+#home .wdg-quote,
+#home .rows,
+#home .trio {
+  width: 100%;
+  margin: 0;
+  padding: .88rem .95rem .82rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, .035);
+  border-radius: 18px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, .04);
+}
+
+#home .dcard::before,
+#home .wdg::before,
+#home .wdg-days::before,
+#home .wdg-quote::before,
+#home .wdg-clock::after {
+  display: none !important;
+}
+
+/* ── 时钟 ── */
+#home .wdg-clock {
+  padding: 1rem 1.05rem .85rem;
+}
+#home .wdg-clock::before {
+  content: 'LOCAL TIME';
+  display: block;
+  margin-bottom: .5rem;
+  font-family: var(--mono);
+  font-size: .33rem;
+  letter-spacing: .32em;
+  color: #b3bcc4;
+}
+#home .wdg-clock .dclock {
+  font-size: 2.45rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -.03em;
+  color: #262626;
+}
+#home .wdg-clock .ddate {
+  margin-top: .42rem;
+  font-family: var(--mono);
+  font-size: .34rem;
+  letter-spacing: .14em;
+  color: #a8b2bd;
+}
+
+/* ── 天数大卡 ── */
+#home .wdg-days {
+  padding: 1.05rem 1.05rem .95rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .18rem;
+}
+#home .wdg-days .days-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: .55rem;
+  width: 100%;
+}
+#home .wdg-days .kicker {
+  font-family: var(--mono);
+  font-size: .32rem;
+  letter-spacing: .3em;
+  color: #b3bcc4;
+}
+#home .wdg-days .days-since {
+  font-family: var(--mono);
+  font-size: .32rem;
+  letter-spacing: .1em;
+  color: #c2cad1;
+}
+#home .wdg-days .days-num {
+  margin: .1rem 0 .2rem;
+  font-size: 3rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -.035em;
+  color: #262626;
+}
+#home .wdg-days .days-num small {
+  margin-left: .32rem;
+  font-size: .42rem;
+  font-weight: 400;
+  letter-spacing: .22em;
+  color: #a8b2bd;
+}
+#home .wdg-days .days-rule {
+  width: 72%;
+  height: 1px;
+  margin: .5rem 0 .45rem;
+  background: repeating-linear-gradient(90deg, rgba(141, 154, 168, .4) 0 2px, transparent 2px 5px);
+}
+#home .wdg-days .wdg-names {
+  font-size: .4rem;
+  letter-spacing: .14em;
+  color: #9aa5b1;
+}
+
+/* ── 三格 ── */
+#home .trio {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: .8rem 0 .75rem;
+}
+#home .trio > button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .32rem;
+  padding: .1rem 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+}
+#home .trio > button:active { background: rgba(141, 154, 168, .05); }
+#home .trio > button + button::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8%;
+  bottom: 8%;
+  width: 1px;
+  background: rgba(0, 0, 0, .05);
+}
+#home .trio b {
+  font-size: .92rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -.01em;
+  color: #2f2f2f;
+}
+#home .trio i {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: .32rem;
+  letter-spacing: .2em;
+  color: #b8c1c9;
+}
+
+/* ── 并排两格（天气 / 额度） ── */
+#home .pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .65rem;
+  width: 100%;
+}
+#home .pair > section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: .3rem;
+  min-height: 5.7rem;
+  padding: .8rem .88rem .75rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, .035);
+  border-radius: 18px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, .04);
+}
+#home .pair .kicker {
+  font-family: var(--mono);
+  font-size: .31rem;
+  letter-spacing: .26em;
+  color: #b3bcc4;
+}
+#home .wx-big,
+#home .q-big {
+  font-size: 1.7rem;
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -.02em;
+  color: #262626;
+}
+#home .q-big small {
+  margin-left: .08rem;
+  font-size: .46rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: #9aa5b1;
+}
+#home .wx-sub {
+  font-family: var(--mono);
+  font-size: .33rem;
+  letter-spacing: .06em;
+  color: #9aa5b1;
+}
+#home .q-bar {
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(141, 154, 168, .16);
+  overflow: hidden;
+}
+#home .q-bar i {
+  display: block;
+  height: 100%;
+  background: #8d9aa8;
+}
+
+/* ── 月历 ── */
+#home .wdg-cal .cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .6rem;
+}
+#home .wdg-cal .cal-ym {
+  font-family: var(--mono);
+  font-size: .38rem;
+  letter-spacing: .12em;
+  color: #8d9aa8;
+}
+#home .wdg-cal .cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: .2rem 0;
+}
+#home .wdg-cal .cal-dow {
+  padding-bottom: .3rem;
+  font-size: .3rem;
+  letter-spacing: .08em;
+  text-align: center;
+  color: #c2cad1;
+}
+#home .wdg-cal .cal-d {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  font: inherit;
+  font-size: .42rem;
+  color: #5c5c5c;
+}
+#home .wdg-cal .cal-d.out { visibility: hidden; }
+#home .wdg-cal .cal-d.today {
+  outline: 1px solid rgba(141, 154, 168, .55);
+  outline-offset: -2px;
+  color: #3d4a55;
+}
+#home .wdg-cal .cal-d.has::after {
+  content: '';
+  position: absolute;
+  bottom: .16rem;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #8d9aa8;
+}
+
+/* ── 摘句 ── */
+#home .wdg-quote {
+  transform: none !important;
+  padding: .9rem .95rem .85rem;
+}
+#home .wdg-quote .quote-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+#home .wdg-quote .kicker {
+  font-family: var(--mono);
+  font-size: .31rem;
+  letter-spacing: .26em;
+  color: #b3bcc4;
+}
+#home .wdg-quote .quote-date {
+  font-family: var(--mono);
+  font-size: .32rem;
+  letter-spacing: .12em;
+  color: #c2cad1;
+}
+#home .wdg-quote .quote-text {
+  margin: .45rem 0 0;
+  font-size: .62rem;
+  line-height: 1.9;
+  letter-spacing: .01em;
+  color: #4a4a4a;
+}
+
+/* ── 列表 ── */
+#home .rows {
+  padding: 0;
+  overflow: hidden;
+}
+#home .row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .78rem .95rem;
+  border: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, .045);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+}
+#home .row:last-child { border-bottom: 0; }
+#home .row:active { background: rgba(141, 154, 168, .05); }
+#home .row-ico svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: #6f7f90;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#home .row-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .16rem;
+}
+#home .row-main b {
+  font-size: .58rem;
+  font-weight: 500;
+  color: #333333;
+}
+#home .row-main i {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: .32rem;
+  letter-spacing: .2em;
+  color: #b8c1c9;
+}
+#home .row-val {
+  font-family: var(--mono);
+  font-size: .42rem;
+  color: #8d9aa8;
+}
+#home .row-arrow {
+  color: #d2d9df;
+  font-size: .7rem;
+  line-height: 1;
+}
+
+/* ── 底部 dock ── */
+.dock {
+  position: fixed;
+  left: .9rem;
+  right: .9rem;
+  bottom: calc(.65rem + env(safe-area-inset-bottom, 0px));
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: .48rem .35rem .42rem;
+  background: rgba(255, 255, 255, .96);
+  border: 1px solid rgba(0, 0, 0, .04);
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .06);
+}
+.dock-item {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .22rem;
+  padding: .18rem 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  font: inherit;
+}
+.dock-item:active { background: rgba(141, 154, 168, .07); }
+.dock-item svg {
+  width: 1.02rem;
+  height: 1.02rem;
+  fill: none;
+  stroke: #6f7f90;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.dock-item svg circle { fill: #6f7f90; stroke: none; }
+.dock-item span {
+  font-size: .32rem;
+  letter-spacing: .06em;
+  color: #9aa5b1;
+}
+.dock-item.dragging {
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .16);
+  z-index: 2;
+}
+.dock-item.drop-target {
+  outline: 1px dashed rgba(141, 154, 168, .5);
+  outline-offset: -2px;
+}
+
+/* ── 全部应用抽屉 ── */
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(38, 44, 51, .16);
+}
+.drawer[hidden] { display: none; }
+.drawer-inner {
+  width: 100%;
+  max-height: 82vh;
+  overflow-y: auto;
+  padding: 1rem .95rem calc(1.1rem + env(safe-area-inset-bottom, 0px));
+  background: #fcfcfc;
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, .1);
+}
+.drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .8rem;
+}
+.drawer-head .kicker {
+  font-family: var(--mono);
+  font-size: .31rem;
+  letter-spacing: .28em;
+  color: #b3bcc4;
+}
+.drawer-x {
+  padding: .2rem .1rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: .42rem;
+  color: #8d9aa8;
+}
+.drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .55rem;
+}
+.drawer-grid .appcell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .34rem;
+  min-height: 3.8rem;
+  padding: .5rem .2rem;
+  border: 0;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .04);
+  font: inherit;
+}
+.drawer-grid .appcell:active { background: rgba(141, 154, 168, .06); }
+.drawer-grid .appcell svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: #6f7f90;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.drawer-grid .appcell span {
+  font-size: .33rem;
+  letter-spacing: .04em;
+  color: #7d8894;
+}
