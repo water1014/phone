@@ -1,4 +1,4 @@
-/* pages.js · 日记 / 相册 / 日历 / 记忆 */
+/* pages.js · 日记 / 相册 / 日历 / 记忆 / 天气 */
 (function () {
   const D = document;
 
@@ -363,6 +363,83 @@
     });
   }
 
+  /* ── 天气 ── */
+  function wmoText(code) {
+    if (code === 0) return '晴';
+    if (code === 1) return '晴间少云';
+    if (code === 2) return '少云';
+    if (code === 3) return '阴';
+    if (code === 45 || code === 48) return '雾';
+    if (code >= 51 && code <= 57) return '毛毛雨';
+    if (code >= 61 && code <= 67) return '雨';
+    if (code >= 71 && code <= 77) return '雪';
+    if (code >= 80 && code <= 82) return '阵雨';
+    if (code >= 85 && code <= 86) return '阵雪';
+    if (code >= 95) return '雷雨';
+    return '—';
+  }
+
+  function weather() {
+    return hero('WEATHER', '天气', '当地 · 未来七天') +
+      '<section class="sheet wx-now">' +
+        '<div class="wx-head"><span class="kicker">NOW</span><span class="wx-sub" id="wx-sub">在看</span></div>' +
+        '<div class="wx-main"><span class="wx-deg" id="wx-deg">--</span><span class="wx-desc" id="wx-desc"></span></div>' +
+        '<div class="wx-meta" id="wx-meta"></div>' +
+      '</section>' +
+      '<div class="album-date-band">接下来</div>' +
+      '<div class="wx-list" id="wx-list"></div>';
+  }
+
+  function weatherBind() {
+    const deg = D.getElementById('wx-deg');
+    const desc = D.getElementById('wx-desc');
+    const meta = D.getElementById('wx-meta');
+    const sub = D.getElementById('wx-sub');
+    const list = D.getElementById('wx-list');
+    if (!deg || !list) return;
+
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=26.88&longitude=112.67' +
+      '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m' +
+      '&daily=weather_code,temperature_2m_max,temperature_2m_min' +
+      '&forecast_days=7&timezone=Asia%2FShanghai';
+
+    fetch(url).then(function (res) { return res.json(); }).then(function (data) {
+      const cur = (data && data.current) || {};
+      const daily = (data && data.daily) || {};
+
+      deg.textContent = Math.round(cur.temperature_2m) + '°';
+      if (desc) desc.textContent = wmoText(cur.weather_code);
+      if (sub) sub.textContent = '现在';
+      if (meta) {
+        meta.textContent = '湿度 ' + Math.round(cur.relative_humidity_2m) + '%　·　风 ' +
+          Math.round(cur.wind_speed_10m) + ' km/h';
+      }
+
+      const days = Array.isArray(daily.time) ? daily.time : [];
+      const week = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      const rows = days.map(function (iso, i) {
+        const d = new Date(iso + 'T00:00:00');
+        const label = i === 0 ? '今天' : (i === 1 ? '明天' : week[d.getDay()]);
+        const max = Math.round(daily.temperature_2m_max[i]);
+        const min = Math.round(daily.temperature_2m_min[i]);
+        return '<article class="wx-row">' +
+            '<span class="wx-day">' + label + '</span>' +
+            '<span class="wx-date">' + (d.getMonth() + 1) + '/' + d.getDate() + '</span>' +
+            '<span class="wx-txt">' + wmoText(daily.weather_code[i]) + '</span>' +
+            '<span class="wx-range">' + max + '° / ' + min + '°</span>' +
+          '</article>';
+      }).join('');
+
+      list.innerHTML = rows || '<div class="empty-state">没接到预报。</div>';
+    }).catch(function () {
+      deg.textContent = '—';
+      if (desc) desc.textContent = '没接到天气';
+      if (sub) sub.textContent = '';
+      if (meta) meta.textContent = '可能是没网，也可能是开放接口暂时挂了。';
+      list.innerHTML = '<div class="empty-state">过会儿再来看。</div>';
+    });
+  }
+
   window.Pages = {
     diary: diary,
     diaryBind: diaryBind,
@@ -373,6 +450,8 @@
     calendarFocus: calendarFocus,
     memory: memory,
     memoryBind: memoryBind,
+    weather: weather,
+    weatherBind: weatherBind,
     hero: hero
   };
 })();

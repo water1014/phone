@@ -1,4 +1,4 @@
-/* desk-extra.css · 首页增补：三格 / 天气 */
+/* desk-extra.css · 首页增补：三格 / 天气 / 可点反馈 */
 
 .page-today .wdg-stats {
   display: flex;
@@ -14,7 +14,13 @@
   flex-direction: column;
   align-items: center;
   gap: .28rem;
+  padding: 0;
+  border: 0;
   border-right: 1px dashed rgba(0, 0, 0, .07);
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
 }
 .wdg-stats .stat:last-child { border-right: 0; }
 .wdg-stats .stat b {
@@ -30,6 +36,7 @@
   letter-spacing: .16em;
   color: #a8b2bd;
 }
+.wdg-stats .stat:active b { color: #70808f; }
 
 .page-today .wdg-weather {
   padding: .9rem 1.05rem .85rem;
@@ -55,14 +62,18 @@
   color: #8d9aa8;
 }
 
-/* 月历格子现在可点 */
+/* 可点的卡片给一点反馈，不加箭头不加字 */
+.wdg-weather,
+.wdg-quote { cursor: pointer; }
+.wdg-weather:active,
+.wdg-quote:active { box-shadow: 0 1px 4px rgba(0, 0, 0, .06); }
+
+/* 月历格子可点 */
 .cal-d {
   border: 0;
   background: transparent;
   padding: 0;
   font: inherit;
 }
-.cal-d:active i {
-  background: rgba(141, 154, 168, .16);
-}
+.cal-d:active i { background: rgba(141, 154, 168, .16); }
 .cal-d.today:active i { background: #70808f; }
