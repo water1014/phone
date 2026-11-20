@@ -1,6 +1,5 @@
-/* rail.css · 隐藏式侧栏（列表菜单形态） */
+/* rail.css · 隐藏式侧栏（分组菜单，宽呼吸） */
 
-/* 主页顶部一条，只有一颗按钮 */
 .topline {
   display: flex;
   align-items: center;
@@ -21,7 +20,6 @@
   box-shadow: 0 1px 6px rgba(0, 0, 0, .04);
 }
 .rail-toggle:active { background: rgba(141, 154, 168, .07); }
-
 .rail-toggle svg {
   width: .86rem;
   height: .86rem;
@@ -31,103 +29,132 @@
   stroke-linecap: round;
 }
 
-/* ── 侧栏：默认藏在屏幕外 ── */
+/* ── 侧栏 ── */
 .rail {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   z-index: 70;
-  width: 9.6rem;
-  max-width: 78vw;
+  width: 10.4rem;
+  max-width: 82vw;
   display: flex !important;
   flex-direction: column;
   gap: 0;
-  padding: 1rem 0 calc(2rem + env(safe-area-inset-bottom, 0px));
+  padding: 1.15rem 0 calc(2.4rem + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   background: #ffffff;
-  border-right: 1px solid rgba(0, 0, 0, .045);
-  box-shadow: 10px 0 34px rgba(0, 0, 0, .08);
+  border-radius: 0 20px 20px 0;
+  box-shadow: 14px 0 40px rgba(0, 0, 0, .09);
   transform: translateX(-104%);
-  transition: transform .28s cubic-bezier(.4, 0, .2, 1);
+  transition: transform .3s cubic-bezier(.4, 0, .2, 1);
   will-change: transform;
 }
-
 .rail.open { transform: translateX(0); }
 
-/* 侧栏顶部两行小标题 */
+/* 顶部：站名 + 第几天 */
 .rail-head {
   display: flex;
   flex-direction: column;
-  gap: .22rem;
-  padding: 0 1.05rem .9rem;
+  gap: .34rem;
+  padding: 0 1.2rem 1.15rem;
 }
 .rail-head b {
   font-family: var(--mono);
-  font-size: .38rem;
-  font-weight: 500;
-  letter-spacing: .26em;
-  color: #4f5a64;
-}
-.rail-head i {
-  font-style: normal;
-  font-family: var(--mono);
   font-size: .3rem;
-  letter-spacing: .22em;
-  color: #bcc5cd;
+  font-weight: 400;
+  letter-spacing: .32em;
+  color: #c3cbd2;
+}
+.rail-head span {
+  font-size: .74rem;
+  font-weight: 500;
+  letter-spacing: .01em;
+  color: #33383d;
+}
+.rail-head span em {
+  font-style: normal;
+  font-size: .38rem;
+  font-weight: 400;
+  letter-spacing: .12em;
+  color: #a8b2bb;
+  margin-left: .3rem;
 }
 
-/* 菜单行：名字 + 一句说明 */
-.rail-row {
+/* 分组标题 */
+.rail-group-title {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: .26rem;
+  align-items: center;
+  gap: .5rem;
+  padding: 1.05rem 1.2rem .42rem;
+  font-size: .3rem;
+  letter-spacing: .26em;
+  color: #c8d0d7;
+}
+.rail-group-title::after {
+  content: '';
+  flex: 1 1 auto;
+  height: 1px;
+  background: rgba(0, 0, 0, .04);
+}
+
+/* 菜单行 */
+.rail-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: .7rem;
   width: 100%;
-  padding: .68rem 1.05rem .66rem;
+  padding: .66rem 1.2rem .62rem;
   border: 0;
   background: transparent;
   font: inherit;
   text-align: left;
-  position: relative;
+  transition: background .18s ease;
 }
-.rail-row:active { background: rgba(141, 154, 168, .06); }
+.rail-row:active { background: rgba(141, 154, 168, .07); }
+
+.rail-row .rail-main {
+  display: flex;
+  flex-direction: column;
+  gap: .26rem;
+  min-width: 0;
+}
 
 .rail-row .rail-name {
   display: flex;
   align-items: baseline;
-  gap: .42rem;
-  font-size: .62rem;
+  gap: .38rem;
+  font-size: .56rem;
   font-weight: 500;
-  letter-spacing: .02em;
-  color: #2f2f2f;
+  letter-spacing: .03em;
+  color: #3b4147;
 }
 .rail-row .rail-name i {
   font-style: normal;
   font-family: var(--mono);
-  font-size: .3rem;
+  font-size: .28rem;
   font-weight: 400;
-  letter-spacing: .18em;
-  color: #c0c9d1;
+  letter-spacing: .16em;
+  color: #ccd3d9;
 }
 
 .rail-row .rail-desc {
-  font-size: .36rem;
-  line-height: 1.4;
+  font-size: .34rem;
+  line-height: 1.5;
   letter-spacing: .02em;
-  color: #9aa5b1;
+  color: #a6b0b9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* 右侧值（如余额） */
-.rail-row .rail-val {
-  position: absolute;
-  right: 1.05rem;
-  top: .72rem;
-  font-family: var(--mono);
-  font-size: .34rem;
-  letter-spacing: .04em;
-  color: #b0bac3;
+.rail-row .rail-arrow {
+  color: #dde3e8;
+  font-size: .64rem;
+  line-height: 1;
 }
 
 /* 遮罩 */
@@ -135,6 +162,7 @@
   position: fixed;
   inset: 0;
   z-index: 65;
-  background: rgba(38, 44, 51, .13);
+  background: rgba(34, 40, 46, .16);
+  backdrop-filter: none;
 }
 .scrim[hidden] { display: none; }

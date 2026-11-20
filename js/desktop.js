@@ -1,4 +1,4 @@
-/* desktop.js · 桌面：通宽内容流 + 隐藏侧栏（列表式） + 底部 dock */
+/* desktop.js · 桌面：通宽内容流 + 隐藏侧栏（分组菜单） + 底部 dock */
 (function () {
   const D = document;
 
@@ -7,8 +7,7 @@
 
   const DOCK = ['chat', 'diary', 'album', 'memory'];
 
-  /* 侧栏说明文案（英文小注 / 一句中文） */
-  const RAIL_DESC = {
+  const RAIL_META = {
     chat: ['CHAT', '回到你们正在说的话'],
     memory: ['MEMORY', '你让我记住的事'],
     diary: ['DIARY', '一天一页，写给以后'],
@@ -35,29 +34,40 @@
     settings: ['SETTINGS', '名字、纪念日、接口']
   };
 
-  function order() {
-    const all = window.Apps.ALL.map(function (a) { return a.id; });
-    const saved = Array.isArray(XW.S.appOrder) ? XW.S.appOrder : [];
-    const out = saved.filter(function (id) { return all.indexOf(id) >= 0; });
-    all.forEach(function (id) { if (out.indexOf(id) < 0) out.push(id); });
-    return out;
-  }
+  const RAIL_GROUPS = [
+    { title: '日常', ids: ['chat', 'memory', 'diary', 'album'] },
+    { title: '记录', ids: ['calendar', 'plans', 'accounting', 'weather', 'mood', 'health', 'cycle', 'study', 'quotes'] },
+    { title: '我们', ids: ['letter', 'music', 'moments', 'favorites', 'games', 'studio'] },
+    { title: '其他', ids: ['worldbook', 'windows', 'mcp', 'beautify', 'settings'] }
+  ];
 
   function railHtml() {
-    const rows = order().map(function (id) {
-      const app = window.Apps.find(id);
-      if (!app) return '';
-      const meta = RAIL_DESC[id] || ['', ''];
-      return '<button type="button" class="rail-row" data-app="' + id + '">' +
-          '<span class="rail-name">' + app.name + '<i>' + meta[0] + '</i></span>' +
-          '<span class="rail-desc">' + meta[1] + '</span>' +
-        '</button>';
+    const love = new Date(XW.S.loveDate || '2025-01-01');
+    const days = UI.diffDay(love, new Date());
+
+    const body = RAIL_GROUPS.map(function (group) {
+      const rows = group.ids.map(function (id) {
+        const app = window.Apps.find(id);
+        if (!app) return '';
+        const meta = RAIL_META[id] || ['', ''];
+        return '<button type="button" class="rail-row" data-app="' + id + '">' +
+            '<span class="rail-main">' +
+              '<span class="rail-name">' + app.name + '<i>' + meta[0] + '</i></span>' +
+              '<span class="rail-desc">' + meta[1] + '</span>' +
+            '</span>' +
+            '<span class="rail-arrow">›</span>' +
+          '</button>';
+      }).join('');
+      return '<div class="rail-group">' +
+          '<div class="rail-group-title">' + group.title + '</div>' +
+          rows +
+        '</div>';
     }).join('');
 
     return '<div class="rail-head">' +
         '<b>XIAOWO</b>' +
-        '<i>OUR SPACE</i>' +
-      '</div>' + rows;
+        '<span>第 ' + days + ' 天<em>OUR SPACE</em></span>' +
+      '</div>' + body;
   }
 
   function dockHtml() {
@@ -80,10 +90,8 @@
   }
 
   function drawerHtml() {
-    const cells = order().map(function (id) {
-      const app = window.Apps.find(id);
-      if (!app) return '';
-      return '<button type="button" class="appcell" data-app="' + id + '">' +
+    const cells = window.Apps.ALL.map(function (app) {
+      return '<button type="button" class="appcell" data-app="' + app.id + '">' +
           UI.icon(app.icon) +
           '<span>' + app.name + '</span>' +
         '</button>';
