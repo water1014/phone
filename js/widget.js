@@ -1,4 +1,4 @@
-/* widget.js · 桌面小组件：三格 / 月历 / 天气 / 摘句（都可点） */
+/* widget.js · 桌面组件块（由 desktop.js 调用） */
 (function () {
   const D = document;
 
@@ -20,6 +20,22 @@
     return marks;
   }
 
+  /* 天数 */
+  function daysHtml() {
+    const love = new Date(XW.S.loveDate || '2025-01-01');
+    const days = UI.diffDay(love, new Date());
+    return '<section class="wdg wdg-days">' +
+        '<div class="days-top">' +
+          '<span class="kicker">TOGETHER</span>' +
+          '<span class="days-since">SINCE ' + UI.fmtYmd(love) + '</span>' +
+        '</div>' +
+        '<div class="days-num">' + days + '<small>DAYS</small></div>' +
+        '<div class="days-rule"></div>' +
+        '<div class="wdg-names">' + UI.esc(XW.S.hisName) + ' &amp; ' + UI.esc(XW.S.herName) + '</div>' +
+      '</section>';
+  }
+
+  /* 三格 */
   function statCell(num, label, app) {
     return '<button type="button" class="stat" data-app="' + app + '">' +
         '<b>' + num + '</b>' +
@@ -41,6 +57,7 @@
       '</section>';
   }
 
+  /* 月历 */
   function calendarHtml() {
     const now = new Date();
     const year = now.getFullYear();
@@ -72,6 +89,7 @@
       '</section>';
   }
 
+  /* 天气 */
   function weatherHtml() {
     return '<section class="wdg wdg-weather" data-app="weather" role="button" tabindex="0">' +
         '<div class="quote-head">' +
@@ -121,6 +139,7 @@
     });
   }
 
+  /* 摘句 */
   function quoteHtml() {
     const list = Array.isArray(XW.S.diary) ? XW.S.diary : [];
     const last = list.length ? list[list.length - 1] : null;
@@ -142,8 +161,8 @@
       '</section>';
   }
 
-  function bindCalendar(page) {
-    Array.prototype.forEach.call(page.querySelectorAll('.cal-d[data-day]'), function (btn) {
+  function bindCalendar(root) {
+    Array.prototype.forEach.call(root.querySelectorAll('.cal-d[data-day]'), function (btn) {
       btn.addEventListener('click', function () {
         const day = btn.dataset.day;
         if (window.Pages && window.Pages.calendarFocus) window.Pages.calendarFocus(day);
@@ -152,32 +171,15 @@
     });
   }
 
-  function mount() {
-    const page = D.querySelector('#desk-pages .page');
-    if (!page) return;
-    if (page.querySelector('.wdg-cal')) return;
-
-    const grid = page.querySelector('.grid');
-    if (!grid) return;
-    grid.insertAdjacentHTML('beforebegin', calendarHtml() + weatherHtml() + quoteHtml());
-
-    const days = page.querySelector('.wdg-days');
-    if (days && !page.querySelector('.wdg-stats')) {
-      days.insertAdjacentHTML('afterend', statsHtml());
+  window.Widgets = {
+    days: daysHtml,
+    stats: statsHtml,
+    calendar: calendarHtml,
+    weatherCard: weatherHtml,
+    quote: quoteHtml,
+    after: function (root) {
+      bindCalendar(root);
+      loadWeather();
     }
-
-    bindCalendar(page);
-    loadWeather();
-  }
-
-  function watch() {
-    const box = D.getElementById('desk-pages');
-    if (!box) return;
-    mount();
-    const observer = new MutationObserver(function () { mount(); });
-    observer.observe(box, { childList: true, subtree: false });
-  }
-
-  if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', watch);
-  else watch();
+  };
 })();
