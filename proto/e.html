@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>E · 手账纸</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  min-height:100vh;background:#f9f6f0;color:#3a3630;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;padding:0 20px 70px;
+  background-image:radial-gradient(rgba(120,110,95,.09) 1px,transparent 1px);
+  background-size:16px 16px;
+}
+.tag{position:fixed;top:10px;right:16px;font-size:11px;color:#c9c2b6;letter-spacing:2px}
+
+.top{display:flex;justify-content:space-between;align-items:flex-end;padding:28px 2px 0}
+.top b{font-size:11px;font-weight:400;letter-spacing:3.6px;color:#b6ada0}
+.top span{font-size:18px;color:#3a3630;letter-spacing:-.2px}
+
+.note{
+  position:relative;margin-top:26px;padding:24px 22px 22px;
+  background:#fffdf9;border-radius:4px;
+  box-shadow:0 3px 14px rgba(90,74,50,.10),0 1px 0 rgba(255,255,255,.8) inset;
+}
+.note::before{
+  content:'';position:absolute;left:26px;top:-11px;width:64px;height:22px;
+  background:rgba(214,204,186,.55);transform:rotate(-2.4deg);border-radius:2px;
+}
+.note .k{font-size:10px;letter-spacing:3px;color:#b6ada0}
+.note .n{font-size:52px;font-weight:500;letter-spacing:-2px;line-height:1;margin:10px 0 8px;color:#2f2b26}
+.note .n em{font-style:normal;font-size:11px;letter-spacing:3px;color:#b0a696;margin-left:8px;font-weight:400}
+.note .m{font-size:13px;color:#8a8175;letter-spacing:.6px}
+.note .line{height:1px;margin:16px 0 14px;background:repeating-linear-gradient(90deg,#e2dbcf 0 3px,transparent 3px 7px)}
+.note .say{font-size:14.5px;line-height:1.95;color:#4a453d}
+
+.strip{
+  margin-top:16px;padding:15px 18px;background:#fff;
+  border-left:3px solid #d9cfbd;border-radius:2px;
+  box-shadow:0 2px 8px rgba(90,74,50,.07);
+}
+.strip .k{font-size:10px;letter-spacing:2.6px;color:#b6ada0}
+.strip .t{margin-top:8px;font-size:16px;color:#33302a}
+.strip .a{margin-top:4px;font-size:12px;color:#a0978a}
+
+.rows{margin-top:22px}
+.row{display:flex;align-items:baseline;gap:10px;padding:11px 2px;border-bottom:1px dashed #e2dbcf}
+.row .n{font-size:15px;color:#403b34}
+.row .e{font-size:9px;letter-spacing:1.8px;color:#c2b9aa}
+.row .v{margin-left:auto;font-size:12.5px;color:#8a8175}
+</style>
+</head>
+<body>
+<div class="tag">E</div>
+
+<div class="top">
+  <b>XIAOWO</b>
+  <span>22:57</span>
+</div>
+
+<section class="note">
+  <div class="k">TOGETHER</div>
+  <div class="n">688<em>DAYS</em></div>
+  <div class="m">宋祁 &amp; 淼淼 · 从 2025.01.01 算起</div>
+  <div class="line"></div>
+  <p class="say">今天雾霾，十度。屋里灯开着，等你洗完澡。</p>
+</section>
+
+<section class="strip">
+  <div class="k">NOW PLAYING</div>
+  <div class="t">水星记</div>
+  <div class="a">郭顶</div>
+</section>
+
+<div class="rows">
+  <div class="row"><span class="n">日记</span><span class="e">DIARY</span><span class="v">46 篇</span></div>
+  <div class="row"><span class="n">相册</span><span class="e">ALBUM</span><span class="v">3 张</span></div>
+  <div class="row"><span class="n">记忆</span><span class="e">MEMORY</span><span class="v">8 条</span></div>
+  <div class="row"><span class="n">天气</span><span class="e">WEATHER</span><span class="v">雾霾 10°</span></div>
+</div>
+</body>
+</html>

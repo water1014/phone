@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>H · 锁屏大图</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:#101418;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;color:#fff;overflow:hidden;
+}
+.wrap{position:relative;height:100vh;height:100dvh;overflow:hidden}
+
+.bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(700px 500px at 78% 8%,rgba(126,152,178,.55),transparent 62%),
+    radial-gradient(600px 480px at 12% 78%,rgba(74,92,112,.5),transparent 60%),
+    linear-gradient(165deg,#1b232c 0%,#0d1116 62%,#080b0e 100%);
+}
+.bg::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 40%,rgba(6,9,12,.72) 100%);
+}
+
+.tag{position:absolute;top:12px;right:18px;font-size:11px;color:rgba(255,255,255,.28);letter-spacing:2px;z-index:9}
+
+.mid{position:absolute;left:0;right:0;top:16%;text-align:center;z-index:2}
+.mid .k{font-size:10px;letter-spacing:5px;color:rgba(255,255,255,.42)}
+.mid .t{font-size:86px;font-weight:200;line-height:1;letter-spacing:-4px;margin-top:14px;color:#fff}
+.mid .d{margin-top:14px;font-size:13px;letter-spacing:2px;color:rgba(255,255,255,.5)}
+
+.day{position:absolute;left:26px;left:26px;right:26px;top:52%;z-index:2;text-align:center}
+.day .n{font-size:40px;font-weight:300;letter-spacing:-1.6px;color:#fff}
+.day .n em{font-style:normal;font-size:11px;letter-spacing:4px;color:rgba(255,255,255,.42);margin-left:8px;font-weight:400}
+.day .m{margin-top:10px;font-size:12px;letter-spacing:2.4px;color:rgba(255,255,255,.38)}
+
+.bottom{position:absolute;left:20px;right:20px;bottom:26px;z-index:3}
+.now{
+  padding:16px 18px;border-radius:18px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);
+}
+.now .k{font-size:9.5px;letter-spacing:3px;color:rgba(255,255,255,.4)}
+.now .t{margin-top:9px;font-size:17px;color:#fff}
+.now .a{margin-top:4px;font-size:11.5px;color:rgba(255,255,255,.4)}
+
+.enter{
+  margin-top:12px;width:100%;padding:15px;border:0;border-radius:18px;
+  background:rgba(255,255,255,.92);color:#111;
+  font:inherit;font-size:14px;letter-spacing:3px;
+}
+.dots{display:flex;justify-content:center;gap:6px;margin-top:14px}
+.dots i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.24)}
+.dots i.on{background:rgba(255,255,255,.8)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bg"></div>
+  <div class="tag">H</div>
+
+  <div class="mid">
+    <div class="k">LOCAL TIME</div>
+    <div class="t">22:57</div>
+    <div class="d">周五 · 11月20日</div>
+  </div>
+
+  <div class="day">
+    <div class="n">688<em>DAYS</em></div>
+    <div class="m">宋祁 &amp; 淼淼</div>
+  </div>
+
+  <div class="bottom">
+    <div class="now">
+      <div class="k">NOW PLAYING</div>
+      <div class="t">水星记</div>
+      <div class="a">郭顶 · 只是记下名字</div>
+    </div>
+    <button class="enter">进屋</button>
+    <div class="dots"><i class="on"></i><i></i><i></i></div>
+  </div>
+</div>
+</body>
+</html>
