@@ -27,9 +27,7 @@
   function homeHtml() {
     const W = window.Widgets;
     if (!W) return '';
-    return W.clock() + W.days() + W.stats() +
-      W.calendar() + W.weatherCard() + W.quote() +
-      W.memoryCard() + W.quota();
+    return W.clock() + W.days() + W.rows() + W.quote() + W.calendar();
   }
 
   function renderAll() {
