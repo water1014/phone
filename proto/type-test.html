@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f7f6f3">
+<title>信笺字 · 天数卡</title>
+<link rel="preconnect" href="https://fonts.loli.net" crossorigin>
+<link rel="stylesheet" href="https://fonts.loli.net/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&amp;family=EB+Garamond:ital,wght@0,400;1,400&amp;family=Great+Vibes&amp;display=swap">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body{
+  background:#f7f6f3;
+  color:#1a1917;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  padding:20px 16px 46px;
+}
+.wrap{ max-width:420px; margin:0 auto; }
+h1{ font-size:17px; font-weight:700; }
+.lead{ margin-top:7px; font-size:12.5px; line-height:1.75; color:#8f8a80; }
+
+.status{
+  margin-top:14px;
+  padding:11px 14px;
+  border-radius:12px;
+  font-size:12px;
+  line-height:1.7;
+  background:#fff;
+  border:1px solid #ece8de;
+  color:#6b655c;
+}
+.status b{ font-weight:600; }
+.ok{ color:#4a7a4f; }
+.bad{ color:#a2553f; }
+
+.tag{
+  display:block;
+  margin:24px 0 9px;
+  font-size:10px;
+  letter-spacing:1.5px;
+  color:#b6b0a6;
+  font-weight:600;
+}
+
+.card{
+  background:#fff;
+  border-radius:20px;
+  box-shadow:0 2px 10px rgba(0,0,0,.05);
+  padding:22px 20px 20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.serif-cn{
+  font-family:"Songti SC","Noto Serif CJK SC","Noto Serif SC","Source Han Serif SC",serif;
+}
+
+.ava-row{ display:flex; align-items:center; gap:11px; margin-bottom:12px; }
+.ava{
+  width:56px; height:56px; border-radius:50%;
+  background:#f2efe8; border:1px solid #eae5da;
+  display:flex; align-items:center; justify-content:center;
+  color:#b8b2a6; font-size:15px;
+}
+.amp{ color:#d3cdc2; font-size:11px; }
+
+.names{ font-size:15px; color:#2f2c28; letter-spacing:.6px; }
+.rule{ width:26px; height:1px; background:#e4dfd4; margin:15px 0 13px; }
+
+/* T1 Cormorant */
+.c1{
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-style:italic;
+  font-weight:300;
+}
+.t1-top{ font-family:"Cormorant Garamond",Georgia,serif; font-style:italic; font-size:15px; color:#7a746a; letter-spacing:2px; margin-bottom:12px; }
+.t1-day{ font-family:"Cormorant Garamond",Georgia,serif; font-style:italic; font-weight:300; font-size:30px; color:#2a2723; letter-spacing:.5px; }
+.t1-en{ font-family:"Cormorant Garamond",Georgia,serif; font-style:italic; font-size:12px; color:#b0a99d; letter-spacing:2px; margin-top:6px; }
+
+/* T2 EB Garamond */
+.t2-top{ font-family:"EB Garamond",Georgia,serif; font-style:italic; font-size:14px; color:#7a746a; letter-spacing:1.6px; margin-bottom:12px; }
+.t2-day{ font-family:"EB Garamond",Georgia,serif; font-style:italic; font-size:28px; color:#2a2723; letter-spacing:.4px; }
+.t2-en{ font-family:"EB Garamond",Georgia,serif; font-style:italic; font-size:12px; color:#b0a99d; letter-spacing:1.8px; margin-top:6px; }
+
+/* T3 Great Vibes 当小标题 */
+.t3-top{ font-family:"Great Vibes",cursive; font-size:22px; color:#6f6a60; margin-bottom:8px; }
+.t3-day{ font-family:"Cormorant Garamond",Georgia,serif; font-style:italic; font-weight:300; font-size:32px; color:#2a2723; }
+.t3-en{ font-family:"EB Garamond",Georgia,serif; font-style:italic; font-size:11.5px; color:#b0a99d; letter-spacing:1.6px; margin-top:6px; }
+
+/* T4 只用系统字体 */
+.t4-top{ font-family:Georgia,"Noto Serif",serif; font-style:italic; font-size:13px; color:#7a746a; letter-spacing:2.4px; margin-bottom:12px; }
+.t4-day{ font-family:Georgia,"Noto Serif",serif; font-style:italic; font-size:28px; color:#2a2723; }
+.t4-en{ font-family:Georgia,"Noto Serif",serif; font-size:11.5px; color:#b0a99d; letter-spacing:1.6px; margin-top:7px; }
+
+.sample-num{ font-size:44px; line-height:1; color:#1a1917; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>信笺字 · 天数卡</h1>
+  <p class="lead">照你发的那张图的质感做：英文用旧式斜体，中文用宋体，数字也用衬线。先看最上面那条状态，那几条字库能不能下载下来。</p>
+
+  <div class="status" id="status">正在试字体……</div>
+
+  <span class="tag">T1 · Cormorant Garamond（最像图里 at home with 那行）</span>
+  <section class="card">
+    <div class="t1-top">Together</div>
+    <div class="ava-row">
+      <div class="ava serif-cn">宋</div>
+      <span class="amp">&amp;</span>
+      <div class="ava serif-cn">淼</div>
+    </div>
+    <div class="names serif-cn">宋祁 &amp; 淼淼</div>
+    <div class="rule"></div>
+    <div class="t1-day">第 688 天</div>
+    <div class="t1-en">days together</div>
+  </section>
+
+  <span class="tag">T2 · EB Garamond（更旧、更干）</span>
+  <section class="card">
+    <div class="t2-top">Together</div>
+    <div class="ava-row">
+      <div class="ava serif-cn">宋</div>
+      <span class="amp">&amp;</span>
+      <div class="ava serif-cn">淼</div>
+    </div>
+    <div class="names serif-cn">宋祁 &amp; 淼淼</div>
+    <div class="rule"></div>
+    <div class="t2-day">第 688 天</div>
+    <div class="t2-en">days together</div>
+  </section>
+
+  <span class="tag">T3 · Great Vibes 当题头（图里 Enchantée 那种花体）</span>
+  <section class="card">
+    <div class="t3-top">Together</div>
+    <div class="ava-row">
+      <div class="ava serif-cn">宋</div>
+      <span class="amp">&amp;</span>
+      <div class="ava serif-cn">淼</div>
+    </div>
+    <div class="names serif-cn">宋祁 &amp; 淼淼</div>
+    <div class="rule"></div>
+    <div class="t3-day">第 688 天</div>
+    <div class="t3-en">days together</div>
+  </section>
+
+  <span class="tag">T4 · 只用手机自带字（完全不联网）</span>
+  <section class="card">
+    <div class="t4-top">TOGETHER</div>
+    <div class="ava-row">
+      <div class="ava serif-cn">宋</div>
+      <span class="amp">&amp;</span>
+      <div class="ava serif-cn">淼</div>
+    </div>
+    <div class="names serif-cn">宋祁 &amp; 淼淼</div>
+    <div class="rule"></div>
+    <div class="t4-day">第 688 天</div>
+    <div class="t4-en">days together</div>
+  </section>
+
+  <span class="tag">数字单独看</span>
+  <section class="card" style="align-items:flex-start;">
+    <div class="sample-num c1">688</div>
+    <div class="sample-num" style="font-family:'EB Garamond',Georgia,serif;font-style:italic;font-size:38px;margin-top:10px;">688</div>
+    <div class="sample-num t4-day" style="margin-top:10px;">688</div>
+  </section>
+
+  <p class="lead" style="margin-top:22px;">回我 T1 / T2 / T3 / T4。如果状态条是红的，说明字库下载不下来，那就只能走 T4。</p>
+
+</div>
+
+<script>
+(function () {
+  var Q = String.fromCharCode(34);
+  var names = ['Cormorant Garamond', 'EB Garamond', 'Great Vibes'];
+  var box = document.getElementById('status');
+
+  function report() {
+    var got = [];
+    var miss = [];
+
+    names.forEach(function (n) {
+      var ok = false;
+      try { ok = document.fonts.check('16px ' + Q + n + Q); } catch (e) { ok = false; }
+      if (ok) { got.push(n); } else { miss.push(n); }
+    });
+
+    if (!miss.length) {
+      box.innerHTML = '<b class="ok">字库都拿到了</b>：' + got.join(' / ') +
+        '<br>T1 T2 T3 都是真实效果，可以放心挑。';
+      return;
+    }
+
+    if (!got.length) {
+      box.innerHTML = '<b class="bad">一个都没下载下来</b>' +
+        '<br>说明这几条链接在你手机上不通。下面 T1–T3 会退回手机自带字，只有 T4 是准的。';
+      return;
+    }
+
+    box.innerHTML = '<b class="bad">只拿到一部分</b>：' + got.join(' / ') +
+      '<br>没拿到：' + miss.join(' / ') +
+      '<br>没拿到的那几款会退回自带字，看着会差很多。';
+  }
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () {
+      setTimeout(report, 900);
+    });
+  } else {
+    box.textContent = '这台手机的浏览器不支持检测字体，你自己看下面哪几块长得好看就行。';
+  }
+})();
+</script>
+</body>
+</html>
