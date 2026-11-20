@@ -1,4 +1,4 @@
-/* desktop.js · 桌面：左栏图标 + 右侧内容流 */
+/* desktop.js · 桌面：左栏图标 + 右侧拼图流 */
 (function () {
   const D = document;
 
@@ -27,7 +27,12 @@
   function homeHtml() {
     const W = window.Widgets;
     if (!W) return '';
-    return W.clock() + W.days() + W.rows() + W.quote() + W.calendar();
+    return W.clock() +
+      W.days() + W.appGrid() +
+      W.weatherCard() + W.quota() +
+      W.calendar() +
+      W.quote() +
+      W.rows();
   }
 
   function renderAll() {
