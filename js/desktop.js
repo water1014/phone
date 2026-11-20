@@ -1,4 +1,4 @@
-/* desktop.js · 桌面：通宽单列内容流 + 底部 dock */
+/* desktop.js · 桌面：通宽内容流 + 隐藏侧栏 + 底部 dock */
 (function () {
   const D = document;
 
@@ -13,6 +13,17 @@
     const out = saved.filter(function (id) { return all.indexOf(id) >= 0; });
     all.forEach(function (id) { if (out.indexOf(id) < 0) out.push(id); });
     return out;
+  }
+
+  function railHtml() {
+    return order().map(function (id) {
+      const app = window.Apps.find(id);
+      if (!app) return '';
+      return '<button type="button" class="rail-ico" data-app="' + id + '">' +
+          UI.icon(app.icon) +
+          '<span>' + app.name + '</span>' +
+        '</button>';
+    }).join('');
   }
 
   function dockHtml() {
@@ -58,7 +69,14 @@
   function homeHtml() {
     const W = window.Widgets;
     if (!W) return '';
-    return W.clock() +
+    return '<div class="topline">' +
+        '<button type="button" class="rail-toggle" data-rail="1" aria-label="打开侧栏">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+            '<path d="M4 7h13M4 12h13M4 17h13"/>' +
+          '</svg>' +
+        '</button>' +
+      '</div>' +
+      W.clock() +
       W.days() +
       W.trio() +
       W.calendar() +
@@ -73,6 +91,8 @@
         '<main class="home" id="home"><div class="grid">' + homeHtml() + '</div></main>' +
         '<nav class="dock" id="dock">' + dockHtml() + '</nav>' +
       '</div>' +
+      '<div class="scrim" id="scrim" hidden></div>' +
+      '<aside class="rail" id="rail">' + railHtml() + '</aside>' +
       drawerHtml();
 
     if (window.Widgets && window.Widgets.after) window.Widgets.after(screenEl);
@@ -88,6 +108,20 @@
     if (date) {
       date.textContent = UI.greetWord(now.getHours()) + ' · ' + UI.fmtWeek(now) + ' ' + UI.fmtMonthDay(now);
     }
+  }
+
+  function openRail() {
+    const rail = D.getElementById('rail');
+    const scrim = D.getElementById('scrim');
+    if (scrim) scrim.hidden = false;
+    if (rail) rail.classList.add('open');
+  }
+
+  function closeRail() {
+    const rail = D.getElementById('rail');
+    const scrim = D.getElementById('scrim');
+    if (rail) rail.classList.remove('open');
+    if (scrim) scrim.hidden = true;
   }
 
   function openDrawer() {
@@ -107,15 +141,22 @@
         return;
       }
 
+      if (event.target.closest('[data-rail]')) {
+        event.preventDefault();
+        openRail();
+        return;
+      }
+
       if (event.target.closest('[data-more]')) {
         event.preventDefault();
         openDrawer();
         return;
       }
 
-      if (event.target.closest('[data-close]') || event.target.id === 'drawer') {
+      if (event.target.closest('[data-close]') || event.target.id === 'drawer' || event.target.id === 'scrim') {
         event.preventDefault();
         closeDrawer();
+        closeRail();
         return;
       }
 
@@ -123,6 +164,7 @@
       if (!btn) return;
       event.preventDefault();
       closeDrawer();
+      closeRail();
       window.Router.open(btn.dataset.app);
     });
   }

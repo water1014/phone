@@ -1,0 +1,96 @@
+/* rail.css · 隐藏式侧栏（只负责抽屉式侧边栏，不碰主页布局） */
+
+/* 主页顶部一条，只有一颗按钮 */
+.topline {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: 0 .1rem .1rem;
+}
+
+.rail-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, .04);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .04);
+}
+.rail-toggle:active { background: rgba(141, 154, 168, .07); }
+
+.rail-toggle svg {
+  width: .86rem;
+  height: .86rem;
+  fill: none;
+  stroke: #6f7f90;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+/* ── 侧栏本体：默认藏在屏幕外 ── */
+.rail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 70;
+  width: 4.3rem;
+  display: flex !important;
+  flex-direction: column;
+  gap: .06rem;
+  padding: .9rem .38rem calc(5.6rem + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #ffffff;
+  border-right: 1px solid rgba(0, 0, 0, .045);
+  box-shadow: 8px 0 28px rgba(0, 0, 0, .07);
+  transform: translateX(-104%);
+  transition: transform .26s cubic-bezier(.4, 0, .2, 1);
+  will-change: transform;
+}
+
+.rail.open { transform: translateX(0); }
+
+.rail-ico {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .2rem;
+  padding: .42rem 0 .38rem;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  font: inherit;
+}
+.rail-ico:active { background: rgba(141, 154, 168, .07); }
+
+.rail-ico svg {
+  width: 1.02rem;
+  height: 1.02rem;
+  fill: none;
+  stroke: #6f7f90;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rail-ico span {
+  font-size: .31rem;
+  letter-spacing: .03em;
+  color: #9aa5b1;
+  white-space: nowrap;
+}
+
+/* 遮罩：点它就收回去 */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  background: rgba(38, 44, 51, .13);
+}
+.scrim[hidden] { display: none; }
