@@ -1,6 +1,6 @@
 /* layout.js · 首页布局表 + dock
-   页面内拖动：直接换 DOM，不重建，所以不闪也不跳页
-   涉及 dock：重建，但页码会滚回去 */
+   触摸监听绑在 document 上，不依赖 home 元素（桌面重建也不会掉）
+   长按 380ms、容差 14px 进入编辑态 */
 (function () {
   const D = document;
   const K = 'xw_layout';
@@ -33,6 +33,9 @@
       'app:games', 'app:studio', 'app:worldbook', 'app:windows'],
     ['app:weather', 'app:mcp', 'app:beautify', 'app:settings']
   ];
+
+  const HOLD = 380;
+  const SLOP = 14;
 
   let st = null;
   let dst = null;
@@ -105,7 +108,6 @@
     try { localStorage.setItem(K, JSON.stringify(list)); } catch (e) {}
   }
 
-  /* 从当前 DOM 把顺序写回表：页面内换位用这个，不重建 */
   function save() {
     const home = homeEl();
     if (!home) return;
@@ -174,7 +176,7 @@
     if (more) dock.appendChild(more);
   }
 
-  /* ============ 数据层的各种换法 ============ */
+  /* ============ 数据层换法 ============ */
 
   function swapPageDock(giKey, dockId) {
     if (typeof giKey !== 'string' || giKey.indexOf('app:') !== 0) return false;
@@ -339,7 +341,6 @@
   }
 
   function homeEl() { return D.getElementById('home'); }
-
   function rootEl() { return screenRef || D.getElementById('screen'); }
 
   /* ============ 顶部两个按钮 ============ */
@@ -447,6 +448,8 @@
     hint(true);
     plus(true);
     markDel();
+
+    if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
   }
 
   function exitEdit() {
@@ -619,8 +622,6 @@
     if (hit.item) hit.item.classList.add('drop-target');
   }
 
-  /* ============ DOM 级换位（不重建） ============ */
-
   function swapDom(a, b) {
     if (!a || !b || a === b) return false;
 
@@ -647,14 +648,13 @@
 
   function onStart(ev) {
     if (!ev.touches || ev.touches.length !== 1) return;
-
     if (ev.target.closest && ev.target.closest('.gi-del')) return;
 
     const home = homeEl();
     if (!home) return;
 
     const item = ev.target.closest ? ev.target.closest('.gi') : null;
-    if (!item) return;
+    if (!item || !home.contains(item)) return;
 
     const t = ev.touches[0];
     st = {
@@ -679,9 +679,10 @@
     st.timer = setTimeout(function () {
       if (!st) return;
       st.timer = null;
+      const cur = st;
       enterEdit();
-      lift(st);
-    }, 420);
+      lift(cur);
+    }, HOLD);
   }
 
   function lift(s) {
@@ -711,7 +712,7 @@
     st.ly = t.clientY;
 
     if (!st.active) {
-      if (Math.abs(t.clientX - st.sx) > 9 || Math.abs(t.clientY - st.sy) > 9) {
+      if (Math.abs(t.clientX - st.sx) > SLOP || Math.abs(t.clientY - st.sy) > SLOP) {
         clearTimeout(st.timer);
         st = null;
       }
@@ -784,15 +785,12 @@
     let rebuild = false;
 
     if (hit && hit.kind === 'gi' && hit.el !== s.item) {
-      /* 页面里两块对调：直接换 DOM */
       changed = swapDom(s.item, hit.el);
     } else if (hit && hit.kind === 'dock') {
-      /* 跟 dock 有关：得重建 */
       if (hit.item) changed = swapPageDock(key, hit.item.getAttribute('data-app'));
       else changed = pageToDockEnd(key);
       rebuild = true;
     } else {
-      /* 挪到这一页末尾：直接移动 DOM */
       const pg = pageAt(s.home, currentIndex(s.home));
       if (pg && s.item.parentNode !== pg) {
         pg.appendChild(s.item);
@@ -841,7 +839,7 @@
       dst.item.classList.add('dk-lift');
       if (home) home.classList.add('dragging');
       if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
-    }, 420);
+    }, HOLD);
   }
 
   function dockMove(ev) {
@@ -854,7 +852,7 @@
     dst.ly = t.clientY;
 
     if (!dst.active) {
-      if (Math.abs(t.clientX - dst.sx) > 9 || Math.abs(t.clientY - dst.sy) > 9) {
+      if (Math.abs(t.clientX - dst.sx) > SLOP || Math.abs(t.clientY - dst.sy) > SLOP) {
         clearTimeout(dst.timer);
         dst = null;
       }
@@ -941,7 +939,7 @@
     rerender();
   }
 
-  /* ============ 全局事件 ============ */
+  /* ============ 全局触摸（绑在 document，不依赖 home） ============ */
 
   D.addEventListener('touchstart', function (e) {
     if (e.touches && e.touches.length !== 1) return;
@@ -952,12 +950,18 @@
     startDock(e, item);
   }, { passive: true, capture: true });
 
+  D.addEventListener('touchstart', onStart, { passive: true, capture: true });
+
   D.addEventListener('touchmove', function (e) {
-    if (!dst) return;
-    dockMove(e);
+    if (dst) { dockMove(e); return; }
+    if (st) onMove(e);
   }, { passive: false });
 
-  D.addEventListener('touchend', function () { dockEnd(); });
+  D.addEventListener('touchend', function () {
+    if (dst) dockEnd();
+    if (st) onEnd();
+  });
+
   D.addEventListener('touchcancel', function () {
     if (dst) {
       if (dst.timer) clearTimeout(dst.timer);
@@ -966,8 +970,18 @@
       dst.item.style.transform = '';
       if (dst.home) dst.home.classList.remove('dragging');
       dst = null;
-      clearMarks();
     }
+
+    if (st) {
+      if (st.timer) clearTimeout(st.timer);
+      if (st.edge) clearTimeout(st.edge);
+      st.item.classList.remove('lift');
+      st.item.style.transform = '';
+      st.home.classList.remove('dragging');
+      st = null;
+    }
+
+    clearMarks();
   });
 
   D.addEventListener('click', function (e) {
@@ -1049,17 +1063,6 @@
     });
   }
 
-  function bindDrag(root) {
-    const home = root.querySelector ? root.querySelector('#home') : null;
-    if (!home) return;
-
-    home.addEventListener('touchstart', onStart, { passive: true });
-    home.addEventListener('touchmove', onMove, { passive: false });
-    home.addEventListener('touchend', onEnd);
-    home.addEventListener('touchcancel', onEnd);
-  }
-
-  /* 重建时把页码保住 */
   function rerender() {
     const home = homeEl();
     const idx = home ? currentIndex(home) : 0;
@@ -1106,7 +1109,6 @@
 
       applyDockOrder(root);
       bindWidgets(root);
-      bindDrag(root);
       editBtn();
 
       if (keepEdit) {
