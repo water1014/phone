@@ -1,6 +1,6 @@
 /* beautify.js · 美化
-   数值项全是滑杆，改一个值就写进 CSS 变量，全站立刻跟；
-   顶部一块实时预览，滚下去滑的时候一直贴在顶上。 */
+   数值项全是滑杆，改一个值就写进 CSS 变量；
+   顶部一块实时预览；代码小组件只有一栏，整段粘就行。 */
 (function () {
   const D = document;
   const ROOT = D.documentElement;
@@ -75,6 +75,20 @@
 
   const PRESET_NAME = { dawn: '晨', night: '夜', paper: '纸', mist: '雾' };
 
+  const SAMPLE = '<div class="clock" id="t">--:--</div>\n' +
+    '<style>\n' +
+    '  body{background:#fff;display:flex;align-items:center;justify-content:center}\n' +
+    '  .clock{font:300 34px/1 "Cormorant Garamond",Georgia,serif;letter-spacing:2px;color:#2a2723}\n' +
+    '</style>\n' +
+    '<script>\n' +
+    '  setInterval(function(){\n' +
+    '    var d=new Date();\n' +
+    '    var h=("0"+d.getHours()).slice(-2);\n' +
+    '    var m=("0"+d.getMinutes()).slice(-2);\n' +
+    '    document.getElementById("t").textContent=h+":"+m;\n' +
+    '  },1000);\n' +
+    '<\/script>';
+
   let st = load();
   let editId = '';
   let pending = '';
@@ -138,9 +152,7 @@
     }
 
     const pv = D.getElementById('bz-pv');
-    if (pv) {
-      pv.style.backgroundImage = photo ? 'url("' + photo + '")' : '';
-    }
+    if (pv) pv.style.backgroundImage = photo ? 'url("' + photo + '")' : '';
   }
 
   function esc(text) {
@@ -276,17 +288,12 @@
     return '<label class="field"><span>名字（列表里显示）</span>' +
         '<input id="bz-mt" type="text" placeholder="比如：小钟"></label>' +
 
-      '<div class="bz-lab" style="margin-top:14px"><b>HTML</b><i>BODY</i></div>' +
-      '<textarea id="bz-mh" class="bz-ta" rows="5" spellcheck="false"' +
-        ' placeholder="&lt;div class=&#39;clock&#39;&gt;--:--&lt;/div&gt;"></textarea>' +
+      '<div class="bz-lab" style="margin-top:14px"><b>整段代码</b><i>PASTE</i></div>' +
+      '<textarea id="bz-mq" class="bz-ta" rows="14" spellcheck="false"' +
+        ' placeholder="整段粘进来就行。HTML、style、script 放一起：&#10;&#10;&lt;div id=&#39;t&#39;&gt;--&lt;/div&gt;&#10;&lt;style&gt;body{background:#fff}&lt;/style&gt;&#10;&lt;script&gt;...&lt;/script&gt;"></textarea>' +
 
-      '<div class="bz-lab" style="margin-top:12px"><b>CSS</b><i>STYLE</i></div>' +
-      '<textarea id="bz-mc" class="bz-ta" rows="4" spellcheck="false"' +
-        ' placeholder=".clock{font:600 28px/1.2 system-ui;text-align:center}"></textarea>' +
-
-      '<div class="bz-lab" style="margin-top:12px"><b>JS</b><i>SCRIPT</i></div>' +
-      '<textarea id="bz-mj" class="bz-ta" rows="4" spellcheck="false"' +
-        ' placeholder="// document 就是这张卡自己"></textarea>' +
+      '<div class="row-actions" style="justify-content:flex-start">' +
+        '<button type="button" id="bz-mext" class="btn-glass">填一段示例</button></div>' +
 
       sec('宽度', 'WIDTH', spanOpts()) +
       sec('高度', 'HEIGHT',
@@ -300,7 +307,7 @@
 
       '<div class="bz-prev" id="bz-pbox"><div class="bz-prev-box">写完点「预览」，就在这儿跑</div></div>' +
 
-      '<div class="sheet-note">它跑在一张独立的沙箱网页里：样式和脚本都不出这张卡，也读不到桌面上的东西。</div>';
+      '<div class="sheet-note">它跑在一张独立的沙箱网页里：样式和脚本都不出这张卡，也读不到桌面上的东西。写完整网页（带 &lt;!DOCTYPE&gt;）也能直接认。</div>';
   }
 
   function view() {
@@ -374,12 +381,8 @@
     if (ti) ti.value = m.title || '';
 
     if (m.kind === 'code') {
-      const mh = D.getElementById('bz-mh');
-      const mc = D.getElementById('bz-mc');
-      const mj = D.getElementById('bz-mj');
-      if (mh) mh.value = m.html || '';
-      if (mc) mc.value = m.css || '';
-      if (mj) mj.value = m.js || '';
+      const mq = D.getElementById('bz-mq');
+      if (mq) mq.value = (window.Mods && Mods.codeOf) ? Mods.codeOf(m) : (m.code || '');
     } else {
       const bo = D.getElementById('bz-mb');
       if (bo) bo.value = m.text || '';
@@ -562,6 +565,14 @@
       mark(bodyEl);
     });
 
+    const mext = D.getElementById('bz-mext');
+    if (mext) {
+      mext.addEventListener('click', function () {
+        const mq = D.getElementById('bz-mq');
+        if (mq) mq.value = SAMPLE;
+      });
+    }
+
     const msave = D.getElementById('bz-msave');
     if (msave) {
       msave.addEventListener('click', function () {
@@ -570,20 +581,18 @@
         const title = val('bz-mt').trim();
 
         if (st.mkind === 'code') {
-          const html = val('bz-mh');
-          const css = val('bz-mc');
-          const js = val('bz-mj');
+          const code = val('bz-mq');
 
-          if (!html.trim() && !css.trim() && !js.trim()) {
-            UI.toast('还空着，先写点什么');
+          if (!code.trim()) {
+            UI.toast('还空着，先粘一段');
             return;
           }
 
           if (editId) {
-            Mods.update(editId, { kind: 'code', title: title, html: html, css: css, js: js, span: st.mspan, height: st.mheight });
+            Mods.update(editId, { kind: 'code', title: title, code: code, span: st.mspan, height: st.mheight });
             UI.toast('改好了');
           } else {
-            const id = Mods.create({ kind: 'code', title: title, html: html, css: css, js: js, span: st.mspan, height: st.mheight });
+            const id = Mods.create({ kind: 'code', title: title, code: code, span: st.mspan, height: st.mheight });
             if (window.Layout && Layout.addKey) Layout.addKey('mod:' + id);
             UI.toast('加到桌面了');
           }
@@ -615,7 +624,7 @@
         if (!box || !window.Mods) return;
 
         const h = Number(st.mheight) || 140;
-        const doc = Mods.doc({ html: val('bz-mh'), css: val('bz-mc'), js: val('bz-mj') });
+        const doc = Mods.doc({ code: val('bz-mq') });
 
         box.innerHTML = '<iframe sandbox="allow-scripts" scrolling="no"' +
           ' style="height:' + h + 'px;width:100%;border:0;display:block;background:#fff"></iframe>';
@@ -630,8 +639,7 @@
       mcancel.addEventListener('click', function () {
         editId = '';
         st.mspan = '2';
-        const ids = ['bz-mt', 'bz-mb', 'bz-mh', 'bz-mc', 'bz-mj'];
-        ids.forEach(function (id) {
+        ['bz-mt', 'bz-mb', 'bz-mq'].forEach(function (id) {
           const el = D.getElementById(id);
           if (el) el.value = '';
         });
