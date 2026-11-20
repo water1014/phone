@@ -1,5 +1,4 @@
-/* beautify.css · 美化页 + 全站外观开关
-   开关全部落在 html 的 data-* 上，不改任何原有文件 */
+/* beautify.css · 美化页 + 全站外观开关 */
 
 :root { --xw-ac: #5c6a79; }
 
@@ -13,7 +12,7 @@
 /* ================= 主色 ================= */
 #home .gi .appcell svg { stroke: var(--xw-ac); }
 
-/* ================= 卡片材质（白 / 米 / 描边） ================= */
+/* ================= 卡片（白 / 米 / 描边） ================= */
 html[data-card="paper"] #home .gi .appcell,
 html[data-card="paper"] #home .mod {
   background: #faf7f1;
@@ -148,10 +147,15 @@ html[data-skin="night"] .app { background: #141312 !important; }
 
 html[data-skin="night"] #home .clg,
 html[data-skin="night"] #home .dc-front,
-html[data-skin="night"] .pf-front,
-html[data-skin="night"] #home .mod {
+html[data-skin="night"] .pf-front {
   background: #201e1c !important;
   box-shadow: 0 2px 12px rgba(0, 0, 0, .38) !important;
+}
+
+html[data-skin="night"] #home .mod {
+  background: #201e1c !important;
+  border-color: rgba(255, 255, 255, .05) !important;
+  box-shadow: none !important;
 }
 
 html[data-skin="night"] #home .gi .appcell {
@@ -213,11 +217,11 @@ html[data-skin="night"] .bz-opt {
 }
 html[data-skin="night"] .bz-opt.on { background: #ece6da; border-color: #ece6da; color: #1a1917; }
 html[data-skin="night"] .bz-lab b { color: #ddd6c9; }
-html[data-skin="night"] .bz-opt,
-html[data-skin="night"] .bz-x,
-html[data-skin="night"] .bz-ed { border-color: rgba(255, 255, 255, .08); }
 html[data-skin="night"] .bz-x { background: #2a2724; color: #a49d90; }
-html[data-skin="night"] .bz-ed { background: #252220; color: #a49d90; }
+html[data-skin="night"] .bz-ed,
+html[data-skin="night"] .bz-ta { background: #252220; border-color: rgba(255, 255, 255, .08); color: #ddd6c9; }
+html[data-skin="night"] .bz-prev { background: #1b1917; border-color: rgba(255, 255, 255, .07); }
+html[data-skin="night"] .mod-code { background: #1b1917; }
 
 /* ================= 纸 ================= */
 html[data-skin="paper"] {
@@ -280,6 +284,21 @@ html[data-skin="paper"] .rail { background: #f8f2e7 !important; }
 #home .gi1 .mod { padding: 11px 10px; }
 #home .gi1 .mod-t { font-size: 11.5px; letter-spacing: .4px; }
 #home .gi1 .mod-b { font-size: 11px; line-height: 1.65; }
+
+/* 代码小组件：里面就是一张沙箱网页 */
+.mod-code {
+  padding: 0;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.mod-code .mod-fr {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+}
 
 /* ================= 美化页本体 ================= */
 
@@ -366,9 +385,55 @@ html[data-skin="paper"] .rail { background: #f8f2e7 !important; }
 
 .bz-wall.on { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #2c2a27; }
 
-.bz-wall-up {
+.bz-wall-txt {
+  width: auto;
+  min-width: 54px;
+  padding: 0 11px;
   border: 1px dashed #ded8cc;
   background: #fdfcfa;
+  font-size: 11px;
+  letter-spacing: .3px;
+}
+
+/* 编辑器 */
+.bz-ta {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin-top: 6px;
+  padding: 10px 11px;
+  border: 1px solid rgba(0, 0, 0, .07);
+  border-radius: 10px;
+  background: #fdfcfa;
+  color: #3a3733;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  line-height: 1.7;
+  outline: none;
+  resize: vertical;
+}
+
+.bz-prev {
+  margin-top: 12px;
+  border: 1px solid rgba(0, 0, 0, .07);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.bz-prev iframe {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: #ffffff;
+}
+
+.bz-prev-box {
+  padding: 26px 12px;
+  text-align: center;
+  font-size: 11.5px;
+  letter-spacing: .3px;
+  color: #b8b2a7;
 }
 
 /* 小组件列表 */
