@@ -1,4 +1,4 @@
-/* layout.css · 首页四列网格 + dock 拖动 + 加块面板 */
+/* layout.css · 首页四列网格 + dock 拖动 + 编辑态 */
 
 #home .gpage{
   display: grid;
@@ -45,9 +45,7 @@
   font: inherit;
 }
 
-#home .gi .appcell:active{
-  background: rgba(141, 154, 168, .06);
-}
+#home .gi .appcell:active{ background: rgba(141, 154, 168, .06); }
 
 #home .gi .appcell svg{
   width: 21px;
@@ -65,9 +63,53 @@
   color: #8b95a1;
 }
 
-#home .gi2 > .wdg{
-  min-height: 100%;
+#home .gi2 > .wdg{ min-height: 100%; }
+
+/* ============ 顶部两个按钮 ============ */
+
+#gi-edit{
+  position: fixed;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  right: 10px;
+  z-index: 88;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, .78);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: #7b7568;
+  font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
+  font-size: 11.5px;
+  letter-spacing: 1.2px;
+  box-shadow: 0 1px 10px rgba(0, 0, 0, .07);
 }
+
+#gi-edit.on{
+  background: rgba(33, 31, 28, .92);
+  color: #f6f2ea;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .22);
+}
+
+#gi-plus{
+  position: fixed;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  left: 10px;
+  z-index: 88;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(33, 31, 28, .92);
+  color: #f6f2ea;
+  font-family: -apple-system, sans-serif;
+  font-size: 19px;
+  line-height: 1;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .22);
+}
+
+#gi-plus:active{ transform: scale(.94); }
 
 /* ============ 编辑态：整桌轻抖 ============ */
 
@@ -76,6 +118,8 @@
   50%  { transform: rotate(.55deg); }
   100% { transform: rotate(-.55deg); }
 }
+
+#home.editing .page{ padding-top: calc(48px + env(safe-area-inset-top, 0px)); }
 
 #home.editing .gi{
   animation: gi-wobble .34s ease-in-out infinite;
@@ -86,17 +130,15 @@
   animation-direction: reverse;
 }
 
-#home.editing .gi.lift{
-  animation: none;
-}
+#home.editing .gi.lift{ animation: none; }
 
 /* 删除点：编辑态下每块都有 */
 .gi-del{
   position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 21px;
-  height: 21px;
+  top: -7px;
+  right: -7px;
+  width: 22px;
+  height: 22px;
   padding: 0;
   display: none;
   align-items: center;
@@ -158,16 +200,16 @@
   box-shadow: 0 10px 24px rgba(0, 0, 0, .18);
 }
 
-/* ============ 顶部的编辑提示 ============ */
+/* ============ 底部提示 ============ */
 #edit-hint{
   position: fixed;
-  top: calc(12px + env(safe-area-inset-top, 0px));
+  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   z-index: 80;
   padding: 7px 15px;
   border-radius: 15px;
-  background: rgba(33, 31, 28, .88);
+  background: rgba(33, 31, 28, .86);
   color: #f3efe7;
   font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
   font-size: 11.5px;
@@ -177,27 +219,7 @@
   white-space: nowrap;
 }
 
-/* ============ 编辑态的「＋ 加一块」 ============ */
-#gi-plus{
-  position: fixed;
-  left: 50%;
-  bottom: calc(100px + env(safe-area-inset-bottom));
-  transform: translateX(-50%);
-  z-index: 88;
-  padding: 10px 22px;
-  border: 0;
-  border-radius: 20px;
-  background: rgba(33, 31, 28, .9);
-  color: #f6f2ea;
-  font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
-  font-size: 12.5px;
-  letter-spacing: 1.2px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
-}
-
-#gi-plus:active{ transform: translateX(-50%) scale(.95); }
-
-/* 加块面板 */
+/* ============ 加块面板 ============ */
 .gip{
   position: fixed;
   left: 10px;
@@ -288,5 +310,9 @@ html[data-skin="night"] .gip-x{ background: #2a2724; color: #a49d90; }
 html[data-skin="night"] .gip-item{ background: #252220; border-color: rgba(255,255,255,.07); color: #a49d90; }
 html[data-skin="night"] .gip-item.on{ background: #2f2c28; border-color: #2f2c28; color: #6f6a61; }
 html[data-skin="night"] .gi-del{ background: #ece6da; color: #1a1917; }
+html[data-skin="night"] #gi-edit{ background: rgba(38, 35, 32, .82); color: #b8b1a4; }
+html[data-skin="night"] #gi-edit.on{ background: rgba(236, 230, 218, .92); color: #1a1917; }
+html[data-skin="night"] #gi-plus{ background: rgba(236, 230, 218, .92); color: #1a1917; }
 
 html[data-skin="paper"] .gip{ background: #fbf7ef; }
+html[data-skin="paper"] #gi-edit{ background: rgba(249, 244, 234, .85); }
