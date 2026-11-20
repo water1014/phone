@@ -21,7 +21,7 @@
   }
 
   function clockHtml() {
-    return '<section class="wdg-clock">' +
+    return '<section class="wdg-clock span2">' +
         '<div class="dclock" id="desk-clock">--:--</div>' +
         '<div class="ddate" id="desk-date"></div>' +
       '</section>';
@@ -41,37 +41,63 @@
       '</section>';
   }
 
-  /* 列表入口：中文 + 英文小字 + 右侧值 + 箭头 */
-  function rowItem(appId, cn, en, value, valueId) {
+  /* 2x2 小方块：组件与 App 交错 */
+  function appGridHtml() {
+    const picks = ['diary', 'album', 'memory', 'calendar'];
+    const cells = picks.map(function (id) {
+      const app = window.Apps.find(id);
+      if (!app) return '';
+      return '<button type="button" class="appcell" data-app="' + id + '">' +
+          UI.icon(app.icon) +
+          '<span>' + app.name + '</span>' +
+        '</button>';
+    }).join('');
+    return '<div class="appgrid">' + cells + '</div>';
+  }
+
+  function weatherCardHtml() {
+    return '<section class="wdg bento-square wdg-wx" data-app="weather" role="button" tabindex="0">' +
+        '<span class="kicker">WEATHER</span>' +
+        '<div class="wx-big" id="wx-temp">—</div>' +
+        '<div class="wx-sub" id="wx-sub">没接到天气</div>' +
+      '</section>';
+  }
+
+  function quotaHtml() {
+    const usage = XW.S.usage || { input: 0 };
+    const limit = Number(XW.S.ctxLimit) || 128000;
+    const used = Number(usage.input) || 0;
+    const pct = Math.min(999, Math.round(used / limit * 100));
+    const kw = (used / 1000).toFixed(1);
+    const lw = Math.round(limit / 1000);
+
+    return '<section class="wdg bento-square wdg-quota" data-app="chat" role="button" tabindex="0">' +
+        '<span class="kicker">QUOTA</span>' +
+        '<div class="q-big">' + pct + '<small>%</small></div>' +
+        '<div class="q-bar"><i style="width:' + Math.min(100, pct) + '%"></i></div>' +
+        '<div class="wx-sub">' + kw + 'k / ' + lw + 'k</div>' +
+      '</section>';
+  }
+
+  function rowItem(appId, cn, en, value) {
     const app = window.Apps.find(appId);
     const icon = app ? UI.icon(app.icon) : '';
     return '<button type="button" class="row" data-app="' + appId + '">' +
         '<span class="row-ico">' + icon + '</span>' +
         '<span class="row-main"><b>' + cn + '</b><i>' + en + '</i></span>' +
-        '<span class="row-val"' + (valueId ? ' id="' + valueId + '"' : '') + '>' + value + '</span>' +
+        '<span class="row-val">' + value + '</span>' +
         '<span class="row-arrow">›</span>' +
       '</button>';
   }
 
   function rowsHtml() {
-    const diary = (Array.isArray(XW.S.diary) ? XW.S.diary : []).length;
-    const photos = (Array.isArray(XW.S.photos) ? XW.S.photos : []).length;
-    const notes = (Array.isArray(XW.S.notes) ? XW.S.notes : []).length;
-
-    const usage = XW.S.usage || { input: 0 };
-    const limit = Number(XW.S.ctxLimit) || 128000;
-    const pct = Math.min(999, Math.round((Number(usage.input) || 0) / limit * 100));
-
     const now = new Date();
     const today = (now.getMonth() + 1) + '/' + now.getDate();
+    const chat = (Array.isArray(XW.S.chat) ? XW.S.chat : []).length;
 
-    return '<section class="rows">' +
-        rowItem('diary', '日记', 'DIARY', diary + ' 篇') +
-        rowItem('album', '相册', 'ALBUM', photos + ' 张') +
-        rowItem('memory', '记忆', 'MEMORY', notes + ' 条') +
+    return '<section class="rows span2">' +
         rowItem('calendar', '日历', 'CALENDAR', today) +
-        rowItem('weather', '天气', 'WEATHER', '—', 'row-weather') +
-        rowItem('chat', '聊天', 'CONVERSATION', pct + '%') +
+        rowItem('chat', '聊天', 'CONVERSATION', chat + ' 条') +
       '</section>';
   }
 
@@ -97,7 +123,7 @@
       cells += '<button type="button" class="' + cls + '" data-day="' + key + '"><i>' + day + '</i></button>';
     }
 
-    return '<section class="wdg wdg-cal">' +
+    return '<section class="wdg wdg-cal span2">' +
         '<div class="cal-head">' +
           '<span class="kicker">CALENDAR</span>' +
           '<span class="cal-ym">' + (month + 1) + '月</span>' +
@@ -121,8 +147,9 @@
   }
 
   function loadWeather() {
-    const valEl = D.getElementById('row-weather');
-    if (!valEl) return;
+    const big = D.getElementById('wx-temp');
+    const sub = D.getElementById('wx-sub');
+    if (!big || !sub) return;
 
     const url = 'https://api.open-meteo.com/v1/forecast?latitude=26.88&longitude=112.67' +
       '&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Asia%2FShanghai';
@@ -130,9 +157,11 @@
     fetch(url).then(function (res) { return res.json(); }).then(function (data) {
       const cur = data && data.current;
       if (!cur || cur.temperature_2m === undefined) throw new Error('no data');
-      valEl.textContent = Math.round(cur.temperature_2m) + '° ' + wmo(cur.weather_code);
+      big.textContent = Math.round(cur.temperature_2m) + '°';
+      sub.textContent = wmo(cur.weather_code) + ' · 湿度 ' + cur.relative_humidity_2m + '%';
     }).catch(function () {
-      valEl.textContent = '—';
+      big.textContent = '—';
+      sub.textContent = '没接到天气';
     });
   }
 
@@ -143,13 +172,13 @@
     const line = text.split(/\n/)[0].slice(0, 80);
 
     if (!line) {
-      return '<section class="wdg wdg-quote" data-app="diary" role="button" tabindex="0">' +
+      return '<section class="wdg wdg-quote span2" data-app="diary" role="button" tabindex="0">' +
           '<div class="quote-head"><span class="kicker">NOTE</span><span class="quote-date">还没写</span></div>' +
           '<p class="quote-text">今天也可以就这么过。<br>想写的时候点这里。</p>' +
         '</section>';
     }
 
-    return '<section class="wdg wdg-quote" data-app="diary" role="button" tabindex="0">' +
+    return '<section class="wdg wdg-quote span2" data-app="diary" role="button" tabindex="0">' +
         '<div class="quote-head">' +
           '<span class="kicker">NOTE</span>' +
           '<span class="quote-date">' + esc(String(last.date || '').slice(5)) + '</span>' +
@@ -171,6 +200,9 @@
   window.Widgets = {
     clock: clockHtml,
     days: daysHtml,
+    appGrid: appGridHtml,
+    weatherCard: weatherCardHtml,
+    quota: quotaHtml,
     rows: rowsHtml,
     calendar: calendarHtml,
     quote: quoteHtml,
