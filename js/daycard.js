@@ -1,6 +1,6 @@
 /* daycard.js · 首页天数卡
-   正面：两个头像、两个名字、底下一行天数
-   背面：起始日 + 下一个整百天
+   正面：Together / 两个头像 / 两个名字 / 688 days
+   背面：since / 下一个整百天 / 还有几天 / 可写一句
    点空白翻面；点头像换图；点名字就地改 */
 (function () {
   const D = document;
@@ -70,6 +70,7 @@
     const amp = '<span class=' + Q + 'dc-amp' + Q + '>&amp;</span>';
 
     return '<div class=' + Q + 'dc-face dc-front' + Q + '>' +
+        '<div class=' + Q + 'dc-top' + Q + '>Together</div>' +
         '<div class=' + Q + 'dc-pair' + Q + '>' +
           avaHtml('his') + amp + avaHtml('her') +
         '</div>' +
@@ -77,8 +78,10 @@
           nameHtml('his') + amp + nameHtml('her') +
         '</div>' +
         '<div class=' + Q + 'dc-rule' + Q + '></div>' +
-        '<div class=' + Q + 'dc-day' + Q + '>第 ' + d + ' 天</div>' +
-        '<div class=' + Q + 'dc-kicker' + Q + '>DAYS TOGETHER</div>' +
+        '<div class=' + Q + 'dc-num-row' + Q + '>' +
+          '<span class=' + Q + 'dc-num' + Q + '>' + d + '</span>' +
+          '<span class=' + Q + 'dc-unit' + Q + '>days</span>' +
+        '</div>' +
       '</div>';
   }
 
@@ -92,9 +95,12 @@
     const dd = ('0' + love.getDate()).slice(-2);
 
     return '<div class=' + Q + 'dc-face dc-back' + Q + '>' +
-        '<div class=' + Q + 'dc-since' + Q + '>SINCE ' + y + '.' + m + '.' + dd + '</div>' +
-        '<div class=' + Q + 'dc-next' + Q + '>第 ' + next + ' 天</div>' +
-        '<div class=' + Q + 'dc-left' + Q + '>还有 ' + left + ' 天</div>' +
+        '<div class=' + Q + 'dc-since' + Q + '>since ' + y + '.' + m + '.' + dd + '</div>' +
+        '<div class=' + Q + 'dc-next-row' + Q + '>' +
+          '<span class=' + Q + 'dc-next' + Q + '>' + next + '</span>' +
+          '<span class=' + Q + 'dc-unit-b' + Q + '>days</span>' +
+        '</div>' +
+        '<div class=' + Q + 'dc-left' + Q + '>还剩 ' + left + ' 天</div>' +
         '<div class=' + Q + 'dc-note' + Q + ' contenteditable=' + Q + 'true' + Q +
           ' spellcheck=' + Q + 'false' + Q +
           ' data-ph=' + Q + '点这儿写一句' + Q + '>' +
