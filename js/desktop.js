@@ -66,7 +66,7 @@
 
     return '<div class="rail-head">' +
         '<b>XIAOWO</b>' +
-        '<span>第 ' + days + ' 天<em>OUR SPACE</em></span>' +
+        '<span class="rail-day">第 ' + days + ' 天<em>OUR SPACE</em></span>' +
       '</div>' + body;
   }
 

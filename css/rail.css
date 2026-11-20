@@ -1,31 +1,30 @@
-/* rail.css · 隐藏式侧栏（分组菜单，宽呼吸） */
+/* rail.css · 隐藏式侧栏（分组菜单，px 尺度） */
 
 .topline {
   display: flex;
   align-items: center;
-  gap: .5rem;
-  padding: 0 .1rem .1rem;
+  padding: 0 2px 2px;
 }
 
 .rail-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.85rem;
-  height: 1.85rem;
+  width: 42px;
+  height: 42px;
   padding: 0;
   border: 1px solid rgba(0, 0, 0, .04);
-  border-radius: 12px;
+  border-radius: 13px;
   background: #ffffff;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, .04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .045);
 }
 .rail-toggle:active { background: rgba(141, 154, 168, .07); }
 .rail-toggle svg {
-  width: .86rem;
-  height: .86rem;
+  width: 19px;
+  height: 19px;
   fill: none;
   stroke: #6f7f90;
-  stroke-width: 1.6;
+  stroke-width: 1.65;
   stroke-linecap: round;
 }
 
@@ -36,133 +35,132 @@
   left: 0;
   bottom: 0;
   z-index: 70;
-  width: 10.4rem;
-  max-width: 82vw;
+  width: 296px;
+  max-width: 84vw;
   display: flex !important;
   flex-direction: column;
   gap: 0;
-  padding: 1.15rem 0 calc(2.4rem + env(safe-area-inset-bottom, 0px));
+  padding: 22px 0 calc(28px + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   background: #ffffff;
-  border-radius: 0 20px 20px 0;
-  box-shadow: 14px 0 40px rgba(0, 0, 0, .09);
+  border-radius: 0 22px 22px 0;
+  box-shadow: 16px 0 44px rgba(0, 0, 0, .1);
   transform: translateX(-104%);
   transition: transform .3s cubic-bezier(.4, 0, .2, 1);
   will-change: transform;
 }
 .rail.open { transform: translateX(0); }
 
-/* 顶部：站名 + 第几天 */
+/* 顶部 */
 .rail-head {
   display: flex;
   flex-direction: column;
-  gap: .34rem;
-  padding: 0 1.2rem 1.15rem;
+  gap: 7px;
+  padding: 0 24px 14px;
 }
 .rail-head b {
   font-family: var(--mono);
-  font-size: .3rem;
+  font-size: 10px;
   font-weight: 400;
-  letter-spacing: .32em;
+  letter-spacing: 3.2px;
   color: #c3cbd2;
 }
-.rail-head span {
-  font-size: .74rem;
+.rail-head .rail-day {
+  font-size: 25px;
   font-weight: 500;
-  letter-spacing: .01em;
-  color: #33383d;
+  line-height: 1.1;
+  letter-spacing: -.2px;
+  color: #2c3034;
 }
-.rail-head span em {
+.rail-head .rail-day em {
   font-style: normal;
-  font-size: .38rem;
+  font-size: 11px;
   font-weight: 400;
-  letter-spacing: .12em;
-  color: #a8b2bb;
-  margin-left: .3rem;
+  letter-spacing: 2px;
+  color: #adb7c0;
+  margin-left: 8px;
 }
 
 /* 分组标题 */
 .rail-group-title {
   display: flex;
   align-items: center;
-  gap: .5rem;
-  padding: 1.05rem 1.2rem .42rem;
-  font-size: .3rem;
-  letter-spacing: .26em;
-  color: #c8d0d7;
+  gap: 10px;
+  padding: 20px 24px 6px;
+  font-size: 10.5px;
+  letter-spacing: 3px;
+  color: #b9c2ca;
 }
 .rail-group-title::after {
   content: '';
   flex: 1 1 auto;
   height: 1px;
-  background: rgba(0, 0, 0, .04);
+  background: rgba(0, 0, 0, .05);
 }
 
 /* 菜单行 */
 .rail-row {
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
   align-items: center;
-  column-gap: .7rem;
+  gap: 12px;
   width: 100%;
-  padding: .66rem 1.2rem .62rem;
+  padding: 13px 24px 12px;
   border: 0;
   background: transparent;
   font: inherit;
   text-align: left;
-  transition: background .18s ease;
 }
 .rail-row:active { background: rgba(141, 154, 168, .07); }
 
 .rail-row .rail-main {
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: .26rem;
-  min-width: 0;
+  gap: 5px;
 }
 
 .rail-row .rail-name {
   display: flex;
   align-items: baseline;
-  gap: .38rem;
-  font-size: .56rem;
+  gap: 8px;
+  font-size: 16px;
   font-weight: 500;
-  letter-spacing: .03em;
-  color: #3b4147;
+  letter-spacing: .3px;
+  color: #32363a;
 }
 .rail-row .rail-name i {
   font-style: normal;
   font-family: var(--mono);
-  font-size: .28rem;
+  font-size: 9.5px;
   font-weight: 400;
-  letter-spacing: .16em;
-  color: #ccd3d9;
+  letter-spacing: 1.8px;
+  color: #c8cfd5;
 }
 
 .rail-row .rail-desc {
-  font-size: .34rem;
-  line-height: 1.5;
-  letter-spacing: .02em;
-  color: #a6b0b9;
+  font-size: 12.5px;
+  line-height: 1.45;
+  letter-spacing: .2px;
+  color: #9ba5ae;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .rail-row .rail-arrow {
-  color: #dde3e8;
-  font-size: .64rem;
+  flex: 0 0 auto;
+  color: #dfe4e8;
+  font-size: 17px;
   line-height: 1;
 }
 
-/* 遮罩 */
 .scrim {
   position: fixed;
   inset: 0;
   z-index: 65;
-  background: rgba(34, 40, 46, .16);
-  backdrop-filter: none;
+  background: rgba(34, 40, 46, .18);
 }
 .scrim[hidden] { display: none; }
