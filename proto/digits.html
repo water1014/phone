@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f7f6f3">
+<title>天数 · 字体几种</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body{
+  background:#f7f6f3;
+  color:#1a1917;
+  padding:20px 16px 44px;
+}
+.wrap{ max-width:420px; margin:0 auto; }
+h1{ font-size:17px; font-weight:700; }
+.lead{ margin-top:7px; font-size:12.5px; line-height:1.75; color:#8f8a80; }
+
+.row{
+  margin-top:16px;
+  background:#fff;
+  border-radius:18px;
+  box-shadow:0 2px 10px rgba(0,0,0,.05);
+  padding:14px 16px 15px;
+}
+.lb{
+  display:block;
+  font-size:10px;
+  letter-spacing:1.4px;
+  color:#b6b0a6;
+  font-weight:600;
+  margin-bottom:10px;
+}
+.small{
+  font-size:13px;
+  line-height:1;
+  letter-spacing:.5px;
+  color:#6b655c;
+}
+.big{
+  margin-top:12px;
+  font-size:34px;
+  line-height:1;
+  color:#1a1917;
+}
+.hint{
+  display:block;
+  margin-top:10px;
+  font-size:11px;
+  line-height:1.6;
+  color:#a8a29a;
+}
+
+/* F1 现在 */
+.f1{ font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif; }
+
+/* F2 窄体 */
+.f2{ font-family:"Roboto Condensed","sans-serif-condensed",-apple-system,sans-serif; letter-spacing:0; }
+
+/* F3 等宽 */
+.f3{ font-family:ui-monospace,"SF Mono",Menlo,Consolas,"Droid Sans Mono",monospace; letter-spacing:0; }
+
+/* F4 衬线 */
+.f4{ font-family:Georgia,"Times New Roman","Noto Serif",serif; letter-spacing:.3px; }
+
+/* F5 圆润 */
+.f5{ font-family:ui-rounded,"SF Pro Rounded",-apple-system,sans-serif; letter-spacing:.6px; }
+
+/* F6 系统字，但是拉开字距、变细 */
+.f6{
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  font-weight:300;
+  letter-spacing:2.6px;
+}
+.f6.big{ letter-spacing:5px; }
+
+/* F7 等宽 + 拉开 */
+.f7{
+  font-family:ui-monospace,"SF Mono",Menlo,Consolas,"Droid Sans Mono",monospace;
+  letter-spacing:2.2px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>「第 688 天」的几种字体</h1>
+  <p class="lead">上面小的是卡片正面的字号，下面大的是翻过去背面那个。都是手机里本来就有的字体，不联网下载，打开就能看到效果。</p>
+
+  <div class="row">
+    <span class="lb">F1 · 现在这样</span>
+    <div class="small f1">第 688 天</div>
+    <div class="big f1">第 700 天</div>
+    <span class="hint">系统默认。规整、不出错，但就是你说的“板正”。</span>
+  </div>
+
+  <div class="row">
+    <span class="lb">F2 · 窄体</span>
+    <div class="small f2">第 688 天</div>
+    <div class="big f2">第 700 天</div>
+    <span class="hint">字变瘦变高，一行能装更多，像杂志上的页码。</span>
+  </div>
+
+  <div class="row">
+    <span class="lb">F3 · 等宽</span>
+    <div class="small f3">第 688 天</div>
+    <div class="big f3">第 700 天</div>
+    <span class="hint">每个字占一样宽，像打字的、像一张小票。数字会显得更“硬”。</span>
+  </div>
+
+  <div class="row">
+    <span class="lb">F4 · 衬线</span>
+    <div class="small f4">第 688 天</div>
+    <div class="big f4">第 700 天</div>
+    <span class="hint">带小尾巴的旧式字，像印刷书。最不“板正”，但也最不像 App。</span>
+  </div>
+
+  <div class="row">
+    <span class="lb">F5 · 圆润</span>
+    <div class="small f5">第 688 天</div>
+    <div class="big f5">第 700 天</div>
+    <span class="hint">转角变圆。若是安卓，可能回退到默认字，看不出区别。</span>
+  </div>
+
+  <div class="row">
+    <span class="lb">F6 · 不换字体，拉字距</span>
+    <div class="small f6">第 688 天</div>
+    <div class="big f6">第 700 天</div>
+    <span class="hint">还是系统字，但变细、拉开间距。整体感觉最轻。</span>
+  </div>
+
+  <div class="row">
+    <span class="lb">F7 · 等宽 + 拉字距</span>
+    <div class="small f7">第 688 天</div>
+    <div class="big f7">第 700 天</div>
+    <span class="hint">F3 再拉开一点，像刻上去的。</span>
+  </div>
+
+  <p class="lead" style="margin-top:22px;">回我一个 F 后面的数字就行。想两个混（比如正面 F3、背面 F4），也说一句。</p>
+
+</div>
+</body>
+</html>
