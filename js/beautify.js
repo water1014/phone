@@ -1,6 +1,6 @@
 /* beautify.js · 美化
-   外观偏好存 localStorage['xw_look']，开关落在 html 的 data-* 上；
-   自制小组件存 localStorage['xw_mods']：写字卡，或者直接写 HTML/CSS/JS。 */
+   数值项全是滑杆，改一个值就写进 CSS 变量，全站立刻跟；
+   顶部一块实时预览，滚下去滑的时候一直贴在顶上。 */
 (function () {
   const D = document;
   const ROOT = D.documentElement;
@@ -13,8 +13,11 @@
     card: 'white',
     radius: '16',
     icon: '21',
+    gap: '12',
+    blur: '16',
+    alpha: '68',
+    gloss: '70',
     cn: 'serif',
-    gap: 'mid',
     motion: 'on',
     dock: 'on',
     dots: 'on',
@@ -24,6 +27,15 @@
     mkind: 'text',
     mheight: '140'
   };
+
+  const RANGES = [
+    { k: 'radius', cn: '圆角', en: 'RADIUS', min: 8, max: 28, unit: 'px' },
+    { k: 'icon', cn: '图标', en: 'ICON', min: 15, max: 28, unit: 'px' },
+    { k: 'gap', cn: '间距', en: 'SPACING', min: 6, max: 24, unit: 'px' },
+    { k: 'blur', cn: '糊度', en: 'BLUR', min: 0, max: 30, unit: 'px' },
+    { k: 'alpha', cn: '厚薄', en: 'DENSITY', min: 8, max: 100, unit: '%' },
+    { k: 'gloss', cn: '光泽', en: 'GLOSS', min: 0, max: 100, unit: '%' }
+  ];
 
   const ACCENT = {
     ink: '#5c6a79',
@@ -67,6 +79,11 @@
   let editId = '';
   let pending = '';
 
+  function num(v, d) {
+    const n = parseFloat(v);
+    return isFinite(n) ? n : d;
+  }
+
   function load() {
     const out = {};
     Object.keys(DEF).forEach(function (k) { out[k] = DEF[k]; });
@@ -94,26 +111,35 @@
     ROOT.setAttribute('data-skin', st.skin);
     ROOT.setAttribute('data-accent', st.accent);
     ROOT.setAttribute('data-card', st.card);
-    ROOT.setAttribute('data-radius', st.radius);
-    ROOT.setAttribute('data-icon', st.icon);
     ROOT.setAttribute('data-cn', st.cn);
-    ROOT.setAttribute('data-gap', st.gap);
     ROOT.setAttribute('data-motion', st.motion);
     ROOT.setAttribute('data-dock', st.dock);
     ROOT.setAttribute('data-dots', st.dots);
     ROOT.setAttribute('data-mat', st.mat);
 
     ROOT.style.setProperty('--xw-ac', ACCENT[st.accent] || ACCENT.ink);
-    ROOT.style.setProperty('--xw-wall', (WALL[st.wall] || WALL.none).css);
+    ROOT.style.setProperty('--xw-radius', num(st.radius, 16) + 'px');
+    ROOT.style.setProperty('--xw-icon', num(st.icon, 21) + 'px');
+    ROOT.style.setProperty('--xw-gap', num(st.gap, 12) + 'px');
+    ROOT.style.setProperty('--xw-blur', num(st.blur, 16) + 'px');
+    ROOT.style.setProperty('--xw-alpha', (num(st.alpha, 68) / 100).toFixed(2));
+    ROOT.style.setProperty('--xw-gloss', (num(st.gloss, 70) / 100).toFixed(2));
 
     const body = D.body;
     if (!body) return;
 
     const img = pic();
-    if (st.wall === 'photo' && img) {
-      body.style.background = 'url("' + img + '") center / cover no-repeat fixed';
+    const photo = (st.wall === 'photo' && img) ? img : '';
+
+    if (photo) {
+      body.style.background = 'url("' + photo + '") center / cover no-repeat fixed';
     } else {
       body.style.background = '';
+    }
+
+    const pv = D.getElementById('bz-pv');
+    if (pv) {
+      pv.style.backgroundImage = photo ? 'url("' + photo + '")' : '';
     }
   }
 
@@ -133,6 +159,18 @@
     return '<div class="bz-sec">' +
         '<div class="bz-lab"><b>' + cn + '</b><i>' + en + '</i></div>' +
         '<div class="bz-opts">' + inner + '</div>' +
+      '</div>';
+  }
+
+  function rangeRow(r) {
+    const v = num(st[r.k], r.min);
+    return '<div class="bz-sec">' +
+        '<div class="bz-lab"><b>' + r.cn + '</b><i>' + r.en + '</i></div>' +
+        '<div class="bz-range">' +
+          '<input type="range" min="' + r.min + '" max="' + r.max + '" step="1"' +
+            ' value="' + v + '" data-range="' + r.k + '" data-unit="' + r.unit + '">' +
+          '<span>' + v + r.unit + '</span>' +
+        '</div>' +
       '</div>';
   }
 
@@ -162,6 +200,21 @@
       : '';
 
     return base + picked + own;
+  }
+
+  function preview() {
+    const app = (window.Apps && Apps.find) ? Apps.find('chat') : null;
+    const svg = app ? UI.icon(app.icon) : '';
+    const cell = '<div class="pv-cell">' + svg + '</div>';
+
+    return '<div class="bz-pv-wrap">' +
+        '<div class="pv" id="bz-pv">' +
+          '<div class="pv-grid">' + cell + cell + cell + cell + cell + cell + cell + cell + '</div>' +
+          '<div class="pv-bar"><div class="pv-line"></div><div class="pv-line short"></div></div>' +
+          '<div class="pv-dock"><i></i><i></i><i></i><i></i></div>' +
+        '</div>' +
+        '<div class="pv-note">LIVE PREVIEW</div>' +
+      '</div>';
   }
 
   function currentPreset() {
@@ -216,7 +269,7 @@
         '<textarea id="bz-mb" rows="3" placeholder="想放桌面上的那句话"></textarea></label>' +
       sec('宽度', 'WIDTH', spanOpts()) +
       saveRow() +
-      '<div class="sheet-note">加好后在桌面上长按，就能拖到任意一页、任意位置。编辑时长按，自制的块左上角有 ×，点它就从桌面删掉。</div>';
+      '<div class="sheet-note">加好后在桌面上长按，就能拖到任意一页、任意位置，也能拖进 dock。</div>';
   }
 
   function codeForm() {
@@ -247,30 +300,25 @@
 
       '<div class="bz-prev" id="bz-pbox"><div class="bz-prev-box">写完点「预览」，就在这儿跑</div></div>' +
 
-      '<div class="sheet-note">它跑在一张独立的沙箱网页里：样式和脚本都不出这张卡，也读不到桌面上的东西。想让它不透明，就自己给 body 上底色。</div>';
+      '<div class="sheet-note">它跑在一张独立的沙箱网页里：样式和脚本都不出这张卡，也读不到桌面上的东西。</div>';
   }
 
   function view() {
     return '<header class="hero">' +
         '<span class="kicker">APPEARANCE</span>' +
         '<h1 class="hero-title">美化</h1>' +
-        '<div class="hero-sub">点了就变，不用保存</div>' +
+        '<div class="hero-sub">滑一下就能看出差别</div>' +
       '</header>' +
+
+      preview() +
 
       '<div class="sheet">' +
         '<div class="sheet-head"><span class="sheet-title">成套</span>' +
-          '<button type="button" id="bz-reset" class="btn-glass">回到最初</button></div>' +
+          '<button type="button" id="bz-reset" class="btn-glass">全部回到最初</button></div>' +
         sec('一按就走', 'ONE TAP', Object.keys(PRESET).map(function (id) {
           return opt('preset', id, PRESET_NAME[id]);
         }).join('')) +
         '<div class="sheet-note">整套换，下面每一项还能单独再调。</div>' +
-      '</div>' +
-
-      '<div class="sheet">' +
-        '<div class="sheet-head"><span class="sheet-title">小组件</span></div>' +
-        modRows() +
-        sec('做法', 'HOW', opt('mkind', 'text', '写字') + opt('mkind', 'code', '写代码')) +
-        (st.mkind === 'code' ? codeForm() : textForm()) +
       '</div>' +
 
       '<div class="sheet">' +
@@ -281,26 +329,32 @@
       '</div>' +
 
       '<div class="sheet">' +
-        '<div class="sheet-head"><span class="sheet-title">手感</span></div>' +
-        sec('材质', 'MATERIAL',
+        '<div class="sheet-head"><span class="sheet-title">材质</span></div>' +
+        sec('做法', 'MATERIAL',
           opt('mat', 'flat', '素的') + opt('mat', 'frost', '磨砂') +
           opt('mat', 'glass', '玻璃') + opt('mat', 'liquid', '液态')) +
-        sec('卡片', 'CARD', opt('card', 'white', '纯白') + opt('card', 'paper', '米纸') + opt('card', 'line', '描边')) +
-        sec('圆角', 'RADIUS', opt('radius', '12', '利') + opt('radius', '16', '中') + opt('radius', '22', '圆')) +
-        sec('图标', 'ICON', opt('icon', '19', '小') + opt('icon', '21', '中') + opt('icon', '23', '大')) +
-        sec('字', 'TYPE', opt('cn', 'serif', '宋') + opt('cn', 'sans', '黑') + opt('cn', 'mono', '等宽')) +
-        sec('间距', 'SPACING', opt('gap', 'tight', '紧') + opt('gap', 'mid', '中') + opt('gap', 'loose', '松')) +
-        sec('动效', 'MOTION', opt('motion', 'on', '开着') + opt('motion', 'off', '关掉')) +
+        RANGES.map(rangeRow).join('') +
+        '<div class="sheet-note">糊度、厚薄、光泽只在选了磨砂 / 玻璃 / 液态后看得出来；素的没有透明效果。</div>' +
       '</div>' +
 
       '<div class="sheet">' +
-        '<div class="sheet-head"><span class="sheet-title">桌面</span></div>' +
+        '<div class="sheet-head"><span class="sheet-title">字与桌面</span></div>' +
+        sec('卡片', 'CARD', opt('card', 'white', '纯白') + opt('card', 'paper', '米纸') + opt('card', 'line', '描边')) +
+        sec('字', 'TYPE', opt('cn', 'serif', '宋') + opt('cn', 'sans', '黑') + opt('cn', 'mono', '等宽')) +
+        sec('动效', 'MOTION', opt('motion', 'on', '开着') + opt('motion', 'off', '关掉')) +
         sec('底部四格', 'DOCK', opt('dock', 'on', '留着') + opt('dock', 'off', '收起')) +
         sec('页码点', 'DOTS', opt('dots', 'on', '显示') + opt('dots', 'off', '藏起')) +
         '<div class="sheet-note">名字和纪念日在「设置」里改。</div>' +
       '</div>' +
 
-      '<div class="bz-foot">XIAOWO · 改坏了就点上面「回到最初」</div>';
+      '<div class="sheet">' +
+        '<div class="sheet-head"><span class="sheet-title">小组件</span></div>' +
+        modRows() +
+        sec('做法', 'HOW', opt('mkind', 'text', '写字') + opt('mkind', 'code', '写代码')) +
+        (st.mkind === 'code' ? codeForm() : textForm()) +
+      '</div>' +
+
+      '<div class="bz-foot">XIAOWO · 改坏了就点上面「全部回到最初」</div>';
   }
 
   function mark(root) {
@@ -398,6 +452,22 @@
     if (!bodyEl) return;
 
     editId = '';
+
+    bodyEl.addEventListener('input', function (e) {
+      const el = e.target;
+      if (!el || !el.getAttribute) return;
+
+      const k = el.getAttribute('data-range');
+      if (!k) return;
+
+      st[k] = el.value;
+
+      const lab = el.parentNode ? el.parentNode.querySelector('span') : null;
+      if (lab) lab.textContent = el.value + (el.getAttribute('data-unit') || '');
+
+      save();
+      apply();
+    });
 
     bodyEl.addEventListener('click', function (e) {
       const t = e.target;
@@ -560,17 +630,12 @@
       mcancel.addEventListener('click', function () {
         editId = '';
         st.mspan = '2';
-        const ti = D.getElementById('bz-mt');
-        const bo = D.getElementById('bz-mb');
-        const mh = D.getElementById('bz-mh');
-        const mc = D.getElementById('bz-mc');
-        const mj = D.getElementById('bz-mj');
+        const ids = ['bz-mt', 'bz-mb', 'bz-mh', 'bz-mc', 'bz-mj'];
+        ids.forEach(function (id) {
+          const el = D.getElementById(id);
+          if (el) el.value = '';
+        });
         const btn = D.getElementById('bz-msave');
-        if (ti) ti.value = '';
-        if (bo) bo.value = '';
-        if (mh) mh.value = '';
-        if (mc) mc.value = '';
-        if (mj) mj.value = '';
         if (btn) btn.textContent = '加到桌面';
         const box = D.getElementById('bz-pbox');
         if (box) box.innerHTML = '<div class="bz-prev-box">写完点「预览」，就在这儿跑</div>';
@@ -604,6 +669,7 @@
     }
 
     mark(bodyEl);
+    apply();
   }
 
   function watchMods() {
