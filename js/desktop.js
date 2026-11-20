@@ -10,6 +10,23 @@
   const DOCK = ['chat', 'diary', 'album', 'memory'];
   const TOTAL = 4;
 
+  /* 侧栏里英文小注 */
+  const EN = {
+    chat: 'CHAT', memory: 'MEMORY', diary: 'DIARY', album: 'ALBUM',
+    letter: 'LETTER', music: 'MUSIC', calendar: 'CALENDAR', plans: 'PLANS',
+    accounting: 'LEDGER', weather: 'WEATHER', mood: 'MOOD', health: 'HEALTH',
+    cycle: 'CYCLE', study: 'STUDY', quotes: 'QUOTES', moments: 'MOMENTS',
+    favorites: 'SAVED', games: 'GAMES', studio: 'STUDIO', worldbook: 'WORLD',
+    windows: 'WINDOWS', mcp: 'MCP', beautify: 'STYLE', settings: 'SETTINGS'
+  };
+
+  const GROUPS = [
+    { title: '日常', ids: ['chat', 'memory', 'diary', 'album'] },
+    { title: '记录', ids: ['calendar', 'plans', 'accounting', 'weather', 'mood', 'health', 'cycle', 'study', 'quotes'] },
+    { title: '我们', ids: ['letter', 'music', 'moments', 'favorites', 'games', 'studio'] },
+    { title: '其他', ids: ['worldbook', 'windows', 'mcp', 'beautify', 'settings'] }
+  ];
+
   function pagesHtml() {
     if (window.Layout && Layout.pagesHtml) return Layout.pagesHtml();
     return '';
@@ -38,6 +55,16 @@
     const love = new Date(XW.S.loveDate || '2025-01-01');
     const days = UI.diffDay(love, new Date());
 
+    const list = GROUPS.map(function (g) {
+      const rows = g.ids.map(function (id) {
+        const app = window.Apps.find(id);
+        if (!app) return '';
+        return '<button type="button" class="rail-row" data-app="' + id + '">' +
+            '<b>' + app.name + '</b><i>' + (EN[id] || '') + '</i></button>';
+      }).join('');
+      return '<div class="rail-grp">' + g.title + '</div>' + rows;
+    }).join('');
+
     return '<div class="rail-head">' +
         '<span class="rail-kicker">Together</span>' +
         '<div class="rail-days"><b>' + days + '</b><i>days</i></div>' +
@@ -48,10 +75,9 @@
         '</div>' +
         '<div class="rail-names">' + UI.esc(nameOf('his')) + ' &amp; ' + UI.esc(nameOf('her')) + '</div>' +
       '</div>' +
+      '<div class="rail-list">' + list + '</div>' +
       '<div class="rail-rule"></div>' +
       '<button type="button" class="rail-act" data-act="reset">重排首页</button>' +
-      '<button type="button" class="rail-act" data-app="beautify">换个样子</button>' +
-      '<button type="button" class="rail-act" data-app="settings">名字与纪念日</button>' +
       '<div class="rail-foot">XIAOWO · OUR SPACE</div>';
   }
 

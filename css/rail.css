@@ -1,4 +1,4 @@
-/* rail.css · 隐藏式侧栏 */
+/* rail.css · 隐藏式侧栏（S3 分组清单） */
 
 /* ── 触发：左上角一个极淡的小点 ── */
 .rail-toggle.overlay{
@@ -43,7 +43,7 @@
   max-width: 82vw;
   display: flex !important;
   flex-direction: column;
-  padding: 54px 0 calc(30px + env(safe-area-inset-bottom, 0px));
+  padding: 52px 0 calc(28px + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   background: #ffffff;
@@ -56,8 +56,8 @@
 
 .rail.open{ transform: translateX(0); }
 
-/* 顶部：天数 + 头像 + 名字 */
-.rail-head{ padding: 0 26px; }
+/* 顶部信笺头 */
+.rail-head{ padding: 0 26px 6px; }
 
 .rail-kicker{
   display: block;
@@ -78,7 +78,7 @@
 .rail-days b{
   font-family: "Cormorant Garamond", Georgia, serif;
   font-weight: 400;
-  font-size: 46px;
+  font-size: 44px;
   line-height: 1;
   letter-spacing: 1px;
   color: #2a2723;
@@ -96,12 +96,12 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  margin-top: 24px;
+  margin-top: 22px;
 }
 
 .rail-face{
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   flex: none;
   border-radius: 50%;
   overflow: hidden;
@@ -110,7 +110,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 12px;
   color: #c9c3b8;
 }
 
@@ -129,30 +129,79 @@
 }
 
 .rail-names{
-  margin-top: 11px;
+  margin-top: 10px;
   font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
   font-size: 15px;
   letter-spacing: .8px;
   color: #3a3733;
 }
 
-/* 分隔线 */
+/* 分组与行 */
+.rail-list{ padding: 2px 0 0; }
+
+.rail-grp{
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 16px 26px 3px;
+  font-size: 9.5px;
+  letter-spacing: 2.2px;
+  color: #c0bab0;
+}
+
+.rail-grp::after{
+  content: '';
+  flex: 1 1 auto;
+  height: 1px;
+  background: rgba(0, 0, 0, .05);
+}
+
+.rail-row{
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 26px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+}
+
+.rail-row:active{ background: rgba(0, 0, 0, .03); }
+
+.rail-row b{
+  font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: .6px;
+  color: #3a3733;
+}
+
+.rail-row i{
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 9.5px;
+  letter-spacing: 1.2px;
+  color: #c9c3b9;
+}
+
+/* 底部操作 */
 .rail-rule{
   height: 1px;
-  margin: 26px 26px 6px;
+  margin: 24px 26px 4px;
   background: rgba(0, 0, 0, .055);
 }
 
-/* 操作行 */
 .rail-act{
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 15px 26px;
+  padding: 14px 26px;
   border: 0;
   background: transparent;
   font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
-  font-size: 14px;
+  font-size: 13.5px;
   letter-spacing: .8px;
   color: #4a4640;
   text-align: left;
@@ -161,8 +210,7 @@
 .rail-act:active{ background: rgba(0, 0, 0, .03); }
 
 .rail-foot{
-  margin-top: auto;
-  padding: 26px 26px 0;
+  padding: 20px 26px 0;
   font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 9.5px;
   letter-spacing: 2.6px;
