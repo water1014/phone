@@ -1,0 +1,275 @@
+/* beautify.css · 美化页 + 全站外观开关
+   开关全部落在 html 的 data-* 上，不改任何原有文件 */
+
+:root { --xw-ac: #5c6a79; }
+
+/* ================= 主色 ================= */
+#home .gi .appcell svg { stroke: var(--xw-ac); }
+#home .gi .appcell:active { background: color-mix(in srgb, var(--xw-ac) 8%, #fff); }
+
+/* ================= 卡片材质 ================= */
+html[data-card="paper"] #home .gi .appcell {
+  background: #faf7f1;
+  border-color: rgba(120, 100, 70, .07);
+}
+
+html[data-card="line"] #home .gi .appcell {
+  background: transparent;
+  border-color: rgba(0, 0, 0, .10);
+  box-shadow: none;
+}
+
+/* ================= 圆角 ================= */
+html[data-radius="12"] #home .gi .appcell { border-radius: 12px; }
+html[data-radius="12"] #home .gi.lift,
+html[data-radius="12"] #home .gi.dc-drop { border-radius: 12px; }
+
+html[data-radius="22"] #home .gi .appcell { border-radius: 22px; }
+html[data-radius="22"] #home .gi.lift,
+html[data-radius="22"] #home .gi.dc-drop { border-radius: 22px; }
+
+/* ================= 图标 ================= */
+html[data-icon="19"] #home .gi .appcell svg { width: 19px; height: 19px; }
+html[data-icon="23"] #home .gi .appcell svg { width: 23px; height: 23px; }
+
+/* ================= 中文字体 ================= */
+html[data-cn="sans"] #home .gi .appcell span,
+html[data-cn="sans"] .rail-row b,
+html[data-cn="sans"] .rail-act,
+html[data-cn="sans"] .pf-name,
+html[data-cn="sans"] .pf-sign,
+html[data-cn="sans"] .dc-name,
+html[data-cn="sans"] .clg-cap {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* ================= 间距 ================= */
+html[data-gap="tight"] #home .gpage { gap: 8px 8px; }
+html[data-gap="loose"] #home .gpage { gap: 18px 12px; }
+
+/* ================= 动效 ================= */
+html[data-motion="off"] #home.editing .gi { animation: none !important; }
+html[data-motion="off"] .dc-in,
+html[data-motion="off"] .pf-in { transition: none !important; }
+html[data-motion="off"] .clg-tab { transition: none !important; }
+
+/* ================= dock / 页码点 ================= */
+html[data-dock="off"] .dock { display: none; }
+html[data-dock="off"] #home .page { padding-bottom: calc(1.6rem + env(safe-area-inset-bottom)); }
+html[data-dock="off"] .pager { bottom: calc(.9rem + env(safe-area-inset-bottom)); }
+html[data-dots="off"] .pager,
+html[data-dots="off"] .dots { display: none; }
+
+/* ================= 夜 ================= */
+html[data-skin="night"] {
+  --ink: #ecebe7;
+  --ink-2: #9b968e;
+  --ink-3: #5e5a54;
+  --glass: rgba(34, 33, 30, .48);
+  --glass-strong: rgba(38, 37, 34, .64);
+  --glass-brd: rgba(255, 255, 255, .10);
+  --glass-hi: inset 0 1px 0 rgba(255, 255, 255, .08);
+  --card: rgba(36, 35, 32, .52);
+  --line: rgba(255, 255, 255, .12);
+  --bg:
+    radial-gradient(900px 520px at 86% -8%, rgba(255, 255, 255, .07), transparent 62%),
+    radial-gradient(760px 480px at -6% 24%, rgba(150, 168, 190, .08), transparent 60%),
+    linear-gradient(180deg, #131211 0%, #0a0908 100%);
+  color: #e7e1d5;
+}
+
+html[data-skin="night"] #home .clg,
+html[data-skin="night"] #home .dc-front,
+html[data-skin="night"] .pf-front {
+  background: #201e1c !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .38) !important;
+}
+
+html[data-skin="night"] #home .gi .appcell {
+  background: #201e1c;
+  border-color: rgba(255, 255, 255, .05);
+  box-shadow: none;
+}
+
+html[data-skin="night"] #home .gi .appcell span { color: #8f887c; }
+
+html[data-skin="night"] .clg-tab { background: #2a2724; color: #9a9387; }
+html[data-skin="night"] .clg-tab.active { background: #ece6da; color: #1a1917; }
+html[data-skin="night"] .clg-none { border-color: #3a3733; background: #1b1917; }
+html[data-skin="night"] .clg-main,
+html[data-skin="night"] .clg-small { background: #26231f; }
+html[data-skin="night"] .clg-cap { color: #9a9387; }
+
+html[data-skin="night"] .dc-top { color: #9a9387; }
+html[data-skin="night"] .dc-name { color: #ece6da; }
+html[data-skin="night"] .dc-num { color: #ece6da; }
+html[data-skin="night"] .dc-rule { background: #3a3733; }
+html[data-skin="night"] .dc-ava { background: #2a2724; border-color: #332f2b; }
+
+html[data-skin="night"] .pf-name { color: #ece6da; }
+html[data-skin="night"] .pf-sign { color: #9a9387; }
+html[data-skin="night"] .pf-pill {
+  background: #26231f;
+  border-color: rgba(255, 255, 255, .07);
+  color: #a49d90;
+  box-shadow: none;
+}
+html[data-skin="night"] .pf-pink { color: #cf9a9a; border-color: rgba(200, 140, 140, .28); }
+
+html[data-skin="night"] .dock {
+  background: rgba(28, 26, 24, .88) !important;
+  border-color: rgba(255, 255, 255, .06) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .4) !important;
+}
+
+html[data-skin="night"] .rail { background: #1b1917 !important; }
+html[data-skin="night"] .rail-row b { color: #e2dccf; }
+html[data-skin="night"] .rail-toggle.overlay i { background: #4c4842; }
+html[data-skin="night"] .pager i,
+html[data-skin="night"] .dots span { background: rgba(255, 255, 255, .26); }
+html[data-skin="night"] .pager i.on,
+html[data-skin="night"] .dots span.on { background: rgba(255, 255, 255, .82); }
+
+html[data-skin="night"] .app { background: #141312 !important; }
+html[data-skin="night"] .sheet {
+  background: #1e1c1a !important;
+  border-color: rgba(255, 255, 255, .06) !important;
+}
+html[data-skin="night"] .hero-title { color: #ece6da; }
+html[data-skin="night"] .bz-opt {
+  background: #252220;
+  border-color: rgba(255, 255, 255, .07);
+  color: #a49d90;
+}
+html[data-skin="night"] .bz-opt.on { background: #ece6da; border-color: #ece6da; color: #1a1917; }
+html[data-skin="night"] .bz-lab b { color: #ddd6c9; }
+
+/* ================= 纸 ================= */
+html[data-skin="paper"] {
+  --ink: #2c2721;
+  --ink-2: #6d6459;
+  --ink-3: #9c9184;
+  --bg: linear-gradient(180deg, #f4eee3 0%, #ebe4d6 100%);
+}
+
+html[data-skin="paper"] #home .clg,
+html[data-skin="paper"] #home .dc-front,
+html[data-skin="paper"] .pf-front {
+  background: #fbf7ef !important;
+}
+
+html[data-skin="paper"] #home .gi .appcell {
+  background: #fbf7ef;
+  border-color: rgba(120, 100, 70, .08);
+}
+
+html[data-skin="paper"] .dock { background: rgba(249, 244, 234, .86) !important; }
+html[data-skin="paper"] .rail { background: #f8f2e7 !important; }
+html[data-skin="paper"] .app { background: #f4eee3 !important; }
+
+/* ================= 美化页本体 ================= */
+
+.bz-sec {
+  margin-top: 18px;
+}
+
+.bz-sec:first-of-type {
+  margin-top: 6px;
+}
+
+.bz-lab {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 1px;
+}
+
+.bz-lab b {
+  font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
+  font-size: 13.5px;
+  font-weight: 400;
+  letter-spacing: .6px;
+  color: #3a3733;
+}
+
+.bz-lab i {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 9.5px;
+  letter-spacing: 1.2px;
+  color: #c9c3b9;
+}
+
+.bz-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.bz-opt {
+  min-width: 52px;
+  padding: 7px 13px;
+  border: 1px solid rgba(0, 0, 0, .07);
+  border-radius: 11px;
+  background: #fdfcfa;
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: .4px;
+  color: #6a6660;
+  transition: background .16s, color .16s, border-color .16s;
+}
+
+.bz-opt.on {
+  background: #2c2a27;
+  border-color: #2c2a27;
+  color: #f6f2ea;
+}
+
+.bz-dot {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .06);
+  transition: transform .16s, box-shadow .16s;
+}
+
+.bz-dot.on {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #2c2a27;
+  transform: scale(1.04);
+}
+
+.bz-wall {
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border: 0;
+  border-radius: 13px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .07);
+  font-size: 11px;
+  color: #8a8578;
+  background: #fff;
+  background-size: cover;
+  background-position: center;
+}
+
+.bz-wall.on {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #2c2a27;
+}
+
+.bz-wall-up {
+  border: 1px dashed #ded8cc;
+  background: #fdfcfa;
+}
+
+.bz-foot {
+  margin: 22px 0 30px;
+  text-align: center;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  color: #cdc7bc;
+}
