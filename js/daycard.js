@@ -1,6 +1,6 @@
-/* daycard.js · 首页天数卡
+/* daycard.js · 天数卡（由 layout.js 摆放）
    正面：Together / 两个头像 / 两个名字 / 688 days
-   背面：since / 下一个整百天 / 还有几天 / 可写一句
+   背面：since / 下一个整百天 / 还剩几天 / 可写一句
    点空白翻面；点头像换图；点名字就地改 */
 (function () {
   const D = document;
@@ -10,7 +10,6 @@
   const CR = String.fromCharCode(13);
   const LF = String.fromCharCode(10);
   const Q = String.fromCharCode(34);
-  let queued = false;
 
   function esc(t) {
     return String(t == null ? '' : t)
@@ -113,7 +112,7 @@
     return '<div class=' + Q + 'dc-in' + Q + '>' + frontHtml() + backHtml() + '</div>';
   }
 
-  function pickAva(who, root) {
+  function pickAva(who, card) {
     const inp = D.createElement('input');
     inp.type = 'file';
     inp.accept = 'image/*';
@@ -154,7 +153,7 @@
 
           if (data) {
             lsSet(who === 'his' ? K_HIS : K_HER, data);
-            paint(root);
+            paint(card);
           }
 
           done();
@@ -171,8 +170,8 @@
     inp.click();
   }
 
-  function bindInner(root) {
-    Array.prototype.forEach.call(root.querySelectorAll('.dc-name'), function (el) {
+  function bindInner(card) {
+    Array.prototype.forEach.call(card.querySelectorAll('.dc-name'), function (el) {
       el.addEventListener('blur', function () {
         const who = el.getAttribute('data-who');
         const t = flat(el.innerText);
@@ -189,7 +188,7 @@
       });
     });
 
-    const note = root.querySelector('.dc-note');
+    const note = card.querySelector('.dc-note');
     if (!note) return;
 
     note.addEventListener('blur', function () {
@@ -204,12 +203,12 @@
     });
   }
 
-  function bindOnce(root) {
-    root.addEventListener('click', function (e) {
+  function bindOnce(card) {
+    card.addEventListener('click', function (e) {
       const ava = e.target.closest('.dc-ava');
       if (ava) {
         e.stopPropagation();
-        pickAva(ava.getAttribute('data-who'), root);
+        pickAva(ava.getAttribute('data-who'), card);
         return;
       }
 
@@ -218,52 +217,30 @@
         return;
       }
 
-      root.classList.toggle('flip');
+      card.classList.toggle('flip');
     });
   }
 
-  function paint(root) {
-    root.classList.remove('flip');
-    root.innerHTML = inner();
-    bindInner(root);
+  function paint(card) {
+    card.classList.remove('flip');
+    card.innerHTML = inner();
+    bindInner(card);
   }
 
-  function make() {
-    const box = D.createElement('section');
-    box.className = 'dcard';
-    box.innerHTML = inner();
-    bindOnce(box);
-    bindInner(box);
-    return box;
-  }
-
-  function mount() {
-    if (!window.XW || !window.UI) return;
-
-    const home = D.getElementById('home') || D.getElementById('screen');
-    if (!home) return;
-
-    const old = home.querySelector('.wdg-days');
-    if (!old) return;
-
-    old.parentNode.replaceChild(make(), old);
-  }
-
-  function schedule() {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(function () {
-      queued = false;
-      mount();
-    });
-  }
-
-  const screen = D.getElementById('screen');
-  if (screen) {
-    new MutationObserver(schedule).observe(screen, { childList: true });
-  }
-
-  schedule();
-  D.addEventListener('DOMContentLoaded', schedule);
-  setTimeout(schedule, 400);
+  window.DayCard = {
+    html: function () {
+      return '<div class=' + Q + 'dcard' + Q + ' data-key=' + Q + 'days' + Q + '>' +
+        '<div class=' + Q + 'dc-in' + Q + '>' + frontHtml() + backHtml() + '</div>' +
+      '</div>';
+    },
+    bind: function (root) {
+      if (!root) return;
+      const card = root.classList && root.classList.contains('dcard')
+        ? root
+        : root.querySelector('.dcard');
+      if (!card) return;
+      bindOnce(card);
+      bindInner(card);
+    }
+  };
 })();
