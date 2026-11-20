@@ -7,6 +7,7 @@
   let nameEl = null;
   let enEl = null;
   let currentId = null;
+  let quote = null;
 
   const EN = {
     chat: 'MESSAGE', memory: 'MEMORY', diary: 'DIARY', album: 'ALBUM',
@@ -94,6 +95,7 @@
     host.classList.remove('show');
     bodyEl.innerHTML = '';
     currentId = null;
+    quote = null;
   }
 
   function render(id) {
@@ -156,13 +158,19 @@
     return [base + '/v1/models', base + '/models'];
   }
 
-  function stamp(ts) {
+  function clock(ts) {
     const d = new Date(ts || Date.now());
-    if (d.toDateString() === new Date().toDateString()) {
-      return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-    }
-    return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' +
-      String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+
+  function dayLabel(ts) {
+    const d = new Date(ts || Date.now());
+    const now = new Date();
+    const week = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][d.getDay()];
+    if (d.toDateString() === now.toDateString()) return '今天 · ' + week;
+    const yest = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    if (d.toDateString() === yest.toDateString()) return '昨天 · ' + week;
+    return (d.getMonth() + 1) + '月' + d.getDate() + '日 · ' + week;
   }
 
   function renderText(text) {
@@ -191,7 +199,7 @@
     return chunks;
   }
 
-  function messageHtml(msg, compact) {
+  function messageHtml(msg, compact, index) {
     if (msg.who === 'sys') {
       return '<div class="chat-event"><span>' + UI.esc(msg.text || '') + '</span></div>';
     }
@@ -200,8 +208,16 @@
     const name = mine ? (XW.S.herName || '我') : (XW.S.hisName || '他');
 
     let inner = '';
+
+    if (msg.quote && msg.quote.text) {
+      inner += '<div class="qblock">' +
+          '<b>' + UI.esc(msg.quote.name || '') + '</b>' +
+          '<span>' + UI.esc(msg.quote.text) + '</span>' +
+        '</div>';
+    }
+
     if (msg._typing) {
-      inner = '<div class="bub typing">…</div>';
+      inner += '<div class="bub typing">…</div>';
     } else {
       if (msg.think) {
         inner += '<details class="think"><summary>思考</summary>' +
@@ -225,7 +241,7 @@
       tag = '<div class="msg-tag">' + bits.join(' · ') + '</div>';
     }
 
-    return '<div class="msg-row ' + (mine ? 'me' : 'ta') + (compact ? ' compact' : '') + '">' +
+    return '<div class="msg-row ' + (mine ? 'me' : 'ta') + (compact ? ' compact' : '') + '" data-i="' + index + '">' +
         '<div class="msg-ava' + (compact ? ' ghost' : '') + '">' + UI.esc(String(name).charAt(0)) + '</div>' +
         '<div class="msg-main">' +
           (compact ? '' : '<div class="msg-name">' + UI.esc(name) + '</div>') +
@@ -237,20 +253,28 @@
   function chatView() {
     const list = Array.isArray(XW.S.chat) ? XW.S.chat : [];
     let lastT = 0;
+    let lastDay = '';
 
     const rows = list.map(function (m, index) {
       const prev = index > 0 ? list[index - 1] : null;
       let sep = '';
       const t = Number(m.t) || 0;
       const gap = t - lastT;
-      if (m.who !== 'sys' && gap > 5 * 60 * 1000) {
-        sep = '<div class="chat-time"><span class="kicker">' + UI.esc(stamp(t)) + '</span></div>';
+
+      if (m.who !== 'sys') {
+        const label = dayLabel(t);
+        if (label !== lastDay) {
+          sep = '<div class="chat-day"><span>' + UI.esc(label) + '</span></div>';
+          lastDay = label;
+        } else if (gap > 5 * 60 * 1000) {
+          sep = '<div class="chat-time"><span class="kicker">' + UI.esc(clock(t)) + '</span></div>';
+        }
       }
       if (t) lastT = t;
 
       const same = prev && prev.who === m.who && m.who !== 'sys' &&
-        !m.img && !prev.img && gap < 5 * 60 * 1000 && !prev._typing;
-      return sep + messageHtml(m, same);
+        !m.img && !prev.img && !m.quote && gap < 5 * 60 * 1000 && !prev._typing;
+      return sep + messageHtml(m, same, index);
     }).join('');
 
     const empty = list.length ? '' : '<div class="empty-state" style="margin-top:22%">还没说话。<br>在下面写一句，就有了。</div>';
@@ -285,6 +309,9 @@
     return '<div class="chat-wrap">' + head + top +
         '<div class="chat-scroll" id="chat-scroll">' + rows + empty + '</div>' +
         '<div class="quick">' + chips + '</div>' +
+        (quote ? '<div class="quote-bar"><span class="qb-name">' + UI.esc(quote.name) + '</span>' +
+          '<span class="qb-text">' + UI.esc(quote.text) + '</span>' +
+          '<button type="button" id="quote-x" class="qb-x" aria-label="取消引用">×</button></div>' : '') +
         '<div class="composer">' +
           '<input id="chat-input" placeholder="写点什么…">' +
           '<input id="chat-file" type="file" accept="image/*" hidden>' +
@@ -352,7 +379,11 @@
     const history = XW.S.chat
       .filter(function (m) { return !m._typing && m.who !== 'sys' && !m.img; })
       .slice(-20)
-      .map(function (m) { return { role: m.who === 'ta' ? 'assistant' : 'user', content: String(m.text || '') }; })
+      .map(function (m) {
+        let content = String(m.text || '');
+        if (m.quote && m.quote.text) content = '（引用「' + m.quote.text + '」）' + content;
+        return { role: m.who === 'ta' ? 'assistant' : 'user', content: content };
+      })
       .filter(function (m) { return m.content; });
 
     const system = '你在「小窝」这个私人小手机里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。可以用（括号）写神情和动作当旁白，也可以直接说话，不要列条目。';
@@ -417,7 +448,10 @@
     if (!text) return;
     input.value = '';
 
-    XW.S.chat.push({ who: 'me', text: text, t: Date.now() });
+    const box = quote ? { name: quote.name, text: quote.text } : null;
+    quote = null;
+
+    XW.S.chat.push({ who: 'me', text: text, t: Date.now(), quote: box || undefined });
     XW.save('chat');
     paint('chat');
     scrollChat();
@@ -445,6 +479,81 @@
     XW.save('chat');
     paint('chat');
     scrollChat();
+  }
+
+  function openActions(index) {
+    const msg = XW.S.chat[index];
+    if (!msg || msg.who === 'sys') return;
+
+    const old = D.getElementById('msg-actions');
+    if (old) old.remove();
+
+    const box = D.createElement('div');
+    box.id = 'msg-actions';
+    box.className = 'msg-actions';
+    box.innerHTML =
+      '<button type="button" data-act="quote">引用</button>' +
+      '<button type="button" data-act="copy">复制</button>' +
+      '<button type="button" data-act="del">删除</button>' +
+      '<button type="button" data-act="close">取消</button>';
+    bodyEl.appendChild(box);
+
+    box.addEventListener('click', function (e) {
+      const act = e.target.dataset.act;
+      if (!act || act === 'close') { box.remove(); return; }
+
+      if (act === 'quote') {
+        const mine = msg.who === 'me';
+        quote = {
+          name: mine ? (XW.S.herName || '我') : (XW.S.hisName || '他'),
+          text: String(msg.text || '［图片］').slice(0, 60)
+        };
+        box.remove();
+        paint('chat');
+        const input = D.getElementById('chat-input');
+        if (input) input.focus();
+        return;
+      }
+
+      if (act === 'copy') {
+        const text = String(msg.text || '');
+        if (navigator.clipboard && text) {
+          navigator.clipboard.writeText(text).catch(function () {});
+        }
+        UI.toast('复制了');
+        box.remove();
+        return;
+      }
+
+      if (act === 'del') {
+        XW.S.chat.splice(index, 1);
+        XW.save('chat');
+        box.remove();
+        paint('chat');
+      }
+    });
+  }
+
+  function bindHold() {
+    Array.prototype.forEach.call(bodyEl.querySelectorAll('.msg-row[data-i]'), function (row) {
+      let timer = null;
+
+      const fire = function () {
+        timer = null;
+        openActions(Number(row.dataset.i));
+      };
+      const start = function () { if (timer) clearTimeout(timer); timer = setTimeout(fire, 450); };
+      const stop = function () { if (timer) { clearTimeout(timer); timer = null; } };
+
+      row.addEventListener('touchstart', start, { passive: true });
+      row.addEventListener('touchend', stop);
+      row.addEventListener('touchmove', stop);
+      row.addEventListener('touchcancel', stop);
+      row.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+        openActions(Number(row.dataset.i));
+      });
+    });
   }
 
   function fieldView(label, id, value, type, placeholder, listId) {
@@ -588,11 +697,19 @@
       const input = D.getElementById('chat-input');
       const plus = D.getElementById('chat-plus');
       const picker = D.getElementById('chat-file');
+      const quoteX = D.getElementById('quote-x');
 
       if (btn) btn.addEventListener('click', sendChat);
       if (input) {
         input.addEventListener('keydown', function (e) {
           if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+        });
+      }
+
+      if (quoteX) {
+        quoteX.addEventListener('click', function () {
+          quote = null;
+          paint('chat');
         });
       }
 
@@ -619,6 +736,8 @@
           input.focus();
         });
       });
+
+      bindHold();
       scrollChat();
       return;
     }
