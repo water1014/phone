@@ -1,4 +1,4 @@
-/* desktop.js · L2 拼贴 + 长按拖动换位 + 隐藏侧栏 + 固定 dock */
+/* desktop.js · 首页四页横滑（V4 封面在前，功能单独成页） */
 (function () {
   const D = document;
 
@@ -6,10 +6,7 @@
   let suppressTap = false;
 
   const DOCK = ['chat', 'diary', 'album', 'memory'];
-
-  const DEFAULT_ORDER = ['clock', 'days', 'quota', 'apps', 'weather', 'now', 'cal', 'quote', 'rows'];
-
-  const SPAN = { clock: true, now: true, cal: true, quote: true, rows: true };
+  const TOTAL = 4;
 
   const RAIL_META = {
     chat: ['CHAT', '回到你们正在说的话'],
@@ -45,24 +42,49 @@
     { title: '其他', ids: ['worldbook', 'windows', 'mcp', 'beautify', 'settings'] }
   ];
 
-  function homeOrder() {
-    const saved = Array.isArray(XW.S.homeOrder) ? XW.S.homeOrder : [];
-    const out = saved.filter(function (id) { return DEFAULT_ORDER.indexOf(id) >= 0; });
-    DEFAULT_ORDER.forEach(function (id) { if (out.indexOf(id) < 0) out.push(id); });
-    return out;
+  function coverHtml() {
+    const photos = Array.isArray(XW.S.photos) ? XW.S.photos : [];
+    if (photos.length) {
+      return '<div class="cover"><img src="' + photos[0] + '" alt=""></div>';
+    }
+    return '<div class="cover empty"><span>放一张你们的照片</span>' +
+        '<i>ALBUM</i></div>';
   }
 
-  function blockHtml(id) {
+  function allAppsHtml() {
+    const cells = window.Apps.ALL.map(function (app) {
+      return '<button type="button" class="appcell" data-app="' + app.id + '">' +
+          UI.icon(app.icon) + '<span>' + app.name + '</span></button>';
+    }).join('');
+    return '<div class="appall">' + cells + '</div>';
+  }
+
+  function pagesHtml() {
     const W = window.Widgets;
     if (!W) return '';
-    const map = {
-      clock: W.clock, days: W.days, quota: W.quota, apps: W.appGrid,
-      weather: W.weatherCard, now: W.nowPlaying, cal: W.calendar,
-      quote: W.quote, rows: W.rows
-    };
-    const fn = map[id];
-    if (!fn) return '';
-    return '<div class="cell' + (SPAN[id] ? ' s2' : '') + '" data-wid="' + id + '">' + fn() + '</div>';
+
+    return '<section class="page">' +
+        coverHtml() +
+        W.days() +
+        W.quote() +
+      '</section>' +
+
+      '<section class="page">' +
+        W.clock() +
+        '<div class="duo">' + W.weatherCard() + W.quota() + '</div>' +
+        W.appGrid() +
+      '</section>' +
+
+      '<section class="page">' +
+        W.calendar() +
+        W.nowPlaying() +
+        W.rows() +
+      '</section>' +
+
+      '<section class="page">' +
+        '<div class="page-head"><span class="kicker">ALL</span><span class="page-sub">全部功能</span></div>' +
+        allAppsHtml() +
+      '</section>';
   }
 
   function railHtml() {
@@ -79,8 +101,7 @@
               '<span class="rail-name">' + app.name + '<i>' + meta[0] + '</i></span>' +
               '<span class="rail-desc">' + meta[1] + '</span>' +
             '</span>' +
-            '<span class="rail-arrow">›</span>' +
-          '</button>';
+            '<span class="rail-arrow">›</span></button>';
       }).join('');
       return '<div class="rail-group"><div class="rail-group-title">' + group.title + '</div>' + rows + '</div>';
     }).join('');
@@ -113,23 +134,23 @@
     return '<div class="drawer" id="drawer" hidden><div class="drawer-inner">' +
         '<div class="drawer-head"><span class="kicker">ALL APPS</span>' +
           '<button type="button" class="drawer-x" data-close="1">关闭</button></div>' +
-        '<div class="drawer-grid">' + cells + '</div>' +
-      '</div></div>';
+        '<div class="drawer-grid">' + cells + '</div></div></div>';
   }
 
-  function homeHtml() {
-    return '<div class="topline s2">' +
-        '<button type="button" class="rail-toggle" data-rail="1" aria-label="打开侧栏">' +
-          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h13M4 12h13M4 17h13"/></svg>' +
-        '</button>' +
-      '</div>' +
-      homeOrder().map(blockHtml).join('');
+  function dotsHtml() {
+    let out = '';
+    for (let i = 0; i < TOTAL; i++) out += '<i' + (i === 0 ? ' class="on"' : '') + '></i>';
+    return out;
   }
 
   function renderAll() {
     screenEl.innerHTML =
       '<div class="desk">' +
-        '<main class="home" id="home"><div class="grid">' + homeHtml() + '</div></main>' +
+        '<button type="button" class="rail-toggle overlay" data-rail="1" aria-label="打开侧栏">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h13M4 12h13M4 17h13"/></svg>' +
+        '</button>' +
+        '<main class="home" id="home">' + pagesHtml() + '</main>' +
+        '<div class="pager" id="pager">' + dotsHtml() + '</div>' +
         '<nav class="dock" id="dock">' + dockHtml() + '</nav>' +
       '</div>' +
       '<div class="scrim" id="scrim" hidden></div>' +
@@ -138,6 +159,22 @@
 
     if (window.Widgets && window.Widgets.after) window.Widgets.after(screenEl);
     tick();
+    watchPager();
+  }
+
+  function watchPager() {
+    const home = D.getElementById('home');
+    const pager = D.getElementById('pager');
+    if (!home || !pager) return;
+
+    home.addEventListener('scroll', function () {
+      const width = home.clientWidth || 1;
+      const idx = Math.max(0, Math.min(TOTAL - 1, Math.round(home.scrollLeft / width)));
+      const dots = pager.children;
+      for (let i = 0; i < dots.length; i++) {
+        dots[i].classList.toggle('on', i === idx);
+      }
+    }, { passive: true });
   }
 
   function tick() {
@@ -165,15 +202,8 @@
     if (scrim) scrim.hidden = true;
   }
 
-  function openDrawer() {
-    const d = D.getElementById('drawer');
-    if (d) d.hidden = false;
-  }
-
-  function closeDrawer() {
-    const d = D.getElementById('drawer');
-    if (d) d.hidden = true;
-  }
+  function openDrawer() { const d = D.getElementById('drawer'); if (d) d.hidden = false; }
+  function closeDrawer() { const d = D.getElementById('drawer'); if (d) d.hidden = true; }
 
   function bindOpen() {
     D.addEventListener('click', function (event) {
@@ -194,82 +224,6 @@
     });
   }
 
-  /* ── 长按拖动：组件换位 ── */
-  function bindCellDrag() {
-    let timer = null, el = null, target = null;
-    let sx = 0, sy = 0, dragging = false;
-
-    function stopTimer() { if (timer) { clearTimeout(timer); timer = null; } }
-    function clearTarget() { if (target) target.classList.remove('drop-target'); target = null; }
-    function reset() {
-      if (el) { el.classList.remove('dragging'); el.style.transform = ''; }
-      clearTarget();
-      el = null; dragging = false;
-    }
-
-    D.addEventListener('touchstart', function (event) {
-      if (!event.touches || event.touches.length !== 1) return;
-      const cell = event.target.closest('.cell');
-      if (!cell) return;
-      const t = event.touches[0];
-      sx = t.clientX; sy = t.clientY;
-      dragging = false;
-      stopTimer();
-      timer = setTimeout(function () {
-        timer = null;
-        el = cell;
-        el.classList.add('dragging');
-        if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
-      }, 450);
-    }, { passive: true });
-
-    D.addEventListener('touchmove', function (event) {
-      const t = event.touches && event.touches[0];
-      if (!t) return;
-
-      if (!el) {
-        if (Math.abs(t.clientX - sx) > 9 || Math.abs(t.clientY - sy) > 9) stopTimer();
-        return;
-      }
-
-      event.preventDefault();
-      dragging = true;
-      el.style.transform = 'translateY(' + (t.clientY - sy) + 'px)';
-
-      const hit = D.elementFromPoint(t.clientX, t.clientY);
-      const over = hit ? hit.closest('.cell') : null;
-      if (over && over !== el) {
-        if (target !== over) { clearTarget(); target = over; target.classList.add('drop-target'); }
-      } else if (!over) {
-        clearTarget();
-      }
-    }, { passive: false });
-
-    D.addEventListener('touchend', function () {
-      stopTimer();
-      if (!el) return;
-
-      if (dragging && target) {
-        const order = homeOrder();
-        const from = order.indexOf(el.dataset.wid);
-        const to = order.indexOf(target.dataset.wid);
-        if (from >= 0 && to >= 0 && from !== to) {
-          const moved = order.splice(from, 1)[0];
-          order.splice(to, 0, moved);
-          XW.S.homeOrder = order;
-          try { XW.save('homeOrder'); } catch (err) { console.warn('[home] save failed', err); }
-        }
-      }
-
-      reset();
-      renderAll();
-      suppressTap = true;
-    });
-
-    D.addEventListener('touchcancel', function () { stopTimer(); reset(); });
-  }
-
-  /* ── 长按拖动：dock 换位 ── */
   function bindDockDrag() {
     let timer = null, el = null, from = -1, target = null;
     let sx = 0, sy = 0, dragged = false;
@@ -286,12 +240,10 @@
       const item = event.target.closest('.dock-item[data-app]');
       if (!item) return;
       const t = event.touches[0];
-      sx = t.clientX; sy = t.clientY;
-      dragged = false;
+      sx = t.clientX; sy = t.clientY; dragged = false;
       stopTimer();
       timer = setTimeout(function () {
-        timer = null;
-        el = item;
+        timer = null; el = item;
         from = DOCK.indexOf(item.dataset.app);
         el.classList.add('dragging');
         if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
@@ -345,7 +297,6 @@
     }
 
     renderAll();
-    bindCellDrag();
     bindDockDrag();
     bindOpen();
     setInterval(tick, 20000);

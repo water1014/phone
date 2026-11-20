@@ -1,0 +1,163 @@
+/* pager.css · 四页横滑：每页一屏、不多塞 */
+
+#home {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 0;
+  height: 100%;
+  padding: 0 !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+#home::-webkit-scrollbar { display: none; }
+
+#home .page {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: start;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 50px 16px calc(104px + env(safe-area-inset-bottom, 0px));
+}
+
+/* 页内两格 */
+#home .duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+#home .duo > section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 120px;
+  padding: 15px 16px 14px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, .04);
+  border-radius: 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .045);
+}
+
+/* 封面图 */
+.cover {
+  position: relative;
+  width: 100%;
+  height: 42vh;
+  min-height: 210px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .05);
+}
+.cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.cover.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(150deg, #eef2f6, #f7f9fb 55%, #e9eef2);
+  border: 1px solid rgba(141, 154, 168, .16);
+}
+.cover.empty span { font-size: 14px; color: #98a3ad; letter-spacing: .6px; }
+.cover.empty i {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #bdc6ce;
+}
+
+/* 页眉（功能页） */
+.page-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 2px 4px 2px;
+}
+.page-head .kicker {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #b6bec6;
+}
+.page-sub { font-size: 12px; color: #a8b2bb; letter-spacing: 1px; }
+
+/* 全部功能：四列 */
+.appall {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px 10px;
+}
+.appall .appcell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  aspect-ratio: 1 / 1;
+  border: 1px solid rgba(0, 0, 0, .04);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .045);
+  font: inherit;
+}
+.appall .appcell:active { background: rgba(141, 154, 168, .06); }
+.appall .appcell svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: #6f7f90;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.appall .appcell span { font-size: 11px; color: #7d8894; }
+
+/* 漂浮的 ☰ */
+.rail-toggle.overlay {
+  position: fixed;
+  top: 14px;
+  left: 16px;
+  z-index: 40;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .07);
+}
+
+/* 分页点：在 dock 上方 */
+.pager {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  z-index: 29;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.pager i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(141, 154, 168, .26);
+  transition: background .2s ease, transform .2s ease;
+}
+.pager i.on { background: #8d9aa8; transform: scale(1.25); }
+
+/* 页内块之间无需 grid-span */
+#home .page > * { width: 100%; }
