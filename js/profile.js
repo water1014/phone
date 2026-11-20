@@ -1,6 +1,6 @@
 /* profile.js · 个人信息卡
    头像 / 名字 / 第 N 天 / 一句签名 / 四个胶囊
-   点空白翻面，点头像换图，签名与胶囊就地改 */
+   首页版可翻面；侧栏版（plain）是静态的 */
 (function () {
   const D = document;
   const Q = String.fromCharCode(34);
@@ -159,7 +159,7 @@
 
           if (data) {
             lsSet(who === 'his' ? K.his : K.her, data);
-            paint(card);
+            redraw(card);
           }
 
           done();
@@ -205,19 +205,21 @@
         return;
       }
 
+      if (card.classList.contains('pf-plain')) return;
       card.classList.toggle('flip');
     });
   }
 
-  function paint(card) {
+  function redraw(card) {
     card.classList.remove('flip');
     card.innerHTML = '<div class=' + Q + 'pf-in' + Q + '>' + front() + back() + '</div>';
     bindInner(card);
   }
 
   window.Profile = {
-    html: function () {
-      return '<section class=' + Q + 'pf' + Q + ' data-key=' + Q + 'profile' + Q + '>' +
+    html: function (plain) {
+      const cls = plain ? 'pf pf-plain' : 'pf';
+      return '<section class=' + Q + cls + Q + ' data-key=' + Q + 'profile' + Q + '>' +
         '<div class=' + Q + 'pf-in' + Q + '>' + front() + back() + '</div></section>';
     },
     bind: function (root) {
