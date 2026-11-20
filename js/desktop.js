@@ -1,9 +1,11 @@
-/* desktop.js · 桌面：左栏图标 + 右侧拼图流 */
+/* desktop.js · 桌面：通宽拼图流 + 底部 dock + 全部应用抽屉 */
 (function () {
   const D = document;
 
   let screenEl = null;
   let suppressTap = false;
+
+  const DOCK = ['chat', 'diary', 'album', 'memory'];
 
   function order() {
     const all = window.Apps.ALL.map(function (a) { return a.id; });
@@ -13,34 +15,63 @@
     return out;
   }
 
-  function railHtml() {
-    return order().map(function (id, i) {
+  function dockHtml() {
+    const items = DOCK.map(function (id) {
       const app = window.Apps.find(id);
       if (!app) return '';
-      return '<button type="button" class="rail-ico" data-app="' + id + '" data-idx="' + i + '">' +
+      return '<button type="button" class="dock-item" data-app="' + id + '">' +
           UI.icon(app.icon) +
           '<span>' + app.name + '</span>' +
         '</button>';
     }).join('');
+
+    return items +
+      '<button type="button" class="dock-item" data-more="1">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+          '<circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/>' +
+        '</svg>' +
+        '<span>全部</span>' +
+      '</button>';
+  }
+
+  function drawerHtml() {
+    const cells = order().map(function (id) {
+      const app = window.Apps.find(id);
+      if (!app) return '';
+      return '<button type="button" class="appcell" data-app="' + id + '">' +
+          UI.icon(app.icon) +
+          '<span>' + app.name + '</span>' +
+        '</button>';
+    }).join('');
+
+    return '<div class="drawer" id="drawer" hidden>' +
+        '<div class="drawer-inner">' +
+          '<div class="drawer-head">' +
+            '<span class="kicker">ALL APPS</span>' +
+            '<button type="button" class="drawer-x" data-close="1">关闭</button>' +
+          '</div>' +
+          '<div class="drawer-grid">' + cells + '</div>' +
+        '</div>' +
+      '</div>';
   }
 
   function homeHtml() {
     const W = window.Widgets;
     if (!W) return '';
     return W.clock() +
-      W.days() + W.appGrid() +
-      W.weatherCard() + W.quota() +
+      W.days() + W.quota() +
+      W.weatherCard() + W.quote() +
       W.calendar() +
-      W.quote() +
       W.rows();
   }
 
   function renderAll() {
     screenEl.innerHTML =
       '<div class="desk">' +
-        '<aside class="rail" id="rail">' + railHtml() + '</aside>' +
         '<main class="home" id="home"><div class="grid">' + homeHtml() + '</div></main>' +
-      '</div>';
+        '<nav class="dock" id="dock">' + dockHtml() + '</nav>' +
+      '</div>' +
+      drawerHtml();
 
     if (window.Widgets && window.Widgets.after) window.Widgets.after(screenEl);
     tick();
@@ -57,6 +88,44 @@
     }
   }
 
+  function openDrawer() {
+    const drawer = D.getElementById('drawer');
+    if (drawer) drawer.hidden = false;
+  }
+
+  function closeDrawer() {
+    const drawer = D.getElementById('drawer');
+    if (drawer) drawer.hidden = true;
+  }
+
+  function bindOpen() {
+    D.addEventListener('click', function (event) {
+      if (suppressTap) {
+        suppressTap = false;
+        return;
+      }
+
+      if (event.target.closest('[data-more]')) {
+        event.preventDefault();
+        openDrawer();
+        return;
+      }
+
+      if (event.target.closest('[data-close]') || event.target.id === 'drawer') {
+        event.preventDefault();
+        closeDrawer();
+        return;
+      }
+
+      const btn = event.target.closest('[data-app]');
+      if (!btn) return;
+      event.preventDefault();
+      closeDrawer();
+      window.Router.open(btn.dataset.app);
+    });
+  }
+
+  /* dock 长按可拖动换位 */
   function bindDrag() {
     let timer = null;
     let el = null;
@@ -83,8 +152,8 @@
 
     D.addEventListener('touchstart', function (event) {
       if (!event.touches || event.touches.length !== 1) return;
-      const ico = event.target.closest('.rail-ico');
-      if (!ico) return;
+      const item = event.target.closest('.dock-item[data-app]');
+      if (!item) return;
       const t = event.touches[0];
       sx = t.clientX;
       sy = t.clientY;
@@ -92,8 +161,8 @@
       cancelTimer();
       timer = setTimeout(function () {
         timer = null;
-        el = ico;
-        from = Number(ico.dataset.idx);
+        el = item;
+        from = DOCK.indexOf(item.dataset.app);
         el.classList.add('dragging');
         if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
       }, 450);
@@ -110,10 +179,10 @@
 
       event.preventDefault();
       dragged = true;
-      el.style.transform = 'translate(' + (t.clientX - sx) + 'px,' + (t.clientY - sy) + 'px) scale(1.1)';
+      el.style.transform = 'translate(' + (t.clientX - sx) + 'px,' + (t.clientY - sy) + 'px) scale(1.08)';
 
       const hit = D.elementFromPoint(t.clientX, t.clientY);
-      const over = hit ? hit.closest('.rail-ico') : null;
+      const over = hit ? hit.closest('.dock-item[data-app]') : null;
       if (over && over !== el) {
         if (target !== over) {
           clearTarget();
@@ -130,20 +199,17 @@
       if (!el) return;
 
       if (dragged && target && from >= 0) {
-        const ids = order();
-        const to = Number(target.dataset.idx);
-        if (!isNaN(to) && ids[from] && ids[to]) {
-          const tmp = ids[from];
-          ids[from] = ids[to];
-          ids[to] = tmp;
-          XW.S.appOrder = ids;
-          XW.save('appOrder');
+        const to = DOCK.indexOf(target.dataset.app);
+        if (to >= 0 && to !== from) {
+          const tmp = DOCK[from];
+          DOCK[from] = DOCK[to];
+          DOCK[to] = tmp;
+          XW.save('dockOrder');
         }
       }
 
       reset();
-      renderAll();
-      suppressTap = true;
+      if (dragged) { renderAll(); suppressTap = true; }
     });
 
     D.addEventListener('touchcancel', function () {
@@ -152,22 +218,15 @@
     });
   }
 
-  function bindOpen() {
-    D.addEventListener('click', function (event) {
-      if (suppressTap) {
-        suppressTap = false;
-        return;
-      }
-      const btn = event.target.closest('[data-app]');
-      if (!btn) return;
-      event.preventDefault();
-      window.Router.open(btn.dataset.app);
-    });
-  }
-
   function init() {
     screenEl = D.getElementById('screen');
     if (!screenEl) return;
+
+    const saved = Array.isArray(XW.S.dockOrder) ? XW.S.dockOrder : [];
+    if (saved.length === DOCK.length) {
+      saved.forEach(function (id, i) { if (DOCK.indexOf(id) >= 0) DOCK[i] = id; });
+    }
+
     renderAll();
     bindDrag();
     bindOpen();

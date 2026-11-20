@@ -1,0 +1,140 @@
+/* style-dock.css · 撤侧栏，主页通宽，入口落到底部 dock */
+
+.desk {
+  display: block;
+  position: relative;
+  height: 100%;
+  background: transparent;
+}
+
+.home {
+  display: block !important;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: .95rem .95rem 5.6rem;
+  background: transparent;
+}
+
+.rail { display: none !important; }
+
+/* 底部 dock */
+.dock {
+  position: fixed;
+  left: .95rem;
+  right: .95rem;
+  bottom: calc(.7rem + env(safe-area-inset-bottom, 0px));
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: .1rem;
+  padding: .5rem .4rem .45rem;
+  background: rgba(255, 255, 255, .94);
+  border: 1px solid rgba(0, 0, 0, .045);
+  border-radius: 20px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, .07);
+}
+
+.dock-item {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .22rem;
+  padding: .2rem 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: #7d8894;
+  border-radius: 12px;
+}
+.dock-item:active { background: rgba(141, 154, 168, .08); }
+
+.dock-item svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: #6f7f90;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.dock-item svg circle { fill: #6f7f90; stroke: none; }
+
+.dock-item span {
+  font-size: .34rem;
+  letter-spacing: .04em;
+  color: #9aa5b1;
+}
+
+.dock-item.dragging {
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .16);
+  z-index: 2;
+}
+.dock-item.drop-target {
+  outline: 1px dashed rgba(141, 154, 168, .55);
+  outline-offset: -2px;
+}
+
+/* ── 全部应用抽屉 ── */
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(38, 44, 51, .18);
+}
+.drawer[hidden] { display: none; }
+
+.drawer-inner {
+  width: 100%;
+  max-height: 82vh;
+  overflow-y: auto;
+  padding: 1rem .95rem calc(1.1rem + env(safe-area-inset-bottom, 0px));
+  background: #fcfcfc;
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, .1);
+}
+
+.drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .8rem;
+}
+
+.drawer-x {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: .44rem;
+  color: #8d9aa8;
+  padding: .2rem .1rem;
+}
+
+.drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .55rem;
+}
+
+.drawer-grid .appcell { min-height: 3.7rem; }
+
+/* 主页两列拼图在通宽下重新分配 */
+.home .grid {
+  gap: .65rem;
+}
+
+.home .wdg-clock { padding: 1.05rem 1rem .95rem; }
+.home .wdg-clock .dclock { font-size: 2.5rem; }
+
+.bento-square { min-height: 5.9rem; }
+.home .wdg-days { min-height: 5.9rem; }
+
+/* 面板宽度变了，方形卡可稍大字号 */
+.wx-big, .q-big { font-size: 1.72rem; }
