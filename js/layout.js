@@ -1,6 +1,6 @@
 /* layout.js · 首页布局表 + dock
-   右上角「编辑」→ 进入编辑态：整桌轻抖 / 每块右上角 × / 左上角 ＋ 加组件
-   编辑态下拖完仍然留在编辑态，可以接着拖 */
+   右上「编辑」进入编辑态；左上 ＋ 加块；每块右上 × 删除
+   轻点不算拖；删掉后不重排，页码也不跳 */
 (function () {
   const D = document;
   const K = 'xw_layout';
@@ -358,9 +358,7 @@
 
   function homeEl() { return D.getElementById('home'); }
 
-  function rootEl() {
-    return screenRef || D.getElementById('screen');
-  }
+  function rootEl() { return screenRef || D.getElementById('screen'); }
 
   /* ============ 顶部两个按钮 ============ */
 
@@ -643,6 +641,10 @@
 
   function onStart(ev) {
     if (!ev.touches || ev.touches.length !== 1) return;
+
+    /* 点删除点、点顶部两个按钮都不算拖 */
+    if (ev.target.closest && ev.target.closest('.gi-del')) return;
+
     const home = homeEl();
     if (!home) return;
 
@@ -657,6 +659,7 @@
       sx: t.clientX, sy: t.clientY,
       lx: t.clientX, ly: t.clientY,
       active: false,
+      moved: false,
       hit: null,
       sig: '',
       side: 0,
@@ -711,6 +714,11 @@
         st = null;
       }
       return;
+    }
+
+    if (!st.moved) {
+      if (Math.abs(t.clientX - st.sx) + Math.abs(t.clientY - st.sy) > 7) st.moved = true;
+      else return;
     }
 
     ev.preventDefault();
@@ -786,6 +794,9 @@
     s.home.classList.remove('dragging');
     clearMarks();
 
+    /* 只是轻点，没真的拖 —— 什么都不做，把点击让给 × 按钮 */
+    if (!s.moved) return;
+
     const changed = endPage(s);
 
     justDragged = true;
@@ -814,6 +825,7 @@
       sx: t.clientX, sy: t.clientY,
       lx: t.clientX, ly: t.clientY,
       active: false,
+      moved: false,
       hit: null,
       sig: '',
       side: 0,
@@ -846,6 +858,11 @@
         dst = null;
       }
       return;
+    }
+
+    if (!dst.moved) {
+      if (Math.abs(t.clientX - dst.sx) + Math.abs(t.clientY - dst.sy) > 7) dst.moved = true;
+      else return;
     }
 
     ev.preventDefault();
@@ -895,6 +912,8 @@
     s.item.style.transform = '';
     if (s.home) s.home.classList.remove('dragging');
     clearMarks();
+
+    if (!s.moved) return;
 
     const hit = s.hit;
     const pageIdx = s.home ? currentIndex(s.home) : 0;
@@ -963,6 +982,7 @@
       const key = gi && gi.getAttribute('data-key');
       if (!key) return;
 
+      /* 只从桌面拿掉，组件本体还在；不重建桌面，所以不会跳页 */
       delKey(key);
       if (gi.parentNode) gi.parentNode.removeChild(gi);
       if (navigator.vibrate) { try { navigator.vibrate(10); } catch (err) {} }
@@ -1039,8 +1059,24 @@
     home.addEventListener('touchcancel', onEnd);
   }
 
+  /* 重建时把页码保住，不再跳回第一页 */
   function rerender() {
+    const home = homeEl();
+    const idx = home ? currentIndex(home) : 0;
+
     if (window.Desktop && Desktop.rerender) Desktop.rerender();
+
+    const nh = homeEl();
+    if (!nh) return;
+
+    if (idx > 0) {
+      nh.scrollLeft = idx * (nh.clientWidth || 1);
+      const pager = D.getElementById('pager');
+      if (pager) {
+        const dots = pager.children;
+        for (let i = 0; i < dots.length; i++) dots[i].classList.toggle('on', i === idx);
+      }
+    }
   }
 
   window.Layout = {
