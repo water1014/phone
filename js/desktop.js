@@ -2,7 +2,6 @@
    页面内容由 layout.js 的布局表决定，这边只管外壳（侧栏 / dock / 分页点） */
 (function () {
   const D = document;
-  const Q = String.fromCharCode(34);
 
   let screenEl = null;
   let suppressTap = false;
@@ -10,7 +9,6 @@
   const DOCK = ['chat', 'diary', 'album', 'memory'];
   const TOTAL = 4;
 
-  /* 侧栏里英文小注 */
   const EN = {
     chat: 'CHAT', memory: 'MEMORY', diary: 'DIARY', album: 'ALBUM',
     letter: 'LETTER', music: 'MUSIC', calendar: 'CALENDAR', plans: 'PLANS',
@@ -32,28 +30,8 @@
     return '';
   }
 
-  function faceHtml(who) {
-    let url = '';
-    try {
-      url = localStorage.getItem(who === 'his' ? 'xw_ava_his' : 'xw_ava_her') || '';
-    } catch (e) { url = ''; }
-
-    if (url) {
-      return '<span class="rail-face"><img src=' + Q +
-        url.split(Q).join('%22') + Q + ' alt=' + Q + Q + '></span>';
-    }
-    return '<span class="rail-face">+</span>';
-  }
-
-  function nameOf(who) {
-    const raw = who === 'his' ? XW.S.hisName : XW.S.herName;
-    const t = String(raw == null ? '' : raw).trim();
-    return t || '他';
-  }
-
   function railHtml() {
-    const love = new Date(XW.S.loveDate || '2025-01-01');
-    const days = UI.diffDay(love, new Date());
+    const card = (window.Profile && Profile.html) ? Profile.html(true) : '';
 
     const list = GROUPS.map(function (g) {
       const rows = g.ids.map(function (id) {
@@ -65,16 +43,7 @@
       return '<div class="rail-grp">' + g.title + '</div>' + rows;
     }).join('');
 
-    return '<div class="rail-head">' +
-        '<span class="rail-kicker">Together</span>' +
-        '<div class="rail-days"><b>' + days + '</b><i>days</i></div>' +
-        '<div class="rail-who">' +
-          faceHtml('his') +
-          '<span class="rail-amp">&amp;</span>' +
-          faceHtml('her') +
-        '</div>' +
-        '<div class="rail-names">' + UI.esc(nameOf('his')) + ' &amp; ' + UI.esc(nameOf('her')) + '</div>' +
-      '</div>' +
+    return '<div class="rail-profile">' + card + '</div>' +
       '<div class="rail-list">' + list + '</div>' +
       '<div class="rail-rule"></div>' +
       '<button type="button" class="rail-act" data-act="reset">重排首页</button>' +
@@ -128,6 +97,11 @@
 
     if (window.Widgets && window.Widgets.after) window.Widgets.after(screenEl);
     if (window.Layout && window.Layout.bind) window.Layout.bind(screenEl);
+
+    if (window.Profile && Profile.bind) {
+      const pf = screenEl.querySelector('#rail .pf');
+      if (pf) Profile.bind(pf);
+    }
 
     tick();
     watchPager();

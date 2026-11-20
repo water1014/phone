@@ -11,7 +11,7 @@
   };
 
   const DEF = [
-    ['collage', 'profile', 'quote'],
+    ['collage', 'days', 'quote'],
     ['clock', 'wx', 'quota',
       'app:calendar', 'app:plans', 'app:accounting', 'app:mood',
       'app:health', 'app:cycle', 'app:study', 'app:quotes'],
@@ -51,9 +51,9 @@
       }
     }
 
-    /* 旧位置表里的天数卡换成个人信息卡 */
+    /* 个人信息卡改回天数卡（它现在住在侧栏里） */
     return saved.map(function (p) {
-      return p.map(function (k) { return k === 'days' ? 'profile' : k; });
+      return p.map(function (k) { return k === 'profile' ? 'days' : k; });
     });
   }
 
