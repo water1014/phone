@@ -1,4 +1,7 @@
-/* daycard.js — 首页天数卡 / 头像 / 名字 / 翻面 */
+/* daycard.js · 首页天数卡
+   正面：两个头像、两个名字、底下一行天数
+   背面：起始日 + 下一个整百天
+   点空白翻面；点头像换图；点名字就地改 */
 (function () {
   const D = document;
   const K_HIS = 'xw_ava_his';
@@ -53,28 +56,29 @@
       ' data-who=' + Q + who + Q + '>' + inner + '</button>';
   }
 
+  function nameHtml(who) {
+    return '<span class=' + Q + 'dc-name' + Q +
+      ' contenteditable=' + Q + 'true' + Q +
+      ' spellcheck=' + Q + 'false' + Q +
+      ' data-who=' + Q + who + Q +
+      ' data-ph=' + Q + '名字' + Q + '>' +
+      esc(nameOf(who)) + '</span>';
+  }
+
   function frontHtml() {
     const d = UI.diffDay(new Date(XW.S.loveDate || '2025-01-01'), new Date());
-    const Q2 = Q + Q;
+    const amp = '<span class=' + Q + 'dc-amp' + Q + '>&amp;</span>';
 
     return '<div class=' + Q + 'dc-face dc-front' + Q + '>' +
-        '<div class=' + Q + 'dc-kicker' + Q + '>TOGETHER</div>' +
         '<div class=' + Q + 'dc-pair' + Q + '>' +
-          avaHtml('his') +
-          '<span class=' + Q + 'dc-amp' + Q + '>&amp;</span>' +
-          avaHtml('her') +
+          avaHtml('his') + amp + avaHtml('her') +
         '</div>' +
         '<div class=' + Q + 'dc-names' + Q + '>' +
-          '<span class=' + Q + 'dc-name' + Q + ' contenteditable=' + Q + 'true' + Q +
-            ' spellcheck=' + Q + 'false' + Q + ' data-who=' + Q + 'his' + Q +
-            ' data-ph=' + Q + '名字' + Q + '>' + esc(nameOf('his')) + '</span>' +
-          '<span class=' + Q + 'dc-amp' + Q + '>&amp;</span>' +
-          '<span class=' + Q + 'dc-name' + Q + ' contenteditable=' + Q + 'true' + Q +
-            ' spellcheck=' + Q + 'false' + Q + ' data-who=' + Q + 'her' + Q +
-            ' data-ph=' + Q + '名字' + Q + '>' + esc(nameOf('her')) + '</span>' +
+          nameHtml('his') + amp + nameHtml('her') +
         '</div>' +
-        '<div class=' + Q + 'dc-num' + Q + '>' + d +
-          '<small>DAYS</small></div>' +
+        '<div class=' + Q + 'dc-rule' + Q + '></div>' +
+        '<div class=' + Q + 'dc-day' + Q + '>第 ' + d + ' 天</div>' +
+        '<div class=' + Q + 'dc-kicker' + Q + '>DAYS TOGETHER</div>' +
       '</div>';
   }
 
@@ -92,7 +96,8 @@
         '<div class=' + Q + 'dc-next' + Q + '>第 ' + next + ' 天</div>' +
         '<div class=' + Q + 'dc-left' + Q + '>还有 ' + left + ' 天</div>' +
         '<div class=' + Q + 'dc-note' + Q + ' contenteditable=' + Q + 'true' + Q +
-          ' spellcheck=' + Q + 'false' + Q + ' data-ph=' + Q + '点这儿写一句' + Q + '>' +
+          ' spellcheck=' + Q + 'false' + Q +
+          ' data-ph=' + Q + '点这儿写一句' + Q + '>' +
           esc(lsGet(K_NOTE)) +
         '</div>' +
       '</div>';
