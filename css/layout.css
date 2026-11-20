@@ -22,7 +22,7 @@
 #home .gi2{ grid-column: span 2; }
 #home .gi4{ grid-column: span 4; }
 
-/* 注意：不能写成 #home .gi > *，否则 × 按钮会被撑成满宽 */
+/* 不能写成 #home .gi > *，否则 × 按钮会被撑成满宽 */
 #home .gi > *:not(.gi-del){
   width: 100%;
   margin-bottom: 0;
@@ -131,7 +131,12 @@
 
 #home.editing .gi.lift{ animation: none; }
 
-/* 删除点：编辑态下每块右上角一个小圆 */
+/* 代码卡里面是 iframe，它会吞掉触摸事件；
+   编辑态和拖动中让它不吃，否则整块拖不动 */
+#home.editing .gi .mod-fr,
+#home.dragging .gi .mod-fr{ pointer-events: none; }
+
+/* 删除点 */
 .gi-del{
   position: absolute;
   top: -7px;
@@ -166,7 +171,6 @@
   border-radius: 16px;
 }
 
-/* 落点：白圈 + 深色虚线，花壁纸上也看得见 */
 #home .gi.dc-drop{
   outline: 2px dashed rgba(52, 46, 38, .75);
   outline-offset: 3px;
@@ -175,7 +179,6 @@
   box-shadow: 0 0 0 3px rgba(255, 255, 255, .55);
 }
 
-/* 正在被拖的那块也带一层白圈，跟落点区分开 */
 #home .gi.lift::after{
   content: '';
   position: absolute;
