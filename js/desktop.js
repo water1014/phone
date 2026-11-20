@@ -1,4 +1,5 @@
-/* desktop.js · 首页四页横滑（封面 / 今天 / 记录 / 其余） */
+/* desktop.js · 首页四页横滑
+   页面内容由 layout.js 的布局表决定，这边只管外壳（侧栏 / dock / 分页点） */
 (function () {
   const D = document;
 
@@ -7,9 +8,6 @@
 
   const DOCK = ['chat', 'diary', 'album', 'memory'];
   const TOTAL = 4;
-
-  /* 第 4 页只放没在 dock 和前两页出现过的 */
-  const REST = ['weather', 'mcp', 'beautify', 'settings'];
 
   const RAIL_META = {
     chat: ['CHAT', '回到你们正在说的话'],
@@ -45,49 +43,9 @@
     { title: '其他', ids: ['worldbook', 'windows', 'mcp', 'beautify', 'settings'] }
   ];
 
-  function coverHtml() {
-    const photos = Array.isArray(XW.S.photos) ? XW.S.photos : [];
-    if (photos.length) {
-      return '<div class="cover"><img src="' + photos[0] + '" alt=""></div>';
-    }
-    return '<div class="cover empty"><span>放一张你们的照片</span>' +
-        '<i>ALBUM</i></div>';
-  }
-
-  function restAppsHtml() {
-    const cells = REST.map(function (id) {
-      const app = window.Apps.find(id);
-      if (!app) return '';
-      return '<button type="button" class="appcell" data-app="' + id + '">' +
-          UI.icon(app.icon) + '<span>' + app.name + '</span></button>';
-    }).join('');
-    return '<div class="approw">' + cells + '</div>';
-  }
-
   function pagesHtml() {
-    const W = window.Widgets;
-    if (!W) return '';
-
-    return '<section class="page">' +
-        coverHtml() +
-        W.days() +
-        W.quote() +
-      '</section>' +
-
-      '<section class="page">' +
-        W.clock() +
-        '<div class="duo">' + W.weatherCard() + W.quota() + '</div>' +
-      '</section>' +
-
-      '<section class="page">' +
-        W.calendar() +
-        W.nowPlaying() +
-      '</section>' +
-
-      '<section class="page">' +
-        '<div class="page-head"><span class="kicker">MORE</span><span class="page-sub">剩下几个</span></div>' +
-        restAppsHtml() +
-      '</section>';
+    if (window.Layout && Layout.pagesHtml) return Layout.pagesHtml();
+    return '';
   }
 
   function railHtml() {
@@ -161,6 +119,8 @@
       drawerHtml();
 
     if (window.Widgets && window.Widgets.after) window.Widgets.after(screenEl);
+    if (window.Layout && window.Layout.bind) window.Layout.bind(screenEl);
+
     tick();
     watchPager();
   }
