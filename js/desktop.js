@@ -204,7 +204,10 @@
           const tmp = DOCK[from];
           DOCK[from] = DOCK[to];
           DOCK[to] = tmp;
-          XW.save('dockOrder');
+          try {
+            XW.S.dockOrder = DOCK.slice(0);
+            XW.save('dockOrder');
+          } catch (err) { console.warn('[dock] save failed', err); }
         }
       }
 
