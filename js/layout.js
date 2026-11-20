@@ -1,7 +1,7 @@
 /* layout.js · 首页布局表
    每页一个四列网格，组件与 App 都是网格上的一个块。
    长按任一一块 → 进入编辑态（整桌轻抖），此时拖任何一块都直接跟手。
-   点空白处退出编辑。 */
+   自制小组件（mod:xxx）在编辑态下左上角有 ×，点它就从桌面删掉。 */
 (function () {
   const D = document;
   const K = 'xw_layout';
@@ -26,11 +26,23 @@
   let justDragged = false;
   let editing = false;
 
+  function modId(k) {
+    return (typeof k === 'string' && k.indexOf('mod:') === 0) ? k.slice(4) : '';
+  }
+
   function valid(k) {
     if (SPAN[k] !== undefined) return true;
     if (typeof k !== 'string') return false;
     if (k.indexOf('app:') === 0) return !!window.Apps.find(k.slice(4));
+    if (k.indexOf('mod:') === 0) return !!(window.Mods && Mods.find(k.slice(4)));
     return false;
+  }
+
+  function spanOf(k) {
+    if (SPAN[k]) return SPAN[k];
+    const id = modId(k);
+    if (id && window.Mods) return Number(Mods.span(id)) || 2;
+    return 1;
   }
 
   function copy(src) {
@@ -46,16 +58,25 @@
 
     if (!Array.isArray(saved) || !saved.length) return copy(DEF);
 
-    for (let i = 0; i < saved.length; i++) {
-      if (!Array.isArray(saved[i])) return copy(DEF);
-      for (let j = 0; j < saved[i].length; j++) {
-        if (!valid(saved[i][j])) return copy(DEF);
+    const cleaned = saved.map(function (p) {
+      if (!Array.isArray(p)) return [];
+      return p.map(function (k) { return k === 'profile' ? 'days' : k; })
+        .filter(function (k) {
+          if (typeof k !== 'string') return false;
+          if (k.indexOf('mod:') === 0) return valid(k);
+          return true;
+        });
+    });
+
+    for (let i = 0; i < cleaned.length; i++) {
+      for (let j = 0; j < cleaned[i].length; j++) {
+        const k = cleaned[i][j];
+        if (k.indexOf('mod:') === 0) continue;
+        if (!valid(k)) return copy(DEF);
       }
     }
 
-    return saved.map(function (p) {
-      return p.map(function (k) { return k === 'profile' ? 'days' : k; });
-    });
+    return cleaned;
   }
 
   function write(list) {
@@ -64,6 +85,9 @@
 
   function htmlOf(k) {
     const W = window.Widgets || {};
+
+    const mid = modId(k);
+    if (mid) return window.Mods ? Mods.html(mid) : '';
 
     if (k === 'collage') return (window.Collage && Collage.html) ? Collage.html() : '';
     if (k === 'profile') return (window.Profile && Profile.html) ? Profile.html() : '';
@@ -90,7 +114,7 @@
       const inner = keys.map(function (k) {
         const h = htmlOf(k);
         if (!h) return '';
-        return '<div class="gi gi' + (SPAN[k] || 1) + '" data-key="' + k + '">' + h + '</div>';
+        return '<div class="gi gi' + spanOf(k) + '" data-key="' + k + '">' + h + '</div>';
       }).join('');
 
       return '<section class="page gpage" data-page="' + i + '">' + inner + '</section>';
@@ -114,12 +138,33 @@
     D.body.appendChild(el);
   }
 
+  function markDel() {
+    const home = homeEl();
+    if (!home) return;
+
+    Array.prototype.forEach.call(home.querySelectorAll('.gi-del'), function (b) {
+      if (b.parentNode) b.parentNode.removeChild(b);
+    });
+
+    if (!editing) return;
+
+    Array.prototype.forEach.call(home.querySelectorAll('.gi[data-key^="mod:"]'), function (gi) {
+      const b = D.createElement('button');
+      b.type = 'button';
+      b.className = 'gi-del';
+      b.textContent = '×';
+      b.setAttribute('aria-label', '删掉这个');
+      gi.appendChild(b);
+    });
+  }
+
   function enterEdit() {
     if (editing) return;
     editing = true;
     const home = homeEl();
     if (home) home.classList.add('editing');
     hint(true);
+    markDel();
   }
 
   function exitEdit() {
@@ -128,6 +173,7 @@
     const home = homeEl();
     if (home) home.classList.remove('editing');
     hint(false);
+    markDel();
   }
 
   /* ============ 拖动 ============ */
@@ -361,7 +407,45 @@
     write(out);
   }
 
+  function addKey(key) {
+    const list = read();
+    let exists = false;
+
+    list.forEach(function (p) { if (p.indexOf(key) >= 0) exists = true; });
+    if (exists) return;
+
+    if (!list[1]) list[1] = [];
+    list[1].push(key);
+    write(list);
+  }
+
+  function delKey(key) {
+    const list = read().map(function (p) {
+      return p.filter(function (k) { return k !== key; });
+    });
+    write(list);
+  }
+
   D.addEventListener('click', function (e) {
+    const del = e.target.closest ? e.target.closest('.gi-del') : null;
+
+    if (del) {
+      e.stopPropagation();
+      e.preventDefault();
+
+      const gi = del.parentNode;
+      const key = gi && gi.getAttribute('data-key');
+      const mid = key ? modId(key) : '';
+
+      if (mid && window.Mods) {
+        Mods.remove(mid);
+        delKey(key);
+        if (gi.parentNode) gi.parentNode.removeChild(gi);
+        if (navigator.vibrate) { try { navigator.vibrate(10); } catch (err) {} }
+      }
+      return;
+    }
+
     if (justDragged) {
       e.stopPropagation();
       e.preventDefault();
@@ -401,6 +485,8 @@
   window.Layout = {
     pagesHtml: pagesHtml,
     read: read,
+    addKey: addKey,
+    delKey: delKey,
     bind: function (root) {
       if (!root) return;
       exitEdit();
