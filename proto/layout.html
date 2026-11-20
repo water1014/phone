@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>首页布局 5 选</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#fff;color:#2f3337;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;padding:26px 18px 60px;-webkit-font-smoothing:antialiased}
+h1{font-size:16px;font-weight:500;letter-spacing:1px;color:#1f2226}
+h1 span{display:block;margin-top:6px;font-size:11.5px;color:#a8b2bb;letter-spacing:1.4px;font-weight:400}
+
+.wrap{margin-top:22px;border:1px solid #eef1f4;border-radius:16px;padding:12px}
+.head{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.head b{font-size:15px;color:#1f2226;font-weight:600}
+.head em{font-style:normal;font-size:11px;color:#a8b2bb}
+
+.frame{height:230px;border-radius:12px;background:#fafbfc;border:1px solid #f0f2f4;padding:8px;display:flex;flex-direction:column;gap:6px;overflow:hidden;position:relative}
+.b{background:#e9edf1;border-radius:8px}
+.b.d{background:#dde3e9}
+.r{display:flex;gap:6px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.i{height:26px;background:#e3e8ed;border-radius:7px}
+.dock{margin-top:auto;height:34px;background:#dfe5eb;border-radius:12px}
+.tiny{font-size:8.5px;color:#a9b3bc;letter-spacing:.5px;text-align:center;line-height:26px}
+.big{font-size:9px;color:#93a0ab;letter-spacing:1px;text-align:center;line-height:100%;display:flex;align-items:center;justify-content:center;height:100%}
+.side{position:absolute;left:8px;top:8px;bottom:8px;width:64px;background:#e5eaef;border-radius:8px;box-shadow:6px 0 14px rgba(0,0,0,.06)}
+.dots{display:flex;gap:5px;justify-content:center;padding:4px 0}
+.dots i{width:5px;height:5px;border-radius:50%;background:#dde3e9}
+.dots i.on{background:#8d9aa8}
+.note{margin-top:10px;font-size:12px;line-height:1.7;color:#8d9aa8}
+.note b{color:#4a4e53;font-weight:500}
+</style>
+</head>
+<body>
+
+<h1>首页布局 · 五选一<span>只看骨架，颜色字体先不管</span></h1>
+
+<div class="wrap">
+  <div class="head"><b>L1 单列长滚动</b><em>现在就是这个</em></div>
+  <div class="frame">
+    <div class="b" style="height:22px"></div>
+    <div class="b d" style="height:52px"></div>
+    <div class="b" style="height:40px"></div>
+    <div class="b" style="height:34px"></div>
+    <div class="b" style="height:26px"></div>
+    <div class="dock"></div>
+  </div>
+  <p class="note"><b>一块一块往下滑</b>。入口在底部 dock，其余收进「全部」。页面很长。</p>
+</div>
+
+<div class="wrap">
+  <div class="head"><b>L2 双列拼贴</b><em>小红书那种</em></div>
+  <div class="frame">
+    <div class="b d" style="height:44px"></div>
+    <div class="g2">
+      <div class="b" style="height:44px"></div>
+      <div class="b" style="height:44px"></div>
+    </div>
+    <div class="g2">
+      <div class="g2" style="gap:4px"><div class="b" style="height:20px"></div><div class="b" style="height:20px"></div><div class="b" style="height:20px"></div><div class="b" style="height:20px"></div></div>
+      <div class="b" style="height:44px"></div>
+    </div>
+    <div class="dock"></div>
+  </div>
+  <p class="note"><b>两列，大小不一</b>。组件和 App 小方块混着摆，一块屏幕看到的东西最多。</p>
+</div>
+
+<div class="wrap">
+  <div class="head"><b>L3 分页真机</b><em>iOS 桌面</em></div>
+  <div class="frame">
+    <div class="b d" style="height:38px"></div>
+    <div class="g4"><div class="i"></div><div class="i"></div><div class="i"></div><div class="i"></div><div class="i"></div><div class="i"></div><div class="i"></div><div class="i"></div></div>
+    <div class="b" style="height:42px"></div>
+    <div class="g4"><div class="i"></div><div class="i"></div><div class="i"></div><div class="i"></div></div>
+    <div class="dots"><i class="on"></i><i></i><i></i></div>
+    <div class="dock"></div>
+  </div>
+  <p class="note"><b>一页一屏，左右滑翻页</b>。组件夹在图标里，和真机一模一样。</p>
+</div>
+
+<div class="wrap">
+  <div class="head"><b>L4 抽屉侧栏</b><em>参照图那种</em></div>
+  <div class="frame">
+    <div class="side"></div>
+    <div style="margin-left:70px;display:flex;flex-direction:column;gap:6px">
+      <div class="b d" style="height:46px"></div>
+      <div class="b" style="height:34px"></div>
+      <div class="b" style="height:34px"></div>
+      <div class="b" style="height:26px"></div>
+      <div class="b" style="height:26px"></div>
+    </div>
+    <div class="dock"></div>
+  </div>
+  <p class="note"><b>平时单列，点左上角抽出侧栏</b>。侧栏里是全部 App 的列表，不占位置。</p>
+</div>
+
+<div class="wrap">
+  <div class="head"><b>L5 上下分区</b><em>上面钉住，下面滚</em></div>
+  <div class="frame">
+    <div class="b d" style="height:78px;flex:0 0 auto"></div>
+    <div class="r" style="flex:0 0 auto"><div class="b" style="height:8px;flex:1"></div></div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:6px;overflow:hidden">
+      <div class="b" style="height:30px"></div>
+      <div class="b" style="height:30px"></div>
+      <div class="b" style="height:30px"></div>
+      <div class="b" style="height:30px"></div>
+    </div>
+    <div class="dock"></div>
+  </div>
+  <p class="note"><b>上半固定</b>：时间、天数、一句。<b>下半滚</b>：月历、天气、入口列表。</p>
+</div>
+
+</body>
+</html>
