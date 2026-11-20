@@ -1,5 +1,5 @@
 /* beautify.js · 美化
-   预览固定在上方，下面一条横滑分类长条，内容只显示当前那一类。 */
+   每种材质只显示它自己的参数；App 大小也能拖 */
 (function () {
   const D = document;
   const ROOT = D.documentElement;
@@ -13,10 +13,15 @@
     card: 'white',
     radius: '16',
     icon: '21',
+    appsize: '68',
     gap: '12',
     blur: '16',
     alpha: '68',
     gloss: '70',
+    sat: '125',
+    light: '16',
+    edge: '70',
+    lift: '20',
     cn: 'serif',
     motion: 'on',
     dock: 'on',
@@ -37,13 +42,26 @@
   ];
 
   const RANGES = [
-    { k: 'radius', cn: '圆角', en: 'RADIUS', min: 8, max: 28, unit: 'px' },
-    { k: 'icon', cn: '图标', en: 'ICON', min: 15, max: 28, unit: 'px' },
-    { k: 'gap', cn: '间距', en: 'SPACING', min: 6, max: 24, unit: 'px' },
-    { k: 'blur', cn: '糊度', en: 'BLUR', min: 0, max: 30, unit: 'px' },
+    { k: 'radius', cn: '圆角', en: 'RADIUS', min: 8, max: 28, unit: 'px', place: 'type' },
+    { k: 'icon', cn: '图标', en: 'ICON', min: 14, max: 30, unit: 'px', place: 'type' },
+    { k: 'appsize', cn: 'App 大小', en: 'APP SIZE', min: 48, max: 92, unit: 'px', place: 'type' },
+    { k: 'gap', cn: '间距', en: 'SPACING', min: 6, max: 24, unit: 'px', place: 'type' },
+
+    { k: 'blur', cn: '糊度', en: 'BLUR', min: 0, max: 30, unit: 'px', mat: ['frost', 'glass', 'liquid'] },
     { k: 'alpha', cn: '厚薄', en: 'DENSITY', min: 8, max: 100, unit: '%' },
-    { k: 'gloss', cn: '光泽', en: 'GLOSS', min: 0, max: 100, unit: '%' }
+    { k: 'gloss', cn: '高光', en: 'GLOW', min: 0, max: 100, unit: '%', mat: ['frost', 'glass', 'liquid'] },
+    { k: 'sat', cn: '饱和', en: 'SATURATION', min: 50, max: 200, unit: '%', mat: ['glass', 'liquid'] },
+    { k: 'light', cn: '光位', en: 'LIGHT AT', min: 0, max: 100, unit: '%', mat: ['liquid'] },
+    { k: 'edge', cn: '边线', en: 'EDGE', min: 0, max: 100, unit: '%' },
+    { k: 'lift', cn: '浮起', en: 'SHADOW', min: 0, max: 100, unit: '%' }
   ];
+
+  const MAT_NOTE = {
+    flat: '素的：实心卡片，没有透明和模糊。能调厚薄（做成半透）、边线、浮起。',
+    frost: '磨砂：把背后的东西糊掉。糊度越大越看不清，高光是顶部那道白边。',
+    glass: '玻璃：半透 + 一道斜向渐变 + 白亮边。饱和调大能把背后的颜色压出来。',
+    liquid: '液态：从一侧压下一片亮，底下带内阴影，像块软胶。光位定亮在哪一侧。'
+  };
 
   const ACCENT = {
     ink: '#5c6a79',
@@ -142,10 +160,15 @@
     ROOT.style.setProperty('--xw-ac', ACCENT[st.accent] || ACCENT.ink);
     ROOT.style.setProperty('--xw-radius', num(st.radius, 16) + 'px');
     ROOT.style.setProperty('--xw-icon', num(st.icon, 21) + 'px');
+    ROOT.style.setProperty('--xw-appsize', num(st.appsize, 68) + 'px');
     ROOT.style.setProperty('--xw-gap', num(st.gap, 12) + 'px');
     ROOT.style.setProperty('--xw-blur', num(st.blur, 16) + 'px');
     ROOT.style.setProperty('--xw-alpha', (num(st.alpha, 68) / 100).toFixed(2));
     ROOT.style.setProperty('--xw-gloss', (num(st.gloss, 70) / 100).toFixed(2));
+    ROOT.style.setProperty('--xw-sat', (num(st.sat, 125) / 100).toFixed(2));
+    ROOT.style.setProperty('--xw-light', num(st.light, 16) + '%');
+    ROOT.style.setProperty('--xw-edge', (num(st.edge, 70) / 100).toFixed(2));
+    ROOT.style.setProperty('--xw-lift', (num(st.lift, 20) / 100 * .25).toFixed(3));
 
     const body = D.body;
     if (!body) return;
@@ -286,7 +309,7 @@
         '<textarea id="bz-mb" rows="3" placeholder="想放桌面上的那句话"></textarea></label>' +
       sec('宽度', 'WIDTH', spanOpts()) +
       saveRow() +
-      '<div class="sheet-note">加好后在桌面上长按，就能拖到任意一页、任意位置，也能拖进 dock。</div>';
+      '<div class="sheet-note">加好后在桌面上点右上角「编辑」，就能拖到任意位置，也能拖进 dock。</div>';
   }
 
   function codeForm() {
@@ -335,20 +358,27 @@
   }
 
   function matPane() {
+    const list = RANGES.filter(function (r) {
+      return !r.place && (!r.mat || r.mat.indexOf(st.mat) >= 0);
+    });
+
     return sec('做法', 'MATERIAL',
         opt('mat', 'flat', '素的') + opt('mat', 'frost', '磨砂') +
         opt('mat', 'glass', '玻璃') + opt('mat', 'liquid', '液态')) +
-      RANGES.map(rangeRow).join('') +
-      '<div class="sheet-note">糊度、厚薄、光泽只在选了磨砂 / 玻璃 / 液态后看得出来。想要明显，先铺一张壁纸。</div>';
+      '<div class="bz-mat-note">' + MAT_NOTE[st.mat] + '</div>' +
+      list.map(rangeRow).join('');
   }
 
   function textPane() {
-    return sec('卡片', 'CARD', opt('card', 'white', '纯白') + opt('card', 'paper', '米纸') + opt('card', 'line', '描边')) +
+    const size = RANGES.filter(function (r) { return r.place === 'type'; });
+
+    return size.map(rangeRow).join('') +
+      sec('卡片', 'CARD', opt('card', 'white', '纯白') + opt('card', 'paper', '米纸') + opt('card', 'line', '描边')) +
       sec('字', 'TYPE', opt('cn', 'serif', '宋') + opt('cn', 'sans', '黑') + opt('cn', 'mono', '等宽')) +
       sec('动效', 'MOTION', opt('motion', 'on', '开着') + opt('motion', 'off', '关掉')) +
       sec('底部四格', 'DOCK', opt('dock', 'on', '留着') + opt('dock', 'off', '收起')) +
       sec('页码点', 'DOTS', opt('dots', 'on', '显示') + opt('dots', 'off', '藏起')) +
-      '<div class="sheet-note">名字和纪念日在「设置」里改。</div>';
+      '<div class="sheet-note">图标会自动跟着 App 大小收，但也能单独再调。名字和纪念日在「设置」里改。</div>';
   }
 
   function modsPane() {
@@ -573,6 +603,14 @@
       if (k === 'mkind') {
         st.mkind = v;
         save();
+        if (window.Router && Router.reopen) Router.reopen('beautify');
+        return;
+      }
+
+      if (k === 'mat') {
+        st.mat = v;
+        save();
+        apply();
         if (window.Router && Router.reopen) Router.reopen('beautify');
         return;
       }
