@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L2 五种摆法</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#fff;color:#2f3337;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;padding:24px 16px 60px;-webkit-font-smoothing:antialiased}
+h1{font-size:16px;font-weight:600;color:#1f2226}
+h1 em{display:block;font-style:normal;margin-top:6px;font-size:11.5px;color:#a8b2bb;letter-spacing:1px;font-weight:400}
+
+.wrap{margin-top:20px;border:1px solid #eef1f4;border-radius:16px;padding:12px}
+.head{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.head b{font-size:14.5px;color:#1f2226}
+.head em{font-style:normal;font-size:11px;color:#a8b2bb}
+
+.f{height:250px;border-radius:12px;background:#fafbfc;border:1px solid #f0f2f4;padding:8px;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:min-content;gap:7px;overflow:hidden}
+.s2{grid-column:1 / -1}
+.b{background:#e9edf1;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#8b96a1;letter-spacing:1px}
+.h28{height:28px}.h40{height:40px}.h52{height:52px}.h64{height:64px}.h78{height:78px}
+.t{display:flex;align-items:center;justify-content:flex-end;font-size:9px;color:#b7c0c8;padding-right:4px}
+.note{margin-top:10px;font-size:12px;line-height:1.7;color:#8d9aa8}
+.note b{color:#4a4e53;font-weight:500}
+</style>
+</head>
+<body>
+
+<h1>L2 五种摆法<em>同样是双列拼贴，只换位置</em></h1>
+
+<div class="wrap">
+  <div class="head"><b>V1 天数当主角</b><em>一打开先看到 688</em></div>
+  <div class="f">
+    <div class="b s2 h28">☰ 顶栏</div>
+    <div class="b s2 h64">TOGETHER · 688 DAYS</div>
+    <div class="b h52">时钟 22:57</div>
+    <div class="b h52">天气 10°</div>
+    <div class="b h52">2×2 方块</div>
+    <div class="b h52">额度 37%</div>
+    <div class="b s2 h40">NOW PLAYING</div>
+    <div class="b s2 h28">月历（往下滚）</div>
+  </div>
+  <p class="note">天数占满一整行，最大。<b>适合纪念日为主</b>，功能都往下推。</p>
+</div>
+
+<div class="wrap">
+  <div class="head"><b>V2 时钟当主角</b><em>先看现在几点</em></div>
+  <div class="f">
+    <div class="b s2 h28">☰ 顶栏</div>
+    <div class="b s2 h64">LOCAL TIME · 22:57</div>
+    <div class="b h52">688 DAYS</div>
+    <div class="b h52">2×2 方块</div>
+    <div class="b h52">天气 10°</div>
+    <div class="b h52">额度 37%</div>
+    <div class="b s2 h40">月历</div>
+    <div class="b s2 h28">摘句</div>
+  </div>
+  <p class="note">时钟占满一行，天数降成方卡。<b>像手机锁屏那种顺序</b>。</p>
+</div>
+
+<div class="wrap">
+  <div class="head"><b>V3 日历优先</b><em>一打开先看这个月</em></div>
+  <div class="f">
+    <div class="b s2 h28">☰ 顶栏</div>
+    <div class="b s2 h78">月历（整张）</div>
+    <div class="b h52">时钟 22:57</div>
+    <div class="b h52">688 DAYS</div>
+    <div class="b h52">2×2 方块</div>
+    <div class="b h52">天气 10°</div>
+    <div class="b s2 h28">摘句</div>
+  </div>
+  <p class="note">月历提到最上面。<b>适合你天天要看哪天写过东西</b>。</p>
+</div>
+
+<div class="wrap">
+  <div class="head"><b>V4 先放照片</b><em>有一块图撑着</em></div>
+  <div class="f">
+    <div class="b s2 h28">☰ 顶栏</div>
+    <div class="b s2 h78">照片（你们的一张）</div>
+    <div class="b s2 h40">TOGETHER · 688 DAYS</div>
+    <div class="b h52">时钟</div>
+    <div class="b h52">天气</div>
+    <div class="b h52">2×2 方块</div>
+    <div class="b h52">额度</div>
+  </div>
+  <p class="note">最上面一块图，天数缩成一行。<b>最像小红书那类</b>，有图最好看。</p>
+</div>
+
+<div class="wrap">
+  <div class="head"><b>V5 三列密排</b><em>一屏看到最多</em></div>
+  <div class="f" style="grid-template-columns:repeat(3,1fr)">
+    <div class="b s2 h28">☰ 顶栏</div>
+    <div class="b s2 h52">TOGETHER · 688 DAYS</div>
+    <div class="b h40">时钟</div>
+    <div class="b h40">天气</div>
+    <div class="b h40">额度</div>
+    <div class="b h40">日记</div>
+    <div class="b h40">相册</div>
+    <div class="b h40">音乐</div>
+    <div class="b s2 h40">月历（窄一点）</div>
+    <div class="b s2 h28">摘句</div>
+  </div>
+  <p class="note">三列，每块很小。<b>信息最多但字最小</b>。</p>
+</div>
+
+</body>
+</html>
