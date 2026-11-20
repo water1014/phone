@@ -60,7 +60,7 @@
       let cls = 'cal-d';
       if (day === now.getDate()) cls += ' today';
       if (marks[key]) cls += ' has';
-      cells += '<span class="' + cls + '"><i>' + day + '</i></span>';
+      cells += '<button type="button" class="' + cls + '" data-day="' + key + '"><i>' + day + '</i></button>';
     }
 
     return '<section class="wdg wdg-cal">' +
@@ -105,9 +105,7 @@
     const subEl = D.getElementById('ww-sub');
     if (!tempEl || !textEl) return;
 
-    const lat = 26.88;
-    const lon = 112.67;
-    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=26.88&longitude=112.67' +
       '&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Asia%2FShanghai';
 
     fetch(url).then(function (res) { return res.json(); }).then(function (data) {
@@ -144,6 +142,16 @@
       '</section>';
   }
 
+  function bindCalendar(page) {
+    Array.prototype.forEach.call(page.querySelectorAll('.cal-d[data-day]'), function (btn) {
+      btn.addEventListener('click', function () {
+        const day = btn.dataset.day;
+        if (window.Pages && window.Pages.calendarFocus) window.Pages.calendarFocus(day);
+        window.Router.open('calendar');
+      });
+    });
+  }
+
   function mount() {
     const page = D.querySelector('#desk-pages .page');
     if (!page) return;
@@ -158,6 +166,7 @@
       days.insertAdjacentHTML('afterend', statsHtml());
     }
 
+    bindCalendar(page);
     loadWeather();
   }
 

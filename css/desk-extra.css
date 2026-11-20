@@ -1,6 +1,5 @@
 /* desk-extra.css · 首页增补：三格 / 天气 */
 
-/* 三格：一张卡里的三栏，虚线隔开 */
 .page-today .wdg-stats {
   display: flex;
   align-items: stretch;
@@ -32,7 +31,6 @@
   color: #a8b2bd;
 }
 
-/* 天气：一行，收窄，不抢月历的位 */
 .page-today .wdg-weather {
   padding: .9rem 1.05rem .85rem;
   border: 0;
@@ -56,3 +54,15 @@
   letter-spacing: .1em;
   color: #8d9aa8;
 }
+
+/* 月历格子现在可点 */
+.cal-d {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+}
+.cal-d:active i {
+  background: rgba(141, 154, 168, .16);
+}
+.cal-d.today:active i { background: #70808f; }
