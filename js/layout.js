@@ -1,8 +1,8 @@
 /* layout.js · 首页布局表 + dock
-   1) 每页一个四列网格，组件与 App 都是网格上的块
-   2) 长按一块 → 编辑态（整桌轻抖），此时拖任何一块都直接跟手
-   3) dock 里的 App 也能长按拖：在 dock 内换位、拖进页面、页面拖进 dock
-   4) 自制小组件在编辑态下左上角有 × */
+   1) 每页四列网格，组件与 App 都是块
+   2) 长按 → 编辑态：整桌轻抖、每块左上角有 ×、底部有「＋ 加一块」
+   3) 拖：页面内互换、跨页、拖进 dock、dock 拖回页面
+   4) 删除只从桌面拿掉，组件本体还在，点「＋」能加回来 */
 (function () {
   const D = document;
   const K = 'xw_layout';
@@ -13,6 +13,17 @@
     collage: 4, profile: 4, days: 4, quote: 4,
     clock: 4, wx: 2, quota: 2, cal: 4, now: 4
   };
+
+  const BUILTIN = [
+    { k: 'collage', n: '照片墙' },
+    { k: 'days', n: '天数卡' },
+    { k: 'quote', n: '摘句' },
+    { k: 'clock', n: '时钟' },
+    { k: 'wx', n: '天气' },
+    { k: 'quota', n: '额度' },
+    { k: 'cal', n: '日历' },
+    { k: 'now', n: '此刻在听' }
+  ];
 
   const DEF = [
     ['collage', 'days', 'quote'],
@@ -29,6 +40,14 @@
   let dst = null;
   let justDragged = false;
   let editing = false;
+  let keepEdit = false;
+
+  function esc(text) {
+    if (window.UI && UI.esc) return UI.esc(text);
+    return String(text == null ? '' : text).replace(/[&<>]/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c];
+    });
+  }
 
   function modId(k) {
     return (typeof k === 'string' && k.indexOf('mod:') === 0) ? k.slice(4) : '';
@@ -176,7 +195,6 @@
     return true;
   }
 
-  /* 页面上的 app:X 与 dock 里的 Y 对调 */
   function swapPageDock(giKey, dockId) {
     if (typeof giKey !== 'string' || giKey.indexOf('app:') !== 0) return false;
 
@@ -203,7 +221,6 @@
     return true;
   }
 
-  /* 页面上的 app:X 拖到 dock 空白 → 进 dock 末尾 */
   function pageToDockEnd(giKey) {
     if (typeof giKey !== 'string' || giKey.indexOf('app:') !== 0) return false;
 
@@ -228,7 +245,6 @@
     return true;
   }
 
-  /* dock 里的 Y 拖到页面空白 → 从 dock 拿出，落到那一页末尾 */
   function dockToPageEnd(dockId, pageIndex) {
     const order = dockOrder();
     if (order.indexOf(dockId) < 0) return false;
@@ -244,7 +260,6 @@
     return true;
   }
 
-  /* dock 里的 Y 拖到页面上某块 → 那块是 App 就换；是组件就把 Y 插在它前面 */
   function dockToPageKey(dockId, giKey) {
     if (giKey.indexOf('app:') === 0) return swapPageDock(giKey, dockId);
 
@@ -276,6 +291,30 @@
     order[j] = t;
     setDockOrder(order);
     return true;
+  }
+
+  /* ============ 增 / 删 ============ */
+
+  function addKeyTo(key, pageIndex) {
+    const list = read();
+    let exists = false;
+
+    list.forEach(function (p) { if (p.indexOf(key) >= 0) exists = true; });
+    if (exists) return false;
+
+    while (list.length <= pageIndex) list.push([]);
+    list[pageIndex].push(key);
+    write(list);
+    return true;
+  }
+
+  function addKey(key) { return addKeyTo(key, 1); }
+
+  function delKey(key) {
+    const list = read().map(function (p) {
+      return p.filter(function (k) { return k !== key; });
+    });
+    write(list);
   }
 
   /* ============ 渲染 ============ */
@@ -331,7 +370,30 @@
     if (el) return;
     el = D.createElement('div');
     el.id = 'edit-hint';
-    el.textContent = '拖动摆位置 · 点空白结束';
+    el.textContent = '拖 · × 删 · 点空白结束';
+    D.body.appendChild(el);
+  }
+
+  function plus(on) {
+    let el = D.getElementById('gi-plus');
+
+    if (!on) {
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+      closePicker();
+      return;
+    }
+
+    if (el) return;
+
+    el = D.createElement('button');
+    el.id = 'gi-plus';
+    el.type = 'button';
+    el.textContent = '＋ 加一块';
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (D.getElementById('gip')) { closePicker(); return; }
+      openPicker();
+    });
     D.body.appendChild(el);
   }
 
@@ -345,12 +407,12 @@
 
     if (!editing) return;
 
-    Array.prototype.forEach.call(home.querySelectorAll('.gi[data-key^="mod:"]'), function (gi) {
+    Array.prototype.forEach.call(home.querySelectorAll('.gi'), function (gi) {
       const b = D.createElement('button');
       b.type = 'button';
       b.className = 'gi-del';
       b.textContent = '×';
-      b.setAttribute('aria-label', '删掉这个');
+      b.setAttribute('aria-label', '从桌面拿掉');
       gi.appendChild(b);
     });
   }
@@ -361,6 +423,7 @@
     const home = homeEl();
     if (home) home.classList.add('editing');
     hint(true);
+    plus(true);
     markDel();
   }
 
@@ -370,7 +433,59 @@
     const home = homeEl();
     if (home) home.classList.remove('editing');
     hint(false);
+    plus(false);
     markDel();
+  }
+
+  /* ============ 组件面板 ============ */
+
+  function closePicker() {
+    const box = D.getElementById('gip');
+    if (box && box.parentNode) box.parentNode.removeChild(box);
+  }
+
+  function openPicker() {
+    closePicker();
+
+    const home = homeEl();
+    if (!home) return;
+
+    const pageIdx = currentIndex(home);
+    const used = [];
+
+    Array.prototype.forEach.call(home.querySelectorAll('.gi'), function (gi) {
+      used.push(gi.getAttribute('data-key'));
+    });
+
+    const built = BUILTIN.map(function (b) {
+      const on = used.indexOf(b.k) >= 0;
+      return '<button type="button" class="gip-item' + (on ? ' on' : '') + '"' +
+        ' data-gip="' + b.k + '">' + b.n + '</button>';
+    }).join('');
+
+    const list = (window.Mods && Mods.all) ? Mods.all() : [];
+
+    const mine = list.length ? list.map(function (m) {
+      const key = 'mod:' + m.id;
+      const on = used.indexOf(key) >= 0;
+      const name = m.title || (m.kind === 'code' ? '代码卡' : '便签');
+      return '<button type="button" class="gip-item' + (on ? ' on' : '') + '"' +
+        ' data-gip="' + esc(key) + '">' + esc(name) + '</button>';
+    }).join('') : '<div class="gip-empty">还没有自己搓的，去「美化 → 小组件」做一张</div>';
+
+    const box = D.createElement('div');
+    box.id = 'gip';
+    box.className = 'gip';
+    box.setAttribute('data-page', String(pageIdx));
+    box.innerHTML =
+      '<div class="gip-head"><span>加到第 ' + (pageIdx + 1) + ' 页</span>' +
+        '<button type="button" class="gip-x" data-gip-close="1">×</button></div>' +
+      '<div class="gip-sec">现成的</div>' +
+      '<div class="gip-grid">' + built + '</div>' +
+      '<div class="gip-sec">我自己搓的</div>' +
+      '<div class="gip-grid">' + mine + '</div>';
+
+    D.body.appendChild(box);
   }
 
   /* ============ 落点 ============ */
@@ -522,7 +637,6 @@
     s.active = true;
     s.item.classList.add('lift');
     if (s.home) s.home.classList.add('dragging');
-    else D.body.classList.add('dragging');
     if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
   }
 
@@ -785,24 +899,55 @@
   });
 
   D.addEventListener('click', function (e) {
-    const del = e.target.closest ? e.target.closest('.gi-del') : null;
+    const t = e.target;
+    if (!t || !t.closest) return;
 
+    const del = t.closest('.gi-del');
     if (del) {
       e.stopPropagation();
       e.preventDefault();
 
       const gi = del.parentNode;
       const key = gi && gi.getAttribute('data-key');
-      const mid = key ? modId(key) : '';
+      if (!key) return;
 
-      if (mid && window.Mods) {
-        Mods.remove(mid);
-        delKey(key);
-        if (gi.parentNode) gi.parentNode.removeChild(gi);
-        if (navigator.vibrate) { try { navigator.vibrate(10); } catch (err) {} }
-      }
+      delKey(key);
+      if (gi.parentNode) gi.parentNode.removeChild(gi);
+      if (navigator.vibrate) { try { navigator.vibrate(10); } catch (err) {} }
+      UI.toast('拿掉了，点「＋」能加回来');
       return;
     }
+
+    const gipItem = t.closest('#gip [data-gip]');
+    if (gipItem) {
+      e.stopPropagation();
+      e.preventDefault();
+
+      if (gipItem.classList.contains('on')) { UI.toast('已经在桌上了'); return; }
+
+      const key = gipItem.getAttribute('data-gip');
+      const box = D.getElementById('gip');
+      const pi = box ? Number(box.getAttribute('data-page')) || 0 : 0;
+
+      keepEdit = true;
+      closePicker();
+
+      if (addKeyTo(key, pi)) UI.toast('加上了');
+      rerender();
+      return;
+    }
+
+    const gipClose = t.closest('[data-gip-close]');
+    if (gipClose) {
+      e.stopPropagation();
+      e.preventDefault();
+      closePicker();
+      return;
+    }
+
+    if (t.closest('#gi-plus') || t.closest('#gip')) return;
+
+    if (D.getElementById('gip')) { closePicker(); return; }
 
     if (justDragged) {
       e.stopPropagation();
@@ -812,7 +957,7 @@
 
     if (!editing) return;
 
-    if (e.target.closest('.gi')) {
+    if (t.closest('.gi')) {
       e.stopPropagation();
       e.preventDefault();
       return;
@@ -847,29 +992,11 @@
     if (window.Desktop && Desktop.rerender) Desktop.rerender();
   }
 
-  function addKey(key) {
-    const list = read();
-    let exists = false;
-
-    list.forEach(function (p) { if (p.indexOf(key) >= 0) exists = true; });
-    if (exists) return;
-
-    if (!list[1]) list[1] = [];
-    list[1].push(key);
-    write(list);
-  }
-
-  function delKey(key) {
-    const list = read().map(function (p) {
-      return p.filter(function (k) { return k !== key; });
-    });
-    write(list);
-  }
-
   window.Layout = {
     pagesHtml: pagesHtml,
     read: read,
     addKey: addKey,
+    addKeyTo: addKeyTo,
     delKey: delKey,
     dockOrder: dockOrder,
     bind: function (root) {
@@ -878,6 +1005,10 @@
       applyDockOrder(root);
       bindWidgets(root);
       bindDrag(root);
+      if (keepEdit) {
+        keepEdit = false;
+        enterEdit();
+      }
     },
     exit: exitEdit,
     rerender: rerender,
