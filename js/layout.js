@@ -1,11 +1,10 @@
 /* layout.js · 首页布局表
    每页一个四列网格，组件与 App 都是网格上的一个块。
-   长按 450ms 拖动，拖到左右边缘停留可翻页。 */
+   长按 450ms 拖动；拖到最近的块上松手就交换；拖到空白就落到该页末尾。 */
 (function () {
   const D = document;
   const K = 'xw_layout';
 
-  /* 占几列：组件最大，App 一格 */
   const SPAN = {
     collage: 4, days: 4, quote: 4, clock: 4,
     wx: 2, quota: 2, cal: 4, now: 4
@@ -34,6 +33,10 @@
     return false;
   }
 
+  function copy(src) {
+    return src.map(function (p) { return p.slice(0); });
+  }
+
   function read() {
     let saved = null;
     try {
@@ -51,10 +54,6 @@
     }
 
     return saved;
-  }
-
-  function copy(src) {
-    return src.map(function (p) { return p.slice(0); });
   }
 
   function write(list) {
@@ -101,13 +100,45 @@
 
   function homeEl() { return D.getElementById('home'); }
 
-  function hitAt(x, y) {
-    const el = D.elementFromPoint(x, y);
-    if (!el || !el.closest) return null;
-    const gi = el.closest('.gi');
-    if (!gi) return null;
-    if (st && gi === st.item) return null;
-    return gi;
+  function pageAt(home, i) {
+    const pages = home.querySelectorAll('.page');
+    if (!pages.length) return null;
+    const idx = Math.max(0, Math.min(pages.length - 1, i));
+    return pages[idx];
+  }
+
+  function currentIndex(home) {
+    const w = home.clientWidth || 1;
+    const pages = home.querySelectorAll('.page');
+    const i = Math.round(home.scrollLeft / w);
+    return Math.max(0, Math.min(pages.length - 1, i));
+  }
+
+  /* 手指附近最近的那块（不要求正对着），140px 以内都算 */
+  function targetAt(x, y) {
+    const home = homeEl();
+    if (!home) return null;
+
+    const pg = pageAt(home, currentIndex(home));
+    if (!pg) return null;
+
+    let best = null;
+    let score = Infinity;
+
+    Array.prototype.forEach.call(pg.querySelectorAll('.gi'), function (gi) {
+      if (st && gi === st.item) return;
+      const r = gi.getBoundingClientRect();
+      if (!r.width && !r.height) return;
+
+      const dx = Math.max(r.left - x, 0, x - r.right);
+      const dy = Math.max(r.top - y, 0, y - r.bottom);
+      const d = Math.sqrt(dx * dx + dy * dy);
+
+      if (d < score) { score = d; best = gi; }
+    });
+
+    if (best && score <= 140) return best;
+    return null;
   }
 
   function onStart(ev) {
@@ -127,6 +158,8 @@
       active: false,
       over: null,
       side: 0,
+      flipped: false,
+      target: -1,
       timer: null,
       edge: null
     };
@@ -162,7 +195,7 @@
     st.item.style.transform =
       'translate(' + (t.clientX - st.sx) + 'px,' + (t.clientY - st.sy) + 'px) scale(1.05)';
 
-    const over = hitAt(t.clientX, t.clientY);
+    const over = targetAt(t.clientX, t.clientY);
     if (over !== st.over) {
       if (st.over) st.over.classList.remove('dc-drop');
       st.over = over;
@@ -190,13 +223,12 @@
 
     const home = st.home;
     const w = home.clientWidth || 1;
-    const pages = home.querySelectorAll('.page');
-    const total = pages.length;
-    const cur = Math.max(0, Math.min(total - 1, Math.round(home.scrollLeft / w)));
+    const total = home.querySelectorAll('.page').length;
+    const cur = currentIndex(home);
     const next = Math.max(0, Math.min(total - 1, cur + dir));
     if (next === cur) return;
 
-    const target = pages[next];
+    const target = pageAt(home, next);
     if (target && st.item.parentNode !== target) {
       target.appendChild(st.item);
       st.sx = st.lx;
@@ -204,8 +236,31 @@
       st.item.style.transform = '';
     }
 
+    st.flipped = true;
+    st.target = next;
     home.scrollTo({ left: next * w, behavior: 'smooth' });
     if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
+  }
+
+  /* 两块互换位置；跨页也能换 */
+  function swap(a, b) {
+    if (!a || !b || a === b) return;
+
+    const pa = a.parentNode;
+    const pb = b.parentNode;
+    if (!pa || !pb) return;
+
+    const ma = D.createComment('sw');
+    const mb = D.createComment('sw');
+
+    pa.insertBefore(ma, a);
+    pb.insertBefore(mb, b);
+
+    pa.insertBefore(b, ma);
+    pb.insertBefore(a, mb);
+
+    pa.removeChild(ma);
+    pb.removeChild(mb);
   }
 
   function onEnd() {
@@ -225,11 +280,25 @@
     s.home.classList.remove('dragging');
     s.home.style.scrollSnapType = '';
 
-    if (s.over && s.over.parentNode) {
-      s.over.parentNode.insertBefore(s.item, s.over);
+    let changed = false;
+
+    if (s.over) {
+      swap(s.item, s.over);
+      changed = true;
+    } else {
+      const pg = pageAt(s.home, s.flipped ? s.target : currentIndex(s.home));
+      if (pg && s.item.parentNode !== pg) {
+        pg.appendChild(s.item);
+        changed = true;
+      } else if (s.flipped) {
+        changed = true;
+      }
     }
 
-    save();
+    if (changed) {
+      save();
+      if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
+    }
 
     justDragged = true;
     setTimeout(function () { justDragged = false; }, 360);
@@ -251,7 +320,6 @@
     write(out);
   }
 
-  /* 拖完那一下不要当成点击 */
   D.addEventListener('click', function (e) {
     if (!justDragged) return;
     e.stopPropagation();

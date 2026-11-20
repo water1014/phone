@@ -16,14 +16,12 @@
 #home .gi2{ grid-column: span 2; }
 #home .gi4{ grid-column: span 4; }
 
-/* 网格里不要再叠外边距，间距由 gap 管 */
 #home .gi > *{
   width: 100%;
   margin-bottom: 0;
   margin-top: 0;
 }
 
-/* App 格子：与之前那八格一模一样 */
 #home .gi .appcell{
   display: flex;
   flex-direction: column;
@@ -60,7 +58,6 @@
   color: #7d8894;
 }
 
-/* 天气卡与额度卡片各占半行 */
 #home .gi2 > .wdg{
   min-height: 100%;
 }
@@ -71,19 +68,19 @@
   position: relative;
   z-index: 12;
   pointer-events: none;
-  opacity: .95;
+  opacity: .96;
   border-radius: 18px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, .18);
-  transition: box-shadow .15s ease;
 }
 
+/* 将要与它换位的那块 */
 #home .gi.dc-drop{
-  outline: 1.5px dashed #c7c0b2;
+  outline: 1.5px dashed #b3ab9c;
   outline-offset: 2px;
   border-radius: 18px;
+  background-color: rgba(0, 0, 0, .025);
 }
 
-/* 拖动期间不要选中文字 */
 #home.dragging{
   -webkit-user-select: none;
   user-select: none;
