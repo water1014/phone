@@ -1,0 +1,40 @@
+/* desk-clock.css · 时钟卡片（最后加载，盖掉贴纸式） */
+
+.grid > .wdg-clock {
+  padding: 1rem 1.15rem .95rem;
+  border: 0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .045);
+}
+
+.wdg-clock .dclock {
+  font-size: 2.1rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -.02em;
+  color: #282828;
+}
+
+.wdg-clock .ddate {
+  margin-top: .42rem;
+  font-size: .42rem;
+  letter-spacing: .18em;
+  color: #a8b2bd;
+}
+
+.wdg-clock::after {
+  content: '';
+  display: block;
+  margin-top: .68rem;
+  height: 1px;
+  background-image: linear-gradient(to right, rgba(0, 0, 0, .10) 50%, transparent 0);
+  background-size: 5px 1px;
+  background-repeat: repeat-x;
+}
+
+html.dark .grid > .wdg-clock {
+  background: #1b1a19;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .3);
+}
+html.dark .wdg-clock .dclock { color: #ececec; }
