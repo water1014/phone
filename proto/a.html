@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>A · 真机桌面</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  min-height:100vh;
+  background:radial-gradient(700px 420px at 86% -8%,#e8eef5,transparent 60%),radial-gradient(600px 400px at -6% 22%,#eef1f4,transparent 58%),#f7f8f9;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  color:#33363a; -webkit-font-smoothing:antialiased;
+  padding:0 18px 110px;
+}
+.top{display:flex;align-items:center;justify-content:space-between;padding:22px 2px 16px}
+.top b{font-size:12px;letter-spacing:3px;color:#aab3bb;font-weight:400}
+.top span{font-size:13px;color:#8d9aa8}
+
+.day{
+  background:#fff;border-radius:22px;padding:22px 22px 20px;
+  box-shadow:0 4px 18px rgba(30,40,50,.06);text-align:center;
+}
+.day .lbl{font-size:10px;letter-spacing:3.4px;color:#bcc4cb}
+.day .num{font-size:64px;font-weight:500;line-height:1;letter-spacing:-2px;margin:10px 0 6px;color:#24262a}
+.day .num small{font-size:12px;letter-spacing:3px;color:#a9b3bc;margin-left:8px;font-weight:400}
+.day .names{font-size:13px;letter-spacing:1.6px;color:#9aa5b1}
+
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px 12px;margin:26px 4px 0}
+.ic{display:flex;flex-direction:column;align-items:center;gap:9px}
+.ic .sq{
+  width:56px;height:56px;border-radius:16px;background:#fff;
+  box-shadow:0 2px 10px rgba(30,40,50,.07);
+  display:flex;align-items:center;justify-content:center;
+}
+.ic svg{width:24px;height:24px;fill:none;stroke:#6f7f90;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.ic em{font-style:normal;font-size:11px;color:#8d9aa8;letter-spacing:.3px}
+
+.dock{
+  position:fixed;left:18px;right:18px;bottom:16px;
+  display:flex;justify-content:space-around;align-items:center;
+  padding:10px 8px;border-radius:24px;background:rgba(255,255,255,.96);
+  box-shadow:0 10px 30px rgba(30,40,50,.1);border:1px solid rgba(0,0,0,.04)
+}
+.dock .ic .sq{width:46px;height:46px;box-shadow:none;background:transparent}
+.dock .ic em{font-size:10px}
+.tag{position:fixed;top:10px;right:14px;font-size:11px;color:#c3cbd2;letter-spacing:2px}
+</style>
+</head>
+<body>
+<div class="tag">A</div>
+
+<div class="top">
+  <b>XIAOWO</b>
+  <span>22:57 · 周五</span>
+</div>
+
+<section class="day">
+  <div class="lbl">TOGETHER</div>
+  <div class="num">688<small>DAYS</small></div>
+  <div class="names">宋祁 &amp; 淼淼</div>
+</section>
+
+<div class="grid">
+  <div class="ic"><span class="sq"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></span><em>聊天</em></div>
+  <div class="ic"><span class="sq"><svg viewBox="0 0 24 24"><path d="M12 20s-6.6-4.3-8.4-7.9C2.2 9 4 5.6 7.4 5.6c1.9 0 3.2 1 4.6 2.6 1.4-1.6 2.7-2.6 4.6-2.6 3.4 0 5.2 3.4 3.8 6.5C18.6 15.7 12 20 12 20z"/></svg></span><em>记忆</em></div>
+  <div class="ic"><span class="sq"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6z"/><path d="M9 8h6M9 12h6"/></svg></span><em>日记</em></div>
+  <div class="ic"><span class="sq"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M20 16l-4-4-9 8"/></svg></span><em>相册</em></div>
+  <div class="ic"><span class="sq"><svg viewBox="0 0 24 24"><path d="M4 6h16v15H4z"/><path d="M8 3v4M16 3v4M4 11h16"/></svg></span><em>日历</em></div>
+  <div class="ic"><span class="sq"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/></svg></span><em>音乐</em></div>
+  <div class="ic"><span class="sq"><svg viewBox="0 0 24 24"><path d="M7.5 18.2h9.2a4.3 4.3 0 0 0 .3-8.6 5.7 5.7 0 0 0-10.9 1.6 3.6 3.6 0 0 0 1.4 7z"/></svg></span><em>天气</em></div>
+  <div class="ic"><span class="sq"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></span><em>设置</em></div>
+</div>
+
+<nav class="dock">
+  <div class="ic"><span class="sq"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></span><em>聊天</em></div>
+  <div class="ic"><span class="sq"><svg viewBox="0 0 24 24"><path d="M4 6h16v15H4z"/><path d="M8 3v4M16 3v4M4 11h16"/></svg></span><em>日历</em></div>
+  <div class="ic"><span class="sq"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6z"/><path d="M9 8h6M9 12h6"/></svg></span><em>日记</em></div>
+  <div class="ic"><span class="sq"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></span><em>设置</em></div>
+</nav>
+</body>
+</html>

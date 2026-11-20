@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>D · 深夜暗色</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  min-height:100vh;
+  background:radial-gradient(600px 380px at 80% -6%,#1e2530,transparent 60%),#101317;
+  color:#e8ebee;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;padding:0 18px 90px;
+}
+.tag{position:fixed;top:10px;right:16px;font-size:11px;color:#3d464f;letter-spacing:2px}
+
+.top{display:flex;justify-content:space-between;align-items:center;padding:26px 2px 20px}
+.top b{font-size:11px;font-weight:400;letter-spacing:3.4px;color:#5d6a76}
+.top span{font-size:12px;color:#6d7a86}
+
+.card{background:#171c22;border:1px solid #232b34;border-radius:22px;padding:22px;margin-bottom:14px}
+
+.big{text-align:center}
+.big .k{font-size:10px;letter-spacing:3.4px;color:#5d6a76}
+.big .n{font-size:62px;font-weight:500;letter-spacing:-2px;line-height:1;margin:12px 0 8px;color:#f2f5f7}
+.big .n em{font-style:normal;font-size:12px;letter-spacing:3px;color:#7c8894;margin-left:8px;font-weight:400}
+.big .m{font-size:12.5px;letter-spacing:1.4px;color:#7c8894}
+
+.h2{display:flex;justify-content:space-between;align-items:center}
+.h2 .k{font-size:10px;letter-spacing:2.8px;color:#5d6a76}
+.h2 .v{font-size:12px;color:#6d7a86}
+
+.clock .n{font-size:44px;font-weight:500;letter-spacing:-1.4px;line-height:1;margin-top:12px;color:#f2f5f7}
+.clock .d{margin-top:9px;font-size:12px;color:#6d7a86;letter-spacing:.6px}
+
+.three{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
+.three div+div{border-left:1px solid #232b34}
+.three b{display:block;font-size:22px;font-weight:500;color:#e8ebee}
+.three i{font-style:normal;display:block;margin-top:7px;font-size:10px;letter-spacing:2px;color:#5d6a76}
+
+.now .t{margin-top:12px;font-size:20px;font-weight:500;color:#f2f5f7}
+.now .a{margin-top:6px;font-size:12px;color:#6d7a86}
+.now .bar{height:2px;margin-top:16px;background:#232b34;border-radius:2px;overflow:hidden}
+.now .bar i{display:block;width:38%;height:100%;background:#4f6b86}
+
+.dock{position:fixed;left:18px;right:18px;bottom:16px;display:flex;justify-content:space-around;
+  padding:12px 8px;border-radius:24px;background:rgba(23,28,34,.96);border:1px solid #232b34}
+.dock div{display:flex;flex-direction:column;align-items:center;gap:7px}
+.dock svg{width:21px;height:21px;fill:none;stroke:#8b97a3;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.dock em{font-style:normal;font-size:10px;color:#6d7a86}
+</style>
+</head>
+<body>
+<div class="tag">D</div>
+
+<div class="top"><b>XIAOWO</b><span>22:57</span></div>
+
+<section class="card big">
+  <div class="k">TOGETHER</div>
+  <div class="n">688<em>DAYS</em></div>
+  <div class="m">宋祁 &amp; 淼淼</div>
+</section>
+
+<section class="card clock">
+  <div class="h2"><span class="k">LOCAL TIME</span><span class="v">雾霾 10°</span></div>
+  <div class="n">22:57</div>
+  <div class="d">周五 · 11月20日</div>
+</section>
+
+<section class="card three">
+  <div><b>46</b><i>DIARY</i></div>
+  <div><b>3</b><i>ALBUM</i></div>
+  <div><b>8</b><i>MEMORY</i></div>
+</section>
+
+<section class="card now">
+  <div class="h2"><span class="k">NOW PLAYING</span><span class="v">只是名字</span></div>
+  <div class="t">水星记</div>
+  <div class="a">郭顶</div>
+  <div class="bar"><i></i></div>
+</section>
+
+<nav class="dock">
+  <div><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><em>聊天</em></div>
+  <div><svg viewBox="0 0 24 24"><path d="M4 6h16v15H4z"/><path d="M8 3v4M16 3v4M4 11h16"/></svg><em>日历</em></div>
+  <div><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6z"/><path d="M9 8h6M9 12h6"/></svg><em>日记</em></div>
+  <div><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg><em>设置</em></div>
+</nav>
+</body>
+</html>

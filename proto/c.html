@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>C · 清单流</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  min-height:100vh;background:#fcfcfc;color:#2f3337;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;padding:0 22px 70px;
+}
+.tag{position:fixed;top:10px;right:16px;font-size:11px;color:#c9d1d7;letter-spacing:2px}
+
+.bar{display:flex;justify-content:space-between;align-items:center;padding:26px 0 0}
+.burger{width:38px;height:38px;border:1px solid #eceff2;border-radius:12px;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;background:#fff}
+.burger i{display:block;width:15px;height:1.5px;background:#6f7f90;border-radius:2px}
+.bar span{font-size:12px;color:#a8b2bb;letter-spacing:1px}
+
+.time{padding:30px 0 0}
+.time .k{font-size:10px;letter-spacing:4px;color:#bcc4cb}
+.time .n{font-size:56px;font-weight:500;letter-spacing:-2px;line-height:1;margin-top:10px;color:#1f2226}
+.time .d{margin-top:10px;font-size:12.5px;color:#a2acb5;letter-spacing:.6px}
+
+.list{margin-top:34px;border-top:1px solid #eceff2}
+.row{display:flex;align-items:center;gap:16px;padding:17px 2px;border-bottom:1px solid #f1f3f5}
+.row .name{font-size:16px;font-weight:500;color:#33373b}
+.row .en{font-size:9.5px;letter-spacing:2px;color:#c3cbd2;margin-left:2px}
+.row .val{margin-left:auto;font-size:13px;color:#8d9aa8}
+.row .arr{color:#d6dce1;font-size:16px}
+
+.now{margin-top:30px;padding:18px 20px;border:1px solid #eceff2;border-radius:16px;background:#fff}
+.now .k{font-size:10px;letter-spacing:3px;color:#bcc4cb}
+.now .t{margin-top:10px;font-size:19px;font-weight:500;color:#24262a}
+.now .a{margin-top:5px;font-size:12px;color:#9aa5b1}
+</style>
+</head>
+<body>
+<div class="tag">C</div>
+
+<div class="bar">
+  <div class="burger"><i></i><i></i><i></i></div>
+  <span>小窝</span>
+</div>
+
+<div class="time">
+  <div class="k">LOCAL TIME</div>
+  <div class="n">22:57</div>
+  <div class="d">周五 · 11月20日 · 雾霾 10°</div>
+</div>
+
+<div class="list">
+  <div class="row"><span class="name">日记</span><span class="en">DIARY</span><span class="val">46 篇</span><span class="arr">›</span></div>
+  <div class="row"><span class="name">相册</span><span class="en">ALBUM</span><span class="val">3 张</span><span class="arr">›</span></div>
+  <div class="row"><span class="name">记忆</span><span class="en">MEMORY</span><span class="val">8 条</span><span class="arr">›</span></div>
+  <div class="row"><span class="name">日历</span><span class="en">CALENDAR</span><span class="val">11/20</span><span class="arr">›</span></div>
+  <div class="row"><span class="name">在一起</span><span class="en">TOGETHER</span><span class="val">688 天</span><span class="arr">›</span></div>
+</div>
+
+<div class="now">
+  <div class="k">NOW PLAYING</div>
+  <div class="t">郭顶 · 水星记</div>
+  <div class="a">只是把名字摆在这儿</div>
+</div>
+</body>
+</html>
