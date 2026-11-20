@@ -1,4 +1,4 @@
-/* rail.css · 隐藏式侧栏（只负责抽屉式侧边栏，不碰主页布局） */
+/* rail.css · 隐藏式侧栏（列表菜单形态） */
 
 /* 主页顶部一条，只有一颗按钮 */
 .topline {
@@ -31,62 +31,106 @@
   stroke-linecap: round;
 }
 
-/* ── 侧栏本体：默认藏在屏幕外 ── */
+/* ── 侧栏：默认藏在屏幕外 ── */
 .rail {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   z-index: 70;
-  width: 4.3rem;
+  width: 9.6rem;
+  max-width: 78vw;
   display: flex !important;
   flex-direction: column;
-  gap: .06rem;
-  padding: .9rem .38rem calc(5.6rem + env(safe-area-inset-bottom, 0px));
+  gap: 0;
+  padding: 1rem 0 calc(2rem + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   background: #ffffff;
   border-right: 1px solid rgba(0, 0, 0, .045);
-  box-shadow: 8px 0 28px rgba(0, 0, 0, .07);
+  box-shadow: 10px 0 34px rgba(0, 0, 0, .08);
   transform: translateX(-104%);
-  transition: transform .26s cubic-bezier(.4, 0, .2, 1);
+  transition: transform .28s cubic-bezier(.4, 0, .2, 1);
   will-change: transform;
 }
 
 .rail.open { transform: translateX(0); }
 
-.rail-ico {
-  flex: 0 0 auto;
+/* 侧栏顶部两行小标题 */
+.rail-head {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: .2rem;
-  padding: .42rem 0 .38rem;
+  gap: .22rem;
+  padding: 0 1.05rem .9rem;
+}
+.rail-head b {
+  font-family: var(--mono);
+  font-size: .38rem;
+  font-weight: 500;
+  letter-spacing: .26em;
+  color: #4f5a64;
+}
+.rail-head i {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: .3rem;
+  letter-spacing: .22em;
+  color: #bcc5cd;
+}
+
+/* 菜单行：名字 + 一句说明 */
+.rail-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .26rem;
+  width: 100%;
+  padding: .68rem 1.05rem .66rem;
   border: 0;
-  border-radius: 12px;
   background: transparent;
   font: inherit;
+  text-align: left;
+  position: relative;
 }
-.rail-ico:active { background: rgba(141, 154, 168, .07); }
+.rail-row:active { background: rgba(141, 154, 168, .06); }
 
-.rail-ico svg {
-  width: 1.02rem;
-  height: 1.02rem;
-  fill: none;
-  stroke: #6f7f90;
-  stroke-width: 1.35;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.rail-row .rail-name {
+  display: flex;
+  align-items: baseline;
+  gap: .42rem;
+  font-size: .62rem;
+  font-weight: 500;
+  letter-spacing: .02em;
+  color: #2f2f2f;
+}
+.rail-row .rail-name i {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: .3rem;
+  font-weight: 400;
+  letter-spacing: .18em;
+  color: #c0c9d1;
 }
 
-.rail-ico span {
-  font-size: .31rem;
-  letter-spacing: .03em;
+.rail-row .rail-desc {
+  font-size: .36rem;
+  line-height: 1.4;
+  letter-spacing: .02em;
   color: #9aa5b1;
-  white-space: nowrap;
 }
 
-/* 遮罩：点它就收回去 */
+/* 右侧值（如余额） */
+.rail-row .rail-val {
+  position: absolute;
+  right: 1.05rem;
+  top: .72rem;
+  font-family: var(--mono);
+  font-size: .34rem;
+  letter-spacing: .04em;
+  color: #b0bac3;
+}
+
+/* 遮罩 */
 .scrim {
   position: fixed;
   inset: 0;

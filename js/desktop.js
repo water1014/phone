@@ -1,4 +1,4 @@
-/* desktop.js · 桌面：通宽内容流 + 隐藏侧栏 + 底部 dock */
+/* desktop.js · 桌面：通宽内容流 + 隐藏侧栏（列表式） + 底部 dock */
 (function () {
   const D = document;
 
@@ -6,6 +6,34 @@
   let suppressTap = false;
 
   const DOCK = ['chat', 'diary', 'album', 'memory'];
+
+  /* 侧栏说明文案（英文小注 / 一句中文） */
+  const RAIL_DESC = {
+    chat: ['CHAT', '回到你们正在说的话'],
+    memory: ['MEMORY', '你让我记住的事'],
+    diary: ['DIARY', '一天一页，写给以后'],
+    album: ['ALBUM', '存在这里的照片'],
+    letter: ['LETTER', '没说完的话'],
+    music: ['MUSIC', '现在在听什么'],
+    calendar: ['CALENDAR', '写过的日子都在上面'],
+    plans: ['PLANS', '接下来要做的'],
+    accounting: ['LEDGER', '每天花了多少'],
+    weather: ['WEATHER', '今天穿什么'],
+    mood: ['MOOD', '今天的情绪'],
+    health: ['HEALTH', '身体怎么样'],
+    cycle: ['CYCLE', '日子与记录'],
+    study: ['STUDY', '要背的那些'],
+    quotes: ['QUOTES', '挑出来的一句话'],
+    moments: ['MOMENTS', '我们最近'],
+    favorites: ['SAVED', '想留住的'],
+    games: ['GAMES', '一起玩两局'],
+    studio: ['STUDIO', '画一张给你'],
+    worldbook: ['WORLDBOOK', '我们的设定'],
+    windows: ['WINDOWS', '望出去的地方'],
+    mcp: ['MCP', '接进来的工具'],
+    beautify: ['STYLE', '换个样子'],
+    settings: ['SETTINGS', '名字、纪念日、接口']
+  };
 
   function order() {
     const all = window.Apps.ALL.map(function (a) { return a.id; });
@@ -16,14 +44,20 @@
   }
 
   function railHtml() {
-    return order().map(function (id) {
+    const rows = order().map(function (id) {
       const app = window.Apps.find(id);
       if (!app) return '';
-      return '<button type="button" class="rail-ico" data-app="' + id + '">' +
-          UI.icon(app.icon) +
-          '<span>' + app.name + '</span>' +
+      const meta = RAIL_DESC[id] || ['', ''];
+      return '<button type="button" class="rail-row" data-app="' + id + '">' +
+          '<span class="rail-name">' + app.name + '<i>' + meta[0] + '</i></span>' +
+          '<span class="rail-desc">' + meta[1] + '</span>' +
         '</button>';
     }).join('');
+
+    return '<div class="rail-head">' +
+        '<b>XIAOWO</b>' +
+        '<i>OUR SPACE</i>' +
+      '</div>' + rows;
   }
 
   function dockHtml() {
