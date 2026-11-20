@@ -1,4 +1,4 @@
-/* desktop.js · 桌面：通宽拼图流 + 底部 dock + 全部应用抽屉 */
+/* desktop.js · 桌面：通宽单列内容流 + 底部 dock */
 (function () {
   const D = document;
 
@@ -28,7 +28,7 @@
     return items +
       '<button type="button" class="dock-item" data-more="1">' +
         '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-          '<circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/>' +
+          '<circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/>' +
         '</svg>' +
         '<span>全部</span>' +
       '</button>';
@@ -59,9 +59,11 @@
     const W = window.Widgets;
     if (!W) return '';
     return W.clock() +
-      W.days() + W.quota() +
-      W.weatherCard() + W.quote() +
+      W.days() +
+      W.trio() +
       W.calendar() +
+      '<div class="pair">' + W.weatherCard() + W.quota() + '</div>' +
+      W.quote() +
       W.rows();
   }
 
@@ -125,7 +127,6 @@
     });
   }
 
-  /* dock 长按可拖动换位 */
   function bindDrag() {
     let timer = null;
     let el = null;

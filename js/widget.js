@@ -21,7 +21,7 @@
   }
 
   function clockHtml() {
-    return '<section class="wdg-clock span2">' +
+    return '<section class="wdg-clock">' +
         '<div class="dclock" id="desk-clock">--:--</div>' +
         '<div class="ddate" id="desk-date"></div>' +
       '</section>';
@@ -41,22 +41,28 @@
       '</section>';
   }
 
-  /* 2x2 小方块：组件与 App 交错 */
-  function appGridHtml() {
-    const picks = ['diary', 'album', 'memory', 'calendar'];
-    const cells = picks.map(function (id) {
-      const app = window.Apps.find(id);
-      if (!app) return '';
-      return '<button type="button" class="appcell" data-app="' + id + '">' +
-          UI.icon(app.icon) +
-          '<span>' + app.name + '</span>' +
+  /* 三格：三个真数字 */
+  function trioHtml() {
+    function cell(appId, num, label) {
+      return '<button type="button" data-app="' + appId + '">' +
+          '<b>' + num + '</b>' +
+          '<i>' + label + '</i>' +
         '</button>';
-    }).join('');
-    return '<div class="appgrid">' + cells + '</div>';
+    }
+
+    const diary = (Array.isArray(XW.S.diary) ? XW.S.diary : []).length;
+    const photos = (Array.isArray(XW.S.photos) ? XW.S.photos : []).length;
+    const notes = (Array.isArray(XW.S.notes) ? XW.S.notes : []).length;
+
+    return '<section class="trio">' +
+        cell('diary', diary, 'DIARY') +
+        cell('album', photos, 'ALBUM') +
+        cell('memory', notes, 'MEMORY') +
+      '</section>';
   }
 
   function weatherCardHtml() {
-    return '<section class="wdg bento-square wdg-wx" data-app="weather" role="button" tabindex="0">' +
+    return '<section class="wdg wdg-wx" data-app="weather" role="button" tabindex="0">' +
         '<span class="kicker">WEATHER</span>' +
         '<div class="wx-big" id="wx-temp">—</div>' +
         '<div class="wx-sub" id="wx-sub">没接到天气</div>' +
@@ -71,7 +77,7 @@
     const kw = (used / 1000).toFixed(1);
     const lw = Math.round(limit / 1000);
 
-    return '<section class="wdg bento-square wdg-quota" data-app="chat" role="button" tabindex="0">' +
+    return '<section class="wdg wdg-quota" data-app="chat" role="button" tabindex="0">' +
         '<span class="kicker">QUOTA</span>' +
         '<div class="q-big">' + pct + '<small>%</small></div>' +
         '<div class="q-bar"><i style="width:' + Math.min(100, pct) + '%"></i></div>' +
@@ -95,7 +101,7 @@
     const today = (now.getMonth() + 1) + '/' + now.getDate();
     const chat = (Array.isArray(XW.S.chat) ? XW.S.chat : []).length;
 
-    return '<section class="rows span2">' +
+    return '<section class="rows">' +
         rowItem('calendar', '日历', 'CALENDAR', today) +
         rowItem('chat', '聊天', 'CONVERSATION', chat + ' 条') +
       '</section>';
@@ -123,7 +129,7 @@
       cells += '<button type="button" class="' + cls + '" data-day="' + key + '"><i>' + day + '</i></button>';
     }
 
-    return '<section class="wdg wdg-cal span2">' +
+    return '<section class="wdg wdg-cal">' +
         '<div class="cal-head">' +
           '<span class="kicker">CALENDAR</span>' +
           '<span class="cal-ym">' + (month + 1) + '月</span>' +
@@ -172,13 +178,13 @@
     const line = text.split(/\n/)[0].slice(0, 80);
 
     if (!line) {
-      return '<section class="wdg wdg-quote span2" data-app="diary" role="button" tabindex="0">' +
+      return '<section class="wdg wdg-quote" data-app="diary" role="button" tabindex="0">' +
           '<div class="quote-head"><span class="kicker">NOTE</span><span class="quote-date">还没写</span></div>' +
           '<p class="quote-text">今天也可以就这么过。<br>想写的时候点这里。</p>' +
         '</section>';
     }
 
-    return '<section class="wdg wdg-quote span2" data-app="diary" role="button" tabindex="0">' +
+    return '<section class="wdg wdg-quote" data-app="diary" role="button" tabindex="0">' +
         '<div class="quote-head">' +
           '<span class="kicker">NOTE</span>' +
           '<span class="quote-date">' + esc(String(last.date || '').slice(5)) + '</span>' +
@@ -200,7 +206,7 @@
   window.Widgets = {
     clock: clockHtml,
     days: daysHtml,
-    appGrid: appGridHtml,
+    trio: trioHtml,
     weatherCard: weatherCardHtml,
     quota: quotaHtml,
     rows: rowsHtml,
