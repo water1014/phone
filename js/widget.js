@@ -1,4 +1,4 @@
-/* widget.js · 桌面小组件：三格 / 月历 / 天气 / 摘句 */
+/* widget.js · 桌面小组件：三格 / 月历 / 天气 / 摘句（都可点） */
 (function () {
   const D = document;
 
@@ -20,11 +20,11 @@
     return marks;
   }
 
-  function statCell(num, label) {
-    return '<div class="stat">' +
+  function statCell(num, label, app) {
+    return '<button type="button" class="stat" data-app="' + app + '">' +
         '<b>' + num + '</b>' +
         '<span>' + label + '</span>' +
-      '</div>';
+      '</button>';
   }
 
   function statsHtml() {
@@ -35,9 +35,9 @@
     }).length;
 
     return '<section class="wdg wdg-stats">' +
-        statCell(diary, '日记') +
-        statCell(photos, '相片') +
-        statCell(chat, '对话') +
+        statCell(diary, '日记', 'diary') +
+        statCell(photos, '相片', 'album') +
+        statCell(chat, '对话', 'chat') +
       '</section>';
   }
 
@@ -73,7 +73,7 @@
   }
 
   function weatherHtml() {
-    return '<section class="wdg wdg-weather">' +
+    return '<section class="wdg wdg-weather" data-app="weather" role="button" tabindex="0">' +
         '<div class="quote-head">' +
           '<span class="kicker">WEATHER</span>' +
           '<span class="quote-date" id="ww-sub">看一眼天</span>' +
@@ -127,13 +127,13 @@
     const line = last ? String(last.text || '').split(/\n/)[0].slice(0, 48) : '';
 
     if (!line) {
-      return '<section class="wdg wdg-quote">' +
-          '<div class="quote-head"><span class="kicker">TODAY</span></div>' +
+      return '<section class="wdg wdg-quote" data-app="diary" role="button" tabindex="0">' +
+          '<div class="quote-head"><span class="kicker">TODAY</span><span class="quote-date">去写</span></div>' +
           '<p class="quote-text">还没写下什么。今天也可以就这么过。</p>' +
         '</section>';
     }
 
-    return '<section class="wdg wdg-quote">' +
+    return '<section class="wdg wdg-quote" data-app="diary" role="button" tabindex="0">' +
         '<div class="quote-head">' +
           '<span class="kicker">NOTE</span>' +
           '<span class="quote-date">' + esc(String(last.date || '').slice(5)) + '</span>' +
