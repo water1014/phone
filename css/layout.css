@@ -1,4 +1,4 @@
-/* layout.css · 首页四列网格（组件与 App 同处一格） */
+/* layout.css · 首页四列网格（组件与 App 同处一格）+ dock 拖动 */
 
 #home .gpage{
   display: grid;
@@ -141,6 +141,29 @@
 #home.dragging{
   -webkit-user-select: none;
   user-select: none;
+}
+
+/* ============ dock 拖动 ============ */
+
+#dock{ overflow: visible; }
+
+#dock.dock-drop{
+  outline: 1.5px dashed #b3ab9c;
+  outline-offset: 3px;
+}
+
+.dock-item.drop-target{
+  background: rgba(0, 0, 0, .055);
+  border-radius: 14px;
+}
+
+.dock-item.dk-lift{
+  position: relative;
+  z-index: 60;
+  pointer-events: none;
+  opacity: .96;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .18);
 }
 
 /* 顶部的编辑提示 */
