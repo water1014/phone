@@ -1,4 +1,4 @@
-/* desktop.js · 桌面：通宽内容流 + 隐藏侧栏（分组菜单） + 底部 dock */
+/* desktop.js · 桌面：L2 双列拼贴 + 隐藏侧栏 + 底部 dock */
 (function () {
   const D = document;
 
@@ -108,10 +108,11 @@
       '</div>';
   }
 
+  /* L2 拼贴：大小不一的块，两列交错 */
   function homeHtml() {
     const W = window.Widgets;
     if (!W) return '';
-    return '<div class="topline">' +
+    return '<div class="topline span2">' +
         '<button type="button" class="rail-toggle" data-rail="1" aria-label="打开侧栏">' +
           '<svg viewBox="0 0 24 24" aria-hidden="true">' +
             '<path d="M4 7h13M4 12h13M4 17h13"/>' +
@@ -119,10 +120,10 @@
         '</button>' +
       '</div>' +
       W.clock() +
-      W.days() +
-      W.trio() +
+      W.days() + W.quota() +
+      W.appGrid() + W.weatherCard() +
+      W.nowPlaying() +
       W.calendar() +
-      '<div class="pair">' + W.weatherCard() + W.quota() + '</div>' +
       W.quote() +
       W.rows();
   }
