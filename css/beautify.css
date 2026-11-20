@@ -1,6 +1,15 @@
-/* beautify.css · 美化页 + 全站外观开关 */
+/* beautify.css · 美化页 + 全站外观开关
+   数值全部走 CSS 变量，滑杆改一个值就全站跟着动 */
 
-:root { --xw-ac: #5c6a79; }
+:root {
+  --xw-ac: #5c6a79;
+  --xw-radius: 16px;
+  --xw-icon: 21px;
+  --xw-gap: 12px;
+  --xw-blur: 16px;
+  --xw-alpha: .68;
+  --xw-gloss: .7;
+}
 
 /* ================= App 层不透底 ================= */
 .app {
@@ -9,37 +18,42 @@
   backdrop-filter: none !important;
 }
 
-/* ================= 主色 ================= */
+/* ================= 数值接管原有尺寸 ================= */
+
+#home .gpage { gap: var(--xw-gap) calc(var(--xw-gap) * .83); }
+
+#home .gi .appcell { border-radius: var(--xw-radius); }
+#home .gi .appcell svg { width: var(--xw-icon); height: var(--xw-icon); }
+#home .mod { border-radius: var(--xw-radius); }
+
+#home .gi.lift,
+#home .gi.dc-drop { border-radius: var(--xw-radius); }
+
+#home .clg,
+#home .dc-face,
+.pf-front {
+  border-radius: calc(var(--xw-radius) + 4px) !important;
+}
+
 #home .gi .appcell svg { stroke: var(--xw-ac); }
 
 /* ================= 卡片（白 / 米 / 描边） ================= */
 html[data-card="paper"] #home .gi .appcell,
-html[data-card="paper"] #home .mod {
+html[data-card="paper"] #home .mod,
+html[data-card="paper"] .pv-cell,
+html[data-card="paper"] .pv-bar {
   background: #faf7f1;
   border-color: rgba(120, 100, 70, .07);
 }
 
 html[data-card="line"] #home .gi .appcell,
-html[data-card="line"] #home .mod {
+html[data-card="line"] #home .mod,
+html[data-card="line"] .pv-cell,
+html[data-card="line"] .pv-bar {
   background: transparent;
   border-color: rgba(0, 0, 0, .10);
   box-shadow: none;
 }
-
-/* ================= 圆角 ================= */
-html[data-radius="12"] #home .gi .appcell,
-html[data-radius="12"] #home .mod { border-radius: 12px; }
-html[data-radius="12"] #home .gi.lift,
-html[data-radius="12"] #home .gi.dc-drop { border-radius: 12px; }
-
-html[data-radius="22"] #home .gi .appcell,
-html[data-radius="22"] #home .mod { border-radius: 22px; }
-html[data-radius="22"] #home .gi.lift,
-html[data-radius="22"] #home .gi.dc-drop { border-radius: 22px; }
-
-/* ================= 图标 ================= */
-html[data-icon="19"] #home .gi .appcell svg { width: 19px; height: 19px; }
-html[data-icon="23"] #home .gi .appcell svg { width: 23px; height: 23px; }
 
 /* ================= 字体 ================= */
 html[data-cn="sans"] #home .gi .appcell span,
@@ -61,10 +75,6 @@ html[data-cn="mono"] .bz-lab b {
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
-/* ================= 间距 ================= */
-html[data-gap="tight"] #home .gpage { gap: 8px 8px; }
-html[data-gap="loose"] #home .gpage { gap: 18px 12px; }
-
 /* ================= 动效 ================= */
 html[data-motion="off"] #home.editing .gi { animation: none !important; }
 html[data-motion="off"] .dc-in,
@@ -78,7 +88,7 @@ html[data-dock="off"] .pager { bottom: calc(.9rem + env(safe-area-inset-bottom))
 html[data-dots="off"] .pager,
 html[data-dots="off"] .dots { display: none; }
 
-/* ================= 材质四档 ================= */
+/* ================= 材质（数值可调） ================= */
 
 html[data-mat="frost"] #home .gi .appcell,
 html[data-mat="frost"] #home .mod,
@@ -86,12 +96,15 @@ html[data-mat="frost"] #home .clg,
 html[data-mat="frost"] #home .dc-front,
 html[data-mat="frost"] .pf-front,
 html[data-mat="frost"] .dock,
-html[data-mat="frost"] .sheet {
-  background: rgba(255, 255, 255, .68) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(1.25);
-  backdrop-filter: blur(16px) saturate(1.25);
-  border-color: rgba(255, 255, 255, .78) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .85), 0 2px 10px rgba(0, 0, 0, .05) !important;
+html[data-mat="frost"] .sheet,
+html[data-mat="frost"] .pv-cell,
+html[data-mat="frost"] .pv-bar,
+html[data-mat="frost"] .pv-dock {
+  background: rgba(255, 255, 255, var(--xw-alpha)) !important;
+  -webkit-backdrop-filter: blur(var(--xw-blur)) saturate(1.25);
+  backdrop-filter: blur(var(--xw-blur)) saturate(1.25);
+  border-color: rgba(255, 255, 255, .72) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, var(--xw-gloss)), 0 2px 10px rgba(0, 0, 0, .05) !important;
 }
 
 html[data-mat="glass"] #home .gi .appcell,
@@ -100,12 +113,17 @@ html[data-mat="glass"] #home .clg,
 html[data-mat="glass"] #home .dc-front,
 html[data-mat="glass"] .pf-front,
 html[data-mat="glass"] .dock,
-html[data-mat="glass"] .sheet {
-  background: linear-gradient(150deg, rgba(255, 255, 255, .64), rgba(255, 255, 255, .26)) !important;
-  -webkit-backdrop-filter: blur(10px) saturate(1.5);
-  backdrop-filter: blur(10px) saturate(1.5);
-  border: 1px solid rgba(255, 255, 255, .85) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .95), 0 3px 12px rgba(0, 0, 0, .07) !important;
+html[data-mat="glass"] .sheet,
+html[data-mat="glass"] .pv-cell,
+html[data-mat="glass"] .pv-bar,
+html[data-mat="glass"] .pv-dock {
+  background: linear-gradient(150deg,
+    rgba(255, 255, 255, var(--xw-alpha)),
+    rgba(255, 255, 255, calc(var(--xw-alpha) * .4))) !important;
+  -webkit-backdrop-filter: blur(var(--xw-blur)) saturate(1.5);
+  backdrop-filter: blur(var(--xw-blur)) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, .86) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, var(--xw-gloss)), 0 3px 12px rgba(0, 0, 0, .07) !important;
 }
 
 html[data-mat="liquid"] #home .gi .appcell,
@@ -114,13 +132,19 @@ html[data-mat="liquid"] #home .clg,
 html[data-mat="liquid"] #home .dc-front,
 html[data-mat="liquid"] .pf-front,
 html[data-mat="liquid"] .dock,
-html[data-mat="liquid"] .sheet {
-  background: radial-gradient(125% 100% at 16% 0%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, .70) 40%, rgba(255, 255, 255, .48) 100%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(1.6);
-  backdrop-filter: blur(18px) saturate(1.6);
+html[data-mat="liquid"] .sheet,
+html[data-mat="liquid"] .pv-cell,
+html[data-mat="liquid"] .pv-bar,
+html[data-mat="liquid"] .pv-dock {
+  background: radial-gradient(125% 100% at 16% 0%,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, var(--xw-alpha)) 42%,
+    rgba(255, 255, 255, calc(var(--xw-alpha) * .7)) 100%) !important;
+  -webkit-backdrop-filter: blur(var(--xw-blur)) saturate(1.6);
+  backdrop-filter: blur(var(--xw-blur)) saturate(1.6);
   border: 1px solid rgba(255, 255, 255, .95) !important;
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 1),
+    inset 0 1px 1px rgba(255, 255, 255, var(--xw-gloss)),
     inset 0 -2px 3px rgba(0, 0, 0, .045),
     0 6px 18px rgba(0, 0, 0, .08) !important;
 }
@@ -199,6 +223,7 @@ html[data-skin="night"] .dock {
 
 html[data-skin="night"] .rail { background: #1b1917 !important; }
 html[data-skin="night"] .rail-row b { color: #e2dccf; }
+html[data-skin="night"] .toggle i,
 html[data-skin="night"] .rail-toggle.overlay i { background: #4c4842; }
 html[data-skin="night"] .pager i,
 html[data-skin="night"] .dots span { background: rgba(255, 255, 255, .26); }
@@ -222,6 +247,13 @@ html[data-skin="night"] .bz-ed,
 html[data-skin="night"] .bz-ta { background: #252220; border-color: rgba(255, 255, 255, .08); color: #ddd6c9; }
 html[data-skin="night"] .bz-prev { background: #1b1917; border-color: rgba(255, 255, 255, .07); }
 html[data-skin="night"] .mod-code { background: #1b1917; }
+html[data-skin="night"] .pv-cell,
+html[data-skin="night"] .pv-bar { background: #201e1c; border-color: rgba(255, 255, 255, .06); }
+html[data-skin="night"] .pv-line { background: rgba(255, 255, 255, .16); }
+html[data-skin="night"] .pv-line.short { background: rgba(255, 255, 255, .10); }
+html[data-skin="night"] .pv-dock { background: rgba(28, 26, 24, .92); }
+html[data-skin="night"] .bz-range input[type="range"] { background: rgba(255, 255, 255, .18); }
+html[data-skin="night"] .bz-range input[type="range"]::-webkit-slider-thumb { background: #ece6da; }
 
 /* ================= 纸 ================= */
 html[data-skin="paper"] {
@@ -235,10 +267,13 @@ html[data-skin="paper"] .app { background: #f4eee3 !important; }
 
 html[data-skin="paper"] #home .clg,
 html[data-skin="paper"] #home .dc-front,
-html[data-skin="paper"] .pf-front,
-html[data-skin="paper"] #home .mod {
+html[data-skin="paper"] .pf-front {
   background: #fbf7ef !important;
 }
+
+html[data-skin="paper"] #home .mod,
+html[data-skin="paper"] .pv-cell,
+html[data-skin="paper"] .pv-bar { background: #fbf7ef !important; }
 
 html[data-skin="paper"] #home .gi .appcell {
   background: #fbf7ef;
@@ -254,7 +289,7 @@ html[data-skin="paper"] .rail { background: #f8f2e7 !important; }
   min-height: 68px;
   padding: 13px 15px 14px;
   border: 1px solid rgba(0, 0, 0, .035);
-  border-radius: 16px;
+  border-radius: var(--xw-radius);
   background: #ffffff;
   box-shadow: 0 1px 6px rgba(0, 0, 0, .035);
   font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
@@ -285,12 +320,7 @@ html[data-skin="paper"] .rail { background: #f8f2e7 !important; }
 #home .gi1 .mod-t { font-size: 11.5px; letter-spacing: .4px; }
 #home .gi1 .mod-b { font-size: 11px; line-height: 1.65; }
 
-/* 代码小组件：里面就是一张沙箱网页 */
-.mod-code {
-  padding: 0;
-  overflow: hidden;
-  background: #ffffff;
-}
+.mod-code { padding: 0; overflow: hidden; background: #ffffff; }
 
 .mod-code .mod-fr {
   display: block;
@@ -300,7 +330,96 @@ html[data-skin="paper"] .rail { background: #f8f2e7 !important; }
   background: transparent;
 }
 
-/* ================= 美化页本体 ================= */
+/* ================= 预览 ================= */
+
+.pv {
+  position: relative;
+  margin-top: 10px;
+  height: 250px;
+  padding: 16px 14px 0;
+  border: 1px solid rgba(0, 0, 0, .07);
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--bg);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.pv-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 9px calc(var(--xw-gap) * .66);
+}
+
+.pv-cell {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, .04);
+  border-radius: var(--xw-radius);
+  background: #ffffff;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, .04);
+  overflow: hidden;
+}
+
+.pv-cell svg {
+  width: calc(var(--xw-icon) * .68);
+  height: calc(var(--xw-icon) * .68);
+  fill: none;
+  stroke: var(--xw-ac);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pv-bar {
+  margin-top: 11px;
+  padding: 13px 14px;
+  border: 1px solid rgba(0, 0, 0, .04);
+  border-radius: var(--xw-radius);
+  background: #ffffff;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, .04);
+}
+
+.pv-line {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, .09);
+}
+
+.pv-line.short { width: 46%; margin-top: 7px; background: rgba(0, 0, 0, .05); }
+
+.pv-dock {
+  margin: auto -14px 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: rgba(255, 255, 255, .9);
+  border-top: 1px solid rgba(0, 0, 0, .05);
+}
+
+.pv-dock i {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: rgba(0, 0, 0, .13);
+}
+
+.pv-note {
+  margin-top: 8px;
+  text-align: center;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 10px;
+  letter-spacing: 1.4px;
+  color: #c9c3b9;
+}
+
+/* ================= 美化妆本体 ================= */
 
 .bz-sec { margin-top: 18px; }
 .bz-sec:first-of-type { margin-top: 6px; }
@@ -345,7 +464,6 @@ html[data-skin="paper"] .rail { background: #f8f2e7 !important; }
   font-size: 12px;
   letter-spacing: .4px;
   color: #6a6660;
-  transition: background .16s, color .16s, border-color .16s;
 }
 
 .bz-opt.on {
@@ -393,6 +511,43 @@ html[data-skin="paper"] .rail { background: #f8f2e7 !important; }
   background: #fdfcfa;
   font-size: 11px;
   letter-spacing: .3px;
+}
+
+/* 滑杆 */
+.bz-range {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 9px;
+}
+
+.bz-range input[type="range"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, .12);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.bz-range input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #2c2a27;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .22);
+}
+
+.bz-range span {
+  flex: none;
+  width: 46px;
+  text-align: right;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  color: #8a8578;
 }
 
 /* 编辑器 */
