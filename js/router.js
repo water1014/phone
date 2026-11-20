@@ -1,4 +1,4 @@
-/* router.js · App 打开层；聊天 / 设置内建，日记相册交给 pages.js */
+/* router.js · App 打开层；聊天 / 设置内建，其余页面交给 pages.js 自动分发 */
 (function () {
   const D = document;
 
@@ -98,9 +98,9 @@
 
   function render(id) {
     if (id === 'chat') return chatView();
-    if (id === 'diary') return window.Pages.diary();
-    if (id === 'album') return window.Pages.album();
     if (id === 'settings') return settingsView();
+    const page = window.Pages && window.Pages[id];
+    if (typeof page === 'function') return page();
     return '<div class="sheet"><div class="empty-state" style="margin-top:1rem">这间还没开门。<br>骨架先立着，下一间再填它。</div></div>';
   }
 
@@ -254,7 +254,6 @@
     const limit = Number(XW.S.ctxLimit) || 128000;
     const used = Number(usage.input) || 0;
     const percent = Math.min(999, Math.round(used / limit * 100));
-    const hitRate = used ? Math.round((Number(usage.cached) || 0) / used * 100) : 0;
     const provider = (PRESETS[XW.S.aiProvider] || PRESETS.deepseek).label;
 
     const head = '<div class="chat-status">' +
@@ -572,141 +571,146 @@
       return;
     }
 
-    if (id === 'diary') { window.Pages.diaryBind(bodyEl); return; }
-    if (id === 'album') { window.Pages.albumBind(bodyEl); return; }
-
     if (id === 'settings') {
-      const headBox = D.getElementById('set-ai-headers');
-      if (headBox) headBox.value = XW.S.aiHeaders || '';
+      bindSettings();
+      return;
+    }
 
-      if (!XW.S.profiles) {
-        XW.S.profiles = {};
-        XW.S.profiles[XW.S.aiProvider || 'deepseek'] = {
-          url: XW.S.aiUrl || '',
-          model: XW.S.aiModel || '',
-          key: XW.S.aiKey || '',
-          headers: XW.S.aiHeaders || ''
-        };
-        XW.save('profiles');
-      }
+    const pageBind = window.Pages && window.Pages[id + 'Bind'];
+    if (typeof pageBind === 'function') pageBind(bodyEl);
+  }
 
-      const provider = D.getElementById('set-ai-provider');
-      if (provider) {
-        provider.addEventListener('change', function () {
-          const urlEl = D.getElementById('set-ai-url');
-          const modelEl = D.getElementById('set-ai-model');
-          const keyEl = D.getElementById('set-ai-key');
-          const prev = XW.S.aiProvider || 'deepseek';
-          const next = provider.value;
+  function bindSettings() {
+    const headBox = D.getElementById('set-ai-headers');
+    if (headBox) headBox.value = XW.S.aiHeaders || '';
 
-          writeProfile(prev, {
-            url: (urlEl.value || '').trim(),
-            model: (modelEl.value || '').trim(),
-            key: (keyEl.value || '').trim(),
-            headers: (headBox ? headBox.value : '').trim()
-          });
+    if (!XW.S.profiles) {
+      XW.S.profiles = {};
+      XW.S.profiles[XW.S.aiProvider || 'deepseek'] = {
+        url: XW.S.aiUrl || '',
+        model: XW.S.aiModel || '',
+        key: XW.S.aiKey || '',
+        headers: XW.S.aiHeaders || ''
+      };
+      XW.save('profiles');
+    }
 
-          const prof = readProfile(next);
-          urlEl.value = prof.url;
-          modelEl.value = prof.model;
-          keyEl.value = prof.key;
-          if (headBox) headBox.value = prof.headers;
+    const provider = D.getElementById('set-ai-provider');
+    if (provider) {
+      provider.addEventListener('change', function () {
+        const urlEl = D.getElementById('set-ai-url');
+        const modelEl = D.getElementById('set-ai-model');
+        const keyEl = D.getElementById('set-ai-key');
+        const prev = XW.S.aiProvider || 'deepseek';
+        const next = provider.value;
 
-          XW.S.aiProvider = next;
-          XW.S.aiUrl = prof.url;
-          XW.S.aiModel = prof.model;
-          XW.S.aiKey = prof.key;
-          XW.S.aiHeaders = prof.headers;
-          XW.S.aiUrlResolved = '';
-          ['aiProvider', 'aiUrl', 'aiModel', 'aiKey', 'aiHeaders', 'aiUrlResolved'].forEach(XW.save);
-
-          UI.toast(PRESETS[next].label + (prof.key ? ' 已载入' : ' 已填好，贴 Key 就行'));
-          paint('settings');
+        writeProfile(prev, {
+          url: (urlEl.value || '').trim(),
+          model: (modelEl.value || '').trim(),
+          key: (keyEl.value || '').trim(),
+          headers: (headBox ? headBox.value : '').trim()
         });
-      }
 
-      const pullBtn = D.getElementById('set-pull-models');
-      if (pullBtn) {
-        pullBtn.addEventListener('click', function () {
-          pullModels().catch(function (err) { UI.toast(err.message || '拉取失败'); });
-        });
-      }
+        const prof = readProfile(next);
+        urlEl.value = prof.url;
+        modelEl.value = prof.model;
+        keyEl.value = prof.key;
+        if (headBox) headBox.value = prof.headers;
 
-      const saveNames = D.getElementById('set-save');
-      if (saveNames) {
-        saveNames.addEventListener('click', function () {
-          const read = function (elId) { const el = D.getElementById(elId); return el && el.value ? el.value.trim() : ''; };
-          XW.S.hisName = read('set-his') || '他';
-          XW.S.herName = read('set-her') || '她';
-          XW.S.loveDate = read('set-love') || '2025-01-01';
-          ['hisName', 'herName', 'loveDate'].forEach(XW.save);
-          UI.toast('保存了');
-          if (window.Desktop) window.Desktop.rerender();
-        });
-      }
+        XW.S.aiProvider = next;
+        XW.S.aiUrl = prof.url;
+        XW.S.aiModel = prof.model;
+        XW.S.aiKey = prof.key;
+        XW.S.aiHeaders = prof.headers;
+        XW.S.aiUrlResolved = '';
+        ['aiProvider', 'aiUrl', 'aiModel', 'aiKey', 'aiHeaders', 'aiUrlResolved'].forEach(XW.save);
 
-      const saveChat = D.getElementById('set-ai-save');
-      if (saveChat) {
-        saveChat.addEventListener('click', function () {
-          const read = function (elId) { const el = D.getElementById(elId); return el && el.value ? el.value.trim() : ''; };
-          const current = XW.S.aiProvider || 'deepseek';
-          const data = {
-            url: read('set-ai-url'),
-            model: read('set-ai-model'),
-            key: read('set-ai-key'),
-            headers: (D.getElementById('set-ai-headers').value || '').trim()
-          };
-          XW.S.aiUrl = data.url;
-          XW.S.aiModel = data.model;
-          XW.S.aiKey = data.key;
-          XW.S.aiHeaders = data.headers;
-          XW.S.ctxLimit = Number(read('set-ctx')) || 128000;
-          XW.S.aiUrlResolved = '';
-          writeProfile(current, data);
-          ['aiUrl', 'aiModel', 'aiKey', 'aiHeaders', 'ctxLimit', 'aiUrlResolved'].forEach(XW.save);
-          UI.toast(PRESETS[current].label + ' 保存了');
-        });
-      }
-
-      const addApi = D.getElementById('api-add');
-      if (addApi) {
-        addApi.addEventListener('click', function () {
-          XW.S.apis = Array.isArray(XW.S.apis) ? XW.S.apis : [];
-          XW.S.apis.push({ name: '', url: '', model: '', key: '', headers: '' });
-          XW.save('apis');
-          paint('settings');
-        });
-      }
-
-      Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-api-save]'), function (btn) {
-        btn.addEventListener('click', function () {
-          const index = Number(btn.dataset.apiSave);
-          const box = btn.closest('.fold');
-          const read = function (k) {
-            const el = box ? box.querySelector('[data-k="' + k + '"]') : null;
-            return el && el.value ? el.value.trim() : '';
-          };
-          XW.S.apis[index] = {
-            name: read('name') || '未命名',
-            url: read('url'),
-            model: read('model'),
-            key: read('key'),
-            headers: read('headers')
-          };
-          XW.save('apis');
-          UI.toast('这一条保存了');
-        });
-      });
-
-      Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-api-del]'), function (btn) {
-        btn.addEventListener('click', function () {
-          XW.S.apis.splice(Number(btn.dataset.apiDel), 1);
-          XW.save('apis');
-          UI.toast('删掉了');
-          paint('settings');
-        });
+        UI.toast(PRESETS[next].label + (prof.key ? ' 已载入' : ' 已填好，贴 Key 就行'));
+        paint('settings');
       });
     }
+
+    const pullBtn = D.getElementById('set-pull-models');
+    if (pullBtn) {
+      pullBtn.addEventListener('click', function () {
+        pullModels().catch(function (err) { UI.toast(err.message || '拉取失败'); });
+      });
+    }
+
+    const saveNames = D.getElementById('set-save');
+    if (saveNames) {
+      saveNames.addEventListener('click', function () {
+        const read = function (elId) { const el = D.getElementById(elId); return el && el.value ? el.value.trim() : ''; };
+        XW.S.hisName = read('set-his') || '他';
+        XW.S.herName = read('set-her') || '她';
+        XW.S.loveDate = read('set-love') || '2025-01-01';
+        ['hisName', 'herName', 'loveDate'].forEach(XW.save);
+        UI.toast('保存了');
+        if (window.Desktop) window.Desktop.rerender();
+      });
+    }
+
+    const saveChat = D.getElementById('set-ai-save');
+    if (saveChat) {
+      saveChat.addEventListener('click', function () {
+        const read = function (elId) { const el = D.getElementById(elId); return el && el.value ? el.value.trim() : ''; };
+        const current = XW.S.aiProvider || 'deepseek';
+        const data = {
+          url: read('set-ai-url'),
+          model: read('set-ai-model'),
+          key: read('set-ai-key'),
+          headers: (D.getElementById('set-ai-headers').value || '').trim()
+        };
+        XW.S.aiUrl = data.url;
+        XW.S.aiModel = data.model;
+        XW.S.aiKey = data.key;
+        XW.S.aiHeaders = data.headers;
+        XW.S.ctxLimit = Number(read('set-ctx')) || 128000;
+        XW.S.aiUrlResolved = '';
+        writeProfile(current, data);
+        ['aiUrl', 'aiModel', 'aiKey', 'aiHeaders', 'ctxLimit', 'aiUrlResolved'].forEach(XW.save);
+        UI.toast(PRESETS[current].label + ' 保存了');
+      });
+    }
+
+    const addApi = D.getElementById('api-add');
+    if (addApi) {
+      addApi.addEventListener('click', function () {
+        XW.S.apis = Array.isArray(XW.S.apis) ? XW.S.apis : [];
+        XW.S.apis.push({ name: '', url: '', model: '', key: '', headers: '' });
+        XW.save('apis');
+        paint('settings');
+      });
+    }
+
+    Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-api-save]'), function (btn) {
+      btn.addEventListener('click', function () {
+        const index = Number(btn.dataset.apiSave);
+        const box = btn.closest('.fold');
+        const read = function (k) {
+          const el = box ? box.querySelector('[data-k="' + k + '"]') : null;
+          return el && el.value ? el.value.trim() : '';
+        };
+        XW.S.apis[index] = {
+          name: read('name') || '未命名',
+          url: read('url'),
+          model: read('model'),
+          key: read('key'),
+          headers: read('headers')
+        };
+        XW.save('apis');
+        UI.toast('这一条保存了');
+      });
+    });
+
+    Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-api-del]'), function (btn) {
+      btn.addEventListener('click', function () {
+        XW.S.apis.splice(Number(btn.dataset.apiDel), 1);
+        XW.save('apis');
+        UI.toast('删掉了');
+        paint('settings');
+      });
+    });
   }
 
   function reopen(id) {
