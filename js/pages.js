@@ -1,4 +1,4 @@
-/* pages.js · 日记 / 相册（卡片式版式） */
+/* pages.js · 日记 / 相册 / 日历 */
 (function () {
   const D = document;
 
@@ -17,9 +17,15 @@
       '</header>';
   }
 
+  function pad2(n) { return String(n).padStart(2, '0'); }
+
   function dayKey(date) {
     const hit = String(date || '').match(/(\d{4})-(\d{2})-(\d{2})/);
     return hit ? hit[1] + '-' + hit[2] + '-' + hit[3] : '';
+  }
+
+  function ymdKey(d) {
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
   }
 
   function streak(list) {
@@ -29,10 +35,7 @@
     let count = 0;
     const cursor = new Date();
     for (let i = 0; i < 400; i++) {
-      const y = cursor.getFullYear();
-      const m = String(cursor.getMonth() + 1).padStart(2, '0');
-      const d = String(cursor.getDate()).padStart(2, '0');
-      const key = y + '-' + m + '-' + d;
+      const key = ymdKey(cursor);
       if (set[key]) {
         count += 1;
         cursor.setDate(cursor.getDate() - 1);
@@ -167,5 +170,104 @@
     });
   }
 
-  window.Pages = { diary: diary, diaryBind: diaryBind, album: album, albumBind: albumBind, hero: hero };
+  /* ── 日历 ── */
+  let calMonth = null;
+  let calPick = '';
+
+  function calendar() {
+    const list = Array.isArray(XW.S.diary) ? XW.S.diary : [];
+    const set = {};
+    list.forEach(function (item) { const k = dayKey(item.date); if (k) set[k] = true; });
+
+    const today = new Date();
+    const todayKey = ymdKey(today);
+    const base = calMonth || new Date(today.getFullYear(), today.getMonth(), 1);
+    const y = base.getFullYear();
+    const m = base.getMonth();
+
+    if (!calPick) calPick = todayKey;
+
+    const startPad = new Date(y, m, 1).getDay();
+    const days = new Date(y, m + 1, 0).getDate();
+    const monthKey = y + '-' + pad2(m + 1);
+
+    let wrote = 0;
+    Object.keys(set).forEach(function (k) { if (k.indexOf(monthKey) === 0) wrote += 1; });
+
+    const cells = [];
+    for (let i = 0; i < startPad; i++) cells.push('<span class="cal-cell out"></span>');
+    for (let d = 1; d <= days; d++) {
+      const key = monthKey + '-' + pad2(d);
+      const cls = ['cal-cell'];
+      if (set[key]) cls.push('has');
+      if (key === todayKey) cls.push('today');
+      if (key === calPick) cls.push('sel');
+      cells.push('<button type="button" class="' + cls.join(' ') + '" data-day="' + key + '">' + d + '</button>');
+    }
+
+    const week = ['日', '一', '二', '三', '四', '五', '六'].map(function (w) {
+      return '<span>' + w + '</span>';
+    }).join('');
+
+    const grid = '<div class="sheet cal-sheet">' +
+        '<div class="cal-head">' +
+          '<button type="button" class="cal-nav" data-cal="prev" aria-label="上个月">‹</button>' +
+          '<span class="cal-title">' + y + '年' + (m + 1) + '月</span>' +
+          '<button type="button" class="cal-nav" data-cal="next" aria-label="下个月">›</button>' +
+        '</div>' +
+        '<div class="cal-week">' + week + '</div>' +
+        '<div class="cal-grid">' + cells.join('') + '</div>' +
+      '</div>';
+
+    const picked = list.filter(function (item) { return dayKey(item.date) === calPick; });
+    let detail = '';
+
+    if (picked.length) {
+      detail = picked.slice().reverse().map(function (item) {
+        const text = String(item.text || '');
+        const clock = (String(item.date || '').split(' ')[1]) || '';
+        return '<article class="dcard">' +
+            '<div class="dcard-date">' + esc(calPick) + (clock ? ' · ' + esc(clock) : '') + '</div>' +
+            '<p class="dcard-text">' + esc(text) + '</p>' +
+            '<div class="dcard-meta">' + text.length + ' 字</div>' +
+          '</article>';
+      }).join('');
+    } else {
+      detail = '<div class="sheet"><div class="empty-state">这天还空着。<br>想补就补，不想就算了。</div></div>';
+    }
+
+    const sub = y + '年' + (m + 1) + '月 · 写过 ' + wrote + ' 天';
+
+    return hero('CALENDAR', '日历', sub) + grid +
+      '<div class="album-date-band">' + (calPick === todayKey ? '今天' : esc(calPick)) + '</div>' + detail;
+  }
+
+  function calendarBind(bodyEl) {
+    Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-cal]'), function (btn) {
+      btn.addEventListener('click', function () {
+        const base = calMonth || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const step = btn.dataset.cal === 'prev' ? -1 : 1;
+        calMonth = new Date(base.getFullYear(), base.getMonth() + step, 1);
+        calPick = '';
+        window.Router.reopen('calendar');
+      });
+    });
+
+    Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-day]'), function (btn) {
+      btn.addEventListener('click', function () {
+        calPick = btn.dataset.day;
+        window.Router.reopen('calendar');
+      });
+    });
+  }
+
+  window.Pages = {
+    diary: diary,
+    diaryBind: diaryBind,
+    album: album,
+    albumBind: albumBind,
+    calendar: calendar,
+    calendarBind: calendarBind,
+    hero: hero
+  };
 })();
