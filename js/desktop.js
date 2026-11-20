@@ -1,4 +1,4 @@
-/* desktop.js · 桌面：网格 + 横向翻页 + 长按拖动换位；时钟改为首屏组件 */
+/* desktop.js · 桌面：网格 + 横向翻页 + 长按拖动换位 */
 (function () {
   const D = document;
 
@@ -36,7 +36,7 @@
     const W = window.Widgets;
     if (!W) return '';
     if (index === 0) return W.clock() + W.days() + W.stats();
-    if (index === 1) return W.calendar() + W.weatherCard() + W.quote();
+    if (index === 1) return W.calendar() + W.weatherCard() + W.quote() + W.memoryCard() + W.quota();
     return '';
   }
 
@@ -239,7 +239,7 @@
           ids[from] = ids[to];
           ids[to] = tmp;
           XW.S.appOrder = ids;
-          XW.save('appOrder');
+          XW.S.save('appOrder');
         }
       }
 
