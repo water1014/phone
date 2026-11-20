@@ -2,6 +2,7 @@
    页面内容由 layout.js 的布局表决定，这边只管外壳（侧栏 / dock / 分页点） */
 (function () {
   const D = document;
+  const Q = String.fromCharCode(34);
 
   let screenEl = null;
   let suppressTap = false;
@@ -9,66 +10,49 @@
   const DOCK = ['chat', 'diary', 'album', 'memory'];
   const TOTAL = 4;
 
-  const RAIL_META = {
-    chat: ['CHAT', '回到你们正在说的话'],
-    memory: ['MEMORY', '你让我记住的事'],
-    diary: ['DIARY', '一天一页，写给以后'],
-    album: ['ALBUM', '存在这里的照片'],
-    letter: ['LETTER', '没说完的话'],
-    music: ['MUSIC', '现在在听什么'],
-    calendar: ['CALENDAR', '写过的日子都在上面'],
-    plans: ['PLANS', '接下来要做的'],
-    accounting: ['LEDGER', '每天花了多少'],
-    weather: ['WEATHER', '今天穿什么'],
-    mood: ['MOOD', '今天的情绪'],
-    health: ['HEALTH', '身体怎么样'],
-    cycle: ['CYCLE', '日子与记录'],
-    study: ['STUDY', '要背的那些'],
-    quotes: ['QUOTES', '挑出来的一句话'],
-    moments: ['MOMENTS', '我们最近'],
-    favorites: ['SAVED', '想留住的'],
-    games: ['GAMES', '一起玩两局'],
-    studio: ['STUDIO', '画一张给你'],
-    worldbook: ['WORLDBOOK', '我们的设定'],
-    windows: ['WINDOWS', '望出去的地方'],
-    mcp: ['MCP', '接进来的工具'],
-    beautify: ['STYLE', '换个样子'],
-    settings: ['SETTINGS', '名字、纪念日、接口']
-  };
-
-  const RAIL_GROUPS = [
-    { title: '日常', ids: ['chat', 'memory', 'diary', 'album'] },
-    { title: '记录', ids: ['calendar', 'plans', 'accounting', 'weather', 'mood', 'health', 'cycle', 'study', 'quotes'] },
-    { title: '我们', ids: ['letter', 'music', 'moments', 'favorites', 'games', 'studio'] },
-    { title: '其他', ids: ['worldbook', 'windows', 'mcp', 'beautify', 'settings'] }
-  ];
-
   function pagesHtml() {
     if (window.Layout && Layout.pagesHtml) return Layout.pagesHtml();
     return '';
+  }
+
+  function faceHtml(who) {
+    let url = '';
+    try {
+      url = localStorage.getItem(who === 'his' ? 'xw_ava_his' : 'xw_ava_her') || '';
+    } catch (e) { url = ''; }
+
+    if (url) {
+      return '<span class="rail-face"><img src=' + Q +
+        url.split(Q).join('%22') + Q + ' alt=' + Q + Q + '></span>';
+    }
+    return '<span class="rail-face">+</span>';
+  }
+
+  function nameOf(who) {
+    const raw = who === 'his' ? XW.S.hisName : XW.S.herName;
+    const t = String(raw == null ? '' : raw).trim();
+    return t || '他';
   }
 
   function railHtml() {
     const love = new Date(XW.S.loveDate || '2025-01-01');
     const days = UI.diffDay(love, new Date());
 
-    const body = RAIL_GROUPS.map(function (group) {
-      const rows = group.ids.map(function (id) {
-        const app = window.Apps.find(id);
-        if (!app) return '';
-        const meta = RAIL_META[id] || ['', ''];
-        return '<button type="button" class="rail-row" data-app="' + id + '">' +
-            '<span class="rail-main">' +
-              '<span class="rail-name">' + app.name + '<i>' + meta[0] + '</i></span>' +
-              '<span class="rail-desc">' + meta[1] + '</span>' +
-            '</span>' +
-            '<span class="rail-arrow">›</span></button>';
-      }).join('');
-      return '<div class="rail-group"><div class="rail-group-title">' + group.title + '</div>' + rows + '</div>';
-    }).join('');
-
-    return '<div class="rail-head"><b>XIAOWO</b>' +
-        '<span class="rail-day">第 ' + days + ' 天<em>OUR SPACE</em></span></div>' + body;
+    return '<div class="rail-head">' +
+        '<span class="rail-kicker">Together</span>' +
+        '<div class="rail-days"><b>' + days + '</b><i>days</i></div>' +
+        '<div class="rail-who">' +
+          faceHtml('his') +
+          '<span class="rail-amp">&amp;</span>' +
+          faceHtml('her') +
+        '</div>' +
+        '<div class="rail-names">' + UI.esc(nameOf('his')) + ' &amp; ' + UI.esc(nameOf('her')) + '</div>' +
+      '</div>' +
+      '<div class="rail-rule"></div>' +
+      '<button type="button" class="rail-act" data-act="reset">重排首页</button>' +
+      '<button type="button" class="rail-act" data-app="beautify">换个样子</button>' +
+      '<button type="button" class="rail-act" data-app="settings">名字与纪念日</button>' +
+      '<div class="rail-foot">XIAOWO · OUR SPACE</div>';
   }
 
   function dockHtml() {
@@ -107,9 +91,7 @@
   function renderAll() {
     screenEl.innerHTML =
       '<div class="desk">' +
-        '<button type="button" class="rail-toggle overlay" data-rail="1" aria-label="打开侧栏">' +
-          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h13M4 12h13M4 17h13"/></svg>' +
-        '</button>' +
+        '<button type="button" class="rail-toggle overlay" data-rail="1" aria-label="打开"><i></i></button>' +
         '<main class="home" id="home">' + pagesHtml() + '</main>' +
         '<div class="pager" id="pager">' + dotsHtml() + '</div>' +
         '<nav class="dock" id="dock">' + dockHtml() + '</nav>' +
@@ -176,6 +158,19 @@
       if (event.target.closest('[data-more]')) { event.preventDefault(); openDrawer(); return; }
       if (event.target.closest('[data-close]') || event.target.id === 'drawer' || event.target.id === 'scrim') {
         event.preventDefault(); closeDrawer(); closeRail(); return;
+      }
+
+      const act = event.target.closest('[data-act]');
+      if (act) {
+        event.preventDefault();
+        const what = act.getAttribute('data-act');
+        closeRail();
+        if (what === 'reset' && window.Layout && Layout.reset) {
+          Layout.reset();
+          renderAll();
+          UI.toast('首页摆回原样');
+        }
+        return;
       }
 
       const btn = event.target.closest('[data-app]');

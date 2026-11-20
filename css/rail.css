@@ -1,166 +1,179 @@
-/* rail.css · 隐藏式侧栏（分组菜单，px 尺度） */
+/* rail.css · 隐藏式侧栏 */
 
-.topline {
-  display: flex;
-  align-items: center;
-  padding: 0 2px 2px;
-}
-
-.rail-toggle {
+/* ── 触发：左上角一个极淡的小点 ── */
+.rail-toggle.overlay{
+  position: fixed;
+  top: 12px;
+  left: 8px;
+  z-index: 40;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
   padding: 0;
-  border: 1px solid rgba(0, 0, 0, .04);
-  border-radius: 13px;
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .045);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
 }
-.rail-toggle:active { background: rgba(141, 154, 168, .07); }
-.rail-toggle svg {
-  width: 19px;
-  height: 19px;
-  fill: none;
-  stroke: #6f7f90;
-  stroke-width: 1.65;
-  stroke-linecap: round;
+
+.rail-toggle.overlay i{
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #dcd7cc;
+  transition: transform .22s ease, background .22s ease;
+}
+
+.rail-toggle.overlay:active i{
+  transform: scale(1.7);
+  background: #b5ae9e;
 }
 
 /* ── 侧栏 ── */
-.rail {
+.rail{
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   z-index: 70;
-  width: 296px;
-  max-width: 84vw;
+  width: 300px;
+  max-width: 82vw;
   display: flex !important;
   flex-direction: column;
-  gap: 0;
-  padding: 22px 0 calc(28px + env(safe-area-inset-bottom, 0px));
+  padding: 54px 0 calc(30px + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   background: #ffffff;
   border-radius: 0 22px 22px 0;
-  box-shadow: 16px 0 44px rgba(0, 0, 0, .1);
+  box-shadow: 18px 0 50px rgba(0, 0, 0, .09);
   transform: translateX(-104%);
-  transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+  transition: transform .32s cubic-bezier(.4, 0, .2, 1);
   will-change: transform;
 }
-.rail.open { transform: translateX(0); }
 
-/* 顶部 */
-.rail-head {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding: 0 24px 14px;
-}
-.rail-head b {
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 3.2px;
-  color: #c3cbd2;
-}
-.rail-head .rail-day {
-  font-size: 25px;
-  font-weight: 500;
-  line-height: 1.1;
-  letter-spacing: -.2px;
-  color: #2c3034;
-}
-.rail-head .rail-day em {
-  font-style: normal;
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 2px;
-  color: #adb7c0;
-  margin-left: 8px;
+.rail.open{ transform: translateX(0); }
+
+/* 顶部：天数 + 头像 + 名字 */
+.rail-head{ padding: 0 26px; }
+
+.rail-kicker{
+  display: block;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 14px;
+  letter-spacing: 2.2px;
+  color: #b6b0a6;
 }
 
-/* 分组标题 */
-.rail-group-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 20px 24px 6px;
-  font-size: 10.5px;
-  letter-spacing: 3px;
-  color: #b9c2ca;
-}
-.rail-group-title::after {
-  content: '';
-  flex: 1 1 auto;
-  height: 1px;
-  background: rgba(0, 0, 0, .05);
-}
-
-/* 菜单行 */
-.rail-row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 13px 24px 12px;
-  border: 0;
-  background: transparent;
-  font: inherit;
-  text-align: left;
-}
-.rail-row:active { background: rgba(141, 154, 168, .07); }
-
-.rail-row .rail-main {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.rail-row .rail-name {
+.rail-days{
   display: flex;
   align-items: baseline;
   gap: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  letter-spacing: .3px;
-  color: #32363a;
+  margin-top: 9px;
 }
-.rail-row .rail-name i {
-  font-style: normal;
-  font-family: var(--mono);
-  font-size: 9.5px;
+
+.rail-days b{
+  font-family: "Cormorant Garamond", Georgia, serif;
   font-weight: 400;
-  letter-spacing: 1.8px;
-  color: #c8cfd5;
-}
-
-.rail-row .rail-desc {
-  font-size: 12.5px;
-  line-height: 1.45;
-  letter-spacing: .2px;
-  color: #9ba5ae;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.rail-row .rail-arrow {
-  flex: 0 0 auto;
-  color: #dfe4e8;
-  font-size: 17px;
+  font-size: 46px;
   line-height: 1;
+  letter-spacing: 1px;
+  color: #2a2723;
 }
 
-.scrim {
+.rail-days i{
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 13px;
+  letter-spacing: 1.4px;
+  color: #a8a196;
+}
+
+.rail-who{
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 24px;
+}
+
+.rail-face{
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f4f1ea;
+  border: 1px solid #ece7dd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #c9c3b8;
+}
+
+.rail-face img{
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rail-amp{
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 12px;
+  color: #cfc9be;
+}
+
+.rail-names{
+  margin-top: 11px;
+  font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
+  font-size: 15px;
+  letter-spacing: .8px;
+  color: #3a3733;
+}
+
+/* 分隔线 */
+.rail-rule{
+  height: 1px;
+  margin: 26px 26px 6px;
+  background: rgba(0, 0, 0, .055);
+}
+
+/* 操作行 */
+.rail-act{
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 15px 26px;
+  border: 0;
+  background: transparent;
+  font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
+  font-size: 14px;
+  letter-spacing: .8px;
+  color: #4a4640;
+  text-align: left;
+}
+
+.rail-act:active{ background: rgba(0, 0, 0, .03); }
+
+.rail-foot{
+  margin-top: auto;
+  padding: 26px 26px 0;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 9.5px;
+  letter-spacing: 2.6px;
+  color: #cdc7bc;
+}
+
+/* 遮罩 */
+.scrim{
   position: fixed;
   inset: 0;
   z-index: 65;
-  background: rgba(34, 40, 46, .18);
+  background: rgba(34, 40, 46, .14);
 }
-.scrim[hidden] { display: none; }
+.scrim[hidden]{ display: none; }
