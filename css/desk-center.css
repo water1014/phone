@@ -1,0 +1,40 @@
+/* desk-center.css · 第一页卡片内容居中 */
+
+.page:first-child .wdg-clock,
+.page:first-child .wdg-days {
+  text-align: center;
+}
+
+/* 时钟 */
+.page:first-child .wdg-clock .dclock {
+  text-align: center;
+  letter-spacing: -.01em;
+}
+.page:first-child .wdg-clock .ddate {
+  text-align: center;
+  margin-top: .45rem;
+  letter-spacing: .16em;
+}
+
+/* 天数卡：上下两行都居中，胶带也跟着居中 */
+.page:first-child .days-top {
+  justify-content: center;
+  gap: .75rem;
+}
+.page:first-child .days-num {
+  justify-content: center;
+}
+.page:first-child .days-rule {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 78%;
+}
+.page:first-child .wdg-names {
+  text-align: center;
+  letter-spacing: .12em;
+}
+.page:first-child .wdg-days::before {
+  left: 50%;
+  margin-left: -1.6rem;
+  transform: rotate(-1.4deg);
+}
