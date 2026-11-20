@@ -1,0 +1,161 @@
+/* journal.css · 手账层：纸、胶带、印章、便签折角
+   不改结构，只往现有元素上叠质感。最后加载。 */
+
+/* 纸张点阵：只在卡片之间的缝隙里看得见 */
+.app-body {
+  background-image: radial-gradient(rgba(0, 0, 0, .045) 1px, transparent 1px);
+  background-size: 18px 18px;
+  background-position: 0 0;
+}
+html.dark .app-body {
+  background-image: radial-gradient(rgba(255, 255, 255, .055) 1px, transparent 1px);
+}
+
+.sheet,
+.dcard,
+.wdg { position: relative; }
+
+/* 胶带：钉在卡片上沿，交替歪一点 */
+.dcard::before {
+  content: '';
+  position: absolute;
+  top: -.42rem;
+  left: 50%;
+  width: 3.1rem;
+  height: .82rem;
+  margin-left: -1.55rem;
+  border-radius: 1px;
+  background: rgba(141, 154, 168, .17);
+  box-shadow: inset 0 0 0 1px rgba(141, 154, 168, .09);
+  transform: rotate(-1.3deg);
+  pointer-events: none;
+}
+.dcard:nth-of-type(2n)::before { transform: rotate(1.2deg); }
+.dcard:nth-of-type(3n)::before { margin-left: -1.9rem; }
+
+.dcard { overflow: visible; }
+
+/* 活页边：一道虚线，像从本子上撕下来的 */
+.dcard-text {
+  padding-left: .9rem;
+  border-left: 1px dashed rgba(0, 0, 0, .085);
+}
+
+/* 日期做成印章 */
+.dcard-date {
+  display: inline-block;
+  padding: .1rem .36rem .08rem;
+  border: 1px dashed rgba(141, 154, 168, .55);
+  border-radius: 3px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .42rem;
+  letter-spacing: .04em;
+  color: #8d9aa8;
+}
+
+/* 字数像盖在右下角的小章 */
+.dcard-meta {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .4rem;
+  color: #b8b8b8;
+}
+
+/* 标题下一条手账式点线 */
+.hero-title {
+  display: inline-block;
+  padding-bottom: .16rem;
+  border-bottom: 2px dotted rgba(141, 154, 168, .40);
+}
+
+/* 分隔小标：像写在页边的批注 */
+.album-date-band {
+  color: #a3aeb9;
+  letter-spacing: .08em;
+}
+
+/* ══ 聊天：一张手账页 ══ */
+.chat-status {
+  padding-bottom: .5rem;
+  border-bottom: 1px dashed rgba(0, 0, 0, .07);
+}
+
+/* 气泡做成便签：右下折角 */
+.bub { position: relative; }
+
+.msg-row.ta .bub:not(.me)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: .5rem;
+  height: .5rem;
+  background: linear-gradient(135deg, transparent 50%, rgba(0, 0, 0, .045) 50%);
+  border-bottom-right-radius: 15px;
+  pointer-events: none;
+}
+
+.msg-row.me .bub.me::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: .5rem;
+  height: .5rem;
+  background: linear-gradient(45deg, rgba(255, 255, 255, .16) 50%, transparent 50%);
+  border-bottom-left-radius: 15px;
+  pointer-events: none;
+}
+
+/* 旁白：虚线竖边，像在页边写的话 */
+.narr {
+  border-left-style: dashed;
+  border-left-width: 1px;
+  padding-left: .7rem;
+}
+
+/* 思考：虚线框 */
+.think-body {
+  border-style: dashed;
+  border-width: 1px;
+}
+
+/* 快捷胶囊、时间章：都用虚线，像贴纸 */
+.quick-chip {
+  border-style: dashed;
+  border-color: rgba(141, 154, 168, .50);
+  background: #ffffff;
+  color: #7d8b99;
+}
+
+.msg-tag,
+.chat-time .kicker {
+  border-style: dashed;
+  border-color: rgba(0, 0, 0, .09);
+}
+
+/* 事件卡：便条纸，略歪 */
+.chat-event span {
+  border-style: dashed;
+  border-color: rgba(141, 154, 168, .45);
+  transform: rotate(-.35deg);
+}
+
+/* 输入框：像手账本上的线格 */
+.composer input {
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .05);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(50% - 1px),
+    rgba(0, 0, 0, .03) calc(50% - 1px),
+    rgba(0, 0, 0, .03) 50%
+  );
+}
+
+/* 日历：虚线外框，像贴上去的月历页 */
+.cal-sheet {
+  border: 1px dashed rgba(141, 154, 168, .28);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .03);
+}
