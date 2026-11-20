@@ -22,7 +22,8 @@
 #home .gi2{ grid-column: span 2; }
 #home .gi4{ grid-column: span 4; }
 
-#home .gi > *{
+/* 注意：不能写成 #home .gi > *，否则 × 按钮会被撑成满宽 */
+#home .gi > *:not(.gi-del){
   width: 100%;
   margin-bottom: 0;
   margin-top: 0;
@@ -75,14 +76,14 @@
   padding: 7px 14px;
   border: 0;
   border-radius: 15px;
-  background: rgba(255, 255, 255, .78);
+  background: rgba(255, 255, 255, .82);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   color: #7b7568;
   font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
   font-size: 11.5px;
   letter-spacing: 1.2px;
-  box-shadow: 0 1px 10px rgba(0, 0, 0, .07);
+  box-shadow: 0 1px 10px rgba(0, 0, 0, .08);
 }
 
 #gi-edit.on{
@@ -114,44 +115,42 @@
 /* ============ 编辑态：整桌轻抖 ============ */
 
 @keyframes gi-wobble{
-  0%   { transform: rotate(-.55deg); }
-  50%  { transform: rotate(.55deg); }
-  100% { transform: rotate(-.55deg); }
+  0%   { transform: rotate(-.5deg); }
+  50%  { transform: rotate(.5deg); }
+  100% { transform: rotate(-.5deg); }
 }
 
 #home.editing .page{ padding-top: calc(48px + env(safe-area-inset-top, 0px)); }
 
-#home.editing .gi{
-  animation: gi-wobble .34s ease-in-out infinite;
-}
+#home.editing .gi{ animation: gi-wobble .36s ease-in-out infinite; }
 
 #home.editing .gi:nth-child(2n){
-  animation-duration: .29s;
+  animation-duration: .31s;
   animation-direction: reverse;
 }
 
 #home.editing .gi.lift{ animation: none; }
 
-/* 删除点：编辑态下每块都有 */
+/* 删除点：编辑态下每块右上角一个小圆 */
 .gi-del{
   position: absolute;
   top: -7px;
   right: -7px;
-  width: 22px;
-  height: 22px;
+  width: 19px;
+  height: 19px;
   padding: 0;
   display: none;
   align-items: center;
   justify-content: center;
   border: 0;
   border-radius: 50%;
-  background: #2c2a27;
-  color: #ffffff;
+  background: rgba(255, 255, 255, .95);
+  color: #4a453c;
   font-family: -apple-system, sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1;
-  z-index: 14;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+  z-index: 16;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, .2), inset 0 0 0 .5px rgba(0, 0, 0, .05);
 }
 
 #home.editing .gi .gi-del{ display: flex; }
@@ -163,16 +162,30 @@
   position: relative;
   z-index: 12;
   pointer-events: none;
-  opacity: .96;
+  opacity: .88;
   border-radius: 16px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, .18);
 }
 
+/* 落点：白圈 + 深色虚线，花壁纸上也看得见 */
 #home .gi.dc-drop{
-  outline: 1.5px dashed #b3ab9c;
-  outline-offset: 2px;
+  outline: 2px dashed rgba(52, 46, 38, .75);
+  outline-offset: 3px;
   border-radius: 16px;
-  background-color: rgba(0, 0, 0, .02);
+  background-color: rgba(255, 255, 255, .34);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, .55);
+}
+
+/* 正在被拖的那块也带一层白圈，跟落点区分开 */
+#home .gi.lift::after{
+  content: '';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  bottom: -8px;
+  left: -8px;
+  border-radius: 20px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, .22);
+  pointer-events: none;
 }
 
 #home.dragging{
@@ -184,20 +197,25 @@
 
 #dock{ overflow: visible; }
 
-#dock.dock-drop{ outline: 1.5px dashed #b3ab9c; outline-offset: 3px; }
+#dock.dock-drop{
+  outline: 2px dashed rgba(52, 46, 38, .75);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, .5);
+}
 
 .dock-item.drop-target{
-  background: rgba(0, 0, 0, .055);
+  background: rgba(255, 255, 255, .5);
   border-radius: 14px;
+  box-shadow: inset 0 0 0 1.5px rgba(52, 46, 38, .5);
 }
 
 .dock-item.dk-lift{
   position: relative;
   z-index: 60;
   pointer-events: none;
-  opacity: .96;
+  opacity: .9;
   border-radius: 14px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, .18);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .2);
 }
 
 /* ============ 底部提示 ============ */
@@ -272,12 +290,7 @@
   color: #c9c3b9;
 }
 
-.gip-grid{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 9px;
-}
+.gip-grid{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
 
 .gip-item{
   padding: 9px 14px;
@@ -303,16 +316,25 @@
   color: #b8b2a7;
 }
 
-/* 夜里 / 纸里 */
+/* ============ 夜 / 纸 ============ */
 html[data-skin="night"] .gip{ background: #1e1c1a; }
 html[data-skin="night"] .gip-head span{ color: #ece6da; }
 html[data-skin="night"] .gip-x{ background: #2a2724; color: #a49d90; }
 html[data-skin="night"] .gip-item{ background: #252220; border-color: rgba(255,255,255,.07); color: #a49d90; }
 html[data-skin="night"] .gip-item.on{ background: #2f2c28; border-color: #2f2c28; color: #6f6a61; }
-html[data-skin="night"] .gi-del{ background: #ece6da; color: #1a1917; }
-html[data-skin="night"] #gi-edit{ background: rgba(38, 35, 32, .82); color: #b8b1a4; }
+
+html[data-skin="night"] .gi-del{ background: rgba(38, 35, 32, .95); color: #e8e2d6; }
+html[data-skin="night"] #gi-edit{ background: rgba(38, 35, 32, .85); color: #b8b1a4; }
 html[data-skin="night"] #gi-edit.on{ background: rgba(236, 230, 218, .92); color: #1a1917; }
 html[data-skin="night"] #gi-plus{ background: rgba(236, 230, 218, .92); color: #1a1917; }
 
+html[data-skin="night"] #home .gi.dc-drop{
+  outline-color: rgba(255, 255, 255, .74);
+  background-color: rgba(255, 255, 255, .10);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, .3);
+}
+
+html[data-skin="night"] #dock.dock-drop{ outline-color: rgba(255, 255, 255, .74); }
+
 html[data-skin="paper"] .gip{ background: #fbf7ef; }
-html[data-skin="paper"] #gi-edit{ background: rgba(249, 244, 234, .85); }
+html[data-skin="paper"] #gi-edit{ background: rgba(249, 244, 234, .88); }
