@@ -21,7 +21,7 @@
   }
 
   function clockHtml() {
-    return '<section class="wdg-clock">' +
+    return '<section class="wdg-clock span2">' +
         '<div class="dclock" id="desk-clock">--:--</div>' +
         '<div class="ddate" id="desk-date"></div>' +
       '</section>';
@@ -31,34 +31,25 @@
     const love = new Date(XW.S.loveDate || '2025-01-01');
     const days = UI.diffDay(love, new Date());
     return '<section class="wdg wdg-days">' +
-        '<div class="days-top">' +
-          '<span class="kicker">TOGETHER</span>' +
-          '<span class="days-since">SINCE ' + UI.fmtYmd(love) + '</span>' +
-        '</div>' +
+        '<div class="days-top"><span class="kicker">TOGETHER</span></div>' +
         '<div class="days-num">' + days + '<small>DAYS</small></div>' +
         '<div class="days-rule"></div>' +
         '<div class="wdg-names">' + UI.esc(XW.S.hisName) + ' &amp; ' + UI.esc(XW.S.herName) + '</div>' +
       '</section>';
   }
 
-  /* 三格：三个真数字 */
-  function trioHtml() {
-    function cell(appId, num, label) {
-      return '<button type="button" data-app="' + appId + '">' +
-          '<b>' + num + '</b>' +
-          '<i>' + label + '</i>' +
+  /* 2x2 App 小方块，和旁边的卡拼在一起 */
+  function appGridHtml() {
+    const picks = ['diary', 'album', 'memory', 'music'];
+    const cells = picks.map(function (id) {
+      const app = window.Apps.find(id);
+      if (!app) return '';
+      return '<button type="button" class="appcell" data-app="' + id + '">' +
+          UI.icon(app.icon) +
+          '<span>' + app.name + '</span>' +
         '</button>';
-    }
-
-    const diary = (Array.isArray(XW.S.diary) ? XW.S.diary : []).length;
-    const photos = (Array.isArray(XW.S.photos) ? XW.S.photos : []).length;
-    const notes = (Array.isArray(XW.S.notes) ? XW.S.notes : []).length;
-
-    return '<section class="trio">' +
-        cell('diary', diary, 'DIARY') +
-        cell('album', photos, 'ALBUM') +
-        cell('memory', notes, 'MEMORY') +
-      '</section>';
+    }).join('');
+    return '<div class="appgrid">' + cells + '</div>';
   }
 
   function weatherCardHtml() {
@@ -85,6 +76,32 @@
       '</section>';
   }
 
+  function nowPlayingHtml() {
+    const list = Array.isArray(XW.S.songs) ? XW.S.songs : [];
+    const id = Number(XW.S.nowSong) || 0;
+    let now = null;
+    if (id) {
+      for (let i = 0; i < list.length; i++) {
+        if (Number(list[i].id) === id) { now = list[i]; break; }
+      }
+    }
+
+    if (!now) {
+      return '<section class="wdg wdg-now span2" data-app="music" role="button" tabindex="0">' +
+          '<div class="now-head"><span class="kicker">NOW PLAYING</span><span class="now-artist">—</span></div>' +
+          '<div class="now-empty">还没挑一首。点这里去加。</div>' +
+        '</section>';
+    }
+
+    return '<section class="wdg wdg-now span2" data-app="music" role="button" tabindex="0">' +
+        '<div class="now-head">' +
+          '<span class="kicker">NOW PLAYING</span>' +
+          '<span class="now-artist">' + (now.artist ? esc(now.artist) : '—') + '</span>' +
+        '</div>' +
+        '<div class="now-title">' + esc(now.title) + '</div>' +
+      '</section>';
+  }
+
   function rowItem(appId, cn, en, value) {
     const app = window.Apps.find(appId);
     const icon = app ? UI.icon(app.icon) : '';
@@ -101,7 +118,7 @@
     const today = (now.getMonth() + 1) + '/' + now.getDate();
     const chat = (Array.isArray(XW.S.chat) ? XW.S.chat : []).length;
 
-    return '<section class="rows">' +
+    return '<section class="rows span2">' +
         rowItem('calendar', '日历', 'CALENDAR', today) +
         rowItem('chat', '聊天', 'CONVERSATION', chat + ' 条') +
       '</section>';
@@ -129,7 +146,7 @@
       cells += '<button type="button" class="' + cls + '" data-day="' + key + '"><i>' + day + '</i></button>';
     }
 
-    return '<section class="wdg wdg-cal">' +
+    return '<section class="wdg wdg-cal span2">' +
         '<div class="cal-head">' +
           '<span class="kicker">CALENDAR</span>' +
           '<span class="cal-ym">' + (month + 1) + '月</span>' +
@@ -178,13 +195,13 @@
     const line = text.split(/\n/)[0].slice(0, 80);
 
     if (!line) {
-      return '<section class="wdg wdg-quote" data-app="diary" role="button" tabindex="0">' +
+      return '<section class="wdg wdg-quote span2" data-app="diary" role="button" tabindex="0">' +
           '<div class="quote-head"><span class="kicker">NOTE</span><span class="quote-date">还没写</span></div>' +
           '<p class="quote-text">今天也可以就这么过。<br>想写的时候点这里。</p>' +
         '</section>';
     }
 
-    return '<section class="wdg wdg-quote" data-app="diary" role="button" tabindex="0">' +
+    return '<section class="wdg wdg-quote span2" data-app="diary" role="button" tabindex="0">' +
         '<div class="quote-head">' +
           '<span class="kicker">NOTE</span>' +
           '<span class="quote-date">' + esc(String(last.date || '').slice(5)) + '</span>' +
@@ -206,9 +223,10 @@
   window.Widgets = {
     clock: clockHtml,
     days: daysHtml,
-    trio: trioHtml,
+    appGrid: appGridHtml,
     weatherCard: weatherCardHtml,
     quota: quotaHtml,
+    nowPlaying: nowPlayingHtml,
     rows: rowsHtml,
     calendar: calendarHtml,
     quote: quoteHtml,
