@@ -1,10 +1,13 @@
-/* layout.js · 首页布局表
-   每页一个四列网格，组件与 App 都是网格上的一个块。
-   长按任一一块 → 进入编辑态（整桌轻抖），此时拖任何一块都直接跟手。
-   自制小组件（mod:xxx）在编辑态下左上角有 ×，点它就从桌面删掉。 */
+/* layout.js · 首页布局表 + dock
+   1) 每页一个四列网格，组件与 App 都是网格上的块
+   2) 长按一块 → 编辑态（整桌轻抖），此时拖任何一块都直接跟手
+   3) dock 里的 App 也能长按拖：在 dock 内换位、拖进页面、页面拖进 dock
+   4) 自制小组件在编辑态下左上角有 × */
 (function () {
   const D = document;
   const K = 'xw_layout';
+  const DK = 'xw_dock';
+  const DOCK_DEF = ['chat', 'diary', 'album', 'memory'];
 
   const SPAN = {
     collage: 4, profile: 4, days: 4, quote: 4,
@@ -23,6 +26,7 @@
   ];
 
   let st = null;
+  let dst = null;
   let justDragged = false;
   let editing = false;
 
@@ -82,6 +86,199 @@
   function write(list) {
     try { localStorage.setItem(K, JSON.stringify(list)); } catch (e) {}
   }
+
+  /* ============ dock 顺序 ============ */
+
+  function dockOrder() {
+    let arr = null;
+    try {
+      const raw = localStorage.getItem(DK);
+      arr = raw ? JSON.parse(raw) : null;
+    } catch (e) { arr = null; }
+
+    if (!Array.isArray(arr) || !arr.length) arr = DOCK_DEF.slice(0);
+
+    return arr.filter(function (id) { return !!window.Apps.find(id); });
+  }
+
+  function setDockOrder(arr) {
+    const clean = arr.filter(function (id) { return !!window.Apps.find(id); });
+    try { localStorage.setItem(DK, JSON.stringify(clean)); } catch (e) {}
+    try { if (window.XW) { XW.S.dockOrder = clean.slice(0); XW.save('dockOrder'); } } catch (e) {}
+  }
+
+  function applyDockOrder(root) {
+    const dock = root && root.querySelector ? root.querySelector('#dock') : D.getElementById('dock');
+    if (!dock) return;
+
+    const order = dockOrder();
+    const more = dock.querySelector('[data-more]');
+
+    Array.prototype.forEach.call(dock.querySelectorAll('.dock-item[data-app]'), function (b) {
+      if (order.indexOf(b.getAttribute('data-app')) < 0 && b.parentNode) {
+        b.parentNode.removeChild(b);
+      }
+    });
+
+    order.forEach(function (id) {
+      let btn = dock.querySelector('.dock-item[data-app="' + id + '"]');
+
+      if (!btn) {
+        const app = window.Apps.find(id);
+        if (!app) return;
+        btn = D.createElement('button');
+        btn.type = 'button';
+        btn.className = 'dock-item';
+        btn.setAttribute('data-app', id);
+        btn.innerHTML = UI.icon(app.icon) + '<span>' + app.name + '</span>';
+      }
+
+      dock.appendChild(btn);
+    });
+
+    if (more) dock.appendChild(more);
+  }
+
+  /* ============ 数据层的各种换法 ============ */
+
+  function swapPageKeys(aKey, bKey) {
+    if (aKey === bKey) return false;
+
+    const list = read();
+    let done = false;
+
+    list.forEach(function (p) {
+      const i = p.indexOf(aKey);
+      const j = p.indexOf(bKey);
+      if (i >= 0 && j >= 0) { p[i] = bKey; p[j] = aKey; done = true; return; }
+      if (i >= 0) { p[i] = bKey; done = true; }
+      if (j >= 0) { p[j] = aKey; done = true; }
+    });
+
+    if (done) write(list);
+    return done;
+  }
+
+  function moveKeyToPageEnd(key, pageIndex) {
+    const list = read();
+    let found = false;
+
+    list.forEach(function (p) {
+      const i = p.indexOf(key);
+      if (i >= 0) { p.splice(i, 1); found = true; }
+    });
+
+    if (!found) return false;
+
+    while (list.length <= pageIndex) list.push([]);
+    list[pageIndex].push(key);
+    write(list);
+    return true;
+  }
+
+  /* 页面上的 app:X 与 dock 里的 Y 对调 */
+  function swapPageDock(giKey, dockId) {
+    if (typeof giKey !== 'string' || giKey.indexOf('app:') !== 0) return false;
+
+    const x = giKey.slice(4);
+    if (x === dockId) return false;
+
+    const order = dockOrder();
+    const j = order.indexOf(dockId);
+    if (j < 0) return false;
+
+    const list = read();
+    let hit = false;
+
+    list.forEach(function (p) {
+      const i = p.indexOf(giKey);
+      if (i >= 0) { p[i] = 'app:' + dockId; hit = true; }
+    });
+
+    if (!hit) return false;
+
+    order[j] = x;
+    setDockOrder(order);
+    write(list);
+    return true;
+  }
+
+  /* 页面上的 app:X 拖到 dock 空白 → 进 dock 末尾 */
+  function pageToDockEnd(giKey) {
+    if (typeof giKey !== 'string' || giKey.indexOf('app:') !== 0) return false;
+
+    const x = giKey.slice(4);
+    const order = dockOrder();
+    if (order.indexOf(x) >= 0) return false;
+    if (order.length >= 6) return false;
+
+    const list = read();
+    let hit = false;
+
+    list.forEach(function (p) {
+      const i = p.indexOf(giKey);
+      if (i >= 0) { p.splice(i, 1); hit = true; }
+    });
+
+    if (!hit) return false;
+
+    order.push(x);
+    setDockOrder(order);
+    write(list);
+    return true;
+  }
+
+  /* dock 里的 Y 拖到页面空白 → 从 dock 拿出，落到那一页末尾 */
+  function dockToPageEnd(dockId, pageIndex) {
+    const order = dockOrder();
+    if (order.indexOf(dockId) < 0) return false;
+
+    setDockOrder(order.filter(function (x) { return x !== dockId; }));
+
+    const list = read();
+    while (list.length <= pageIndex) list.push([]);
+
+    const key = 'app:' + dockId;
+    if (list[pageIndex].indexOf(key) < 0) list[pageIndex].push(key);
+    write(list);
+    return true;
+  }
+
+  /* dock 里的 Y 拖到页面上某块 → 那块是 App 就换；是组件就把 Y 插在它前面 */
+  function dockToPageKey(dockId, giKey) {
+    if (giKey.indexOf('app:') === 0) return swapPageDock(giKey, dockId);
+
+    const list = read();
+    let done = false;
+
+    list.forEach(function (p) {
+      const i = p.indexOf(giKey);
+      if (i >= 0) { p.splice(i, 0, 'app:' + dockId); done = true; }
+    });
+
+    if (!done) return false;
+
+    setDockOrder(dockOrder().filter(function (x) { return x !== dockId; }));
+    write(list);
+    return true;
+  }
+
+  function swapDock(a, b) {
+    if (a === b) return false;
+
+    const order = dockOrder();
+    const i = order.indexOf(a);
+    const j = order.indexOf(b);
+    if (i < 0 || j < 0 || i === j) return false;
+
+    const t = order[i];
+    order[i] = order[j];
+    order[j] = t;
+    setDockOrder(order);
+    return true;
+  }
+
+  /* ============ 渲染 ============ */
 
   function htmlOf(k) {
     const W = window.Widgets || {};
@@ -176,7 +373,7 @@
     markDel();
   }
 
-  /* ============ 拖动 ============ */
+  /* ============ 落点 ============ */
 
   function pageAt(home, i) {
     const pages = home.querySelectorAll('.page');
@@ -192,7 +389,7 @@
     return Math.max(0, Math.min(pages.length - 1, i));
   }
 
-  function targetAt(x, y) {
+  function giAt(x, y, skip) {
     const home = homeEl();
     if (!home) return null;
 
@@ -203,7 +400,7 @@
     let score = Infinity;
 
     Array.prototype.forEach.call(pg.querySelectorAll('.gi'), function (gi) {
-      if (st && gi === st.item) return;
+      if (skip && gi === skip) return;
       const r = gi.getBoundingClientRect();
       if (!r.width && !r.height) return;
 
@@ -218,6 +415,71 @@
     return null;
   }
 
+  function dockAt(x, y) {
+    const dock = D.getElementById('dock');
+    if (!dock) return null;
+
+    const r = dock.getBoundingClientRect();
+    if (!r.width) return null;
+    if (x < r.left - 8 || x > r.right + 8 || y < r.top - 8 || y > r.bottom + 8) return null;
+
+    let best = null;
+    let score = Infinity;
+
+    Array.prototype.forEach.call(dock.querySelectorAll('.dock-item[data-app]'), function (b) {
+      const br = b.getBoundingClientRect();
+      const d = Math.abs(x - (br.left + br.right) / 2) + Math.abs(y - (br.top + br.bottom) / 2);
+      if (d < score) { score = d; best = b; }
+    });
+
+    return { zone: true, item: best };
+  }
+
+  function hitTest(x, y, skip) {
+    const gi = giAt(x, y, skip);
+    if (gi) return { kind: 'gi', el: gi };
+
+    const dk = dockAt(x, y);
+    if (dk) return { kind: 'dock', item: dk.item };
+
+    return null;
+  }
+
+  function sigOf(hit) {
+    if (!hit) return '';
+    if (hit.kind === 'gi') return 'gi:' + hit.el.getAttribute('data-key');
+    return 'dock:' + (hit.item ? hit.item.getAttribute('data-app') : '_end');
+  }
+
+  function clearMarks() {
+    Array.prototype.forEach.call(D.querySelectorAll('.dc-drop'), function (el) {
+      el.classList.remove('dc-drop');
+    });
+    Array.prototype.forEach.call(D.querySelectorAll('.drop-target'), function (el) {
+      el.classList.remove('drop-target');
+    });
+    const dock = D.getElementById('dock');
+    if (dock) dock.classList.remove('dock-drop');
+  }
+
+  function paintHit(hit) {
+    clearMarks();
+    if (!hit) return;
+
+    const dock = D.getElementById('dock');
+
+    if (hit.kind === 'gi') {
+      hit.el.classList.add('dc-drop');
+      if (dock) dock.classList.add('dock-drop');
+      return;
+    }
+
+    if (dock) dock.classList.add('dock-drop');
+    if (hit.item) hit.item.classList.add('drop-target');
+  }
+
+  /* ============ 页面块拖动 ============ */
+
   function onStart(ev) {
     if (!ev.touches || ev.touches.length !== 1) return;
     const home = homeEl();
@@ -228,12 +490,14 @@
 
     const t = ev.touches[0];
     st = {
+      kind: 'page',
       item: item,
       home: home,
       sx: t.clientX, sy: t.clientY,
       lx: t.clientX, ly: t.clientY,
       active: false,
-      over: null,
+      hit: null,
+      sig: '',
       side: 0,
       flipped: false,
       target: -1,
@@ -257,9 +521,20 @@
   function lift(s) {
     s.active = true;
     s.item.classList.add('lift');
-    s.home.classList.add('dragging');
-    s.home.style.scrollSnapType = 'none';
+    if (s.home) s.home.classList.add('dragging');
+    else D.body.classList.add('dragging');
     if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
+  }
+
+  function trackHit(s, x, y, skip) {
+    const hit = hitTest(x, y, skip);
+    const sig = sigOf(hit);
+
+    s.hit = hit;
+    if (sig !== s.sig) {
+      s.sig = sig;
+      paintHit(hit);
+    }
   }
 
   function onMove(ev) {
@@ -283,12 +558,7 @@
     st.item.style.transform =
       'translate(' + (t.clientX - st.sx) + 'px,' + (t.clientY - st.sy) + 'px) scale(1.05)';
 
-    const over = targetAt(t.clientX, t.clientY);
-    if (over !== st.over) {
-      if (st.over) st.over.classList.remove('dc-drop');
-      st.over = over;
-      if (over) over.classList.add('dc-drop');
-    }
+    trackHit(st, t.clientX, t.clientY, st.item);
 
     const w = st.home.clientWidth || 1;
     const side = t.clientX < 30 ? -1 : (t.clientX > w - 30 ? 1 : 0);
@@ -316,38 +586,28 @@
     const next = Math.max(0, Math.min(total - 1, cur + dir));
     if (next === cur) return;
 
-    const target = pageAt(home, next);
-    if (target && st.item.parentNode !== target) {
-      target.appendChild(st.item);
-      st.sx = st.lx;
-      st.sy = st.ly;
-      st.item.style.transform = '';
-    }
-
     st.flipped = true;
     st.target = next;
     home.scrollTo({ left: next * w, behavior: 'smooth' });
     if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
   }
 
-  function swap(a, b) {
-    if (!a || !b || a === b) return;
+  function endPage(s) {
+    const key = s.item.getAttribute('data-key');
+    const pageIdx = currentIndex(s.home);
+    const hit = s.hit;
+    let changed = false;
 
-    const pa = a.parentNode;
-    const pb = b.parentNode;
-    if (!pa || !pb) return;
+    if (hit && hit.kind === 'gi') {
+      if (hit.el !== s.item) changed = swapPageKeys(key, hit.el.getAttribute('data-key'));
+    } else if (hit && hit.kind === 'dock') {
+      if (hit.item) changed = swapPageDock(key, hit.item.getAttribute('data-app'));
+      else changed = pageToDockEnd(key);
+    } else {
+      changed = moveKeyToPageEnd(key, pageIdx);
+    }
 
-    const ma = D.createComment('sw');
-    const mb = D.createComment('sw');
-
-    pa.insertBefore(ma, a);
-    pb.insertBefore(mb, b);
-
-    pa.insertBefore(b, ma);
-    pb.insertBefore(a, mb);
-
-    pa.removeChild(ma);
-    pb.removeChild(mb);
+    return changed;
   }
 
   function onEnd() {
@@ -363,68 +623,166 @@
 
     s.item.classList.remove('lift');
     s.item.style.transform = '';
-    if (s.over) s.over.classList.remove('dc-drop');
     s.home.classList.remove('dragging');
-    s.home.style.scrollSnapType = '';
+    clearMarks();
 
-    let changed = false;
+    const changed = endPage(s);
 
-    if (s.over) {
-      swap(s.item, s.over);
-      changed = true;
-    } else {
-      const pg = pageAt(s.home, s.flipped ? s.target : currentIndex(s.home));
-      if (pg && s.item.parentNode !== pg) {
-        pg.appendChild(s.item);
-        changed = true;
-      } else if (s.flipped) {
-        changed = true;
-      }
-    }
+    justDragged = true;
+    setTimeout(function () { justDragged = false; }, 380);
 
     if (changed) {
-      save();
       if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
+      rerender();
+    }
+  }
+
+  /* ============ dock 拖动 ============ */
+
+  function startDock(ev, item) {
+    const t = ev.touches[0];
+    const home = homeEl();
+
+    dst = {
+      kind: 'dock',
+      id: item.getAttribute('data-app'),
+      item: item,
+      home: home,
+      sx: t.clientX, sy: t.clientY,
+      lx: t.clientX, ly: t.clientY,
+      active: false,
+      hit: null,
+      sig: '',
+      side: 0,
+      timer: null,
+      edge: null
+    };
+
+    dst.timer = setTimeout(function () {
+      if (!dst) return;
+      dst.timer = null;
+      dst.active = true;
+      dst.item.classList.add('dk-lift');
+      if (home) home.classList.add('dragging');
+      if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
+    }, 420);
+  }
+
+  function dockMove(ev) {
+    if (!dst) return;
+
+    const t = ev.touches && ev.touches[0];
+    if (!t) return;
+
+    dst.lx = t.clientX;
+    dst.ly = t.clientY;
+
+    if (!dst.active) {
+      if (Math.abs(t.clientX - dst.sx) > 9 || Math.abs(t.clientY - dst.sy) > 9) {
+        clearTimeout(dst.timer);
+        dst = null;
+      }
+      return;
+    }
+
+    ev.preventDefault();
+
+    dst.item.style.transform =
+      'translate(' + (t.clientX - dst.sx) + 'px,' + (t.clientY - dst.sy) + 'px) scale(1.1)';
+
+    trackHit(dst, t.clientX, t.clientY, null);
+
+    const home = dst.home;
+    if (!home) return;
+
+    const w = home.clientWidth || 1;
+    const side = t.clientX < 30 ? -1 : (t.clientX > w - 30 ? 1 : 0);
+
+    if (side !== dst.side) {
+      dst.side = side;
+      if (dst.edge) { clearTimeout(dst.edge); dst.edge = null; }
+      if (side) {
+        dst.edge = setTimeout(function () {
+          if (!dst) return;
+          dst.edge = null;
+          const cur = currentIndex(home);
+          const total = home.querySelectorAll('.page').length;
+          const next = Math.max(0, Math.min(total - 1, cur + side));
+          if (next !== cur) {
+            home.scrollTo({ left: next * w, behavior: 'smooth' });
+            if (navigator.vibrate) { try { navigator.vibrate(8); } catch (err) {} }
+          }
+        }, 420);
+      }
+    }
+  }
+
+  function dockEnd() {
+    if (!dst) return;
+
+    const s = dst;
+    dst = null;
+
+    if (s.timer) clearTimeout(s.timer);
+    if (s.edge) clearTimeout(s.edge);
+
+    if (!s.active) return;
+
+    s.item.classList.remove('dk-lift');
+    s.item.style.transform = '';
+    if (s.home) s.home.classList.remove('dragging');
+    clearMarks();
+
+    const hit = s.hit;
+    const pageIdx = s.home ? currentIndex(s.home) : 0;
+    let changed = false;
+
+    if (hit && hit.kind === 'dock') {
+      if (hit.item) changed = swapDock(s.id, hit.item.getAttribute('data-app'));
+      else changed = true;
+    } else if (hit && hit.kind === 'gi') {
+      changed = dockToPageKey(s.id, hit.el.getAttribute('data-key'));
+    } else {
+      changed = dockToPageEnd(s.id, pageIdx);
     }
 
     justDragged = true;
-    setTimeout(function () { justDragged = false; }, 360);
+    setTimeout(function () { justDragged = false; }, 380);
+
+    if (changed) {
+      if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
+      rerender();
+    }
   }
 
-  function save() {
-    const home = homeEl();
-    if (!home) return;
+  /* ============ 全局事件 ============ */
 
-    const out = [];
-    Array.prototype.forEach.call(home.querySelectorAll('.page'), function (pg) {
-      const keys = [];
-      Array.prototype.forEach.call(pg.querySelectorAll('.gi'), function (gi) {
-        keys.push(gi.getAttribute('data-key'));
-      });
-      out.push(keys);
-    });
+  D.addEventListener('touchstart', function (e) {
+    if (e.touches && e.touches.length !== 1) return;
+    const item = e.target.closest ? e.target.closest('.dock-item[data-app]') : null;
+    if (!item) return;
 
-    write(out);
-  }
+    e.stopPropagation();
+    startDock(e, item);
+  }, { passive: true, capture: true });
 
-  function addKey(key) {
-    const list = read();
-    let exists = false;
+  D.addEventListener('touchmove', function (e) {
+    if (!dst) return;
+    dockMove(e);
+  }, { passive: false });
 
-    list.forEach(function (p) { if (p.indexOf(key) >= 0) exists = true; });
-    if (exists) return;
-
-    if (!list[1]) list[1] = [];
-    list[1].push(key);
-    write(list);
-  }
-
-  function delKey(key) {
-    const list = read().map(function (p) {
-      return p.filter(function (k) { return k !== key; });
-    });
-    write(list);
-  }
+  D.addEventListener('touchend', function () { dockEnd(); });
+  D.addEventListener('touchcancel', function () {
+    if (dst) {
+      if (dst.timer) clearTimeout(dst.timer);
+      if (dst.edge) clearTimeout(dst.edge);
+      dst.item.classList.remove('dk-lift');
+      dst.item.style.transform = '';
+      if (dst.home) dst.home.classList.remove('dragging');
+      dst = null;
+      clearMarks();
+    }
+  });
 
   D.addEventListener('click', function (e) {
     const del = e.target.closest ? e.target.closest('.gi-del') : null;
@@ -463,6 +821,8 @@
     exitEdit();
   }, true);
 
+  /* ============ 绑定 ============ */
+
   function bindWidgets(root) {
     Array.prototype.forEach.call(root.querySelectorAll('#home .gi'), function (gi) {
       const k = gi.getAttribute('data-key');
@@ -474,12 +834,36 @@
 
   function bindDrag(root) {
     const home = root.querySelector ? root.querySelector('#home') : null;
-    if (!home) return;
+    if (!home || home.getAttribute('data-drag') === '1') return;
 
+    home.setAttribute('data-drag', '1');
     home.addEventListener('touchstart', onStart, { passive: true });
     home.addEventListener('touchmove', onMove, { passive: false });
     home.addEventListener('touchend', onEnd);
     home.addEventListener('touchcancel', onEnd);
+  }
+
+  function rerender() {
+    if (window.Desktop && Desktop.rerender) Desktop.rerender();
+  }
+
+  function addKey(key) {
+    const list = read();
+    let exists = false;
+
+    list.forEach(function (p) { if (p.indexOf(key) >= 0) exists = true; });
+    if (exists) return;
+
+    if (!list[1]) list[1] = [];
+    list[1].push(key);
+    write(list);
+  }
+
+  function delKey(key) {
+    const list = read().map(function (p) {
+      return p.filter(function (k) { return k !== key; });
+    });
+    write(list);
   }
 
   window.Layout = {
@@ -487,15 +871,19 @@
     read: read,
     addKey: addKey,
     delKey: delKey,
+    dockOrder: dockOrder,
     bind: function (root) {
       if (!root) return;
       exitEdit();
+      applyDockOrder(root);
       bindWidgets(root);
       bindDrag(root);
     },
     exit: exitEdit,
+    rerender: rerender,
     reset: function () {
       try { localStorage.removeItem(K); } catch (e) {}
+      try { localStorage.removeItem(DK); } catch (e) {}
       exitEdit();
     }
   };
