@@ -1,0 +1,146 @@
+/* style-list.css · 整体风格：中英双行列表 + 极小字 + 去装饰 */
+
+/* 撤掉手账贴纸那套 */
+.dcard::before,
+.wdg-days::before { display: none; }
+
+.wdg-quote { transform: none; }
+
+/* 虚线一律改实线，更淡 */
+.dcard-text { border-left-style: solid; border-left-color: rgba(0, 0, 0, .06); }
+.mstamp,
+.mcard .mstamp {
+  border-style: solid;
+  border-color: rgba(141, 154, 168, .22);
+  color: #9aa5b1;
+}
+.think-body { border-style: solid; }
+.quick-chip { border-style: solid; border-color: rgba(0, 0, 0, .07); }
+.msg-tag,
+.chat-time .kicker { border-style: solid; }
+.chat-event span { border-style: solid; transform: none; }
+
+/* 卡片统一：更小圆角、更淡阴影 */
+.grid > .wdg,
+.rows,
+.dcard,
+.mcard {
+  border-radius: 14px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .04);
+}
+
+/* 英文小字统一更小、更开 */
+.kicker {
+  font-size: .34rem;
+  letter-spacing: .28em;
+  color: #b3bcc4;
+}
+
+/* ── 列表 ── */
+.rows {
+  background: #ffffff;
+  overflow: hidden;
+  padding: 0;
+}
+
+.row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .82rem .95rem;
+  border: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, .045);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+}
+.row:last-child { border-bottom: 0; }
+.row:active { background: rgba(141, 154, 168, .06); }
+
+.row-ico {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+.row-ico svg {
+  width: 1.02rem;
+  height: 1.02rem;
+  fill: none;
+  stroke: #6f7f90;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.row-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .16rem;
+}
+.row-main b {
+  font-size: .6rem;
+  font-weight: 500;
+  letter-spacing: .02em;
+  color: #333333;
+}
+.row-main i {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: .34rem;
+  letter-spacing: .22em;
+  color: #b8c1c9;
+}
+
+.row-val {
+  flex: 0 0 auto;
+  font-family: var(--mono);
+  font-size: .44rem;
+  letter-spacing: .02em;
+  color: #8d9aa8;
+}
+
+.row-arrow {
+  flex: 0 0 auto;
+  color: #d2d9df;
+  font-size: .72rem;
+  line-height: 1;
+}
+
+/* 时钟：英文小字在上，时间居中 */
+.home .wdg-clock::before {
+  content: 'LOCAL TIME';
+  display: block;
+  margin-bottom: .5rem;
+  font-family: var(--mono);
+  font-size: .34rem;
+  letter-spacing: .3em;
+  color: #b3bcc4;
+}
+.home .wdg-clock {
+  padding: 1rem .95rem .9rem;
+}
+.home .wdg-clock .dclock {
+  font-size: 2.4rem;
+  font-weight: 500;
+  letter-spacing: -.03em;
+  color: #262626;
+}
+.home .wdg-clock .ddate {
+  margin-top: .4rem;
+  font-size: .38rem;
+  letter-spacing: .16em;
+  color: #a8b2bd;
+}
+
+/* 摘句卡：像一张便签但不是歪的 */
+.home .wdg-quote .quote-text {
+  font-size: .6rem;
+  line-height: 1.95;
+  color: #4a4a4a;
+}
+
+/* 月历卡与列表同宽同边距 */
+.home .wdg-cal { padding: .95rem 1rem .85rem; }

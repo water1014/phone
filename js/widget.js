@@ -1,4 +1,4 @@
-/* widget.js · 桌面组件块（由 desktop.js 调用） */
+/* widget.js · 桌面组件块 */
 (function () {
   const D = document;
 
@@ -41,24 +41,37 @@
       '</section>';
   }
 
-  function statCell(num, label, app) {
-    return '<button type="button" class="stat" data-app="' + app + '">' +
-        '<b>' + num + '</b>' +
-        '<span>' + label + '</span>' +
+  /* 列表入口：中文 + 英文小字 + 右侧值 + 箭头 */
+  function rowItem(appId, cn, en, value, valueId) {
+    const app = window.Apps.find(appId);
+    const icon = app ? UI.icon(app.icon) : '';
+    return '<button type="button" class="row" data-app="' + appId + '">' +
+        '<span class="row-ico">' + icon + '</span>' +
+        '<span class="row-main"><b>' + cn + '</b><i>' + en + '</i></span>' +
+        '<span class="row-val"' + (valueId ? ' id="' + valueId + '"' : '') + '>' + value + '</span>' +
+        '<span class="row-arrow">›</span>' +
       '</button>';
   }
 
-  function statsHtml() {
+  function rowsHtml() {
     const diary = (Array.isArray(XW.S.diary) ? XW.S.diary : []).length;
     const photos = (Array.isArray(XW.S.photos) ? XW.S.photos : []).length;
-    const chat = (Array.isArray(XW.S.chat) ? XW.S.chat : []).filter(function (m) {
-      return m.who !== 'sys';
-    }).length;
+    const notes = (Array.isArray(XW.S.notes) ? XW.S.notes : []).length;
 
-    return '<section class="wdg wdg-stats">' +
-        statCell(diary, '日记', 'diary') +
-        statCell(photos, '相片', 'album') +
-        statCell(chat, '对话', 'chat') +
+    const usage = XW.S.usage || { input: 0 };
+    const limit = Number(XW.S.ctxLimit) || 128000;
+    const pct = Math.min(999, Math.round((Number(usage.input) || 0) / limit * 100));
+
+    const now = new Date();
+    const today = (now.getMonth() + 1) + '/' + now.getDate();
+
+    return '<section class="rows">' +
+        rowItem('diary', '日记', 'DIARY', diary + ' 篇') +
+        rowItem('album', '相册', 'ALBUM', photos + ' 张') +
+        rowItem('memory', '记忆', 'MEMORY', notes + ' 条') +
+        rowItem('calendar', '日历', 'CALENDAR', today) +
+        rowItem('weather', '天气', 'WEATHER', '—', 'row-weather') +
+        rowItem('chat', '聊天', 'CONVERSATION', pct + '%') +
       '</section>';
   }
 
@@ -93,19 +106,6 @@
       '</section>';
   }
 
-  function weatherHtml() {
-    return '<section class="wdg wdg-weather" data-app="weather" role="button" tabindex="0">' +
-        '<div class="quote-head">' +
-          '<span class="kicker">WEATHER</span>' +
-          '<span class="quote-date" id="ww-sub">看一眼天</span>' +
-        '</div>' +
-        '<div class="ww-body">' +
-          '<span class="ww-temp" id="ww-temp">--</span>' +
-          '<span class="ww-text" id="ww-text"></span>' +
-        '</div>' +
-      '</section>';
-  }
-
   function wmo(code) {
     if (code === 0) return '晴';
     if (code <= 2) return '少云';
@@ -121,10 +121,8 @@
   }
 
   function loadWeather() {
-    const tempEl = D.getElementById('ww-temp');
-    const textEl = D.getElementById('ww-text');
-    const subEl = D.getElementById('ww-sub');
-    if (!tempEl || !textEl) return;
+    const valEl = D.getElementById('row-weather');
+    if (!valEl) return;
 
     const url = 'https://api.open-meteo.com/v1/forecast?latitude=26.88&longitude=112.67' +
       '&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Asia%2FShanghai';
@@ -132,25 +130,22 @@
     fetch(url).then(function (res) { return res.json(); }).then(function (data) {
       const cur = data && data.current;
       if (!cur || cur.temperature_2m === undefined) throw new Error('no data');
-      tempEl.textContent = Math.round(cur.temperature_2m) + '°';
-      textEl.textContent = wmo(cur.weather_code);
-      if (subEl) subEl.textContent = '湿度 ' + Math.round(cur.relative_humidity_2m) + '%';
+      valEl.textContent = Math.round(cur.temperature_2m) + '° ' + wmo(cur.weather_code);
     }).catch(function () {
-      tempEl.textContent = '—';
-      textEl.textContent = '没接到天气';
-      if (subEl) subEl.textContent = '';
+      valEl.textContent = '—';
     });
   }
 
   function quoteHtml() {
     const list = Array.isArray(XW.S.diary) ? XW.S.diary : [];
     const last = list.length ? list[list.length - 1] : null;
-    const line = last ? String(last.text || '').split(/\n/)[0].slice(0, 48) : '';
+    const text = last ? String(last.text || '') : '';
+    const line = text.split(/\n/)[0].slice(0, 80);
 
     if (!line) {
       return '<section class="wdg wdg-quote" data-app="diary" role="button" tabindex="0">' +
-          '<div class="quote-head"><span class="kicker">TODAY</span><span class="quote-date">去写</span></div>' +
-          '<p class="quote-text">还没写下什么。今天也可以就这么过。</p>' +
+          '<div class="quote-head"><span class="kicker">NOTE</span><span class="quote-date">还没写</span></div>' +
+          '<p class="quote-text">今天也可以就这么过。<br>想写的时候点这里。</p>' +
         '</section>';
     }
 
@@ -160,49 +155,6 @@
           '<span class="quote-date">' + esc(String(last.date || '').slice(5)) + '</span>' +
         '</div>' +
         '<p class="quote-text">' + esc(line) + '</p>' +
-      '</section>';
-  }
-
-  /* 记忆：钉住的优先，没有就最近一条 */
-  function memoryHtml() {
-    const list = Array.isArray(XW.S.notes) ? XW.S.notes : [];
-    const pinned = list.filter(function (n) { return n && n.pinned; });
-    const last = pinned.length ? pinned[pinned.length - 1]
-      : (list.length ? list[list.length - 1] : null);
-
-    const head = '<div class="quote-head"><span class="kicker">MEMORY</span>' +
-      '<span class="quote-date">' + (last ? esc(String(last.date || '')) : '空着') + '</span></div>';
-
-    if (!last) {
-      return '<section class="wdg wdg-mem" data-app="memory" role="button" tabindex="0">' + head +
-          '<p class="quote-text">还没钉住什么。<br>点这里能写。</p>' +
-        '</section>';
-    }
-
-    return '<section class="wdg wdg-mem" data-app="memory" role="button" tabindex="0">' + head +
-        '<p class="quote-text">' + esc(String(last.text || '').slice(0, 56)) + '</p>' +
-      '</section>';
-  }
-
-  /* 额度：token 用量 */
-  function quotaHtml() {
-    const usage = XW.S.usage || { rounds: 0, input: 0 };
-    const limit = Number(XW.S.ctxLimit) || 128000;
-    const used = Number(usage.input) || 0;
-    const pct = Math.min(999, Math.round(used / limit * 100));
-
-    const fmt = function (n) {
-      if (n < 1000) return String(n);
-      return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-    };
-
-    return '<section class="wdg wdg-quota">' +
-        '<div class="quote-head">' +
-          '<span class="kicker">QUOTA</span>' +
-          '<span class="quote-date">' + (Number(usage.rounds) || 0) + ' 轮</span>' +
-        '</div>' +
-        '<div class="q-line"><b>' + pct + '%</b><i>' + fmt(used) + ' / ' + fmt(limit) + '</i></div>' +
-        '<div class="q-bar"><i style="width:' + Math.min(100, pct) + '%"></i></div>' +
       '</section>';
   }
 
@@ -219,12 +171,9 @@
   window.Widgets = {
     clock: clockHtml,
     days: daysHtml,
-    stats: statsHtml,
+    rows: rowsHtml,
     calendar: calendarHtml,
-    weatherCard: weatherHtml,
     quote: quoteHtml,
-    memoryCard: memoryHtml,
-    quota: quotaHtml,
     after: function (root) {
       bindCalendar(root);
       loadWeather();
