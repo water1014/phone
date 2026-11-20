@@ -12,6 +12,7 @@
     photos: [],
     chat: [],
     notes: [],
+    appOrder: [],
 
     /* 主连接：聊天用 */
     aiUrl: 'https://api.openai.com/v1/chat/completions',
