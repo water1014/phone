@@ -1,6 +1,7 @@
 /* mods.js · 自己搓的小组件
    kind='text'  标题 + 正文
-   kind='code'  一栏整段代码（HTML / style / script 都可以放一起），跑在 sandbox iframe 里 */
+   kind='code'  一栏整段代码，跑在 sandbox iframe 里
+   代码里可以用 {{HIS}} {{HER}} {{DAYS}} {{SINCE}} {{TODAY}}，渲染前会换成真值 */
 (function () {
   const K = 'xw_mods';
 
@@ -52,6 +53,38 @@
     return HEIGHT[v] || 140;
   }
 
+  function pad2(n) { return String(n).padStart(2, '0'); }
+
+  function tokens() {
+    const S = (window.XW && XW.S) ? XW.S : {};
+    const since = S.loveDate || '2025-01-01';
+    const love = new Date(since);
+    const now = new Date();
+
+    let days = 0;
+    if (window.UI && UI.diffDay) {
+      days = UI.diffDay(love, now);
+    } else {
+      days = Math.max(0, Math.floor((now - love) / 86400000));
+    }
+
+    return {
+      HIS: S.hisName || '他',
+      HER: S.herName || '她',
+      DAYS: String(days),
+      SINCE: since,
+      TODAY: now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate())
+    };
+  }
+
+  function fill(text) {
+    const t = tokens();
+
+    return String(text).replace(/\{\{\s*(HIS|HER|DAYS|SINCE|TODAY)\s*\}\}/g, function (m, k) {
+      return t[k] !== undefined ? t[k] : m;
+    });
+  }
+
   function wrap(inner) {
     const base = '*{box-sizing:border-box}' +
       'html,body{margin:0;height:100%;background:transparent;' +
@@ -81,7 +114,7 @@
   function doc(m) {
     if (!m) return wrap('');
 
-    const raw = codeOf(m).trim();
+    const raw = fill(codeOf(m)).trim();
     if (!raw) return wrap('');
 
     if (/^\s*(<!doctype|<html)/i.test(raw)) return raw;
@@ -162,6 +195,7 @@
     doc: doc,
     codeOf: codeOf,
     mount: mount,
+    tokens: tokens,
     create: create,
     remove: remove,
     update: update
