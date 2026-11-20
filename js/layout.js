@@ -1,8 +1,6 @@
 /* layout.js · 首页布局表 + dock
-   1) 每页四列网格，组件与 App 都是块
-   2) 长按 → 编辑态：整桌轻抖、每块左上角有 ×、底部有「＋ 加一块」
-   3) 拖：页面内互换、跨页、拖进 dock、dock 拖回页面
-   4) 删除只从桌面拿掉，组件本体还在，点「＋」能加回来 */
+   右上角「编辑」→ 进入编辑态：整桌轻抖 / 每块右上角 × / 左上角 ＋ 加组件
+   编辑态下拖完仍然留在编辑态，可以接着拖 */
 (function () {
   const D = document;
   const K = 'xw_layout';
@@ -41,6 +39,7 @@
   let justDragged = false;
   let editing = false;
   let keepEdit = false;
+  let screenRef = null;
 
   function esc(text) {
     if (window.UI && UI.esc) return UI.esc(text);
@@ -359,23 +358,38 @@
 
   function homeEl() { return D.getElementById('home'); }
 
-  /* ============ 编辑态 ============ */
+  function rootEl() {
+    return screenRef || D.getElementById('screen');
+  }
 
-  function hint(on) {
-    let el = D.getElementById('edit-hint');
-    if (!on) {
-      if (el && el.parentNode) el.parentNode.removeChild(el);
-      return;
+  /* ============ 顶部两个按钮 ============ */
+
+  function editBtn() {
+    const root = rootEl();
+    if (!root) return;
+
+    let el = root.querySelector('#gi-edit');
+
+    if (!el) {
+      el = D.createElement('button');
+      el.id = 'gi-edit';
+      el.type = 'button';
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (editing) exitEdit(); else enterEdit();
+      });
+      root.appendChild(el);
     }
-    if (el) return;
-    el = D.createElement('div');
-    el.id = 'edit-hint';
-    el.textContent = '拖 · × 删 · 点空白结束';
-    D.body.appendChild(el);
+
+    el.textContent = editing ? '完成' : '编辑';
+    el.classList.toggle('on', editing);
   }
 
   function plus(on) {
-    let el = D.getElementById('gi-plus');
+    const root = rootEl();
+    if (!root) return;
+
+    let el = root.querySelector('#gi-plus');
 
     if (!on) {
       if (el && el.parentNode) el.parentNode.removeChild(el);
@@ -388,12 +402,36 @@
     el = D.createElement('button');
     el.id = 'gi-plus';
     el.type = 'button';
-    el.textContent = '＋ 加一块';
+    el.textContent = '＋';
+    el.setAttribute('aria-label', '加一块');
     el.addEventListener('click', function (e) {
       e.preventDefault();
       if (D.getElementById('gip')) { closePicker(); return; }
       openPicker();
     });
+    root.appendChild(el);
+  }
+
+  function setRail(on) {
+    const rl = D.querySelector('.rail-toggle');
+    if (rl) rl.style.display = on ? '' : 'none';
+  }
+
+  /* ============ 编辑态 ============ */
+
+  function hint(on) {
+    let el = D.getElementById('edit-hint');
+
+    if (!on) {
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+      return;
+    }
+
+    if (el) return;
+
+    el = D.createElement('div');
+    el.id = 'edit-hint';
+    el.textContent = '拖 · × 删 · 点「完成」结束';
     D.body.appendChild(el);
   }
 
@@ -420,8 +458,12 @@
   function enterEdit() {
     if (editing) return;
     editing = true;
+
     const home = homeEl();
     if (home) home.classList.add('editing');
+
+    setRail(false);
+    editBtn();
     hint(true);
     plus(true);
     markDel();
@@ -430,8 +472,12 @@
   function exitEdit() {
     if (!editing) return;
     editing = false;
+
     const home = homeEl();
     if (home) home.classList.remove('editing');
+
+    setRail(true);
+    editBtn();
     hint(false);
     plus(false);
     markDel();
@@ -745,10 +791,13 @@
     justDragged = true;
     setTimeout(function () { justDragged = false; }, 380);
 
+    keepEdit = editing;
+
     if (changed) {
       if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
-      rerender();
     }
+
+    rerender();
   }
 
   /* ============ dock 拖动 ============ */
@@ -863,10 +912,13 @@
     justDragged = true;
     setTimeout(function () { justDragged = false; }, 380);
 
+    keepEdit = editing;
+
     if (changed) {
       if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
-      rerender();
     }
+
+    rerender();
   }
 
   /* ============ 全局事件 ============ */
@@ -945,7 +997,7 @@
       return;
     }
 
-    if (t.closest('#gi-plus') || t.closest('#gip')) return;
+    if (t.closest('#gi-plus') || t.closest('#gi-edit') || t.closest('#gip')) return;
 
     if (D.getElementById('gip')) { closePicker(); return; }
 
@@ -979,9 +1031,8 @@
 
   function bindDrag(root) {
     const home = root.querySelector ? root.querySelector('#home') : null;
-    if (!home || home.getAttribute('data-drag') === '1') return;
+    if (!home) return;
 
-    home.setAttribute('data-drag', '1');
     home.addEventListener('touchstart', onStart, { passive: true });
     home.addEventListener('touchmove', onMove, { passive: false });
     home.addEventListener('touchend', onEnd);
@@ -1001,10 +1052,21 @@
     dockOrder: dockOrder,
     bind: function (root) {
       if (!root) return;
-      exitEdit();
+
+      screenRef = root;
+
+      if (editing) {
+        editing = false;
+        setRail(true);
+        hint(false);
+        closePicker();
+      }
+
       applyDockOrder(root);
       bindWidgets(root);
       bindDrag(root);
+      editBtn();
+
       if (keepEdit) {
         keepEdit = false;
         enterEdit();
