@@ -1,7 +1,6 @@
 /* mods.js · 自己搓的小组件
-   两类：
-   kind='text'  标题 + 正文，直接渲染
-   kind='code'  自己写 HTML / CSS / JS，跑在 sandbox iframe 里，样式和脚本都不会漏到外面 */
+   kind='text'  标题 + 正文
+   kind='code'  一栏整段代码（HTML / style / script 都可以放一起），跑在 sandbox iframe 里 */
 (function () {
   const K = 'xw_mods';
 
@@ -53,11 +52,7 @@
     return HEIGHT[v] || 140;
   }
 
-  function doc(m) {
-    const body = m && m.html ? String(m.html) : '';
-
-    if (/^\s*(<!doctype|<html)/i.test(body)) return body;
-
+  function wrap(inner) {
     const base = '*{box-sizing:border-box}' +
       'html,body{margin:0;height:100%;background:transparent;' +
       'font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;' +
@@ -66,10 +61,31 @@
 
     return '<!DOCTYPE html><html><head><meta charset="utf-8">' +
       '<meta name="viewport" content="width=device-width,initial-scale=1">' +
-      '<style>' + base + (m && m.css ? String(m.css) : '') + '</style>' +
-      '</head><body>' + body +
-      '<script>' + (m && m.js ? String(m.js) : '') + '<\/script>' +
-      '</body></html>';
+      '<style>' + base + '</style></head><body>' + inner + '</body></html>';
+  }
+
+  function legacyCode(m) {
+    const out = [];
+    if (m.html) out.push(String(m.html));
+    if (m.css) out.push('<style>\n' + m.css + '\n</style>');
+    if (m.js) out.push('<script>\n' + m.js + '\n<\/script>');
+    return out.join('\n');
+  }
+
+  function codeOf(m) {
+    if (!m) return '';
+    if (m.code) return String(m.code);
+    return legacyCode(m);
+  }
+
+  function doc(m) {
+    if (!m) return wrap('');
+
+    const raw = codeOf(m).trim();
+    if (!raw) return wrap('');
+
+    if (/^\s*(<!doctype|<html)/i.test(raw)) return raw;
+    return wrap(raw);
   }
 
   function html(id) {
@@ -109,9 +125,7 @@
       kind: (data && data.kind === 'code') ? 'code' : 'text',
       title: data && data.title ? String(data.title) : '',
       text: data && data.text ? String(data.text) : '',
-      html: data && data.html ? String(data.html) : '',
-      css: data && data.css ? String(data.css) : '',
-      js: data && data.js ? String(data.js) : '',
+      code: data && data.code ? String(data.code) : '',
       span: data && data.span ? String(data.span) : '2',
       height: data && data.height ? String(data.height) : '140'
     });
@@ -131,9 +145,7 @@
 
     if (data.title !== undefined) m.title = String(data.title);
     if (data.text !== undefined) m.text = String(data.text);
-    if (data.html !== undefined) m.html = String(data.html);
-    if (data.css !== undefined) m.css = String(data.css);
-    if (data.js !== undefined) m.js = String(data.js);
+    if (data.code !== undefined) m.code = String(data.code);
     if (data.span !== undefined) m.span = String(data.span);
     if (data.height !== undefined) m.height = String(data.height);
     if (data.kind !== undefined) m.kind = (data.kind === 'code') ? 'code' : 'text';
@@ -148,6 +160,7 @@
     height: height,
     html: html,
     doc: doc,
+    codeOf: codeOf,
     mount: mount,
     create: create,
     remove: remove,
