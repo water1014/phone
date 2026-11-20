@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f7f6f3">
+<title>侧栏 · 四种排法</title>
+<link rel="preconnect" href="https://fonts.loli.net" crossorigin>
+<link rel="stylesheet" href="https://fonts.loli.net/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&amp;display=swap">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body{
+  background:#f7f6f3;
+  color:#1a1917;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  padding:20px 16px 46px;
+}
+.wrap{ max-width:420px; margin:0 auto; }
+h1{ font-size:17px; font-weight:700; }
+.lead{ margin-top:7px; font-size:12.5px; line-height:1.75; color:#8f8a80; }
+.tag{
+  display:block; margin:24px 0 9px;
+  font-size:10px; letter-spacing:1.5px;
+  color:#b6b0a6; font-weight:600;
+}
+.hint{ margin-top:8px; font-size:11.5px; line-height:1.7; color:#a8a29a; }
+
+.panel{
+  width:300px;
+  max-width:100%;
+  height:420px;
+  overflow-y:auto;
+  background:#fff;
+  border-radius:0 22px 22px 0;
+  box-shadow:0 2px 18px rgba(0,0,0,.07);
+  padding:34px 0 24px;
+}
+
+.cn{ font-family:"Noto Serif CJK SC","Noto Serif SC","Songti SC",serif; }
+.en{ font-family:"Cormorant Garamond",Georgia,serif; }
+
+/* 四版共用的信笺头 */
+.head{ padding:0 24px 18px; }
+.kick{ display:block; font-family:"Cormorant Garamond",Georgia,serif; font-style:italic; font-size:13px; letter-spacing:2px; color:#b6b0a6; }
+.days{ display:flex; align-items:baseline; gap:7px; margin-top:7px; }
+.days b{ font-family:"Cormorant Garamond",Georgia,serif; font-weight:400; font-size:38px; line-height:1; letter-spacing:1px; color:#2a2723; }
+.days i{ font-family:"Cormorant Garamond",Georgia,serif; font-style:italic; font-size:11px; letter-spacing:1.3px; color:#a8a196; }
+.faces{ display:flex; align-items:center; gap:7px; margin-top:16px; }
+.face{ width:26px; height:26px; border-radius:50%; background:#f4f1ea; border:1px solid #ece7dd; }
+.amp{ font-family:"Cormorant Garamond",Georgia,serif; font-style:italic; font-size:10px; color:#cfc9be; }
+.names{ margin-top:8px; font-family:"Noto Serif CJK SC","Noto Serif SC","Songti SC",serif; font-size:13.5px; letter-spacing:.7px; color:#3a3733; }
+.rule{ height:1px; margin:4px 24px 4px; background:rgba(0,0,0,.055); }
+
+/* S1 单列图标加名字 */
+.s1 .row{ display:flex; align-items:center; gap:12px; padding:10px 24px; }
+.s1 .row svg{ width:18px; height:18px; flex:none; fill:none; stroke:#5c6a79; stroke-width:1.3; stroke-linecap:round; stroke-linejoin:round; }
+.s1 .row b{ font-family:"Noto Serif CJK SC","Noto Serif SC",serif; font-size:14px; font-weight:400; letter-spacing:.6px; color:#3a3733; }
+.s1 .row i{ margin-left:auto; font-family:"Cormorant Garamond",Georgia,serif; font-style:italic; font-size:9.5px; letter-spacing:1.2px; color:#c6c0b6; }
+
+/* S2 两列纯文字 */
+.s2 .grid{ display:grid; grid-template-columns:1fr 1fr; padding:0 24px; }
+.s2 .cell{ padding:8px 0; }
+.s2 .cell b{ display:block; font-family:"Noto Serif CJK SC","Noto Serif SC",serif; font-size:13px; font-weight:400; letter-spacing:.6px; color:#3a3733; }
+.s2 .cell i{ display:block; margin-top:2px; font-family:"Cormorant Garamond",Georgia,serif; font-style:italic; font-size:9px; letter-spacing:1.1px; color:#c9c3b9; }
+
+/* S3 分组细线 */
+.s3 .grp{ display:flex; align-items:center; gap:9px; padding:13px 24px 3px; font-size:9.5px; letter-spacing:2.2px; color:#c0bab0; }
+.s3 .grp::after{ content:''; flex:1; height:1px; background:rgba(0,0,0,.05); }
+.s3 .row{ display:flex; align-items:baseline; gap:9px; padding:7px 24px; }
+.s3 .row b{ font-family:"Noto Serif CJK SC","Noto Serif SC",serif; font-size:13.5px; font-weight:400; letter-spacing:.6px; color:#3a3733; }
+.s3 .row i{ font-family:"Cormorant Garamond",Georgia,serif; font-style:italic; font-size:9px; letter-spacing:1.1px; color:#c9c3b9; }
+
+/* S4 编号目录 */
+.s4 .row{ display:flex; align-items:baseline; gap:13px; padding:8px 24px; }
+.s4 .n{ font-family:"Cormorant Garamond",Georgia,serif; font-size:13px; letter-spacing:1px; color:#d2ccc1; }
+.s4 .row b{ font-family:"Noto Serif CJK SC","Noto Serif SC",serif; font-size:13.5px; font-weight:400; letter-spacing:.6px; color:#3a3733; }
+.s4 .row i{ margin-left:auto; font-family:"Cormorant Garamond",Georgia,serif; font-style:italic; font-size:9px; letter-spacing:1.1px; color:#c9c3b9; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>侧栏 · 四种排法</h1>
+  <p class="lead">上面都一样，只换下面的 App 列表。回我 S1 / S2 / S3 / S4 就行了。</p>
+
+  <!-- ========== S1 ========== -->
+  <span class="tag">S1 · 单列，图标加名字</span>
+  <div class="panel s1">
+    <div class="head">
+      <span class="kick">Together</span>
+      <div class="days"><b>688</b><i>days</i></div>
+      <div class="faces"><span class="face"></span><span class="amp">&amp;</span><span class="face"></span></div>
+      <div class="names">宋祁 &amp; 淼淼</div>
+    </div>
+    <div class="rule"></div>
+    <div class="row"><svg viewBox="0 0 24 24"><path d="M4 6.5A2 2 0 0 1 6 4.5h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7.5L7 19v-3.5H6a2 2 0 0 1-2-2z"/></svg><b>聊天</b><i>CHAT</i></div>
+    <div class="row"><svg viewBox="0 0 24 24"><path d="M7 4h10v16l-5-3.5-5 3.5z"/></svg><b>记忆</b><i>MEMORY</i></div>
+    <div class="row"><svg viewBox="0 0 24 24"><path d="M6.5 4h11v16h-11z"/><path d="M9.6 4v16"/><path d="M12.2 8.6h3.6"/><path d="M12.2 12h3.6"/></svg><b>日记</b><i>DIARY</i></div>
+    <div class="row"><svg viewBox="0 0 24 24"><path d="M4.5 5.5h15v13h-15z"/><path d="M15 15l-3.5-3.5L6.5 16.5"/><path d="M6.8 9.5a1.2 1.2 0 1 0 2.4 0 1.2 1.2 0 1 0-2.4 0"/></svg><b>相册</b><i>ALBUM</i></div>
+    <div class="row"><svg viewBox="0 0 24 24"><path d="M4.5 6.5h15v13h-15z"/><path d="M8.5 4v4"/><path d="M15.5 4v4"/><path d="M4.5 10.6h15"/></svg><b>日历</b><i>CALENDAR</i></div>
+    <div class="row"><svg viewBox="0 0 24 24"><path d="M4.5 5.8h3.4v3.4h-3.4z"/><path d="M11 7.5h8.5"/><path d="M4.5 14.8h3.4v3.4h-3.4z"/><path d="M11 16.5h6"/></svg><b>安排</b><i>PLANS</i></div>
+    <div class="row"><svg viewBox="0 0 24 24"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/><path d="M9 9l3 3.5 3-3.5"/><path d="M12 12.5v4.2"/><path d="M9.9 13.9h4.2"/></svg><b>记账</b><i>LEDGER</i></div>
+    <div class="row"><svg viewBox="0 0 24 24"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/><path d="M8.7 13.6s1.3 2.1 3.3 2.1 3.3-2.1 3.3-2.1"/><path d="M9.3 9.9h.7"/><path d="M14 9.9h.7"/></svg><b>心情</b><i>MOOD</i></div>
+    <div class="row"><svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"/><path d="M4 7l8 5.5L20 7"/></svg><b>情书</b><i>LETTER</i></div>
+    <div class="row"><svg viewBox="0 0 24 24"><path d="M11 16v-9.5l7-1.5v9"/><path d="M8.8 18a2.1 2.1 0 1 0 0-4.2 2.1 2.1 0 0 0 0 4.2z"/><path d="M15.8 16.5a2.1 2.1 0 1 0 0-4.2 2.1 2.1 0 0 0 0 4.2z"/></svg><b>一起听</b><i>MUSIC</i></div>
+    <div class="row"><svg viewBox="0 0 24 24"><path d="M4.5 8.5h4.5"/><path d="M13 8.5h6.5"/><path d="M10.5 6.6a1.9 1.9 0 1 0 0 3.8 1.9 1.9 0 0 0 0-3.8z"/><path d="M4.5 15.5h4.5"/><path d="M13 15.5h6.5"/><path d="M16.5 13.6a1.9 1.9 0 1 0 0 3.8 1.9 1.9 0 0 0 0-3.8z"/></svg><b>设置</b><i>SETTINGS</i></div>
+  </div>
+  <p class="hint">跟首页同一套图标。行高放宽，右边只留一个英文小注。一眼能扫到一个一个 App。（上面只摆了 11 个，实际会把 24 个都排进去）</p>
+
+  <!-- ========== S2 ========== -->
+  <span class="tag">S2 · 两列，纯文字</span>
+  <div class="panel s2">
+    <div class="head">
+      <span class="kick">Together</span>
+      <div class="days"><b>688</b><i>days</i></div>
+      <div class="faces"><span class="face"></span><span class="amp">&amp;</span><span class="face"></span></div>
+      <div class="names">宋祁 &amp; 淼淼</div>
+    </div>
+    <div class="rule"></div>
+    <div class="grid">
+      <div class="cell"><b>聊天</b><i>CHAT</i></div><div class="cell"><b>记忆</b><i>MEMORY</i></div>
+      <div class="cell"><b>日记</b><i>DIARY</i></div><div class="cell"><b>相册</b><i>ALBUM</i></div>
+      <div class="cell"><b>情书</b><i>LETTER</i></div><div class="cell"><b>一起听</b><i>MUSIC</i></div>
+      <div class="cell"><b>日历</b><i>CALENDAR</i></div><div class="cell"><b>安排</b><i>PLANS</i></div>
+      <div class="cell"><b>记账</b><i>LEDGER</i></div><div class="cell"><b>天气</b><i>WEATHER</i></div>
+      <div class="cell"><b>心情</b><i>MOOD</i></div><div class="cell"><b>健康</b><i>HEALTH</i></div>
+      <div class="cell"><b>经期</b><i>CYCLE</i></div><div class="cell"><b>学习</b><i>STUDY</i></div>
+      <div class="cell"><b>语录</b><i>QUOTES</i></div><div class="cell"><b>动态</b><i>MOMENTS</i></div>
+    </div>
+  </div>
+  <p class="hint">省地方，24 个两列下来一屏就完了。但没有图标，靠字认。</p>
+
+  <!-- ========== S3 ========== -->
+  <span class="tag">S3 · 分组细线清单</span>
+  <div class="panel s3">
+    <div class="head">
+      <span class="kick">Together</span>
+      <div class="days"><b>688</b><i>days</i></div>
+      <div class="faces"><span class="face"></span><span class="amp">&amp;</span><span class="face"></span></div>
+      <div class="names">宋祁 &amp; 淼淼</div>
+    </div>
+    <div class="grp">日常</div>
+    <div class="row"><b>聊天</b><i>CHAT</i></div>
+    <div class="row"><b>记忆</b><i>MEMORY</i></div>
+    <div class="row"><b>日记</b><i>DIARY</i></div>
+    <div class="row"><b>相册</b><i>ALBUM</i></div>
+    <div class="grp">记录</div>
+    <div class="row"><b>日历</b><i>CALENDAR</i></div>
+    <div class="row"><b>安排</b><i>PLANS</i></div>
+    <div class="row"><b>记账</b><i>LEDGER</i></div>
+    <div class="row"><b>天气</b><i>WEATHER</i></div>
+    <div class="row"><b>心情</b><i>MOOD</i></div>
+    <div class="grp">我们</div>
+    <div class="row"><b>情书</b><i>LETTER</i></div>
+    <div class="row"><b>一起听</b><i>MUSIC</i></div>
+  </div>
+  <p class="hint">分四组，组名后面跟一条细线。比前两版更有秩序，但多了四行组名占位置。</p>
+
+  <!-- ========== S4 ========== -->
+  <span class="tag">S4 · 编号目录</span>
+  <div class="panel s4">
+    <div class="head">
+      <span class="kick">Together</span>
+      <div class="days"><b>688</b><i>days</i></div>
+      <div class="faces"><span class="face"></span><span class="amp">&amp;</span><span class="face"></span></div>
+      <div class="names">宋祁 &amp; 淼淼</div>
+    </div>
+    <div class="rule"></div>
+    <div class="row"><span class="n">01</span><b>聊天</b><i>CHAT</i></div>
+    <div class="row"><span class="n">02</span><b>记忆</b><i>MEMORY</i></div>
+    <div class="row"><span class="n">03</span><b>日记</b><i>DIARY</i></div>
+    <div class="row"><span class="n">04</span><b>相册</b><i>ALBUM</i></div>
+    <div class="row"><span class="n">05</span><b>情书</b><i>LETTER</i></div>
+    <div class="row"><span class="n">06</span><b>一起听</b><i>MUSIC</i></div>
+    <div class="row"><span class="n">07</span><b>日历</b><i>CALENDAR</i></div>
+    <div class="row"><span class="n">08</span><b>安排</b><i>PLANS</i></div>
+    <div class="row"><span class="n">09</span><b>记账</b><i>LEDGER</i></div>
+    <div class="row"><span class="n">10</span><b>天气</b><i>WEATHER</i></div>
+  </div>
+  <p class="hint">每行前面一个 Cormorant 数字，像一本目录。最好看，也最占位置。</p>
+
+  <p class="lead" style="margin-top:24px;">回我 S1 / S2 / S3 / S4。想两根混合（比如 S1 的图标 + S3 的分组），也可以说。</p>
+
+</div>
+</body>
+</html>
