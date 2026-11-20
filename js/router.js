@@ -207,10 +207,15 @@
         inner += '<details class="think"><summary>思考</summary>' +
           '<div class="think-body">' + UI.esc(msg.think) + '</div></details>';
       }
-      renderText(msg.text).forEach(function (c) {
-        if (c.kind === 'narr') inner += '<div class="narr">' + UI.esc(c.text) + '</div>';
-        else inner += '<div class="bub' + (mine ? ' me' : '') + '">' + UI.esc(c.text) + '</div>';
-      });
+      if (msg.img) {
+        inner += '<figure class="msg-img"><img src="' + msg.img + '" alt=""></figure>';
+      }
+      if (msg.text) {
+        renderText(msg.text).forEach(function (c) {
+          if (c.kind === 'narr') inner += '<div class="narr">' + UI.esc(c.text) + '</div>';
+          else inner += '<div class="bub' + (mine ? ' me' : '') + '">' + UI.esc(c.text) + '</div>';
+        });
+      }
     }
 
     let tag = '';
@@ -243,7 +248,8 @@
       }
       if (t) lastT = t;
 
-      const same = prev && prev.who === m.who && m.who !== 'sys' && gap < 5 * 60 * 1000 && !prev._typing;
+      const same = prev && prev.who === m.who && m.who !== 'sys' &&
+        !m.img && !prev.img && gap < 5 * 60 * 1000 && !prev._typing;
       return sep + messageHtml(m, same);
     }).join('');
 
@@ -279,13 +285,39 @@
     return '<div class="chat-wrap">' + head + top +
         '<div class="chat-scroll" id="chat-scroll">' + rows + empty + '</div>' +
         '<div class="quick">' + chips + '</div>' +
-        '<div class="composer"><input id="chat-input" placeholder="写点什么…"><button type="button" id="chat-send" class="btn-solid">发</button></div>' +
+        '<div class="composer">' +
+          '<input id="chat-input" placeholder="写点什么…">' +
+          '<input id="chat-file" type="file" accept="image/*" hidden>' +
+          '<button type="button" id="chat-plus" class="plus-btn" aria-label="放一张图">+</button>' +
+          '<button type="button" id="chat-send" class="btn-solid">发</button>' +
+        '</div>' +
       '</div>';
   }
 
   function scrollChat() {
     const box = D.getElementById('chat-scroll');
     if (box) box.scrollTop = box.scrollHeight;
+  }
+
+  function shrinkImg(file, maxSide, quality) {
+    return new Promise(function (resolve) {
+      const reader = new FileReader();
+      reader.onerror = function () { resolve(''); };
+      reader.onload = function () {
+        const img = new Image();
+        img.onerror = function () { resolve(''); };
+        img.onload = function () {
+          const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+          const canvas = D.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(img.width * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   function readUsage(usage) {
@@ -318,7 +350,7 @@
     const withSession = (XW.S.aiProvider === 'opencode');
 
     const history = XW.S.chat
-      .filter(function (m) { return !m._typing && m.who !== 'sys'; })
+      .filter(function (m) { return !m._typing && m.who !== 'sys' && !m.img; })
       .slice(-20)
       .map(function (m) { return { role: m.who === 'ta' ? 'assistant' : 'user', content: String(m.text || '') }; })
       .filter(function (m) { return m.content; });
@@ -554,12 +586,32 @@
     if (id === 'chat') {
       const btn = D.getElementById('chat-send');
       const input = D.getElementById('chat-input');
+      const plus = D.getElementById('chat-plus');
+      const picker = D.getElementById('chat-file');
+
       if (btn) btn.addEventListener('click', sendChat);
       if (input) {
         input.addEventListener('keydown', function (e) {
           if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
         });
       }
+
+      if (plus && picker) {
+        plus.addEventListener('click', function () { picker.click(); });
+        picker.addEventListener('change', async function () {
+          const file = picker.files && picker.files[0];
+          picker.value = '';
+          if (!file) return;
+          UI.toast('处理中…');
+          const data = await shrinkImg(file, 900, 0.8);
+          if (!data) { UI.toast('这张读不出来'); return; }
+          XW.S.chat.push({ who: 'me', img: data, text: '', t: Date.now() });
+          XW.save('chat');
+          paint('chat');
+          scrollChat();
+        });
+      }
+
       Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-quick]'), function (chip) {
         chip.addEventListener('click', function () {
           if (!input) return;
