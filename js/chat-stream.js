@@ -14,6 +14,32 @@
   let stick = true;
   let raf = 0;
 
+  function ymd(d) {
+    const p = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  }
+
+  function logUsage(u) {
+    try {
+      const all = (XW.S.usageLog && typeof XW.S.usageLog === 'object') ? XW.S.usageLog : {};
+      const key = ymd(new Date());
+      const cur = all[key] || { i: 0, o: 0, c: 0, n: 0 };
+      const hit = Number(u.prompt_cache_hit_tokens) ||
+        Number(u.prompt_tokens_details && u.prompt_tokens_details.cached_tokens) || 0;
+      cur.i += Number(u.prompt_tokens) || 0;
+      cur.o += Number(u.completion_tokens) || 0;
+      cur.c += hit;
+      cur.n += 1;
+      all[key] = cur;
+      const keys = Object.keys(all).sort();
+      while (keys.length > 60) {
+        delete all[keys.shift()];
+      }
+      XW.S.usageLog = all;
+      XW.save('usageLog');
+    } catch (e) {}
+  }
+
   function scroller() { return D.getElementById('chat-scroll'); }
 
   function atBottom() {
@@ -197,7 +223,10 @@
         finish_reason: 'stop'
       }]
     };
-    if (usage) out.usage = usage;
+    if (usage) {
+      out.usage = usage;
+      logUsage(usage);
+    }
 
     return new Response(JSON.stringify(out), {
       status: 200,
