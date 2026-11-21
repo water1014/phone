@@ -1,9 +1,9 @@
-/* chat-cloud.js · 思考链改成「点云朵弹整页」
-   照参考图：时间那行旁边一朵小云，点开是 ThoughtProcess */
+/* chat-cloud.js · 思考链：点水滴弹整页
+   云朵换成水滴；标题仍是 ThoughtProcess */
 (function () {
   const D = document;
 
-  const CLOUD = "<svg viewBox='0 0 24 24'><path d='M6.5 17.5h10.2a3.8 3.8 0 0 0 .4-7.6 5.4 5.4 0 0 0-10.4 1.1 3.5 3.5 0 0 0-.2 6.5z'/></svg>";
+  const DROP = "<svg viewBox='0 0 24 24'><path d='M12 3.4c0 0 6.1 6.5 6.1 10.4a6.1 6.1 0 0 1-12.2 0C5.9 9.9 12 3.4 12 3.4z'/><path d='M9.4 13.8a2.6 2.6 0 0 0 2.2 2.9'/></svg>";
 
   function close() {
     const old = D.getElementById('cc-mask');
@@ -51,7 +51,7 @@
     const btn = D.createElement('button');
     btn.type = 'button';
     btn.className = 'cc-cloud';
-    btn.innerHTML = CLOUD;
+    btn.innerHTML = DROP;
     btn.setAttribute('aria-label', '\u770b\u601d\u8003');
 
     btn.addEventListener('click', function (e) {

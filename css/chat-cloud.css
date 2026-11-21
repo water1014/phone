@@ -1,4 +1,4 @@
-/* chat-cloud.css · 小云朵 + ThoughtProcess 弹层 */
+/* chat-cloud.css · 水滴 + 水面的 ThoughtProcess */
 html[data-page=chat] .msg-row details.think{
   display:none !important;
 }
@@ -17,15 +17,15 @@ html[data-page=chat] .msg-row details.think{
   -webkit-tap-highlight-color:transparent;
 }
 .cc-cloud svg{
-  width:15px;
-  height:15px;
+  width:14px;
+  height:14px;
   fill:none;
-  stroke:#b9b1a2;
-  stroke-width:1.4;
+  stroke:#a9b8b6;
+  stroke-width:1.35;
   stroke-linecap:round;
   stroke-linejoin:round;
 }
-.cc-cloud:active svg{ stroke:#8b8377; }
+.cc-cloud:active svg{ stroke:#7d9a97; }
 html[data-page=chat] .msg-row.me .cc-cloud{ display:none; }
 
 .cc-mask{
@@ -35,10 +35,12 @@ html[data-page=chat] .msg-row.me .cc-cloud{ display:none; }
   display:flex;
   align-items:flex-end;
   justify-content:center;
-  background:rgba(246,242,235,.82);
-  -webkit-backdrop-filter:blur(22px) saturate(1.05);
-  backdrop-filter:blur(22px) saturate(1.05);
-  animation:ccFade .2s ease both;
+  background:
+    radial-gradient(ellipse 130% 62% at 50% 114%, rgba(186,210,206,.30), rgba(186,210,206,0) 72%),
+    rgba(244,243,238,.84);
+  -webkit-backdrop-filter:blur(22px) saturate(1.06);
+  backdrop-filter:blur(22px) saturate(1.06);
+  animation:ccFade .22s ease both;
 }
 @keyframes ccFade{
   from{ opacity:0; }
@@ -46,38 +48,48 @@ html[data-page=chat] .msg-row.me .cc-cloud{ display:none; }
 }
 
 .cc-card{
+  position:relative;
   width:100%;
   max-width:640px;
   max-height:86vh;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
   box-sizing:border-box;
-  padding:10px 26px calc(30px + env(safe-area-inset-bottom));
-  border-radius:24px 24px 0 0;
-  background:rgba(253,251,247,.98);
-  box-shadow:0 -8px 40px rgba(100,90,75,.12);
-  animation:ccUp .26s cubic-bezier(.22,.7,.3,1) both;
+  padding:10px 26px calc(34px + env(safe-area-inset-bottom));
+  border-radius:26px 26px 0 0;
+  background:rgba(252,252,249,.985);
+  box-shadow:0 -10px 44px rgba(96,112,108,.13), inset 0 1px 0 rgba(255,255,255,.92);
+  animation:ccUp .3s cubic-bezier(.22,.7,.3,1) both;
 }
 @keyframes ccUp{
-  from{ transform:translateY(28px); opacity:.4; }
+  from{ transform:translateY(30px); opacity:.35; }
   to{ transform:none; opacity:1; }
 }
 
 .cc-grip{
-  width:42px;
-  height:4px;
-  margin:2px auto 22px;
+  width:44px;
+  height:3px;
+  margin:2px auto 24px;
   border-radius:2px;
-  background:rgba(0,0,0,.1);
+  background:rgba(158,184,180,.55);
 }
 
 .cc-title{
-  margin:0 0 22px;
+  margin:0 0 24px;
   text-align:center;
   font-size:21px;
   font-weight:600;
   letter-spacing:.01em;
   color:#25211c;
+}
+.cc-title::after{
+  content:'';
+  display:block;
+  width:38px;
+  height:2px;
+  margin:13px auto 0;
+  border-radius:2px;
+  background:linear-gradient(90deg, rgba(158,184,180,0), rgba(158,184,180,.6), rgba(158,184,180,0));
 }
 
 .cc-body{
@@ -98,8 +110,8 @@ html[data-page=chat] .composer .cc-model{
   white-space:nowrap;
   padding:5px 10px;
   border-radius:999px;
-  background:rgba(0,0,0,.035);
+  background:rgba(158,184,180,.13);
   font-size:10.5px;
   letter-spacing:.02em;
-  color:#a49c8d;
+  color:#8d9d9a;
 }
