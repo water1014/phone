@@ -1,14 +1,27 @@
-/* chat-settings.js · 聊天自己的设置面板
-   点右上三个点打开，不跳去全局设置 */
+/* chat-settings.js · 聊天自己的设置
+   四个分类：外观 / 头像 / 背景 / 记录 */
 (function () {
   const D = document;
   const ROOT = D.documentElement;
   const K = 'xw_chatcfg';
   const BK = 'xw_chat_bg';
+  const WK = 'xw_wall_img';
 
   const DEF = {
     fs: '0.8', think: '1', usage: '1', time: '1',
-    bubble: '0', bg: 'none', tone: 'blue'
+    bubble: '0', bg: 'none', tone: 'blue', tab: 'look'
+  };
+
+  const BG = {
+    dawn: {
+      css: 'radial-gradient(130% 100% at 15% 0%, #fffdf9 0%, #f6f1e6 58%, #efe8db 100%)',
+      op: '1'
+    },
+    paper: {
+      css: 'repeating-linear-gradient(0deg, rgba(160,145,120,.07) 0 1px, transparent 1px 7px),' +
+           'linear-gradient(180deg, #fbf7ee, #f4efe3)',
+      op: '1'
+    }
   };
 
   let st = {};
@@ -38,9 +51,22 @@
   function applyCfg() {
     ROOT.style.setProperty('--cs-fs', st.fs + 'rem');
 
-    const url = lsGet(BK);
-    ROOT.style.setProperty('--cs-bg',
-      (st.bg === 'photo' && url) ? 'url(' + url + ')' : 'none');
+    let css = 'none';
+    let op = '.26';
+
+    if (st.bg === 'photo') {
+      const u = lsGet(BK);
+      if (u) css = 'url(' + u + ')';
+    } else if (st.bg === 'wall') {
+      const u = lsGet(WK);
+      if (u) css = 'url(' + u + ')';
+    } else if (BG[st.bg]) {
+      css = BG[st.bg].css;
+      op = BG[st.bg].op;
+    }
+
+    ROOT.style.setProperty('--cs-bg', css);
+    ROOT.style.setProperty('--cs-bg-op', op);
 
     ROOT.setAttribute('data-chat-think', st.think);
     ROOT.setAttribute('data-chat-usage', st.usage);
@@ -50,13 +76,47 @@
     ROOT.setAttribute('data-chat-tone', st.tone);
   }
 
-  function dots() {
-    return '<div class=cset-dots>' +
-      '<button type=button class=cset-dot data-tone=blue></button>' +
-      '<button type=button class=cset-dot data-tone=pink></button>' +
-      '<button type=button class=cset-dot data-tone=paper></button>' +
-      '<button type=button class=cset-dot data-tone=sage></button>' +
-      '</div>';
+  function tabsHtml() {
+    const T = [
+      ['look', '外观'],
+      ['face', '头像'],
+      ['bg', '背景'],
+      ['more', '记录']
+    ];
+    return '<div class=cset-tabs>' + T.map(function (p) {
+      return '<button type=button class=cset-tab data-cp=' + p[0] + '>' + p[1] + '</button>';
+    }).join('') + '</div>';
+  }
+
+  function pane(k, inner) {
+    return '<div class=cset-pane data-cp=' + k + '>' + inner + '</div>';
+  }
+
+  function bgHtml() {
+    const wall = lsGet(WK);
+    const own = lsGet(BK);
+
+    const tone = function (v, label, css) {
+      const on = String(st.bg) === v ? ' on' : '';
+      return '<button type=button class="cset-swatch' + on + '" data-bgv=' + v +
+        (css ? ' style="background-image:' + css + '"' : '') + '>' + label + '</button>';
+    };
+
+    let out = '<div class=cset-bgs>' +
+      '<button type=button class="cset-swatch' + (st.bg === 'none' ? ' on' : '') +
+        '" data-bgv=none>不铺</button>' +
+      tone('dawn', '米光', 'radial-gradient(130% 100% at 15% 0%, #fffdf9 0%, #f6f1e6 58%, #efe8db 100%)') +
+      tone('paper', '纸纹', 'repeating-linear-gradient(0deg, rgba(160,145,120,.12) 0 1px, transparent 1px 5px), linear-gradient(180deg, #fbf7ee, #f4efe3)') +
+      (wall ? tone('wall', '用壁纸', 'url(' + wall + ')') : '') +
+      (own ? tone('photo', '我选的', 'url(' + own + ')') : '') +
+      '</div>' +
+      '<div class=cset-row style="margin-top:.7rem">' +
+        '<button type=button class=cset-btn id=cset-bgpick>＋ 放一张自己的</button>' +
+        '<button type=button class=cset-danger id=cset-bgclear>清掉</button>' +
+      '</div>' +
+      '<div class=cset-note>「用壁纸」直接拿美化里那张，不用重传。铺上去会很淡，只当水印。</div>';
+
+    return out;
   }
 
   function build() {
@@ -64,60 +124,56 @@
     p.className = 'cset';
     p.id = 'cset';
 
+    const look =
+      '<div class=cset-sec><div class=cset-lab>称呼</div>' +
+        '<label class=cset-f>他<input id=cset-his type=text></label>' +
+        '<label class=cset-f>我<input id=cset-her type=text></label></div>' +
+      '<div class=cset-sec><div class=cset-lab>外观</div>' +
+        '<div class=cset-row>' +
+          '<button type=button class=cset-opt data-bubble=0>无气泡</button>' +
+          '<button type=button class=cset-opt data-bubble=1>有气泡</button>' +
+        '</div>' +
+        '<div class=cset-lab style="margin-top:1rem">气泡颜色</div>' +
+        '<div class=cset-dots>' +
+          '<button type=button class=cset-dot data-tone=blue></button>' +
+          '<button type=button class=cset-dot data-tone=pink></button>' +
+          '<button type=button class=cset-dot data-tone=paper></button>' +
+          '<button type=button class=cset-dot data-tone=sage></button>' +
+        '</div></div>' +
+      '<div class=cset-sec><div class=cset-lab>字大小</div>' +
+        '<div class=cset-row>' +
+          '<button type=button class=cset-opt data-fs=0.72>小</button>' +
+          '<button type=button class=cset-opt data-fs=0.8>中</button>' +
+          '<button type=button class=cset-opt data-fs=0.9>大</button>' +
+        '</div></div>' +
+      '<div class=cset-sec><div class=cset-lab>显示什么</div>' +
+        '<div class=cset-row>' +
+          '<button type=button class=cset-opt data-t=think>思考</button>' +
+          '<button type=button class=cset-opt data-t=usage>用量</button>' +
+          '<button type=button class=cset-opt data-t=time>时间</button>' +
+        '</div></div>';
+
+    const face =
+      '<div class=cset-sec><div class=cset-lab>头像</div>' +
+        '<div class=cset-row>' +
+          '<button type=button class=cset-ava id=cset-ava-his>他</button>' +
+          '<button type=button class=cset-ava id=cset-ava-her>我</button>' +
+        '</div>' +
+        '<div class=cset-note>点头像换图。和天数卡共用同一张，这边改了那里也跟着变。</div></div>';
+
     p.innerHTML =
       '<div class=cset-head><b>聊天设置</b>' +
         '<button type=button id=cset-x>×</button></div>' +
+      tabsHtml() +
       '<div class=cset-body>' +
-
-        '<div class=cset-sec><div class=cset-lab>称呼</div>' +
-          '<label class=cset-f>他<input id=cset-his type=text></label>' +
-          '<label class=cset-f>我<input id=cset-her type=text></label></div>' +
-
-        '<div class=cset-sec><div class=cset-lab>头像</div>' +
-          '<div class=cset-row>' +
-            '<button type=button class=cset-ava id=cset-ava-his>他</button>' +
-            '<button type=button class=cset-ava id=cset-ava-her>我</button>' +
-          '</div>' +
-          '<div class=cset-note>点头像换图。和天数卡共用同一张。</div></div>' +
-
-        '<div class=cset-sec><div class=cset-lab>外观</div>' +
-          '<div class=cset-row>' +
-            '<button type=button class=cset-opt data-bubble=0>无气泡</button>' +
-            '<button type=button class=cset-opt data-bubble=1>有气泡</button>' +
-          '</div>' +
-          '<div class=cset-note>有气泡像 QQ，一条一条包着；无气泡就是字直接印在背景上。</div>' +
-          '<div class=cset-lab style=margin-top:1rem>气泡颜色</div>' +
-          dots() +
-        '</div>' +
-
-        '<div class=cset-sec><div class=cset-lab>背景</div>' +
-          '<div class=cset-row>' +
-            '<button type=button class=cset-opt data-bgc=none>不铺</button>' +
-            '<button type=button class=cset-btn id=cset-bgpick>＋ 放一张</button>' +
-            '<button type=button class=cset-danger id=cset-bgclear>清掉</button>' +
-          '</div>' +
-          '<div class=cset-note>铺上去会压到很淡，只当水印，不抢字。</div></div>' +
-
-        '<div class=cset-sec><div class=cset-lab>字大小</div>' +
-          '<div class=cset-row>' +
-            '<button type=button class=cset-opt data-fs=0.72>小</button>' +
-            '<button type=button class=cset-opt data-fs=0.8>中</button>' +
-            '<button type=button class=cset-opt data-fs=0.9>大</button>' +
-          '</div></div>' +
-
-        '<div class=cset-sec><div class=cset-lab>显示什么</div>' +
-          '<div class=cset-row>' +
-            '<button type=button class=cset-opt data-t=think>思考</button>' +
-            '<button type=button class=cset-opt data-t=usage>用量</button>' +
-            '<button type=button class=cset-opt data-t=time>时间</button>' +
-          '</div></div>' +
-
-        '<div class=cset-sec><div class=cset-lab>记录</div>' +
+        pane('look', look) +
+        pane('face', face) +
+        pane('bg', bgHtml()) +
+        pane('more', '<div class=cset-sec><div class=cset-lab>聊天记录</div>' +
           '<div class=cset-row>' +
             '<button type=button class=cset-btn id=cset-export>导出聊天</button>' +
             '<button type=button class=cset-danger id=cset-clear>清空聊天</button>' +
-          '</div></div>' +
-
+          '</div></div>') +
       '</div>';
 
     return p;
@@ -148,17 +204,25 @@
       b.classList.toggle('on', String(b.getAttribute('data-bubble')) === String(st.bubble));
     });
 
-    Array.prototype.forEach.call(D.querySelectorAll('.cset-opt[data-bgc]'), function (b) {
-      b.classList.toggle('on', String(b.getAttribute('data-bgc')) === String(st.bg));
-    });
-
     Array.prototype.forEach.call(D.querySelectorAll('.cset-dot[data-tone]'), function (b) {
       b.classList.toggle('on', String(b.getAttribute('data-tone')) === String(st.tone));
+    });
+
+    Array.prototype.forEach.call(D.querySelectorAll('.cset-swatch[data-bgv]'), function (b) {
+      b.classList.toggle('on', String(b.getAttribute('data-bgv')) === String(st.bg));
     });
 
     ['think', 'usage', 'time'].forEach(function (k) {
       const b = D.querySelector('.cset-opt[data-t=' + k + ']');
       if (b) b.classList.toggle('on', st[k] === '1');
+    });
+
+    Array.prototype.forEach.call(D.querySelectorAll('.cset-tab'), function (b) {
+      b.classList.toggle('on', b.getAttribute('data-cp') === st.tab);
+    });
+
+    Array.prototype.forEach.call(D.querySelectorAll('.cset-pane'), function (p) {
+      p.classList.toggle('on', p.getAttribute('data-cp') === st.tab);
     });
   }
 
@@ -223,6 +287,9 @@
     });
 
     inp.click();
+    setTimeout(function () {
+      if (inp.parentNode) inp.parentNode.removeChild(inp);
+    }, 60000);
   }
 
   function pickAva(who) {
@@ -264,6 +331,9 @@
     });
 
     inp.click();
+    setTimeout(function () {
+      if (inp.parentNode) inp.parentNode.removeChild(inp);
+    }, 60000);
   }
 
   function stamp() {
@@ -322,8 +392,25 @@
 
     if (t.closest('#cset-x')) { close(); return; }
 
+    const tab = t.closest('.cset-tab');
+    if (tab) {
+      st.tab = tab.getAttribute('data-cp');
+      save();
+      fill();
+      const body = D.querySelector('.cset-body');
+      if (body) body.scrollTop = 0;
+      return;
+    }
+
     if (t.closest('#cset-ava-his')) { pickAva('his'); return; }
     if (t.closest('#cset-ava-her')) { pickAva('her'); return; }
+
+    const sw = t.closest('.cset-swatch[data-bgv]');
+    if (sw) {
+      st.bg = String(sw.getAttribute('data-bgv'));
+      save(); applyCfg(); fill();
+      return;
+    }
 
     if (t.closest('#cset-bgpick')) { pickBg(); return; }
 
@@ -352,13 +439,6 @@
     const bubBtn = t.closest('.cset-opt[data-bubble]');
     if (bubBtn) {
       st.bubble = String(bubBtn.getAttribute('data-bubble'));
-      save(); applyCfg(); fill();
-      return;
-    }
-
-    const bgBtn = t.closest('.cset-opt[data-bgc]');
-    if (bgBtn) {
-      st.bg = String(bgBtn.getAttribute('data-bgc'));
       save(); applyCfg(); fill();
       return;
     }
