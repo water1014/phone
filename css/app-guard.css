@@ -1,0 +1,15 @@
+/* app-guard.css · App 打开的时候，桌面的编辑控件不该浮在它上面 */
+
+html[data-app="1"] #gi-edit,
+html[data-app="1"] #gi-plus,
+html[data-app="1"] #edit-hint,
+html[data-app="1"] #gi-picker,
+html[data-app="1"] .gi-picker,
+html[data-app="1"] .gi-del {
+  display: none !important;
+}
+
+/* 后台那堆块还在抖的话也停掉，别白费电 */
+html[data-app="1"] #home.editing .gi {
+  animation: none !important;
+}
