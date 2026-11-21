@@ -1,0 +1,35 @@
+/* app-rail.css · 进 App 以后右边也能拉出侧栏 */
+
+.app-rail-btn {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  z-index: 66;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px 0 0 10px;
+  background: rgba(0, 0, 0, .045);
+  transform: translateY(-50%);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-rail-btn i {
+  display: block;
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, .18);
+}
+
+.app-rail-btn:active { background: rgba(0, 0, 0, .09); }
+
+html[data-app="1"] .app-rail-btn { display: flex; }
+
+/* App 里的侧栏要盖在 App 层上面 */
+html[data-app="1"] .rail { z-index: 70; }
+html[data-app="1"] .scrim { z-index: 65; }
