@@ -1,0 +1,61 @@
+/* chat-look.css · 再往照片那版靠一点 */
+
+html[data-page="chat"] .app {
+  background: rgba(250, 246, 239, .92) !important;
+}
+
+html[data-page="chat"] .app::before {
+  opacity: var(--cs-bg-op, .26);
+}
+
+/* 顶部：米白浮条，头像大一号 */
+html[data-page="chat"] .cs-top {
+  padding: .55rem .5rem .58rem;
+  border-radius: 22px;
+  background: rgba(255, 253, 249, .9);
+  box-shadow: 0 2px 14px rgba(120, 108, 90, .07), inset 0 0 0 1px rgba(255, 255, 255, .85);
+}
+
+html[data-page="chat"] .cs-ava { width: 36px; height: 36px; }
+html[data-page="chat"] .cs-one { width: 72px; gap: .24rem; }
+html[data-page="chat"] .cs-one b { font-size: .46rem; color: #635e55; }
+html[data-page="chat"] .cs-heart { margin-top: -1.15rem; font-size: .66rem; color: #d08a97; }
+
+/* 正文：行距再松一点，右边更淡 */
+html[data-page="chat"] .bub {
+  font-size: var(--cs-fs, .8rem) !important;
+  line-height: 2.1;
+  color: #322e28;
+}
+
+html[data-page="chat"] .msg-row.me .bub { color: #9a9285; }
+
+/* 时间分隔多留白 */
+html[data-page="chat"] .chat-time { margin: 1.3rem 0 1rem; }
+
+/* 输入：浅米色胶囊 */
+html[data-page="chat"] .composer {
+  background: rgba(247, 242, 233, .95);
+  box-shadow: 0 2px 12px rgba(120, 108, 90, .08), inset 0 0 0 1px rgba(255, 255, 255, .7);
+}
+
+html[data-page="chat"] .composer input { color: #35302a; }
+
+html[data-page="chat"] .composer .plus-btn {
+  background: #ffffff;
+  color: #8b8377;
+}
+
+html[data-page="chat"] .composer .btn-solid {
+  background: #e7b3c0;
+  box-shadow: 0 3px 10px rgba(231, 179, 192, .45);
+}
+
+html[data-page="chat"] .cs-heart-btn { color: #d2909f; }
+
+/* 快捷词也跟着米一点 */
+html[data-page="chat"] .quick-chip {
+  background: rgba(255, 253, 249, .92);
+  border-color: rgba(0, 0, 0, .06);
+  color: #8f877a;
+}
