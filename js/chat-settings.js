@@ -4,8 +4,9 @@
   const D = document;
   const ROOT = D.documentElement;
   const K = 'xw_chatcfg';
+  const BK = 'xw_chat_bg';
 
-  const DEF = { fs: '0.8', think: '1', usage: '1', time: '1' };
+  const DEF = { fs: '0.8', think: '1', usage: '1', time: '1', bubble: '0', bg: 'none' };
 
   let st = {};
   try { st = JSON.parse(localStorage.getItem(K) || '{}') || {}; }
@@ -27,11 +28,22 @@
     try { localStorage.setItem(k, v); return true; } catch (e) { return false; }
   }
 
+  function lsDel(k) {
+    try { localStorage.removeItem(k); } catch (e) {}
+  }
+
   function applyCfg() {
     ROOT.style.setProperty('--cs-fs', st.fs + 'rem');
+
+    const url = lsGet(BK);
+    ROOT.style.setProperty('--cs-bg',
+      (st.bg === 'photo' && url) ? 'url(' + url + ')' : 'none');
+
     ROOT.setAttribute('data-chat-think', st.think);
     ROOT.setAttribute('data-chat-usage', st.usage);
     ROOT.setAttribute('data-chat-time', st.time);
+    ROOT.setAttribute('data-chat-bubble', st.bubble);
+    ROOT.setAttribute('data-chat-bg', st.bg);
   }
 
   function build() {
@@ -53,7 +65,22 @@
             '<button type=button class=cset-ava id=cset-ava-his>他</button>' +
             '<button type=button class=cset-ava id=cset-ava-her>我</button>' +
           '</div>' +
-          '<div class=cset-note>点头像换图。和天数卡共用同一张，这边改了那里也跟着变。</div></div>' +
+          '<div class=cset-note>点头像换图。和天数卡共用同一张。</div></div>' +
+
+        '<div class=cset-sec><div class=cset-lab>外观</div>' +
+          '<div class=cset-row>' +
+            '<button type=button class=cset-opt data-bubble=0>无气泡</button>' +
+            '<button type=button class=cset-opt data-bubble=1>有气泡</button>' +
+          '</div>' +
+          '<div class=cset-note>有气泡像 QQ，一条一条包着；无气泡就是字直接印在背景上，块与块之间一道细线。</div></div>' +
+
+        '<div class=cset-sec><div class=cset-lab>背景</div>' +
+          '<div class=cset-row>' +
+            '<button type=button class=cset-opt data-bgc=none>不铺</button>' +
+            '<button type=button class=cset-btn id=cset-bgpick>＋ 放一张</button>' +
+            '<button type=button class=cset-danger id=cset-bgclear>清掉</button>' +
+          '</div>' +
+          '<div class=cset-note>铺上去会压到很淡，只当水印，不抢字。</div></div>' +
 
         '<div class=cset-sec><div class=cset-lab>字大小</div>' +
           '<div class=cset-row>' +
@@ -72,7 +99,7 @@
         '<div class=cset-sec><div class=cset-lab>记录</div>' +
           '<div class=cset-row>' +
             '<button type=button class=cset-btn id=cset-export>导出聊天</button>' +
-            '<button type=button class="cset-btn danger" id=cset-clear>清空聊天</button>' +
+            '<button type=button class=cset-danger id=cset-clear>清空聊天</button>' +
           '</div></div>' +
 
       '</div>';
@@ -101,6 +128,14 @@
       b.classList.toggle('on', String(b.getAttribute('data-fs')) === String(st.fs));
     });
 
+    Array.prototype.forEach.call(D.querySelectorAll('.cset-opt[data-bubble]'), function (b) {
+      b.classList.toggle('on', String(b.getAttribute('data-bubble')) === String(st.bubble));
+    });
+
+    Array.prototype.forEach.call(D.querySelectorAll('.cset-opt[data-bgc]'), function (b) {
+      b.classList.toggle('on', String(b.getAttribute('data-bgc')) === String(st.bg));
+    });
+
     ['think', 'usage', 'time'].forEach(function (k) {
       const b = D.querySelector('.cset-opt[data-t=' + k + ']');
       if (b) b.classList.toggle('on', st[k] === '1');
@@ -121,6 +156,53 @@
     const p = D.getElementById('cset');
     if (p) p.classList.remove('on');
     if (window.Router && Router.reopen) Router.reopen('chat');
+  }
+
+  function shrink(file, maxSide, cb) {
+    const reader = new FileReader();
+    reader.onerror = function () { cb(''); };
+    reader.onload = function () {
+      const im = new Image();
+      im.onerror = function () { cb(''); };
+      im.onload = function () {
+        const scale = Math.min(1, maxSide / Math.max(im.width, im.height));
+        const cv = D.createElement('canvas');
+        cv.width = Math.max(1, Math.round(im.width * scale));
+        cv.height = Math.max(1, Math.round(im.height * scale));
+        cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
+        let data = '';
+        try { data = cv.toDataURL('image/jpeg', 0.74); } catch (e) { data = ''; }
+        cb(data);
+      };
+      im.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function pickBg() {
+    const inp = D.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'image/*';
+    inp.style.display = 'none';
+    D.body.appendChild(inp);
+
+    inp.addEventListener('change', function () {
+      const f = inp.files && inp.files[0];
+      if (inp.parentNode) inp.parentNode.removeChild(inp);
+      if (!f) return;
+
+      shrink(f, 1100, function (data) {
+        if (!data) { UI.toast('这张读不出来'); return; }
+        if (!lsSet(BK, data)) { UI.toast('太大了，换一张小点的'); return; }
+        st.bg = 'photo';
+        save();
+        applyCfg();
+        fill();
+        UI.toast('铺上了');
+      });
+    });
+
+    inp.click();
   }
 
   function pickAva(who) {
@@ -218,20 +300,41 @@
     const t = e.target;
     if (!t || !t.closest) return;
 
-    if (t.closest('#cset-x')) {
-      close();
-      return;
-    }
+    if (t.closest('#cset-x')) { close(); return; }
 
     if (t.closest('#cset-ava-his')) { pickAva('his'); return; }
     if (t.closest('#cset-ava-her')) { pickAva('her'); return; }
 
-    const fsBtn = t.closest('.cset-opt[data-fs]');
-    if (fsBtn) {
-      st.fs = String(fsBtn.getAttribute('data-fs'));
+    if (t.closest('#cset-bgpick')) { pickBg(); return; }
+
+    if (t.closest('#cset-bgclear')) {
+      lsDel(BK);
+      st.bg = 'none';
       save();
       applyCfg();
       fill();
+      UI.toast('清掉了');
+      return;
+    }
+
+    const fsBtn = t.closest('.cset-opt[data-fs]');
+    if (fsBtn) {
+      st.fs = String(fsBtn.getAttribute('data-fs'));
+      save(); applyCfg(); fill();
+      return;
+    }
+
+    const bubBtn = t.closest('.cset-opt[data-bubble]');
+    if (bubBtn) {
+      st.bubble = String(bubBtn.getAttribute('data-bubble'));
+      save(); applyCfg(); fill();
+      return;
+    }
+
+    const bgBtn = t.closest('.cset-opt[data-bgc]');
+    if (bgBtn) {
+      st.bg = String(bgBtn.getAttribute('data-bgc'));
+      save(); applyCfg(); fill();
       return;
     }
 
@@ -239,9 +342,7 @@
     if (tBtn) {
       const k = tBtn.getAttribute('data-t');
       st[k] = (st[k] === '1') ? '0' : '1';
-      save();
-      applyCfg();
-      fill();
+      save(); applyCfg(); fill();
       return;
     }
 
@@ -252,23 +353,23 @@
       return;
     }
 
-    if (t.closest('#cset-clear')) {
-      const b = t.closest('#cset-clear');
-      if (b.getAttribute('data-armed') !== '1') {
-        b.setAttribute('data-armed', '1');
-        b.textContent = '再点一下，聊就没有了';
+    const clr = t.closest('#cset-clear');
+    if (clr) {
+      if (clr.getAttribute('data-armed') !== '1') {
+        clr.setAttribute('data-armed', '1');
+        clr.textContent = '再点一下，聊就没有了';
         setTimeout(function () {
-          if (b.getAttribute('data-armed') === '1') {
-            b.removeAttribute('data-armed');
-            b.textContent = '清空聊天';
+          if (clr.getAttribute('data-armed') === '1') {
+            clr.removeAttribute('data-armed');
+            clr.textContent = '清空聊天';
           }
         }, 5000);
         return;
       }
       XW.S.chat = [];
       XW.save('chat');
-      b.removeAttribute('data-armed');
-      b.textContent = '清空聊天';
+      clr.removeAttribute('data-armed');
+      clr.textContent = '清空聊天';
       UI.toast('聊天空了');
       if (window.Router && Router.reopen) Router.reopen('chat');
     }
