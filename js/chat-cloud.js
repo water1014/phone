@@ -1,5 +1,5 @@
 /* chat-cloud.js · 思考链：点水滴弹整页
-   云朵换成水滴；标题仍是 ThoughtProcess */
+   标题是「名字的碎碎念」 */
 (function () {
   const D = document;
 
@@ -8,6 +8,11 @@
   function close() {
     const old = D.getElementById('cc-mask');
     if (old) old.remove();
+  }
+
+  function titleOf() {
+    const n = String(XW.S.hisName || '').trim() || '\u4ed6';
+    return n + '\u7684\u788e\u788e\u5ff5';
   }
 
   function open(text) {
@@ -26,7 +31,7 @@
 
     const title = D.createElement('div');
     title.className = 'cc-title';
-    title.textContent = 'ThoughtProcess';
+    title.textContent = titleOf();
     card.appendChild(title);
 
     const body = D.createElement('div');
@@ -43,7 +48,7 @@
     D.body.appendChild(mask);
   }
 
-  function addCloud(row) {
+  function addDrop(row) {
     if (!row || row.querySelector('.cc-cloud')) return;
     const box = row.querySelector('details.think .think-body');
     if (!box) return;
@@ -52,7 +57,7 @@
     btn.type = 'button';
     btn.className = 'cc-cloud';
     btn.innerHTML = DROP;
-    btn.setAttribute('aria-label', '\u770b\u601d\u8003');
+    btn.setAttribute('aria-label', '\u770b\u788e\u788e\u5ff5');
 
     btn.addEventListener('click', function (e) {
       e.preventDefault();
@@ -63,6 +68,12 @@
     ['touchstart', 'touchend'].forEach(function (n) {
       btn.addEventListener(n, function (e) { e.stopPropagation(); }, { passive: true });
     });
+
+    const time = row.querySelector('.cc-time');
+    if (time) {
+      time.appendChild(btn);
+      return;
+    }
 
     const tag = row.querySelector('.msg-tag');
     if (tag && tag.parentNode) {
@@ -90,7 +101,7 @@
 
   function tick() {
     if (!D.getElementById('chat-scroll')) return;
-    Array.prototype.forEach.call(D.querySelectorAll('#chat-scroll .msg-row.ta'), addCloud);
+    Array.prototype.forEach.call(D.querySelectorAll('#chat-scroll .msg-row.ta'), addDrop);
     chip();
   }
 
