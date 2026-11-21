@@ -1,6 +1,6 @@
-/* api-panel.js · 「接线的地方」重做成一张完整表单
+/* api-panel.js · 「接线的地方」一张完整表单
    分段选服务商 / 地址带说明 / 模型可拉取 / 温度 / 最大输出
-   全部都真写进请求 */
+   测试结果会存下来，刷新不丢 */
 (function () {
   const D = document;
 
@@ -138,6 +138,11 @@
   let tempOut = null;
   let chipsEl = null;
   let resEl = null;
+  let urlInput = null;
+  let modelInput = null;
+  let keyInput = null;
+  let hdrInput = null;
+  let ctxInput = null;
 
   function mark() {
     if (!liveEl) return;
@@ -174,7 +179,53 @@
     });
   }
 
-  let modelInput = null;
+  function readRecs() {
+    try {
+      const all = JSON.parse(localStorage.getItem('xw_api_tests') || '[]');
+      return Array.isArray(all) ? all : [];
+    } catch (e) { return []; }
+  }
+
+  function saveRec(ok, text) {
+    try {
+      const all = readRecs();
+      all.unshift({ at: Date.now(), ok: !!ok, text: String(text || '') });
+      localStorage.setItem('xw_api_tests', JSON.stringify(all.slice(0, 5)));
+    } catch (e) {}
+  }
+
+  function drawHist() {
+    const box = D.getElementById('api-hist');
+    if (!box) return;
+    box.textContent = '';
+
+    const all = readRecs();
+    if (!all.length) return;
+
+    box.appendChild(el('div', 'api-hist-cap', '\u4e0a\u6b21\u7684\u7ed3\u679c'));
+
+    const p = function (n) { return String(n).padStart(2, '0'); };
+
+    all.slice(0, 3).forEach(function (r) {
+      const d = new Date(Number(r.at) || Date.now());
+      const when = p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+      const row = el('div', 'api-hist-row ' + (r.ok ? 'ok' : 'bad'));
+      row.appendChild(el('span', 'api-hist-t', when));
+      row.appendChild(el('span', 'api-hist-x', String(r.text || '')));
+      box.appendChild(row);
+    });
+  }
+
+  function report(kind, text, keep) {
+    if (resEl) {
+      resEl.textContent = text;
+      resEl.className = 'api-res ' + (kind || '');
+    }
+    if (keep) {
+      saveRec(kind === 'ok', text);
+      drawHist();
+    }
+  }
 
   function build() {
     const box = el('div', 'api-sheet');
@@ -188,7 +239,6 @@
     liveEl = el('div', 'api-live');
     box.appendChild(liveEl);
 
-    // 服务商分段
     const segWrap = el('div', 'api-field');
     segWrap.appendChild(el('span', 'api-cap', '\u670d\u52a1\u5546'));
     const seg = el('div', 'api-seg');
@@ -197,10 +247,8 @@
       b.type = 'button';
       b.setAttribute('data-p', k);
       b.addEventListener('click', function () {
-        const cur = profOf(st.provider);
-        const save = { url: st.url, model: st.model, key: st.key, headers: st.headers };
         XW.S.profiles = XW.S.profiles || {};
-        XW.S.profiles[st.provider] = save;
+        XW.S.profiles[st.provider] = { url: st.url, model: st.model, key: st.key, headers: st.headers };
 
         st.provider = k;
         const next = profOf(k);
@@ -228,17 +276,14 @@
     segWrap.appendChild(seg);
     box.appendChild(segWrap);
 
-    // 地址
-    const urlInput = mkInput('text', st.url, 'https://api.deepseek.com');
+    urlInput = mkInput('text', st.url, 'https://api.deepseek.com');
     urlInput.addEventListener('input', function () { st.url = urlInput.value.trim(); autoSave(); });
     box.appendChild(mkField('\u5730\u5740', '\u586b\u5230\u57df\u540d\u5c31\u884c\uff0c\u5e26\u4e0d\u5e26 /v1 \u90fd\u4f1a\u81ea\u52a8\u5404\u8bd5\u4e00\u6b21\u3002', urlInput));
 
-    // Key
-    const keyInput = mkInput('password', st.key, 'sk-...');
+    keyInput = mkInput('password', st.key, 'sk-...');
     keyInput.addEventListener('input', function () { st.key = keyInput.value.trim(); autoSave(); });
     box.appendChild(mkField('API Key', '\u53ea\u5b58\u5728\u8fd9\u53f0\u624b\u673a\u4e0a\uff0c\u4e0d\u4f1a\u53d1\u5230\u522b\u5904\u53bb\u3002', keyInput));
 
-    // 模型 + 拉取
     modelInput = mkInput('text', st.model, 'deepseek-chat');
     modelInput.addEventListener('input', function () { st.model = modelInput.value.trim(); autoSave(); });
     const modelField = mkField('\u6a21\u578b', '', modelInput);
@@ -251,7 +296,6 @@
     chipsEl = el('div', 'api-chips');
     box.appendChild(chipsEl);
 
-    // 温度
     const tempRow = el('div', 'api-field');
     tempOut = el('span', 'api-cap', '\u6e29\u5ea6 \u00b7 ' + st.temp.toFixed(1));
     tempRow.appendChild(tempOut);
@@ -271,18 +315,15 @@
     tempRow.appendChild(el('em', 'api-hint', '\u9ad8\u4e00\u70b9\u66f4\u6d3b\uff0c\u4f4e\u4e00\u70b9\u66f4\u7a33\u3002\u5e26\u63a8\u7406\u7684\u6a21\u578b\u4e0d\u5403\u8fd9\u4e2a\u3002'));
     box.appendChild(tempRow);
 
-    // 最大输出
     const moInput = mkInput('number', st.maxout, '1024');
     moInput.addEventListener('input', function () { st.maxout = Number(moInput.value) || 0; autoSave(); });
     box.appendChild(mkField('\u6700\u5927\u8f93\u51fa', '\u4e00\u6b21\u56de\u590d\u6700\u591a\u5199\u591a\u5c11 token\u3002\u592a\u5c0f\u4f1a\u88ab\u622a\u65ad\u3002', moInput));
 
-    // 上下文
-    const ctxInput = mkInput('number', st.ctx, '128000');
+    ctxInput = mkInput('number', st.ctx, '128000');
     ctxInput.addEventListener('input', function () { st.ctx = Number(ctxInput.value) || 128000; autoSave(); });
     box.appendChild(mkField('\u4e0a\u4e0b\u6587\u4e0a\u9650', '\u53ea\u5f71\u54cd\u90a3\u4e2a\u767e\u5206\u6bd4\u7684\u7b97\u6cd5\uff0c\u6027\u80fd\u4e0d\u53d7\u5f71\u54cd\u3002', ctxInput));
 
-    // 请求头
-    const hdrInput = D.createElement('textarea');
+    hdrInput = D.createElement('textarea');
     hdrInput.rows = 3;
     hdrInput.spellcheck = false;
     hdrInput.value = st.headers || '';
@@ -290,7 +331,6 @@
     hdrInput.addEventListener('input', function () { st.headers = hdrInput.value; autoSave(); });
     box.appendChild(mkField('\u81ea\u5b9a\u4e49\u8bf7\u6c42\u5934', '\u4e00\u822c\u7559\u7a7a\u3002\u4e2d\u8f6c\u670d\u52a1\u8981\u6c42\u624d\u586b\uff0c\u5199 JSON\u3002', hdrInput));
 
-    // 底部按钮
     const row = el('div', 'api-actions');
     const tb = el('button', 'api-btn', '\u6d4b\u8bd5\u4e00\u4e0b');
     tb.type = 'button';
@@ -309,6 +349,10 @@
     row.appendChild(sb);
     box.appendChild(row);
     box.appendChild(resEl);
+
+    const hist = el('div', 'api-hist');
+    hist.id = 'api-hist';
+    box.appendChild(hist);
 
     box.appendChild(el('div', 'api-note', '\u7f51\u9875\u76f4\u8fde\u9700\u8981\u63a5\u53e3\u5141\u8bb8\u8de8\u57df\uff08CORS\uff09\u3002\u88ab\u6321\u4f4f\u65f6\u53ef\u4ee5\u7528 tools/proxy.py \u5728\u672c\u673a\u4e2d\u8f6c\u3002'));
 
@@ -360,11 +404,10 @@
   }
 
   async function test(btn) {
-    if (!st.url) { resEl.textContent = '\u5148\u586b\u5730\u5740'; return; }
-    if (!st.model) { resEl.textContent = '\u5148\u586b\u6a21\u578b'; return; }
+    if (!st.url) { report('bad', '\u5148\u586b\u5730\u5740'); return; }
+    if (!st.model) { report('bad', '\u5148\u586b\u6a21\u578b'); return; }
 
-    resEl.textContent = '\u6b63\u5728\u8bd5\u2026';
-    resEl.className = 'api-res';
+    report('', '\u6b63\u5728\u8bd5\u2026');
     btn.disabled = true;
 
     const list = endpoints(st.url);
@@ -402,14 +445,12 @@
       let line = '\u901a \u00b7 ' + sec + 's \u00b7 ' + (hasThink ? '\u5e26\u601d\u8003\u94fe' : '\u4e0d\u5e26\u601d\u8003\u94fe');
       if (reply) line += ' \u00b7 \u56de\u300c' + reply + '\u300d';
 
-      resEl.textContent = line;
-      resEl.className = 'api-res ' + (hasThink ? 'ok' : 'warn');
+      report(hasThink ? 'ok' : 'warn', line, true);
       btn.disabled = false;
       return;
     }
 
-    resEl.textContent = last || '\u6ca1\u8bd5\u901a';
-    resEl.className = 'api-res bad';
+    report('bad', last || '\u6ca1\u8bd5\u901a', true);
     btn.disabled = false;
   }
 
@@ -426,6 +467,9 @@
       sheet.parentNode.insertBefore(build(), sheet.nextSibling);
       drawChips();
       mark();
+      drawHist();
+    } else if (!D.getElementById('api-hist')) {
+      drawHist();
     }
   }
 
