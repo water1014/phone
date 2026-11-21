@@ -1,0 +1,105 @@
+/* chat-cloud.css · 小云朵 + ThoughtProcess 弹层 */
+html[data-page=chat] .msg-row details.think{
+  display:none !important;
+}
+
+.cc-cloud{
+  display:inline-grid;
+  place-items:center;
+  width:22px;
+  height:22px;
+  margin-right:6px;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  vertical-align:middle;
+  -webkit-tap-highlight-color:transparent;
+}
+.cc-cloud svg{
+  width:15px;
+  height:15px;
+  fill:none;
+  stroke:#b9b1a2;
+  stroke-width:1.4;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.cc-cloud:active svg{ stroke:#8b8377; }
+html[data-page=chat] .msg-row.me .cc-cloud{ display:none; }
+
+.cc-mask{
+  position:fixed;
+  inset:0;
+  z-index:300;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  background:rgba(246,242,235,.82);
+  -webkit-backdrop-filter:blur(22px) saturate(1.05);
+  backdrop-filter:blur(22px) saturate(1.05);
+  animation:ccFade .2s ease both;
+}
+@keyframes ccFade{
+  from{ opacity:0; }
+  to{ opacity:1; }
+}
+
+.cc-card{
+  width:100%;
+  max-width:640px;
+  max-height:86vh;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  box-sizing:border-box;
+  padding:10px 26px calc(30px + env(safe-area-inset-bottom));
+  border-radius:24px 24px 0 0;
+  background:rgba(253,251,247,.98);
+  box-shadow:0 -8px 40px rgba(100,90,75,.12);
+  animation:ccUp .26s cubic-bezier(.22,.7,.3,1) both;
+}
+@keyframes ccUp{
+  from{ transform:translateY(28px); opacity:.4; }
+  to{ transform:none; opacity:1; }
+}
+
+.cc-grip{
+  width:42px;
+  height:4px;
+  margin:2px auto 22px;
+  border-radius:2px;
+  background:rgba(0,0,0,.1);
+}
+
+.cc-title{
+  margin:0 0 22px;
+  text-align:center;
+  font-size:21px;
+  font-weight:600;
+  letter-spacing:.01em;
+  color:#25211c;
+}
+
+.cc-body{
+  font-size:15px;
+  line-height:2.05;
+  letter-spacing:.01em;
+  color:#3b352d;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
+/* 输入区里的模型小胶囊 */
+html[data-page=chat] .composer .cc-model{
+  flex:0 0 auto;
+  max-width:82px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  padding:5px 10px;
+  border-radius:999px;
+  background:rgba(0,0,0,.035);
+  font-size:10.5px;
+  letter-spacing:.02em;
+  color:#a49c8d;
+}
