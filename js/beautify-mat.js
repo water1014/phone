@@ -67,16 +67,19 @@
 
   function inject() {
     const pane = D.querySelector('.bz-pane[data-pane="mat"]');
-    if (!pane || pane.querySelector('.bz-mat-own')) return;
+    if (!pane) return;
+
+    const host = pane.querySelector('.sheet') || pane;
+    if (host.querySelector('.bz-mat-own')) return;
 
     const box = D.createElement('div');
     box.className = 'bz-mat-own';
     box.innerHTML =
-      '<div class="bz-lab" style="margin:22px 0 0"><b>单个组件</b><i>EACH</i></div>' +
+      '<div class="bz-lab" style="margin:24px 0 0"><b>单个组件</b><i>EACH</i></div>' +
       KEYS.map(row).join('') +
-      '<div class="sheet-note">「随」就是跟着上面那一套走。只挑一件换，别的都不动。</div>';
+      '<div class="sheet-note">「随」就是跟着上面那套走。只挑一件换，别的都不动。</div>';
 
-    pane.appendChild(box);
+    host.appendChild(box);
   }
 
   D.addEventListener('click', function (e) {
