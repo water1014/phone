@@ -1,0 +1,79 @@
+/* beautify-mat.css · 单个组件自己的材质
+   放在 beautify.css 后面加载，所以能盖住全局那一套
+   只给人挑中的那一件换材质，别的都不动 */
+
+/* ---------------- 素 ---------------- */
+html #home .clg.m-flat,
+html #home .dc-face.m-flat,
+html .pf-front.m-flat,
+html #home .mod.m-flat {
+  background: rgba(255, 255, 255, var(--xw-alpha)) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: 1px solid rgba(0, 0, 0, calc(var(--xw-edge) * .12)) !important;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, var(--xw-lift)) !important;
+}
+
+/* ---------------- 砂 ---------------- */
+html #home .clg.m-frost,
+html #home .dc-face.m-frost,
+html .pf-front.m-frost,
+html #home .mod.m-frost {
+  background: rgba(255, 255, 255, var(--xw-alpha)) !important;
+  -webkit-backdrop-filter: blur(var(--xw-blur)) saturate(var(--xw-sat));
+  backdrop-filter: blur(var(--xw-blur)) saturate(var(--xw-sat));
+  border: 1px solid rgba(255, 255, 255, var(--xw-edge)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, var(--xw-gloss)),
+    0 2px 12px rgba(0, 0, 0, var(--xw-lift)) !important;
+}
+
+/* ---------------- 玻 ---------------- */
+html #home .clg.m-glass,
+html #home .dc-face.m-glass,
+html .pf-front.m-glass,
+html #home .mod.m-glass {
+  background: linear-gradient(150deg,
+    rgba(255, 255, 255, var(--xw-alpha)),
+    rgba(255, 255, 255, calc(var(--xw-alpha) * .38))) !important;
+  -webkit-backdrop-filter: blur(var(--xw-blur)) saturate(var(--xw-sat));
+  backdrop-filter: blur(var(--xw-blur)) saturate(var(--xw-sat));
+  border: 1px solid rgba(255, 255, 255, var(--xw-edge)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, var(--xw-gloss)),
+    0 3px 14px rgba(0, 0, 0, var(--xw-lift)) !important;
+}
+
+/* ---------------- 液 ---------------- */
+html #home .clg.m-liquid,
+html #home .dc-face.m-liquid,
+html .pf-front.m-liquid,
+html #home .mod.m-liquid {
+  background: radial-gradient(125% 100% at var(--xw-light) 0%,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, var(--xw-alpha)) 42%,
+    rgba(255, 255, 255, calc(var(--xw-alpha) * .68)) 100%) !important;
+  -webkit-backdrop-filter: blur(var(--xw-blur)) saturate(var(--xw-sat));
+  backdrop-filter: blur(var(--xw-blur)) saturate(var(--xw-sat));
+  border: 1px solid rgba(255, 255, 255, var(--xw-edge)) !important;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, var(--xw-gloss)),
+    inset 0 -2px 3px rgba(0, 0, 0, .05),
+    0 6px 20px rgba(0, 0, 0, var(--xw-lift)) !important;
+}
+
+/* 代码卡里那层白底跟着透，不然换了也看不出来 */
+html #home .mod.m-flat .mod-code,
+html #home .mod.m-frost .mod-code,
+html #home .mod.m-glass .mod-code,
+html #home .mod.m-liquid .mod-code {
+  background: transparent !important;
+}
+
+/* 天数卡翻过来的背面是同一件，别一半透一半白 */
+html #home .dc-face.m-flat,
+html #home .dc-face.m-frost,
+html #home .dc-face.m-glass,
+html #home .dc-face.m-liquid {
+  border-radius: calc(var(--xw-radius) + 4px) !important;
+}
