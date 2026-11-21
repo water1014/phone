@@ -3,8 +3,7 @@
 html[data-app="1"] #gi-edit,
 html[data-app="1"] #gi-plus,
 html[data-app="1"] #edit-hint,
-html[data-app="1"] #gi-picker,
-html[data-app="1"] .gi-picker,
+html[data-app="1"] #gip,
 html[data-app="1"] .gi-del {
   display: none !important;
 }
