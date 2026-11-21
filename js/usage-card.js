@@ -109,13 +109,20 @@
 
     box.appendChild(line('今天', sum(keys(1))));
     box.appendChild(line('七天', sum(keys(7))));
-    box.appendChild(line('累计', sum(Object.keys(log()))));
+
+    const t = XW.S.usage || {};
+    box.appendChild(line('全部', {
+      i: t.input,
+      o: t.output,
+      c: t.cached,
+      n: t.rounds
+    }));
 
     box.appendChild(chart());
 
     const note = D.createElement('div');
     note.className = 'uc-note';
-    note.textContent = '订阅的月额度在这儿看不到，要去 Operit 的 OpenCode 那边看。这里只是这个网页自己花的账。';
+    note.textContent = '订阅的月额度在这儿看不到，要去 Operit 的 OpenCode 那边看。今天和七天是从这一版开始记的，之前的只进了「全部」。';
     box.appendChild(note);
   }
 
