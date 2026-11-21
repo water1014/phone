@@ -1,21 +1,23 @@
-/* app-rail.js · App 内页从左边缘往右拖，侧栏跟手滑出 */
+/* app-rail.js · App 内页拉出左侧栏
+   两个入口：左边缘长按、左边缘往右拖
+   都不依赖 html[data-app]，直接看 #app 是否打开 */
 (function () {
   const D = document;
-  const EDGE = 28;
-  const RATIO = 0.3;
+  const EDGE = 80;
+  const HOLD = 340;
 
-  let tracking = false;
-  let dragging = false;
-  let sx = 0;
-  let sy = 0;
-  let sw = 280;
+  let pressTimer = null;
+  let startX = 0;
+  let startY = 0;
+  let moved = false;
 
   function railEl() {
     return D.querySelector('.rail');
   }
 
-  function isApp() {
-    return D.documentElement.getAttribute('data-app') === '1';
+  function inApp() {
+    const app = D.getElementById('app');
+    return !!(app && app.classList.contains('show'));
   }
 
   function scrimEl() {
@@ -29,13 +31,19 @@
     return s;
   }
 
+  function buzz() {
+    try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) {}
+  }
+
   function openRail() {
     const rail = railEl();
     if (!rail) return;
+
     rail.style.transition = '';
     rail.style.transform = '';
     rail.classList.add('open');
     scrimEl().hidden = false;
+    buzz();
   }
 
   function closeRail() {
@@ -49,73 +57,52 @@
     if (s) s.hidden = true;
   }
 
+  function stopHold() {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      pressTimer = null;
+    }
+  }
+
   D.addEventListener('touchstart', function (e) {
-    tracking = false;
-    dragging = false;
-    if (!isApp()) return;
+    stopHold();
+    moved = false;
+
+    if (!inApp()) return;
 
     const t = e.touches && e.touches[0];
     if (!t) return;
     if (t.clientX > EDGE) return;
 
-    const rail = railEl();
-    if (!rail) return;
+    startX = t.clientX;
+    startY = t.clientY;
 
-    tracking = true;
-    sx = t.clientX;
-    sy = t.clientY;
-    sw = rail.offsetWidth || 280;
-  }, { passive: true });
+    pressTimer = setTimeout(function () {
+      pressTimer = null;
+      if (!moved) openRail();
+    }, HOLD);
+  }, { capture: true, passive: true });
 
   D.addEventListener('touchmove', function (e) {
-    if (!tracking) return;
-
     const t = e.touches && e.touches[0];
     if (!t) return;
 
-    const dx = t.clientX - sx;
-    const dy = t.clientY - sy;
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
 
-    if (!dragging) {
-      if (dx < 12) return;
-      if (Math.abs(dy) > Math.abs(dx)) { tracking = false; return; }
-
-      dragging = true;
-      const r0 = railEl();
-      if (r0) r0.style.transition = 'none';
-      scrimEl().hidden = false;
+    if (!moved && (Math.abs(dx) > 9 || Math.abs(dy) > 9)) {
+      moved = true;
+      stopHold();
     }
 
-    try { e.preventDefault(); } catch (err) {}
-
-    const rail = railEl();
-    if (!rail) return;
-
-    const p = Math.max(0, Math.min(1, dx / sw));
-    rail.style.transform = 'translateX(' + (-104 + 104 * p) + '%)';
-  }, { passive: false });
-
-  D.addEventListener('touchend', function (e) {
-    if (!tracking) return;
-    tracking = false;
-
-    if (!dragging) return;
-    dragging = false;
-
-    const t = e.changedTouches && e.changedTouches[0];
-    const dx = t ? (t.clientX - sx) : 0;
-
-    if (dx > sw * RATIO) openRail();
-    else closeRail();
-  }, { passive: true });
-
-  D.addEventListener('touchcancel', function () {
-    tracking = false;
-    if (dragging) {
-      dragging = false;
-      closeRail();
+    if (moved && dx > 40 && Math.abs(dx) > Math.abs(dy) && inApp()) {
+      if (!railEl()) return;
+      openRail();
     }
-  }, { passive: true });
+  }, { capture: true, passive: true });
+
+  D.addEventListener('touchend', stopHold, { capture: true, passive: true });
+  D.addEventListener('touchcancel', stopHold, { capture: true, passive: true });
 
   D.addEventListener('click', function (e) {
     const t = e.target;
@@ -127,4 +114,6 @@
       setTimeout(closeRail, 120);
     }
   }, true);
+
+  window.AppRail = { open: openRail, close: closeRail };
 })();
