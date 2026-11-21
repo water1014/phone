@@ -231,6 +231,13 @@
     bufText = '';
     bufThink = '';
 
+    window.XW_LAST = {
+      model: model,
+      think: !!String(think || '').trim(),
+      chars: content.length,
+      at: Date.now()
+    };
+
     const out = {
       id: 'xw-stream',
       object: 'chat.completion',
