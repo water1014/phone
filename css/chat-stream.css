@@ -1,0 +1,27 @@
+/* chat-stream.css · 流式输出时的光标与思考链 */
+html[data-page=chat] .bub.cs-live::after{
+  content:'';
+  display:inline-block;
+  width:2px;
+  height:.86em;
+  margin-left:3px;
+  vertical-align:-.08em;
+  background:currentColor;
+  opacity:.3;
+  animation:xwCaret 1s steps(2,end) infinite;
+}
+@keyframes xwCaret{
+  0%,49%{ opacity:.3; }
+  50%,100%{ opacity:0; }
+}
+html[data-page=chat] details.think .think-body{
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+html[data-page=chat] details.think[open] .think-body{
+  animation:xwFade .24s ease both;
+}
+@keyframes xwFade{
+  from{ opacity:0; transform:translateY(-2px); }
+  to{ opacity:1; transform:none; }
+}
