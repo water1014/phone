@@ -1,0 +1,101 @@
+/* chat-bubble.css · 有气泡 / 无气泡 两套 + 聊天背景 */
+
+/* ---------- 背景（很淡，只当水印） ---------- */
+html[data-page="chat"] .app::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--cs-bg, none);
+  background-size: cover;
+  background-position: center;
+  opacity: .26;
+  pointer-events: none;
+  z-index: 0;
+}
+
+html[data-page="chat"] .app-body {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- 无气泡：字直接印在背景上 ---------- */
+html[data-page="chat"][data-chat-bubble="0"] .msg-row .msg-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+html[data-page="chat"][data-chat-bubble="0"] .msg-row.me .msg-main {
+  align-items: flex-end;
+}
+
+html[data-page="chat"][data-chat-bubble="0"] .msg-row.me .bub {
+  text-align: right;
+}
+
+/* 像 Operit 那种：块与块之间一道极淡的线 */
+html[data-page="chat"][data-chat-bubble="0"] .msg-row + .msg-row {
+  padding-top: .85rem;
+  border-top: 1px solid rgba(0, 0, 0, .035);
+}
+
+/* ---------- 有气泡：一条一条包起来 ---------- */
+html[data-page="chat"][data-chat-bubble="1"] .msg-row .msg-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+html[data-page="chat"][data-chat-bubble="1"] .msg-row.me .msg-main {
+  align-items: flex-end;
+}
+
+html[data-page="chat"][data-chat-bubble="1"] .bub {
+  display: inline-block;
+  max-width: 86%;
+  padding: .58rem .82rem !important;
+  border: 1px solid rgba(0, 0, 0, .045) !important;
+  border-radius: 14px 14px 14px 4px !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .05) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  font-size: var(--cs-fs, .78rem) !important;
+  line-height: 1.95;
+  color: #34302a !important;
+  text-align: left;
+}
+
+html[data-page="chat"][data-chat-bubble="1"] .bub.me {
+  border-radius: 14px 14px 4px 14px !important;
+  background: #dce8f5 !important;
+  border-color: rgba(150, 175, 200, .38) !important;
+  color: #26313c !important;
+}
+
+html[data-page="chat"][data-chat-bubble="1"] .narr {
+  max-width: 86%;
+  font-size: .62rem;
+}
+
+/* 气泡模式下，三个点不能被 padding 撑成一大块 */
+html[data-page="chat"][data-chat-bubble="1"] .bub.typing {
+  width: 40px !important;
+  height: 14px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  background-image:
+    radial-gradient(circle at 6px 7px, #c9c2b4 2.2px, transparent 2.4px),
+    radial-gradient(circle at 20px 7px, #c9c2b4 2.2px, transparent 2.4px),
+    radial-gradient(circle at 34px 7px, #c9c2b4 2.2px, transparent 2.4px) !important;
+  background-repeat: no-repeat !important;
+  font-size: 0 !important;
+}
+
+/* 设置面板里的危险按钮（无引号写法要用独立 class） */
+.cset-danger {
+  color: #b46a6a;
+  border-color: rgba(180, 106, 106, .28);
+}
