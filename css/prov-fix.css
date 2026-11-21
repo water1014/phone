@@ -17,9 +17,11 @@
 }
 
 .prov-soft { color: #a9a294; }
+.prov-warn { color: #b46a6a; }
 
 .prov-btn {
   margin-top: .5rem;
+  margin-right: .4rem;
   padding: .34rem .85rem;
   border: 1px solid rgba(0, 0, 0, .09);
   border-radius: 999px;
