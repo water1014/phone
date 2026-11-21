@@ -1,10 +1,6 @@
-/* chat-model.js · 聊天设置顶部：显示当前模型、能不能带思考链，可一键换 */
+/* chat-model.js · 聊天设置顶部：看上次回复到底带没带思考 */
 (function () {
   const D = document;
-
-  function canThink(model) {
-    return /reason|r1|r2|thinking|qwq|o1|o3|o4/i.test(String(model || ''));
-  }
 
   function current() {
     return String(XW.S.aiModel || '').trim();
@@ -12,6 +8,10 @@
 
   function provider() {
     return String(XW.S.aiProvider || '').trim() || 'deepseek';
+  }
+
+  function last() {
+    return window.XW_LAST || null;
   }
 
   function apply(model) {
@@ -24,48 +24,73 @@
     XW.save('profiles');
   }
 
+  function textOf() {
+    const m = current();
+    const l = last();
+    if (!m) return '模型还没填';
+    let s = '模型 ' + m;
+    if (!l) {
+      s += ' \u00b7 \u8fd8\u6ca1\u804a\u8fc7';
+    } else {
+      s += l.think ? ' \u00b7 \u4e0a\u6b21\u5e26\u7740\u601d\u8003' : ' \u00b7 \u4e0a\u6b21\u6ca1\u5e26\u601d\u8003';
+    }
+    return s;
+  }
+
+  function kindOf() {
+    const l = last();
+    if (!l) return '';
+    return l.think ? 'ok' : 'no';
+  }
+
+  let boxEl = null;
+  let lineEl = null;
+  let btnEl = null;
+
+  function sync() {
+    if (lineEl) {
+      lineEl.textContent = textOf();
+      lineEl.className = 'cd-line ' + kindOf();
+    }
+    if (btnEl) {
+      const l = last();
+      const show = !!(l && !l.think) || !l;
+      btnEl.style.display = show ? '' : 'none';
+    }
+  }
+
   function build() {
     const box = D.createElement('div');
     box.className = 'cd-row';
 
-    const line = D.createElement('div');
-    line.className = 'cd-line';
-    const m = current();
-    const ok = canThink(m);
-    line.textContent = '模型 ' + (m || '(未填)') + (ok ? ' · 会带思考链' : ' · 不带思考链');
-    line.classList.add(ok ? 'ok' : 'no');
-    box.appendChild(line);
+    lineEl = D.createElement('div');
+    lineEl.className = 'cd-line';
+    box.appendChild(lineEl);
 
-    if (!ok) {
-      const btn = D.createElement('button');
-      btn.type = 'button';
-      btn.className = 'cd-btn';
-      btn.textContent = '换成 deepseek-reasoner';
-      btn.addEventListener('click', function () {
-        apply('deepseek-reasoner');
-        line.textContent = '模型 deepseek-reasoner · 会带思考链';
-        line.classList.remove('no');
-        line.classList.add('ok');
-        btn.remove();
-      });
-      box.appendChild(btn);
-    }
+    btnEl = D.createElement('button');
+    btnEl.type = 'button';
+    btnEl.className = 'cd-btn';
+    btnEl.textContent = '\u6362\u6210 deepseek-reasoner';
+    btnEl.addEventListener('click', function () {
+      apply('deepseek-reasoner');
+      if (lineEl) {
+        lineEl.textContent = '\u6a21\u578b deepseek-reasoner \u00b7 \u4e0b\u4e00\u6761\u5c31\u77e5\u9053';
+        lineEl.className = 'cd-line ok';
+      }
+      btnEl.style.display = 'none';
+    });
+    box.appendChild(btnEl);
+
+    sync();
     return box;
   }
 
-  let boxEl = null;
   let timer = null;
 
   function render() {
     const p = D.querySelector('.cset');
     if (!p) return;
-    if (boxEl && D.contains(boxEl)) {
-      if (boxEl.textContent.indexOf(current() || '(未填)') >= 0) return;
-      const next = build();
-      boxEl.parentNode.replaceChild(next, boxEl);
-      boxEl = next;
-      return;
-    }
+    if (boxEl && D.contains(boxEl)) { sync(); return; }
     boxEl = build();
     p.insertBefore(boxEl, p.firstChild);
   }
@@ -75,12 +100,12 @@
     timer = setTimeout(function () {
       timer = null;
       render();
-    }, 130);
+    }, 150);
   }
 
   if (window.MutationObserver && D.body) {
     new MutationObserver(later).observe(D.body, { childList: true, subtree: true });
   }
 
-  setTimeout(render, 600);
+  setTimeout(render, 700);
 })();
