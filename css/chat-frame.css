@@ -1,4 +1,4 @@
-/* chat-frame.css · 头像、时间行、两行输入框 */
+/* chat-frame.css · 头像、顶部时间行、两行输入框 */
 
 /* 左侧头像 */
 html[data-page=chat] .msg-row.ta{
@@ -12,7 +12,7 @@ html[data-page=chat] .msg-row.ta .msg-ava{
   place-items:center;
   width:28px;
   height:28px;
-  margin-top:1px;
+  margin-top:0;
   border-radius:50%;
   overflow:hidden;
   background:#efe9df;
@@ -28,12 +28,13 @@ html[data-page=chat] .msg-row.ta .msg-ava img{
   object-fit:cover;
 }
 
-/* 时间行 */
+/* 时间行：在消息最顶上，和头像同高 */
 html[data-page=chat] .cc-time{
   display:flex;
   align-items:center;
   gap:6px;
-  margin-top:.52rem;
+  min-height:28px;
+  margin:0 0 .42rem;
   font-size:.42rem;
   letter-spacing:.02em;
   color:#b7afa1;

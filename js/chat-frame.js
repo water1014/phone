@@ -1,4 +1,4 @@
-/* chat-frame.js · 气泡外头像 + 每条回复下面一行时间 */
+/* chat-frame.js · 气泡外头像 + 时间行摆在消息顶部，和头像平齐 */
 (function () {
   const D = document;
 
@@ -48,6 +48,9 @@
     const m = (XW.S.chat || [])[i];
     if (!m || !m.t) return;
 
+    const main = row.querySelector('.msg-main');
+    if (!main) return;
+
     let line = row.querySelector('.cc-time');
 
     if (!line) {
@@ -61,14 +64,9 @@
       const s = D.createElement('span');
       s.className = 'cc-stamp';
       line.appendChild(s);
-
-      const main = row.querySelector('.msg-main');
-      if (!main) return;
-
-      const tag = row.querySelector('.msg-tag');
-      if (tag && tag.parentNode === main) main.insertBefore(line, tag);
-      else main.appendChild(line);
     }
+
+    if (main.firstChild !== line) main.insertBefore(line, main.firstChild);
 
     const s = line.querySelector('.cc-stamp');
     const text = stamp(m.t);
