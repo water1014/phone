@@ -1,0 +1,15 @@
+/* chat-think.css · 思考那一行要像能点的 */
+html[data-page=chat] details.think > summary{
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none;
+  user-select:none;
+}
+html[data-page=chat] details.think[open] > summary{
+  margin-bottom:2px;
+}
+html[data-page=chat] details.think .think-body{
+  max-height:52vh;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
