@@ -6,7 +6,10 @@
   const K = 'xw_chatcfg';
   const BK = 'xw_chat_bg';
 
-  const DEF = { fs: '0.8', think: '1', usage: '1', time: '1', bubble: '0', bg: 'none' };
+  const DEF = {
+    fs: '0.8', think: '1', usage: '1', time: '1',
+    bubble: '0', bg: 'none', tone: 'blue'
+  };
 
   let st = {};
   try { st = JSON.parse(localStorage.getItem(K) || '{}') || {}; }
@@ -44,6 +47,16 @@
     ROOT.setAttribute('data-chat-time', st.time);
     ROOT.setAttribute('data-chat-bubble', st.bubble);
     ROOT.setAttribute('data-chat-bg', st.bg);
+    ROOT.setAttribute('data-chat-tone', st.tone);
+  }
+
+  function dots() {
+    return '<div class=cset-dots>' +
+      '<button type=button class=cset-dot data-tone=blue></button>' +
+      '<button type=button class=cset-dot data-tone=pink></button>' +
+      '<button type=button class=cset-dot data-tone=paper></button>' +
+      '<button type=button class=cset-dot data-tone=sage></button>' +
+      '</div>';
   }
 
   function build() {
@@ -72,7 +85,10 @@
             '<button type=button class=cset-opt data-bubble=0>无气泡</button>' +
             '<button type=button class=cset-opt data-bubble=1>有气泡</button>' +
           '</div>' +
-          '<div class=cset-note>有气泡像 QQ，一条一条包着；无气泡就是字直接印在背景上，块与块之间一道细线。</div></div>' +
+          '<div class=cset-note>有气泡像 QQ，一条一条包着；无气泡就是字直接印在背景上。</div>' +
+          '<div class=cset-lab style=margin-top:1rem>气泡颜色</div>' +
+          dots() +
+        '</div>' +
 
         '<div class=cset-sec><div class=cset-lab>背景</div>' +
           '<div class=cset-row>' +
@@ -134,6 +150,10 @@
 
     Array.prototype.forEach.call(D.querySelectorAll('.cset-opt[data-bgc]'), function (b) {
       b.classList.toggle('on', String(b.getAttribute('data-bgc')) === String(st.bg));
+    });
+
+    Array.prototype.forEach.call(D.querySelectorAll('.cset-dot[data-tone]'), function (b) {
+      b.classList.toggle('on', String(b.getAttribute('data-tone')) === String(st.tone));
     });
 
     ['think', 'usage', 'time'].forEach(function (k) {
@@ -310,10 +330,15 @@
     if (t.closest('#cset-bgclear')) {
       lsDel(BK);
       st.bg = 'none';
-      save();
-      applyCfg();
-      fill();
+      save(); applyCfg(); fill();
       UI.toast('清掉了');
+      return;
+    }
+
+    const dot = t.closest('.cset-dot[data-tone]');
+    if (dot) {
+      st.tone = String(dot.getAttribute('data-tone'));
+      save(); applyCfg(); fill();
       return;
     }
 
@@ -347,8 +372,7 @@
     }
 
     if (t.closest('#cset-export')) {
-      const text = transcript();
-      const ok = download('xiaowo-chat-' + stamp() + '.txt', text || '还没有聊天记录。');
+      const ok = download('xiaowo-chat-' + stamp() + '.txt', transcript() || '还没有聊天记录。');
       UI.toast(ok ? '导出了' : '这台机器不让下载');
       return;
     }
