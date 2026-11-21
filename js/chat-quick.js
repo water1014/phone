@@ -1,4 +1,4 @@
-/* chat-quick.js · 底部那三句常用语，自己改 */
+/* chat-quick.js · 底部那几句常用语，自己改 */
 (function () {
   const D = document;
   const K = 'xw_quick';
@@ -34,7 +34,7 @@
   }
 
   function injectPanel() {
-    const pane = D.querySelector('.cset-body');
+    const pane = D.querySelector('.cset-pane[data-cp=more]') || D.querySelector('.cset-body');
     if (!pane || pane.querySelector('#cq-wrap')) return;
 
     const box = D.createElement('div');
