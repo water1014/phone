@@ -104,7 +104,7 @@
 
     const head = D.createElement('div');
     head.className = 'uc-head';
-    head.textContent = '用量';
+    head.textContent = '用量 · LOCAL';
     box.appendChild(head);
 
     box.appendChild(line('今天', sum(keys(1))));
@@ -129,24 +129,16 @@
   let timer = null;
 
   function render() {
-    const anchor = D.getElementById('set-ai-model');
-    if (!anchor) return;
-    const sheet = anchor.closest('.sheet');
-    if (!sheet) return;
+    const api = D.querySelector('.api-sheet');
+    if (!api) return;
 
-    const old = sheet.querySelector('.uc-card');
+    const old = api.querySelector('.uc-card');
     if (old) { paint(old); return; }
 
     const box = D.createElement('div');
     box.className = 'uc-card';
     paint(box);
-
-    const ap = sheet.querySelector('.ap-block');
-    if (ap && ap.parentNode === sheet) {
-      sheet.insertBefore(box, ap.nextSibling);
-    } else {
-      sheet.appendChild(box);
-    }
+    api.appendChild(box);
   }
 
   function later() {
@@ -154,12 +146,13 @@
     timer = setTimeout(function () {
       timer = null;
       render();
-    }, 140);
+    }, 160);
   }
 
   if (window.MutationObserver && D.body) {
     new MutationObserver(later).observe(D.body, { childList: true, subtree: true });
   }
 
-  setTimeout(render, 800);
+  setTimeout(render, 900);
+  setTimeout(render, 1500);
 })();

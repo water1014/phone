@@ -40,6 +40,15 @@
     } catch (e) {}
   }
 
+  function lsNum(k, d) {
+    try {
+      const v = localStorage.getItem(k);
+      if (v == null || v === '') return d;
+      const n = Number(v);
+      return isNaN(n) ? d : n;
+    } catch (e) { return d; }
+  }
+
   function scroller() { return D.getElementById('chat-scroll'); }
 
   function atBottom() {
@@ -118,6 +127,16 @@
       stream: true,
       stream_options: { include_usage: true }
     });
+
+    const t = lsNum('xw_ai_temp', -1);
+    if (t >= 0 && t <= 2 && body.temperature === undefined && !/reason/i.test(String(data.model || ''))) {
+      body.temperature = t;
+    }
+
+    const mo = lsNum('xw_ai_maxout', 0);
+    if (mo > 0 && body.max_tokens === undefined) {
+      body.max_tokens = mo;
+    }
 
     let res = null;
     try {
