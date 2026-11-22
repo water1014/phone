@@ -1,10 +1,11 @@
-/* album-pro.js · 相册：封面大图 + 按天分组 + 大图查看 */
+/* album-pro.js · 相册：封面 + 按月/按天分组 + 日历检索 + 大图 */
 (function () {
   const D = document;
   const P = window.Pages;
   if (!P || typeof P.album !== 'function') return;
 
   const WEEK = ['\u661f\u671f\u65e5', '\u661f\u671f\u4e00', '\u661f\u671f\u4e8c', '\u661f\u671f\u4e09', '\u661f\u671f\u56db', '\u661f\u671f\u4e94', '\u661f\u671f\u516d'];
+  const WD = ['\u65e5', '\u4e00', '\u4e8c', '\u4e09', '\u56db', '\u4e94', '\u516d'];
 
   function esc(t) {
     if (window.UI && UI.esc) return UI.esc(t);
@@ -26,6 +27,9 @@
 
   let flat = [];
   let viewAt = -1;
+  let filterDay = '';
+  let calOpen = false;
+  let calYm = null;
 
   function collect() {
     const raw = Array.isArray(XW.S.photos) ? XW.S.photos : [];
@@ -37,12 +41,21 @@
     return flat;
   }
 
-  function groups() {
-    collect();
+  function dayMap() {
+    const m = {};
+    flat.forEach(function (x) {
+      if (!x.t) return;
+      const k = ymd(new Date(x.t));
+      m[k] = (m[k] || 0) + 1;
+    });
+    return m;
+  }
+
+  function groupsFrom(seq) {
     const map = {};
-    flat.forEach(function (x, k) {
+    seq.forEach(function (x) {
       const key = x.t ? ymd(new Date(x.t)) : '';
-      (map[key] = map[key] || []).push(k);
+      (map[key] = map[key] || []).push(x);
     });
 
     const keys = Object.keys(map).sort(function (a, b) {
@@ -51,59 +64,125 @@
       return a < b ? 1 : -1;
     });
 
-    return keys.map(function (k) { return { k: k, idx: map[k] }; });
+    return keys.map(function (k) { return { k: k, items: map[k] }; });
+  }
+
+  function calHtml(dm) {
+    if (!calYm) {
+      const keys = Object.keys(dm).sort();
+      const base = keys.length ? new Date(keys[keys.length - 1] + 'T12:00:00') : new Date();
+      calYm = { y: base.getFullYear(), m: base.getMonth() };
+    }
+
+    const y = calYm.y, m = calYm.m;
+    const startW = new Date(y, m, 1).getDay();
+    const lastD = new Date(y, m + 1, 0).getDate();
+
+    let cells = '';
+    WD.forEach(function (w) { cells += '<span class="ap-w">' + w + '</span>'; });
+
+    for (let i = 0; i < startW; i++) cells += '<span class="ap-d off"></span>';
+
+    for (let d = 1; d <= lastD; d++) {
+      const k = y + '-' + p2(m + 1) + '-' + p2(d);
+      const has = !!dm[k];
+      const sel = filterDay === k;
+      cells += '<span class="ap-d' + (has ? ' has' : ' off') + (sel ? ' sel' : '') + '"' +
+        (has ? ' data-day="' + k + '"' : '') + '>' + d + '</span>';
+    }
+
+    return '<div class="ap-cal">' +
+        '<div class="ap-cal-top">' +
+          '<button type="button" class="ap-mv" id="ap-prev">\u2039</button>' +
+          '<span>' + y + ' \u00b7 ' + p2(m + 1) + '</span>' +
+          '<button type="button" class="ap-mv" id="ap-next">\u203a</button>' +
+        '</div>' +
+        '<div class="ap-cg">' + cells + '</div>' +
+        '<div class="ap-cal-foot">\u6709\u7167\u7247\u7684\u65e5\u5b50\u989c\u8272\u6df1\u4e00\u70b9\uff0c\u70b9\u4e00\u4e0b\u5c31\u53ea\u770b\u90a3\u4e00\u5929\u3002</div>' +
+      '</div>';
   }
 
   function album() {
-    const gs = groups();
-    const days = gs.filter(function (g) { return !!g.k; }).length;
-    const covK = flat.length ? flat.length - 1 : -1;
+    collect();
+    const dm = dayMap();
+    const days = Object.keys(dm).length;
+    const cover = flat.length ? flat[flat.length - 1] : null;
 
     const sub = flat.length
       ? ('<span class="ap-n">' + flat.length + '</span> \u5f20' +
          (days > 1 ? ' \u00b7 <span class="ap-n">' + days + '</span> \u5929' : ''))
       : '\u8fd8\u7a7a\u7740';
 
-    let body = '';
-
-    if (!flat.length) {
-      body = '<div class="empty-state ap-empty">\u8fd8\u6ca1\u6709\u7167\u7247\u3002<br>\u56fe\u653e\u8fdb\u6765\uff0c\u6211\u4e00\u5f20\u5f20\u6446\u4e0a\u3002</div>';
-    } else {
-      body += '<button type="button" class="ap-cover" data-k="' + covK + '">' +
-          '<img src="' + flat[covK].u + '" alt="">' +
-        '</button>' +
-        '<div class="ap-cap">\u6700\u8fd1\u653e\u8fdb\u6765\u7684\u4e00\u5f20</div>';
-
-      const rest = gs.map(function (g) {
-        return {
-          k: g.k,
-          idx: g.idx.filter(function (k) { return k !== covK; })
-        };
-      }).filter(function (g) { return g.idx.length; });
-
-      rest.forEach(function (g) {
-        const label = g.k
-          ? (g.k + ' \u00b7 ' + g.idx.length)
-          : ('\u66f4\u65e9 \u00b7 ' + g.idx.length);
-
-        body += '<div class="ap-band">' + esc(label) + '</div>' +
-          '<div class="ap-grid">' + g.idx.map(function (k) {
-            return '<button type="button" class="ap-cell" data-k="' + k + '">' +
-              '<img src="' + flat[k].u + '" alt="" loading="lazy">' +
-            '</button>';
-          }).join('') + '</div>';
-      });
-    }
-
-    return '<div class="ap-head">' +
+    let head = '<div class="ap-head">' +
         '<div class="hero">' +
           '<span class="kicker">ALBUM</span>' +
           '<h1 class="hero-title">\u76f8\u518c</h1>' +
           '<div class="hero-sub">' + sub + '</div>' +
         '</div>' +
         '<button type="button" id="album-add" class="ap-add" aria-label="\u653e\u7167\u7247">\uff0b</button>' +
-      '</div>' +
+      '</div>';
+
+    let bar = '';
+    if (flat.length) {
+      bar = '<div class="ap-bar">' +
+          (filterDay
+            ? '<button type="button" class="ap-chip on" id="ap-clear">' + esc(filterDay) + ' \u00b7 ' +
+              (flat.filter(function (x) { return x.t && ymd(new Date(x.t)) === filterDay; }).length) +
+              ' \u5f20 \u2715</button>'
+            : '<button type="button" class="ap-chip" id="ap-drop">\u6309\u65e5\u671f\u627e</button>') +
+        '</div>';
+
+      if (calOpen) bar += calHtml(dm);
+    }
+
+    let body = '';
+
+    if (!flat.length) {
+      body = '<div class="empty-state ap-empty">\u8fd8\u6ca1\u6709\u7167\u7247\u3002<br>\u56fe\u653e\u8fdb\u6765\uff0c\u6211\u4e00\u5f20\u5f20\u6446\u4e0a\u3002</div>';
+    } else {
+      const seq = filterDay
+        ? flat.filter(function (x) { return x.t && ymd(new Date(x.t)) === filterDay; })
+        : flat.filter(function (x) { return cover ? x !== cover : true; });
+
+      if (!filterDay && cover) {
+        body += '<button type="button" class="ap-cover" data-k="' + (flat.length - 1) + '">' +
+            '<img src="' + cover.u + '" alt="">' +
+          '</button>' +
+          '<div class="ap-cap">\u6700\u8fd1\u653e\u8fdb\u6765\u7684\u4e00\u5f20</div>';
+      }
+
+      const gs = groupsFrom(seq);
+      let lastMon = '';
+
+      if (!gs.length) {
+        body += '<div class="empty-state ap-empty">\u8fd9\u4e00\u5929\u6ca1\u6709\u7167\u7247\u3002</div>';
+      }
+
+      gs.forEach(function (g) {
+        if (g.k) {
+          const mon = g.k.slice(0, 7);
+          if (mon !== lastMon) {
+            body += '<div class="ap-mon">' + mon.replace('-', ' \u00b7 ') + '</div>';
+            lastMon = mon;
+          }
+        }
+
+        const label = g.k
+          ? (g.k + ' \u00b7 ' + g.items.length)
+          : ('\u66f4\u65e9 \u00b7 ' + g.items.length);
+
+        body += '<div class="ap-band">' + esc(label) + '</div>' +
+          '<div class="ap-grid">' + g.items.map(function (x) {
+            return '<button type="button" class="ap-cell" data-k="' + x.i + '">' +
+              '<img src="' + x.u + '" alt="" loading="lazy">' +
+            '</button>';
+          }).join('') + '</div>';
+      });
+    }
+
+    return head +
       '<input id="album-file" type="file" accept="image/*" multiple hidden>' +
+      bar +
       body +
       '<div class="ap-note">\u7167\u7247\u5b58\u5728\u8fd9\u53f0\u624b\u673a\u7684\u6d4f\u89c8\u5668\u91cc\uff0c\u6e05\u7f13\u5b58\u4f1a\u4e22\u3002\u6362\u624b\u673a\u4e4b\u524d\u5148\u5bfc\u4e00\u4efd\u5907\u4efd\u3002</div>';
   }
@@ -162,6 +241,7 @@
     }
 
     UI.toast('\u653e\u8fdb\u6765 ' + added.length + ' \u5f20');
+    filterDay = '';
     window.Router.reopen('album');
   }
 
@@ -178,6 +258,11 @@
       UI.toast('\u5904\u7406\u4e2d\u2026');
       addFiles(arr);
     }, false);
+  }
+
+  function idxOf(k) {
+    const n = Number(k);
+    return isNaN(n) ? -1 : n;
   }
 
   function open(k) {
@@ -259,9 +344,33 @@
       return;
     }
 
+    if (t.closest('#ap-drop')) { calOpen = true; window.Router.reopen('album'); return; }
+    if (t.closest('#ap-clear')) { filterDay = ''; calOpen = false; window.Router.reopen('album'); return; }
+    if (t.closest('#ap-prev')) {
+      const d = new Date(calYm.y, calYm.m - 1, 1);
+      calYm = { y: d.getFullYear(), m: d.getMonth() };
+      window.Router.reopen('album');
+      return;
+    }
+    if (t.closest('#ap-next')) {
+      const d = new Date(calYm.y, calYm.m + 1, 1);
+      calYm = { y: d.getFullYear(), m: d.getMonth() };
+      window.Router.reopen('album');
+      return;
+    }
+
+    const day = t.closest('.ap-d');
+    if (day && day.getAttribute('data-day')) {
+      filterDay = day.getAttribute('data-day');
+      calOpen = false;
+      window.Router.reopen('album');
+      return;
+    }
+
     const cell = t.closest('.ap-cell') || t.closest('.ap-cover');
     if (cell) {
-      open(Number(cell.getAttribute('data-k')));
+      const k = idxOf(cell.getAttribute('data-k'));
+      if (k >= 0) open(k);
       return;
     }
 
