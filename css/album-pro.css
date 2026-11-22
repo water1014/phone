@@ -1,4 +1,13 @@
-/* album-pro.css · 相册（仿 iOS 相册）：挂在 #app-body 上，不依赖 data-page */
+/* album-pro.css · 相册（仿 iOS 相册）：淡粉淡紫底、分段控件、方角网格、黑底全屏 */
+
+/* 只给相册页铺底色：:has(.ap-head) 只有相册页才有这个块 */
+#app-body:has(.ap-head){
+  background:
+    radial-gradient(120% 58% at 10% -4%, rgba(247,213,231,.62), rgba(247,213,231,0) 62%),
+    radial-gradient(110% 52% at 92% 2%, rgba(217,206,244,.58), rgba(217,206,244,0) 60%),
+    radial-gradient(120% 60% at 50% 104%, rgba(238,224,245,.55), rgba(238,224,245,0) 72%),
+    #fdfbfa;
+}
 
 #app-body .ap-head{
   display:flex;
@@ -23,10 +32,10 @@
   width:34px;
   height:34px;
   padding:0;
-  border:1px solid rgba(0,0,0,.09);
+  border:1px solid rgba(120,96,120,.12);
   border-radius:50%;
-  background:rgba(255,255,255,.78);
-  color:#8f877a;
+  background:rgba(255,255,255,.72);
+  color:#8f8478;
   font-size:.78rem;
   line-height:1;
   display:grid;
@@ -42,7 +51,8 @@
   margin:1.05rem 0 .2rem;
   padding:2px;
   border-radius:9px;
-  background:rgba(0,0,0,.045);
+  background:rgba(255,255,255,.5);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.6);
 }
 #app-body .ap-sg{
   flex:1 1 0;
@@ -61,7 +71,7 @@
 #app-body .ap-sg.on{
   background:#fff;
   color:#2f2b25;
-  box-shadow:0 1px 3px rgba(0,0,0,.07);
+  box-shadow:0 1px 3px rgba(120,100,120,.1);
 }
 
 /* 分组标题 */
@@ -82,7 +92,7 @@
 #app-body .ap-sec-n{
   font-size:.47rem;
   letter-spacing:.04em;
-  color:#bbb3a4;
+  color:#b3a9b4;
   font-variant-numeric:tabular-nums;
 }
 
@@ -107,7 +117,7 @@
   border:0;
   border-radius:1px;
   overflow:hidden;
-  background:#f1ede5;
+  background:#f3eef2;
   cursor:pointer;
   box-shadow:none;
   -webkit-tap-highlight-color:transparent;
@@ -127,10 +137,12 @@
   font-size:.5rem;
   line-height:1.95;
   letter-spacing:.02em;
-  color:#bcb4a6;
+  color:#b6aab8;
 }
 
 /* 全屏：黑底 */
+@keyframes apIn{ from{ opacity:0 } to{ opacity:1 } }
+
 .ap-view{
   position:fixed;
   inset:0;
@@ -138,6 +150,7 @@
   display:flex;
   flex-direction:column;
   background:#000;
+  animation:apIn .16s ease both;
 }
 .ap-top{
   flex:0 0 auto;
