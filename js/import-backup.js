@@ -105,17 +105,30 @@
   function go() {
     if (!pending) return;
 
-    try { localStorage.setItem(BAK, JSON.stringify(dump())); } catch (e) {}
+    let bakOk = false;
+    try {
+      localStorage.setItem(BAK, JSON.stringify(dump()));
+      bakOk = localStorage.getItem(BAK) !== null;
+    } catch (e) { bakOk = false; }
 
     const keys = Object.keys(pending);
-    let done = 0;
+    let done = 0, fail = 0;
     keys.forEach(function (k) {
-      try { localStorage.setItem(k, pending[k]); done++; } catch (e) {}
+      try { localStorage.setItem(k, pending[k]); done++; }
+      catch (e) { fail++; }
     });
 
     pending = null;
-    card('<div class="xw-ic-stat">\u5199\u8fdb\u53bb\u4e86 ' + done + ' \u9879\uff0c\u9a6c\u4e0a\u91cd\u65b0\u5f00\u4e00\u6b21\u3002</div>');
-    setTimeout(function () { location.reload(); }, 900);
+
+    const tail = bakOk
+      ? '\uff0c\u5bfc\u9519\u4e86\u80fd\u9000\u56de\u53bb'
+      : '\uff08\u8fd9\u6b21\u6ca1\u80fd\u7559\u4e0b\u64a4\u9500\u5907\u4efd\uff0c\u624b\u673a\u7a7a\u95f4\u4e0d\u591f\uff09';
+
+    card('<div class="xw-ic-stat">\u5199\u8fdb\u53bb ' + done + ' \u9879' +
+      (fail ? '\uff0c' + fail + ' \u9879\u5b58\u4e0d\u4e0b' : '') +
+      tail + '\uff0c\u9a6c\u4e0a\u91cd\u65b0\u5f00\u4e00\u6b21\u3002</div>');
+
+    setTimeout(function () { location.reload(); }, 1100);
   }
 
   function undo(btn) {
