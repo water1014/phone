@@ -1,0 +1,125 @@
+/* album-pro.css · 相册按天分组 + 大图查看 */
+
+html[data-page=album] .ap-band{
+  margin:1.4rem 0 .55rem;
+  font-size:.5rem;
+  letter-spacing:.09em;
+  color:#b3aa9b;
+}
+html[data-page=album] .ap-band:first-child{ margin-top:.9rem; }
+
+html[data-page=album] .ap-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:4px;
+  margin:0;
+}
+
+@media (min-width:640px){
+  html[data-page=album] .ap-grid{ grid-template-columns:repeat(4,1fr); }
+}
+
+html[data-page=album] .ap-cell{
+  position:relative;
+  display:block;
+  width:100%;
+  aspect-ratio:1/1;
+  padding:0;
+  border:0;
+  border-radius:4px;
+  overflow:hidden;
+  background:#f1ede5;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+html[data-page=album] .ap-cell img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+html[data-page=album] .ap-cell:active img{ opacity:.82; }
+
+/* 大图 */
+.ap-view{
+  position:fixed;
+  inset:0;
+  z-index:400;
+  display:flex;
+  flex-direction:column;
+  background:rgba(26,24,21,.955);
+  -webkit-backdrop-filter:blur(6px);
+  backdrop-filter:blur(6px);
+}
+.ap-top{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:calc(12px + env(safe-area-inset-top)) 16px 10px;
+  color:rgba(255,255,255,.72);
+  font-size:.52rem;
+  letter-spacing:.03em;
+}
+.ap-when{ flex:1 1 auto; }
+.ap-count{
+  flex:0 0 auto;
+  color:rgba(255,255,255,.42);
+  font-variant-numeric:tabular-nums;
+}
+.ap-x{
+  flex:0 0 auto;
+  width:28px;
+  height:28px;
+  border:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  font-size:.56rem;
+  line-height:1;
+}
+.ap-stage{
+  flex:1 1 auto;
+  display:grid;
+  place-items:center;
+  min-height:0;
+  padding:0 8px;
+}
+.ap-img{
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+  border-radius:6px;
+}
+.ap-foot{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  padding:12px 16px calc(16px + env(safe-area-inset-bottom));
+}
+.ap-nav{
+  width:44px;
+  height:44px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:50%;
+  background:transparent;
+  color:rgba(255,255,255,.8);
+  font-size:1rem;
+  line-height:1;
+}
+.ap-nav[disabled]{ opacity:.24; }
+.ap-del{
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:999px;
+  background:transparent;
+  color:rgba(255,255,255,.72);
+  font-size:.54rem;
+  letter-spacing:.04em;
+  padding:10px 18px;
+}
+.ap-del[data-armed="1"]{
+  border-color:rgba(206,124,114,.72);
+  color:#efcac4;
+}
