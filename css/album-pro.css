@@ -75,7 +75,6 @@ html[data-page=album] .ap-t.on{
   border-color:rgba(0,0,0,.14);
   color:#3d382f;
 }
-html[data-page=album] .ap-t.on i{ color:#9b9form; }
 html[data-page=album] .ap-t.on i{ color:#9b9284; }
 
 /* 月份小标 */
