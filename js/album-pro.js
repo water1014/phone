@@ -1,4 +1,4 @@
-/* album-pro.js · 相册：按天分组、点开看大图、大图里删 */
+/* album-pro.js · 相册：封面大图 + 按天分组 + 大图查看 */
 (function () {
   const D = document;
   const P = window.Pages;
@@ -57,44 +57,55 @@
   function album() {
     const gs = groups();
     const days = gs.filter(function (g) { return !!g.k; }).length;
+    const covK = flat.length ? flat.length - 1 : -1;
 
     const sub = flat.length
-      ? ('\u5171 ' + flat.length + ' \u5f20' + (days > 1 ? ' \u00b7 ' + days + ' \u5929' : ''))
+      ? ('<span class="ap-n">' + flat.length + '</span> \u5f20' +
+         (days > 1 ? ' \u00b7 <span class="ap-n">' + days + '</span> \u5929' : ''))
       : '\u8fd8\u7a7a\u7740';
 
     let body = '';
 
     if (!flat.length) {
-      body = '<div class="empty-state" style="margin-top:1.4rem">\u8fd8\u6ca1\u6709\u7167\u7247\u3002<br>\u56fe\u653e\u8fdb\u6765\uff0c\u6211\u4e00\u5f20\u5f20\u6446\u4e0a\u3002</div>';
+      body = '<div class="empty-state ap-empty">\u8fd8\u6ca1\u6709\u7167\u7247\u3002<br>\u56fe\u653e\u8fdb\u6765\uff0c\u6211\u4e00\u5f20\u5f20\u6446\u4e0a\u3002</div>';
     } else {
-      gs.forEach(function (g) {
-        const label = g.k
-          ? g.k + ' \u00b7 ' + g.idx.length + ' \u5f20'
-          : '\u66f4\u65e9 \u00b7 ' + g.idx.length + ' \u5f20';
+      body += '<button type="button" class="ap-cover" data-k="' + covK + '">' +
+          '<img src="' + flat[covK].u + '" alt="">' +
+        '</button>' +
+        '<div class="ap-cap">\u6700\u8fd1\u653e\u8fdb\u6765\u7684\u4e00\u5f20</div>';
 
-        body += '<div class="ap-band">' + esc(label) + '</div>';
-        body += '<div class="ap-grid album-grid">' + g.idx.map(function (k) {
-          return '<button type="button" class="ap-cell" data-k="' + k + '">' +
-            '<img src="' + flat[k].u + '" alt="" loading="lazy">' +
-          '</button>';
-        }).join('') + '</div>';
+      const rest = gs.map(function (g) {
+        return {
+          k: g.k,
+          idx: g.idx.filter(function (k) { return k !== covK; })
+        };
+      }).filter(function (g) { return g.idx.length; });
+
+      rest.forEach(function (g) {
+        const label = g.k
+          ? (g.k + ' \u00b7 ' + g.idx.length)
+          : ('\u66f4\u65e9 \u00b7 ' + g.idx.length);
+
+        body += '<div class="ap-band">' + esc(label) + '</div>' +
+          '<div class="ap-grid">' + g.idx.map(function (k) {
+            return '<button type="button" class="ap-cell" data-k="' + k + '">' +
+              '<img src="' + flat[k].u + '" alt="" loading="lazy">' +
+            '</button>';
+          }).join('') + '</div>';
       });
     }
 
-    return '<header class="hero">' +
-        '<span class="kicker">ALBUM</span>' +
-        '<h1 class="hero-title">\u76f8\u518c</h1>' +
-        '<div class="hero-sub">' + esc(sub) + '</div>' +
-      '</header>' +
-      '<div class="sheet">' +
-        '<div class="sheet-head"><span class="sheet-title">' +
-          (flat.length ? '\u7167\u7247' : '\u7a7a\u7684') +
-        '</span>' +
-        '<button type="button" id="album-add" class="btn-glass">\uff0b \u653e\u7167\u7247</button></div>' +
-        '<input id="album-file" type="file" accept="image/*" multiple hidden>' +
-        '<div>' + body + '</div>' +
-        '<div class="sheet-note">\u7167\u7247\u5b58\u5728\u8fd9\u53f0\u624b\u673a\u7684\u6d4f\u89c8\u5668\u91cc\uff0c\u6e05\u7f13\u5b58\u4f1a\u4e22\u3002\u6362\u624b\u673a\u4e4b\u524d\u5148\u5bfc\u4e00\u4efd\u5907\u4efd\u3002</div>' +
-      '</div>';
+    return '<div class="ap-head">' +
+        '<div class="hero">' +
+          '<span class="kicker">ALBUM</span>' +
+          '<h1 class="hero-title">\u76f8\u518c</h1>' +
+          '<div class="hero-sub">' + sub + '</div>' +
+        '</div>' +
+        '<button type="button" id="album-add" class="ap-add" aria-label="\u653e\u7167\u7247">\uff0b</button>' +
+      '</div>' +
+      '<input id="album-file" type="file" accept="image/*" multiple hidden>' +
+      body +
+      '<div class="ap-note">\u7167\u7247\u5b58\u5728\u8fd9\u53f0\u624b\u673a\u7684\u6d4f\u89c8\u5668\u91cc\uff0c\u6e05\u7f13\u5b58\u4f1a\u4e22\u3002\u6362\u624b\u673a\u4e4b\u524d\u5148\u5bfc\u4e00\u4efd\u5907\u4efd\u3002</div>';
   }
 
   function shrink(file, maxSide, quality) {
@@ -248,7 +259,7 @@
       return;
     }
 
-    const cell = t.closest('.ap-cell');
+    const cell = t.closest('.ap-cell') || t.closest('.ap-cover');
     if (cell) {
       open(Number(cell.getAttribute('data-k')));
       return;
