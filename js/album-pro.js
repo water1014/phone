@@ -1,4 +1,4 @@
-/* album-pro.js · 相册（仿 iOS 相册）：年/月/日分段 + 网格 + 黑底全屏 */
+/* album-pro.js · 相册（仿 iOS 相册）：年/月/日 + 多选 + 黑底全屏 */
 (function () {
   const D = document;
   const P = window.Pages;
@@ -27,6 +27,9 @@
   let flat = [];
   let viewAt = -1;
   let segView = 'month';
+  let selMode = false;
+  let sel = {};
+  let pendingScroll = '';
 
   function collect() {
     const raw = Array.isArray(XW.S.photos) ? XW.S.photos : [];
@@ -70,6 +73,36 @@
     return (d.getMonth() + 1) + ' \u6708 ' + d.getDate() + ' \u65e5 \u00b7 ' + WEEK[d.getDay()];
   }
 
+  function cellHtml(x) {
+    return '<button type="button" class="ap-cell' + (sel[x.i] ? ' picked' : '') + '" data-k="' + x.i + '">' +
+      '<img src="' + x.u + '" alt="" loading="lazy">' +
+      (selMode ? '<span class="ap-pick"></span>' : '') +
+    '</button>';
+  }
+
+  function yearBody() {
+    let out = '';
+
+    groupsBy(flat, 'year').forEach(function (yg) {
+      out += '<div class="ap-sec"><span class="ap-sec-t">' + esc(titleOf(yg.k, 'year')) +
+        '</span><span class="ap-sec-n">' + yg.items.length + '</span></div>';
+
+      groupsBy(yg.items, 'month').forEach(function (mg) {
+        const thumbs = mg.items.slice(0, 4).map(function (x) {
+          return '<img src="' + x.u + '" alt="" loading="lazy">';
+        }).join('');
+
+        out += '<button type="button" class="ap-yrow" data-mv="' + mg.k + '">' +
+            '<span class="ap-ymon">' + (mg.k ? Number(mg.k.slice(5)) : '\u66f4\u65e9') + '</span>' +
+            '<span class="ap-ythumbs">' + thumbs + '</span>' +
+            '<span class="ap-ycount">' + mg.items.length + '</span>' +
+          '</button>';
+      });
+    });
+
+    return out;
+  }
+
   function album() {
     collect();
 
@@ -82,13 +115,19 @@
          (dayCount > 1 ? ' \u00b7 <span class="ap-n">' + dayCount + '</span> \u5929' : ''))
       : '\u8fd8\u7a7a\u7740';
 
+    const tools = '<div class="ap-tools">' +
+        (flat.length ? '<button type="button" class="ap-sel' + (selMode ? ' on' : '') + '" id="ap-selmode">' +
+          (selMode ? '\u53d6\u6d88' : '\u9009\u62e9') + '</button>' : '') +
+        '<button type="button" id="album-add" class="ap-add" aria-label="\u653e\u7167\u7247">\uff0b</button>' +
+      '</div>';
+
     const head = '<div class="ap-head">' +
         '<div class="hero">' +
           '<span class="kicker">ALBUM</span>' +
           '<h1 class="hero-title">\u76f8\u518c</h1>' +
           '<div class="hero-sub">' + sub + '</div>' +
         '</div>' +
-        '<button type="button" id="album-add" class="ap-add" aria-label="\u653e\u7167\u7247">\uff0b</button>' +
+        tools +
       '</div>';
 
     let seg = '';
@@ -105,24 +144,31 @@
 
     if (!flat.length) {
       body = '<div class="empty-state ap-empty">\u8fd8\u6ca1\u6709\u7167\u7247\u3002<br>\u56fe\u653e\u8fdb\u6765\uff0c\u6211\u4e00\u5f20\u5f20\u6446\u4e0a\u3002</div>';
+    } else if (segView === 'year') {
+      body = yearBody();
     } else {
       groupsBy(flat, segView).forEach(function (g) {
-        body += '<div class="ap-sec">' +
+        body += '<div class="ap-sec"' + (segView === 'month' ? ' data-mk="' + g.k + '"' : '') + '>' +
             '<span class="ap-sec-t">' + esc(titleOf(g.k, segView)) + '</span>' +
             '<span class="ap-sec-n">' + g.items.length + '</span>' +
           '</div>' +
-          '<div class="ap-grid">' + g.items.map(function (x) {
-            return '<button type="button" class="ap-cell" data-k="' + x.i + '">' +
-              '<img src="' + x.u + '" alt="" loading="lazy">' +
-            '</button>';
-          }).join('') + '</div>';
+          '<div class="ap-grid">' + g.items.map(cellHtml).join('') + '</div>';
       });
     }
+
+    const bar = selMode
+      ? '<div class="ap-selbar">' +
+          '<button type="button" id="ap-selall">\u5168\u9009</button>' +
+          '<button type="button" id="ap-seldel">\u5220\u9664</button>' +
+        '</div>'
+      : '';
 
     return head +
       '<input id="album-file" type="file" accept="image/*" multiple hidden>' +
       seg +
       body +
+      (selMode ? '<div class="ap-selpad"></div>' : '') +
+      bar +
       '<div class="ap-note">\u7167\u7247\u5b58\u5728\u8fd9\u53f0\u624b\u673a\u7684\u6d4f\u89c8\u5668\u91cc\uff0c\u6e05\u7f13\u5b58\u4f1a\u4e22\u3002\u6362\u624b\u673a\u4e4b\u524d\u5148\u5bfc\u4e00\u4efd\u5907\u4efd\u3002</div>';
   }
 
@@ -198,6 +244,31 @@
     }, false);
   }
 
+  function updateBar() {
+    const n = Object.keys(sel).length;
+    const del = D.getElementById('ap-seldel');
+    const all = D.getElementById('ap-selall');
+
+    if (del) {
+      del.textContent = n ? ('\u5220\u9664 ' + n) : '\u5220\u9664';
+      del.removeAttribute('data-armed');
+      del.disabled = !n;
+      del.style.opacity = n ? '1' : '.4';
+    }
+
+    if (all) {
+      all.textContent = (n && n >= flat.length) ? '\u53d6\u6d88\u5168\u9009' : '\u5168\u9009';
+    }
+  }
+
+  function paintPick() {
+    Array.prototype.forEach.call(D.querySelectorAll('#app-body .ap-cell'), function (c) {
+      const k = Number(c.getAttribute('data-k'));
+      c.classList.toggle('picked', !!sel[k]);
+    });
+    updateBar();
+  }
+
   function open(k) {
     close();
     const x = flat[k];
@@ -267,6 +338,33 @@
     window.Router.reopen('album');
   }
 
+  function delSelected(btn) {
+    const keys = Object.keys(sel);
+    if (!keys.length) return;
+
+    if (btn.getAttribute('data-armed') !== '1') {
+      btn.setAttribute('data-armed', '1');
+      btn.textContent = '\u518d\u70b9\u4e00\u4e0b\uff0c\u5220 ' + keys.length + ' \u5f20';
+      setTimeout(function () { updateBar(); }, 4000);
+      return;
+    }
+
+    const drop = {};
+    keys.forEach(function (k) { drop[Number(k)] = 1; });
+
+    const arr = (Array.isArray(XW.S.photos) ? XW.S.photos : []).filter(function (p, i) {
+      return !drop[i];
+    });
+
+    XW.S.photos = arr;
+    try { XW.save('photos'); } catch (e) {}
+
+    sel = {};
+    selMode = false;
+    UI.toast('\u5220\u6389 ' + keys.length + ' \u5f20');
+    window.Router.reopen('album');
+  }
+
   D.addEventListener('click', function (e) {
     const t = e.target;
     if (!t || !t.closest) return;
@@ -277,20 +375,65 @@
       return;
     }
 
+    if (t.closest('#ap-selmode')) {
+      selMode = !selMode;
+      sel = {};
+      window.Router.reopen('album');
+      return;
+    }
+
+    if (t.closest('#ap-selall')) {
+      const n = Object.keys(sel).length;
+      sel = {};
+      if (n < flat.length) {
+        flat.forEach(function (x) { sel[x.i] = 1; });
+      }
+      paintPick();
+      return;
+    }
+
+    if (t.closest('#ap-seldel')) {
+      delSelected(t.closest('#ap-seldel'));
+      return;
+    }
+
     const sg = t.closest('.ap-sg');
     if (sg) {
       segView = sg.getAttribute('data-sv') || 'month';
+      selMode = false;
+      sel = {};
+      window.Router.reopen('album');
+      return;
+    }
+
+    const yrow = t.closest('.ap-yrow');
+    if (yrow) {
+      segView = 'month';
+      pendingScroll = yrow.getAttribute('data-mv') || '';
       window.Router.reopen('album');
       return;
     }
 
     const cell = t.closest('.ap-cell');
     if (cell) {
-      open(Number(cell.getAttribute('data-k')));
+      const k = Number(cell.getAttribute('data-k'));
+      if (selMode) {
+        if (sel[k]) delete sel[k]; else sel[k] = 1;
+        cell.classList.toggle('picked');
+        updateBar();
+      } else {
+        open(k);
+      }
       return;
     }
 
     if (t.closest('.ap-back')) { close(); return; }
+
+    if (t.closest('.ap-stage')) {
+      const v = D.getElementById('ap-view');
+      if (v) v.classList.toggle('ap-hide');
+      return;
+    }
 
     const tool = t.closest('.ap-tool');
     if (tool && tool.getAttribute('data-d')) {
@@ -315,15 +458,28 @@
     if (!D.getElementById('ap-view')) return;
     const p = e.changedTouches && e.changedTouches[0];
     if (!p) return;
+
     const dx = p.clientX - sx;
     const dy = p.clientY - sy;
+
+    if (dy > 90 && Math.abs(dy) > Math.abs(dx) * 1.3) { close(); return; }
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) step(dx < 0 ? 1 : -1);
   }, { passive: true });
 
   function bind() {
     bindFiles();
+    updateBar();
     setTimeout(bindFiles, 120);
     setTimeout(bindFiles, 400);
+
+    if (pendingScroll) {
+      const k = pendingScroll;
+      pendingScroll = '';
+      setTimeout(function () {
+        const el = D.querySelector('#app-body .ap-sec[data-mk="' + k + '"]');
+        if (el && el.scrollIntoView) el.scrollIntoView({ block: 'start' });
+      }, 80);
+    }
   }
 
   P.album = album;
