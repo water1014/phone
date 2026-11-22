@@ -1,4 +1,4 @@
-/* album-pro.js · 相册：封面 + 按月/按天分组 + 顶上一绝时间条 + 大图 */
+/* album-pro.js · 相册（仿 iOS 相册）：年/月/日分段 + 网格 + 黑底全屏 */
 (function () {
   const D = document;
   const P = window.Pages;
@@ -26,7 +26,7 @@
 
   let flat = [];
   let viewAt = -1;
-  let filterDay = '';
+  let segView = 'month';
 
   function collect() {
     const raw = Array.isArray(XW.S.photos) ? XW.S.photos : [];
@@ -38,29 +38,19 @@
     return flat;
   }
 
-  function daysList() {
-    const m = {};
-    let older = 0;
-
-    flat.forEach(function (x) {
-      if (!x.t) { older++; return; }
-      const k = ymd(new Date(x.t));
-      m[k] = (m[k] || 0) + 1;
-    });
-
-    const out = Object.keys(m).sort(function (a, b) { return a < b ? 1 : -1; })
-      .map(function (k) { return { k: k, n: m[k], label: k.slice(5) }; });
-
-    if (older) out.push({ k: 'older', n: older, label: '\u66f4\u65e9' });
-
-    return out;
+  function keyOf(t, level) {
+    if (!t) return '';
+    const d = new Date(t);
+    if (level === 'year') return String(d.getFullYear());
+    if (level === 'month') return d.getFullYear() + '-' + p2(d.getMonth() + 1);
+    return ymd(d);
   }
 
-  function groupsFrom(seq) {
+  function groupsBy(seq, level) {
     const map = {};
     seq.forEach(function (x) {
-      const key = x.t ? ymd(new Date(x.t)) : '';
-      (map[key] = map[key] || []).push(x);
+      const k = keyOf(x.t, level);
+      (map[k] = map[k] || []).push(x);
     });
 
     const keys = Object.keys(map).sort(function (a, b) {
@@ -72,14 +62,24 @@
     return keys.map(function (k) { return { k: k, items: map[k] }; });
   }
 
+  function titleOf(k, level) {
+    if (!k) return '\u66f4\u65e9';
+    if (level === 'year') return k + ' \u5e74';
+    if (level === 'month') return k.slice(0, 4) + ' \u5e74 ' + Number(k.slice(5)) + ' \u6708';
+    const d = new Date(k + 'T12:00:00');
+    return (d.getMonth() + 1) + ' \u6708 ' + d.getDate() + ' \u65e5 \u00b7 ' + WEEK[d.getDay()];
+  }
+
   function album() {
     collect();
-    const days = daysList();
-    const cover = flat.length ? flat[flat.length - 1] : null;
+
+    const daySet = {};
+    flat.forEach(function (x) { if (x.t) daySet[ymd(new Date(x.t))] = 1; });
+    const dayCount = Object.keys(daySet).length;
 
     const sub = flat.length
       ? ('<span class="ap-n">' + flat.length + '</span> \u5f20' +
-         (days.length > 1 ? ' \u00b7 <span class="ap-n">' + days.length + '</span> \u5929' : ''))
+         (dayCount > 1 ? ' \u00b7 <span class="ap-n">' + dayCount + '</span> \u5929' : ''))
       : '\u8fd8\u7a7a\u7740';
 
     const head = '<div class="ap-head">' +
@@ -91,14 +91,12 @@
         '<button type="button" id="album-add" class="ap-add" aria-label="\u653e\u7167\u7247">\uff0b</button>' +
       '</div>';
 
-    let bar = '';
-    if (flat.length && days.length > 1) {
-      bar = '<div class="ap-track">' +
-          '<button type="button" class="ap-t' + (filterDay === '' ? ' on' : '') + '" data-fd="">\u5168\u90e8 ' +
-            '<i>' + flat.length + '</i></button>' +
-          days.map(function (d) {
-            return '<button type="button" class="ap-t' + (filterDay === d.k ? ' on' : '') + '" data-fd="' + d.k + '">' +
-              esc(d.label) + ' <i>' + d.n + '</i></button>';
+    let seg = '';
+    if (flat.length) {
+      seg = '<div class="ap-seg">' +
+          [['year', '\u5e74'], ['month', '\u6708'], ['day', '\u65e5']].map(function (it) {
+            return '<button type="button" class="ap-sg' + (segView === it[0] ? ' on' : '') +
+              '" data-sv="' + it[0] + '">' + it[1] + '</button>';
           }).join('') +
         '</div>';
     }
@@ -108,40 +106,11 @@
     if (!flat.length) {
       body = '<div class="empty-state ap-empty">\u8fd8\u6ca1\u6709\u7167\u7247\u3002<br>\u56fe\u653e\u8fdb\u6765\uff0c\u6211\u4e00\u5f20\u5f20\u6446\u4e0a\u3002</div>';
     } else {
-      const seq = filterDay === 'older'
-        ? flat.filter(function (x) { return !x.t; })
-        : filterDay
-          ? flat.filter(function (x) { return x.t && ymd(new Date(x.t)) === filterDay; })
-          : flat.filter(function (x) { return cover ? x !== cover : true; });
-
-      if (!filterDay && cover) {
-        body += '<button type="button" class="ap-cover" data-k="' + (flat.length - 1) + '">' +
-            '<img src="' + cover.u + '" alt="">' +
-          '</button>' +
-          '<div class="ap-cap">\u6700\u8fd1\u653e\u8fdb\u6765\u7684\u4e00\u5f20</div>';
-      }
-
-      const gs = groupsFrom(seq);
-      let lastMon = '';
-
-      if (!gs.length) {
-        body += '<div class="empty-state ap-empty">\u8fd9\u4e00\u5929\u6ca1\u6709\u7167\u7247\u3002</div>';
-      }
-
-      gs.forEach(function (g) {
-        if (g.k) {
-          const mon = g.k.slice(0, 7);
-          if (mon !== lastMon) {
-            body += '<div class="ap-mon">' + mon.replace('-', ' \u00b7 ') + '</div>';
-            lastMon = mon;
-          }
-        }
-
-        const label = g.k
-          ? (g.k + ' \u00b7 ' + g.items.length)
-          : ('\u66f4\u65e9 \u00b7 ' + g.items.length);
-
-        body += '<div class="ap-band">' + esc(label) + '</div>' +
+      groupsBy(flat, segView).forEach(function (g) {
+        body += '<div class="ap-sec">' +
+            '<span class="ap-sec-t">' + esc(titleOf(g.k, segView)) + '</span>' +
+            '<span class="ap-sec-n">' + g.items.length + '</span>' +
+          '</div>' +
           '<div class="ap-grid">' + g.items.map(function (x) {
             return '<button type="button" class="ap-cell" data-k="' + x.i + '">' +
               '<img src="' + x.u + '" alt="" loading="lazy">' +
@@ -152,7 +121,7 @@
 
     return head +
       '<input id="album-file" type="file" accept="image/*" multiple hidden>' +
-      bar +
+      seg +
       body +
       '<div class="ap-note">\u7167\u7247\u5b58\u5728\u8fd9\u53f0\u624b\u673a\u7684\u6d4f\u89c8\u5668\u91cc\uff0c\u6e05\u7f13\u5b58\u4f1a\u4e22\u3002\u6362\u624b\u673a\u4e4b\u524d\u5148\u5bfc\u4e00\u4efd\u5907\u4efd\u3002</div>';
   }
@@ -211,7 +180,6 @@
     }
 
     UI.toast('\u653e\u8fdb\u6765 ' + added.length + ' \u5f20');
-    filterDay = '';
     window.Router.reopen('album');
   }
 
@@ -238,7 +206,7 @@
 
     const d = x.t ? new Date(x.t) : null;
     const when = d
-      ? ymd(d) + ' ' + p2(d.getHours()) + ':' + p2(d.getMinutes()) + ' \u00b7 ' + WEEK[d.getDay()]
+      ? ymd(d) + ' ' + p2(d.getHours()) + ':' + p2(d.getMinutes())
       : '\u4e0d\u8bb0\u5f97\u54ea\u5929';
 
     const box = D.createElement('div');
@@ -246,15 +214,15 @@
     box.id = 'ap-view';
     box.innerHTML =
       '<div class="ap-top">' +
+        '<button type="button" class="ap-back" aria-label="\u8fd4\u56de">\u2039</button>' +
         '<span class="ap-when">' + esc(when) + '</span>' +
-        '<span class="ap-count">' + (k + 1) + ' / ' + flat.length + '</span>' +
-        '<button type="button" class="ap-x" aria-label="\u5173\u4e0a">\u2715</button>' +
+        '<span class="ap-count">' + (k + 1) + '/' + flat.length + '</span>' +
       '</div>' +
       '<div class="ap-stage"><img class="ap-img" src="' + x.u + '" alt=""></div>' +
       '<div class="ap-foot">' +
-        '<button type="button" class="ap-nav" data-d="-1"' + (k <= 0 ? ' disabled' : '') + '>\u2039</button>' +
-        '<button type="button" class="ap-del" id="ap-del">\u5220\u6389\u8fd9\u5f20</button>' +
-        '<button type="button" class="ap-nav" data-d="1"' + (k >= flat.length - 1 ? ' disabled' : '') + '>\u203a</button>' +
+        '<button type="button" class="ap-tool" data-d="-1"' + (k <= 0 ? ' disabled' : '') + '>\u2039</button>' +
+        '<button type="button" class="ap-tool wide" id="ap-del">\u5220\u6389</button>' +
+        '<button type="button" class="ap-tool" data-d="1"' + (k >= flat.length - 1 ? ' disabled' : '') + '>\u203a</button>' +
       '</div>';
 
     D.body.appendChild(box);
@@ -278,7 +246,7 @@
     if (btn.getAttribute('data-armed') !== '1') {
       const old = btn.textContent;
       btn.setAttribute('data-armed', '1');
-      btn.textContent = '\u518d\u70b9\u4e00\u4e0b\uff0c\u5220\u6389';
+      btn.textContent = '\u518d\u70b9\u4e00\u4e0b';
       setTimeout(function () {
         btn.removeAttribute('data-armed');
         btn.textContent = old;
@@ -309,23 +277,26 @@
       return;
     }
 
-    const chip = t.closest('.ap-t');
-    if (chip) {
-      filterDay = chip.getAttribute('data-fd') || '';
+    const sg = t.closest('.ap-sg');
+    if (sg) {
+      segView = sg.getAttribute('data-sv') || 'month';
       window.Router.reopen('album');
       return;
     }
 
-    const cell = t.closest('.ap-cell') || t.closest('.ap-cover');
+    const cell = t.closest('.ap-cell');
     if (cell) {
       open(Number(cell.getAttribute('data-k')));
       return;
     }
 
-    if (t.closest('.ap-x')) { close(); return; }
+    if (t.closest('.ap-back')) { close(); return; }
 
-    const nav = t.closest('.ap-nav');
-    if (nav) { step(Number(nav.getAttribute('data-d'))); return; }
+    const tool = t.closest('.ap-tool');
+    if (tool && tool.getAttribute('data-d')) {
+      step(Number(tool.getAttribute('data-d')));
+      return;
+    }
 
     if (t.id === 'ap-del') { del(t); return; }
   }, false);

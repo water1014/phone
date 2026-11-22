@@ -1,4 +1,4 @@
-/* album-pro.css · 相册：不套卡片；一条时间条 */
+/* album-pro.css · 相册：仿 iOS 相册（分段控件 + 方角网格 + 黑底全屏） */
 
 html[data-page=album] .ap-head{
   display:flex;
@@ -35,101 +35,65 @@ html[data-page=album] .ap-add{
 }
 html[data-page=album] .ap-add:active{ background:#fff; color:#6d665b; }
 
-/* 一条时间条，横向滑 */
-html[data-page=album] .ap-track{
+/* 分段控件：年 / 月 / 日 */
+html[data-page=album] .ap-seg{
   display:flex;
-  align-items:center;
-  gap:7px;
-  margin:1rem 0 0;
-  padding:1px 0 3px;
-  overflow-x:auto;
-  overflow-y:hidden;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-}
-html[data-page=album] .ap-track::-webkit-scrollbar{ display:none; }
-
-html[data-page=album] .ap-t{
-  flex:0 0 auto;
-  display:inline-flex;
-  align-items:baseline;
-  gap:4px;
-  padding:7px 12px;
-  border:1px solid rgba(0,0,0,.07);
-  border-radius:999px;
-  background:rgba(255,255,255,.6);
-  color:#958c7d;
-  font-size:.5rem;
-  letter-spacing:.04em;
-  line-height:1.2;
-  font-variant-numeric:tabular-nums;
-  -webkit-tap-highlight-color:transparent;
-}
-html[data-page=album] .ap-t i{
-  font-style:normal;
-  font-size:.86em;
-  color:#c1b9aa;
-}
-html[data-page=album] .ap-t.on{
-  background:#fff;
-  border-color:rgba(0,0,0,.14);
-  color:#3d382f;
-}
-html[data-page=album] .ap-t.on i{ color:#9b9284; }
-
-/* 月份小标 */
-html[data-page=album] .ap-mon{
-  margin:1.8rem 0 -.55rem;
-  font-size:.46rem;
-  letter-spacing:.16em;
-  color:#cdc5b6;
-}
-
-/* 封面 */
-html[data-page=album] .ap-cover{
-  display:block;
-  width:100%;
-  margin:1.15rem 0 0;
-  padding:0;
-  border:0;
+  gap:2px;
+  margin:1.05rem 0 .2rem;
+  padding:2px;
   border-radius:9px;
-  overflow:hidden;
-  background:#f1ede5;
-  aspect-ratio:1/1;
+  background:rgba(0,0,0,.045);
+}
+html[data-page=album] .ap-sg{
+  flex:1 1 0;
+  padding:6px 0;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:#8b8375;
+  font-size:.52rem;
+  letter-spacing:.06em;
+  line-height:1.3;
   -webkit-tap-highlight-color:transparent;
 }
-html[data-page=album] .ap-cover img{
-  display:block;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-html[data-page=album] .ap-cover:active img{ opacity:.86; }
-
-html[data-page=album] .ap-cap{
-  margin:.55rem 0 0;
-  font-size:.5rem;
-  letter-spacing:.08em;
-  color:#bfb7a8;
+html[data-page=album] .ap-sg.on{
+  background:#fff;
+  color:#2f2b25;
+  box-shadow:0 1px 3px rgba(0,0,0,.07);
 }
 
-/* 日期分隔 */
-html[data-page=album] .ap-band{
-  margin:1.5rem 0 .6rem;
-  font-size:.5rem;
-  letter-spacing:.1em;
-  color:#b3aa9b;
+/* 分组标题（iOS 那种：左标题、右小数字） */
+html[data-page=album] .ap-sec{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:8px;
+  margin:1.55rem 0 .5rem;
+}
+html[data-page=album] .ap-sec:first-of-type{ margin-top:1.1rem; }
+html[data-page=album] .ap-sec-t{
+  font-size:.64rem;
+  font-weight:600;
+  letter-spacing:.005em;
+  color:#3a352e;
+}
+html[data-page=album] .ap-sec-n{
+  font-size:.47rem;
+  letter-spacing:.04em;
+  color:#bbb3a4;
+  font-variant-numeric:tabular-nums;
 }
 
+/* 方角网格，像 iOS */
 html[data-page=album] .ap-grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:3px;
+  gap:2px;
   margin:0;
 }
 
 @media (min-width:640px){
-  html[data-page=album] .ap-grid{ grid-template-columns:repeat(4,1fr); }
+  html[data-page=album] .ap-grid{ grid-template-columns:repeat(5,1fr); }
 }
 
 html[data-page=album] .ap-cell{
@@ -139,7 +103,7 @@ html[data-page=album] .ap-cell{
   aspect-ratio:1/1;
   padding:0;
   border:0;
-  border-radius:2px;
+  border-radius:1px;
   overflow:hidden;
   background:#f1ede5;
   cursor:pointer;
@@ -151,98 +115,93 @@ html[data-page=album] .ap-cell img{
   height:100%;
   object-fit:cover;
 }
-html[data-page=album] .ap-cell:active img{ opacity:.82; }
+html[data-page=album] .ap-cell:active img{ opacity:.84; }
 
 html[data-page=album] .ap-empty{ margin-top:2.2rem; }
 
 html[data-page=album] .ap-note{
-  margin:1.7rem 0 .5rem;
+  margin:1.8rem 0 .5rem;
   font-size:.5rem;
   line-height:1.95;
   letter-spacing:.02em;
   color:#bcb4a6;
 }
 
-/* 大图 */
+/* 全屏：黑底，像 iOS 的查看页 */
 .ap-view{
   position:fixed;
   inset:0;
   z-index:400;
   display:flex;
   flex-direction:column;
-  background:rgba(26,24,21,.955);
-  -webkit-backdrop-filter:blur(6px);
-  backdrop-filter:blur(6px);
+  background:#000;
 }
 .ap-top{
   flex:0 0 auto;
   display:flex;
   align-items:center;
-  gap:10px;
-  padding:calc(12px + env(safe-area-inset-top)) 16px 10px;
-  color:rgba(255,255,255,.72);
-  font-size:.52rem;
-  letter-spacing:.03em;
+  gap:8px;
+  padding:calc(8px + env(safe-area-inset-top)) 12px 6px;
+  color:rgba(255,255,255,.9);
+  font-size:.54rem;
+  letter-spacing:.02em;
 }
-.ap-when{ flex:1 1 auto; }
+.ap-back{
+  flex:0 0 auto;
+  width:30px;
+  height:30px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#fff;
+  font-size:1.15rem;
+  line-height:1;
+}
+.ap-when{
+  flex:1 1 auto;
+  font-variant-numeric:tabular-nums;
+  color:rgba(255,255,255,.78);
+}
 .ap-count{
   flex:0 0 auto;
-  color:rgba(255,255,255,.42);
+  color:rgba(255,255,255,.4);
   font-variant-numeric:tabular-nums;
-}
-.ap-x{
-  flex:0 0 auto;
-  width:28px;
-  height:28px;
-  border:0;
-  border-radius:50%;
-  background:rgba(255,255,255,.12);
-  color:#fff;
-  font-size:.56rem;
-  line-height:1;
+  font-size:.5rem;
 }
 .ap-stage{
   flex:1 1 auto;
   display:grid;
   place-items:center;
   min-height:0;
-  padding:0 8px;
 }
 .ap-img{
   max-width:100%;
   max-height:100%;
   object-fit:contain;
-  border-radius:6px;
 }
 .ap-foot{
   flex:0 0 auto;
   display:flex;
   align-items:center;
-  justify-content:center;
-  gap:16px;
-  padding:12px 16px calc(16px + env(safe-area-inset-bottom));
+  justify-content:space-between;
+  gap:14px;
+  padding:10px 22px calc(14px + env(safe-area-inset-bottom));
 }
-.ap-nav{
-  width:44px;
-  height:44px;
-  border:1px solid rgba(255,255,255,.16);
-  border-radius:50%;
-  background:transparent;
-  color:rgba(255,255,255,.8);
-  font-size:1rem;
+.ap-tool{
+  min-width:38px;
+  height:34px;
+  padding:0 10px;
+  border:0;
+  border-radius:8px;
+  background:rgba(255,255,255,.1);
+  color:rgba(255,255,255,.92);
+  font-size:.62rem;
   line-height:1;
-}
-.ap-nav[disabled]{ opacity:.24; }
-.ap-del{
-  border:1px solid rgba(255,255,255,.16);
-  border-radius:999px;
-  background:transparent;
-  color:rgba(255,255,255,.72);
-  font-size:.54rem;
   letter-spacing:.04em;
-  padding:10px 18px;
 }
-.ap-del[data-armed="1"]{
-  border-color:rgba(206,124,114,.72);
-  color:#efcac4;
+.ap-tool[disabled]{ opacity:.26; }
+.ap-tool.wide{ padding:0 22px; }
+.ap-tool[data-armed="1"]{
+  background:rgba(206,124,114,.28);
+  color:#ffd9d3;
 }
