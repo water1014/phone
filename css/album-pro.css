@@ -1,4 +1,4 @@
-/* album-pro.css · 相册：不套卡片，照片当主角；日历检索 */
+/* album-pro.css · 相册：不套卡片；一条时间条 */
 
 html[data-page=album] .ap-head{
   display:flex;
@@ -35,103 +35,48 @@ html[data-page=album] .ap-add{
 }
 html[data-page=album] .ap-add:active{ background:#fff; color:#6d665b; }
 
-/* 筛选条 */
-html[data-page=album] .ap-bar{
+/* 一条时间条，横向滑 */
+html[data-page=album] .ap-track{
   display:flex;
   align-items:center;
-  gap:8px;
-  margin:.95rem 0 0;
+  gap:7px;
+  margin:1rem 0 0;
+  padding:1px 0 3px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
 }
-html[data-page=album] .ap-chip{
-  border:1px solid rgba(0,0,0,.075);
+html[data-page=album] .ap-track::-webkit-scrollbar{ display:none; }
+
+html[data-page=album] .ap-t{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:baseline;
+  gap:4px;
+  padding:7px 12px;
+  border:1px solid rgba(0,0,0,.07);
+  border-radius:999px;
   background:rgba(255,255,255,.6);
   color:#958c7d;
-  border-radius:999px;
-  padding:7px 13px;
   font-size:.5rem;
-  letter-spacing:.06em;
+  letter-spacing:.04em;
   line-height:1.2;
+  font-variant-numeric:tabular-nums;
   -webkit-tap-highlight-color:transparent;
 }
-html[data-page=album] .ap-chip.on{
+html[data-page=album] .ap-t i{
+  font-style:normal;
+  font-size:.86em;
+  color:#c1b9aa;
+}
+html[data-page=album] .ap-t.on{
   background:#fff;
-  color:#4c463d;
-  border-color:rgba(0,0,0,.1);
+  border-color:rgba(0,0,0,.14);
+  color:#3d382f;
 }
-
-/* 月历 */
-html[data-page=album] .ap-cal{
-  margin:.8rem 0 0;
-  padding:14px 12px 12px;
-  border-radius:14px;
-  background:rgba(255,255,255,.66);
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.04);
-}
-html[data-page=album] .ap-cal-top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:10px;
-  font-size:.52rem;
-  letter-spacing:.06em;
-  color:#6d665b;
-  font-variant-numeric:tabular-nums;
-}
-html[data-page=album] .ap-mv{
-  width:26px;
-  height:26px;
-  padding:0;
-  border:0;
-  background:transparent;
-  color:#a8a093;
-  font-size:.8rem;
-  line-height:1;
-}
-html[data-page=album] .ap-cg{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:2px 0;
-  text-align:center;
-  align-items:center;
-}
-html[data-page=album] .ap-w{
-  font-size:.42rem;
-  color:#c6beb0;
-  padding-bottom:5px;
-}
-html[data-page=album] .ap-d{
-  position:relative;
-  font-size:.5rem;
-  color:#cbc3b4;
-  padding:7px 0;
-  line-height:1;
-  font-variant-numeric:tabular-nums;
-}
-html[data-page=album] .ap-d.has{ color:#4c463d; }
-html[data-page=album] .ap-d.has::after{
-  content:'';
-  position:absolute;
-  left:50%;
-  bottom:2px;
-  width:3px;
-  height:3px;
-  margin-left:-1.5px;
-  border-radius:50%;
-  background:rgba(158,184,180,.95);
-}
-html[data-page=album] .ap-d.sel{
-  background:#4c463d;
-  color:#fff;
-  border-radius:50%;
-}
-html[data-page=album] .ap-d.sel::after{ background:rgba(255,255,255,.7); }
-html[data-page=album] .ap-cal-foot{
-  margin-top:9px;
-  font-size:.46rem;
-  line-height:1.8;
-  letter-spacing:.02em;
-  color:#bdb5a6;
-}
+html[data-page=album] .ap-t.on i{ color:#9b9form; }
+html[data-page=album] .ap-t.on i{ color:#9b9284; }
 
 /* 月份小标 */
 html[data-page=album] .ap-mon{
