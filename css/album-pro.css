@@ -1,42 +1,42 @@
-/* album-pro.css · 相册：仿 iOS 相册（分段控件 + 方角网格 + 黑底全屏） */
+/* album-pro.css · 相册（仿 iOS 相册）：挂在 #app-body 上，不依赖 data-page */
 
-html[data-page=album] .ap-head{
+#app-body .ap-head{
   display:flex;
   align-items:flex-start;
   gap:10px;
 }
-html[data-page=album] .ap-head .hero{
+#app-body .ap-head .hero{
   flex:1 1 auto;
   min-width:0;
 }
 
-html[data-page=album] .ap-n{
+#app-body .ap-n{
   font-family:'Cormorant Garamond','Noto Serif SC',serif;
   font-size:1.55em;
   letter-spacing:0;
   font-weight:300;
 }
 
-html[data-page=album] .ap-add{
+#app-body .ap-add{
   flex:0 0 auto;
-  margin-top:.25rem;
+  margin-top:.3rem;
   width:34px;
   height:34px;
   padding:0;
+  border:1px solid rgba(0,0,0,.09);
   border-radius:50%;
-  border:1px solid rgba(0,0,0,.085);
-  background:rgba(255,255,255,.72);
+  background:rgba(255,255,255,.78);
   color:#8f877a;
-  font-size:.7rem;
+  font-size:.78rem;
   line-height:1;
   display:grid;
   place-items:center;
   -webkit-tap-highlight-color:transparent;
 }
-html[data-page=album] .ap-add:active{ background:#fff; color:#6d665b; }
+#app-body .ap-add:active{ background:#fff; color:#6d665b; }
 
 /* 分段控件：年 / 月 / 日 */
-html[data-page=album] .ap-seg{
+#app-body .ap-seg{
   display:flex;
   gap:2px;
   margin:1.05rem 0 .2rem;
@@ -44,8 +44,9 @@ html[data-page=album] .ap-seg{
   border-radius:9px;
   background:rgba(0,0,0,.045);
 }
-html[data-page=album] .ap-sg{
+#app-body .ap-sg{
   flex:1 1 0;
+  min-width:0;
   padding:6px 0;
   border:0;
   border-radius:7px;
@@ -54,38 +55,39 @@ html[data-page=album] .ap-sg{
   font-size:.52rem;
   letter-spacing:.06em;
   line-height:1.3;
+  box-shadow:none;
   -webkit-tap-highlight-color:transparent;
 }
-html[data-page=album] .ap-sg.on{
+#app-body .ap-sg.on{
   background:#fff;
   color:#2f2b25;
   box-shadow:0 1px 3px rgba(0,0,0,.07);
 }
 
-/* 分组标题（iOS 那种：左标题、右小数字） */
-html[data-page=album] .ap-sec{
+/* 分组标题 */
+#app-body .ap-sec{
   display:flex;
   align-items:baseline;
   justify-content:space-between;
   gap:8px;
   margin:1.55rem 0 .5rem;
 }
-html[data-page=album] .ap-sec:first-of-type{ margin-top:1.1rem; }
-html[data-page=album] .ap-sec-t{
+#app-body .ap-sec:first-of-type{ margin-top:1.1rem; }
+#app-body .ap-sec-t{
   font-size:.64rem;
   font-weight:600;
   letter-spacing:.005em;
   color:#3a352e;
 }
-html[data-page=album] .ap-sec-n{
+#app-body .ap-sec-n{
   font-size:.47rem;
   letter-spacing:.04em;
   color:#bbb3a4;
   font-variant-numeric:tabular-nums;
 }
 
-/* 方角网格，像 iOS */
-html[data-page=album] .ap-grid{
+/* 方角网格 */
+#app-body .ap-grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:2px;
@@ -93,10 +95,10 @@ html[data-page=album] .ap-grid{
 }
 
 @media (min-width:640px){
-  html[data-page=album] .ap-grid{ grid-template-columns:repeat(5,1fr); }
+  #app-body .ap-grid{ grid-template-columns:repeat(5,1fr); }
 }
 
-html[data-page=album] .ap-cell{
+#app-body .ap-cell{
   position:relative;
   display:block;
   width:100%;
@@ -107,19 +109,20 @@ html[data-page=album] .ap-cell{
   overflow:hidden;
   background:#f1ede5;
   cursor:pointer;
+  box-shadow:none;
   -webkit-tap-highlight-color:transparent;
 }
-html[data-page=album] .ap-cell img{
+#app-body .ap-cell img{
   display:block;
   width:100%;
   height:100%;
   object-fit:cover;
 }
-html[data-page=album] .ap-cell:active img{ opacity:.84; }
+#app-body .ap-cell:active img{ opacity:.84; }
 
-html[data-page=album] .ap-empty{ margin-top:2.2rem; }
+#app-body .ap-empty{ margin-top:2.2rem; }
 
-html[data-page=album] .ap-note{
+#app-body .ap-note{
   margin:1.8rem 0 .5rem;
   font-size:.5rem;
   line-height:1.95;
@@ -127,7 +130,7 @@ html[data-page=album] .ap-note{
   color:#bcb4a6;
 }
 
-/* 全屏：黑底，像 iOS 的查看页 */
+/* 全屏：黑底 */
 .ap-view{
   position:fixed;
   inset:0;
