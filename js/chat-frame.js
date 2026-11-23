@@ -1,6 +1,18 @@
-/* chat-frame.js · 气泡外头像 + 时间行摆在消息顶部，和头像平齐 */
+/* chat-frame.js · 气泡外头像 + 时间行（只在隔得久的地方出现） */
 (function () {
   const D = document;
+
+  /* 布局覆盖层：挂在 head 最后，优先于 chat-frame.css */
+  (function () {
+    if (D.getElementById('xw-chat-layout')) return;
+    const l = D.createElement('link');
+    l.id = 'xw-chat-layout';
+    l.rel = 'stylesheet';
+    l.href = 'css/chat-layout.css?v=1';
+    D.head.appendChild(l);
+  })();
+
+  const GAP = 5 * 60 * 1000;
 
   function p2(n) { return String(n).padStart(2, '0'); }
 
@@ -44,14 +56,24 @@
   function timeLine(row) {
     if (!row.classList.contains('ta')) return;
 
-    const i = Number(row.getAttribute('data-i'));
-    const m = (XW.S.chat || [])[i];
-    if (!m || !m.t) return;
-
     const main = row.querySelector('.msg-main');
     if (!main) return;
 
+    const i = Number(row.getAttribute('data-i'));
+    const list = Array.isArray(XW.S.chat) ? XW.S.chat : [];
+    const m = list[i];
+
     let line = row.querySelector('.cc-time');
+
+    const cur = m && m.t ? Number(m.t) : 0;
+    const prev = i > 0 ? list[i - 1] : null;
+    const old = prev && prev.t ? Number(prev.t) : 0;
+    const far = !!cur && (!old || cur - old > GAP);
+
+    if (!far) {
+      if (line) line.remove();
+      return;
+    }
 
     if (!line) {
       line = D.createElement('div');
@@ -69,7 +91,7 @@
     if (main.firstChild !== line) main.insertBefore(line, main.firstChild);
 
     const s = line.querySelector('.cc-stamp');
-    const text = stamp(m.t);
+    const text = stamp(cur);
     if (s && s.textContent !== text) s.textContent = text;
   }
 

@@ -1,0 +1,145 @@
+/* chat-layout.css · B 顺手：顶栏一行居中 / 输入一条 / 时间只在组间 / 用量收起 */
+/* 由 js/chat-frame.js 动态插到 head 末尾，优先于 chat-frame.css */
+
+/* ── 一、顶栏：头像与名字并排，整组居中 ── */
+html[data-page="chat"] .cs-top{
+  grid-template-columns:30px 1fr 30px;
+  align-items:center;
+  margin:0 0 .5rem;
+  padding:.34rem .36rem;
+  border-radius:16px;
+}
+html[data-page="chat"] .cs-pair{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:.4rem;
+  min-width:0;
+}
+html[data-page="chat"] .cs-one{
+  flex-direction:row;
+  align-items:center;
+  width:auto;
+  max-width:44%;
+  gap:.24rem;
+  min-width:0;
+}
+html[data-page="chat"] .cs-one b{
+  font-size:.46rem;
+  line-height:1;
+  min-width:0;
+  letter-spacing:.02em;
+}
+html[data-page="chat"] .cs-ava{
+  width:21px;
+  height:21px;
+  font-size:.4rem;
+  flex:0 0 auto;
+}
+html[data-page="chat"] .cs-heart{
+  margin-top:0;
+  font-size:.44rem;
+  line-height:1;
+  flex:0 0 auto;
+}
+html[data-page="chat"] .cs-back,
+html[data-page="chat"] .cs-more{
+  width:26px;
+  height:26px;
+  font-size:.78rem;
+}
+
+/* ── 二、思考：一行带星的小标签，点开才出内容 ── */
+html[data-page="chat"] .think{
+  margin:0 0 .28rem;
+}
+html[data-page="chat"] .think > summary{
+  display:inline-flex;
+  align-items:center;
+  font-size:.44rem;
+  letter-spacing:.03em;
+  color:#b3ab9e;
+}
+html[data-page="chat"] .think > summary::before{
+  content:'\2726';
+  display:inline;
+  margin-right:.26rem;
+  font-size:.4rem;
+  line-height:1;
+  transform:none;
+}
+html[data-page="chat"] .think[open] > summary::before{
+  transform:none;
+}
+
+/* ── 三、用量：从每条消息下面收掉，只留底部一处 ── */
+html[data-page="chat"] .msg-tag{ display:none !important; }
+
+/* ── 四、输入：收成一条 ── */
+html[data-page="chat"] .quick{ padding:0 0 .4rem !important; }
+
+html[data-page="chat"] .composer{
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+  gap:6px !important;
+  padding:.32rem !important;
+  border-radius:1.35rem !important;
+  background:rgba(255,255,255,.88) !important;
+  box-shadow:0 3px 16px rgba(120,110,95,.10), inset 0 0 0 1px rgba(255,255,255,.85) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(1.4) !important;
+  backdrop-filter:blur(14px) saturate(1.4) !important;
+}
+html[data-page="chat"] .composer input,
+html[data-page="chat"] .composer input:focus{
+  order:0 !important;
+  flex:1 1 auto !important;
+  width:auto !important;
+  min-width:0 !important;
+  padding:.42rem .26rem .42rem .52rem !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  font-size:.74rem !important;
+  line-height:1.5 !important;
+  color:#35302a !important;
+}
+html[data-page="chat"] .composer .plus-btn{
+  order:-1 !important;
+  flex:0 0 auto !important;
+  width:32px !important;
+  height:32px !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:50% !important;
+  background:#f3eee6 !important;
+  color:#8d8578 !important;
+  font-size:.92rem !important;
+  display:grid !important;
+  place-items:center !important;
+}
+html[data-page="chat"] .composer .btn-solid{
+  flex:0 0 auto !important;
+  width:32px !important;
+  height:32px !important;
+  padding:0 !important;
+  margin-left:0 !important;
+  border-radius:50% !important;
+  display:grid !important;
+  place-items:center !important;
+  font-size:.54rem !important;
+  background:#e9bcc8 !important;
+  color:#fff !important;
+  box-shadow:0 3px 10px rgba(233,188,200,.4) !important;
+}
+html[data-page="chat"] .composer .cs-heart-btn{
+  flex:0 0 auto !important;
+  width:32px !important;
+  height:32px !important;
+  padding:0 !important;
+  display:grid !important;
+  place-items:center !important;
+  font-size:.8rem !important;
+  color:#b9a7b4 !important;
+}
+html[data-page="chat"] .composer #chat-file{ display:none !important; }
