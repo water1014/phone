@@ -1,4 +1,4 @@
-/* usage-card.css · 设置里的用量块 */
+/* usage-card.css · 用量块 */
 .uc-card{
   margin-top:14px;
   padding-top:14px;
@@ -61,4 +61,23 @@
   font-size:11.5px;
   line-height:1.7;
   color:#b3ac9f;
+}
+
+/* 聊天设置 → 记录：这块自己就是一段，不要再加顶线 */
+#cset .uc-slot .uc-card{
+  margin-top:0;
+  padding-top:0;
+  border-top:0;
+}
+#cset .uc-slot{
+  margin-bottom:1.1rem;
+}
+#cset .uc-slot .uc-head{
+  font-size:11px;
+  letter-spacing:.14em;
+}
+
+/* 聊天页不再显示用量，那个开关就别留了 */
+#cset .cset-opt[data-t="usage"]{
+  display:none !important;
 }

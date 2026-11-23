@@ -1,4 +1,5 @@
-/* usage-card.js · 设置里的一块本地记账
+/* usage-card.js · 本地记账
+   ① App 设置（接口那块）  ② 聊天设置 → 记录
    真实配额看不到，这里只记这个家自己花掉的 */
 (function () {
   const D = document;
@@ -57,8 +58,8 @@
     b.className = 'uc-v';
     const ratio = s.i ? Math.round(s.c / s.i * 100) : 0;
     b.textContent = s.n
-      ? '入 ' + k(s.i) + ' · 出 ' + k(s.o) + ' · 命中 ' + k(s.c) + '·' + ratio + '% · ' + s.n + ' 轮'
-      : '还没有';
+      ? '\u5165 ' + k(s.i) + ' \u00b7 \u51fa ' + k(s.o) + ' \u00b7 \u547d\u4e2d ' + ratio + '% \u00b7 ' + s.n + ' \u8f6e'
+      : '\u8fd8\u6ca1\u6709';
     row.appendChild(b);
 
     return row;
@@ -104,14 +105,14 @@
 
     const head = D.createElement('div');
     head.className = 'uc-head';
-    head.textContent = '用量 · LOCAL';
+    head.textContent = '\u7528\u91cf\u00b7\u672c\u5730\u8bb0\u7684';
     box.appendChild(head);
 
-    box.appendChild(line('今天', sum(keys(1))));
-    box.appendChild(line('七天', sum(keys(7))));
+    box.appendChild(line('\u4eca\u5929', sum(keys(1))));
+    box.appendChild(line('\u4e03\u5929', sum(keys(7))));
 
     const t = XW.S.usage || {};
-    box.appendChild(line('全部', {
+    box.appendChild(line('\u5168\u90e8', {
       i: t.input,
       o: t.output,
       c: t.cached,
@@ -122,31 +123,45 @@
 
     const note = D.createElement('div');
     note.className = 'uc-note';
-    note.textContent = '订阅的月额度在这儿看不到，要去 Operit 的 OpenCode 那边看。今天和七天是从这一版开始记的，之前的只进了「全部」。';
+    note.textContent = '\u8ba2\u9605\u7684\u6708\u989d\u5ea6\u5728\u8fd9\u513f\u770b\u4e0d\u5230\uff0c\u8981\u53bb OpenCode \u90a3\u8fb9\u770b\u3002\u4eca\u5929\u548c\u4e03\u5929\u662f\u4ece\u8fd9\u4e00\u7248\u5f00\u59cb\u8bb0\u7684\uff0c\u4e4b\u524d\u7684\u53ea\u8fdb\u4e86\u300c\u5168\u90e8\u300d\u3002';
     box.appendChild(note);
   }
 
-  let timer = null;
+  function mount(host) {
+    if (!host) return;
+    let card = host.querySelector('.uc-card');
+    if (!card) {
+      card = D.createElement('div');
+      card.className = 'uc-card';
+      host.appendChild(card);
+    }
+    paint(card);
+  }
 
   function render() {
-    const api = D.querySelector('.api-sheet');
-    if (!api) return;
+    mount(D.querySelector('.api-sheet'));
 
-    const old = api.querySelector('.uc-card');
-    if (old) { paint(old); return; }
+    const pane = D.querySelector('#cset .cset-pane[data-cp="more"]');
+    if (!pane) return;
 
-    const box = D.createElement('div');
-    box.className = 'uc-card';
-    paint(box);
-    api.appendChild(box);
+    let slot = pane.querySelector('.uc-slot');
+    if (!slot) {
+      slot = D.createElement('div');
+      slot.className = 'uc-slot';
+      pane.insertBefore(slot, pane.firstChild);
+    }
+
+    mount(slot);
   }
+
+  let timer = null;
 
   function later() {
     if (timer) return;
     timer = setTimeout(function () {
       timer = null;
       render();
-    }, 160);
+    }, 180);
   }
 
   if (window.MutationObserver && D.body) {
