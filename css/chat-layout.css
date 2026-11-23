@@ -32,7 +32,7 @@ html[data-page="chat"] .cs-back,
 html[data-page="chat"] .cs-more{width:28px;height:28px;font-size:15px;color:#6e6678}
 
 /* ── 二、消息行：两头各一颗 28px 小圆头像，贴在气泡外侧 ── */
-html[data-page="chat"] .msg-row{margin:0 0 9px !important}
+html[data-page="chat"] .msg-row{margin:0 0 10px !important}
 html[data-page="chat"] .msg-row.ta{
   display:grid !important;
   grid-template-columns:28px minmax(0,1fr);
@@ -60,6 +60,9 @@ html[data-page="chat"] .msg-ava.ghost img{display:none !important}
 html[data-page="chat"] .msg-main{display:flex;flex-direction:column;min-width:0}
 html[data-page="chat"] .msg-row.ta .msg-main{order:1;align-items:flex-start;text-align:left}
 html[data-page="chat"] .msg-row.me .msg-main{order:1;align-items:flex-end;text-align:left}
+
+/* 名字不出现（位置腾给思考与缓存率） */
+html[data-page="chat"] .msg-name{display:none !important}
 
 /* ── 三、气泡：白的给他，淡紫的给她，靠头像那侧的角收小 ── */
 html[data-page="chat"] .bub,
@@ -90,10 +93,10 @@ html[data-page="chat"] .msg-row.me .msg-main > .bub:last-of-type::after{
   content:none !important;display:none !important;
 }
 
-/* ── 四、思考：一行带星的小标签，点开一块淡底 ── */
+/* ── 四、思考 + 缓存率：消息头顶两三个小字，点开一块淡底 ── */
 html[data-page="chat"] details.think{
-  width:100%;max-width:86%;
-  margin:0 0 6px;text-align:left;
+  width:auto;max-width:100%;
+  margin:0 0 5px;text-align:left;
 }
 html[data-page="chat"] .msg-row.me details.think{text-align:right}
 html[data-page="chat"] details.think > summary{
@@ -112,7 +115,7 @@ html[data-page="chat"] details.think > summary::before{
 }
 html[data-page="chat"] details.think[open] > summary::before{transform:none}
 html[data-page="chat"] details.think .think-body{
-  margin:6px 0 2px !important;
+  margin:5px 0 6px !important;
   padding:8px 10px !important;
   border:0 !important;
   border-radius:12px !important;
@@ -128,10 +131,31 @@ html[data-page="chat"] details.think .think-body{
   max-height:52vh;overflow-y:auto;
 }
 
+/* 没有思考的那条：缓存率自己一小行，占名字的位置 */
+html[data-page="chat"] .msg-tag{
+  display:block !important;
+  margin:0 0 5px !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:none !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  font-family:inherit !important;
+  font-size:10.5px !important;
+  font-weight:400 !important;
+  line-height:1.4 !important;
+  letter-spacing:.03em !important;
+  color:#b3ab9e !important;
+}
+html[data-page="chat"] .msg-row.me .msg-tag{display:none !important}
+html[data-page="chat"] .chat-meter{display:none !important}
+
 /* ── 五、时间行 ── */
 html[data-page="chat"] .cc-time{
   min-height:28px;
-  margin:0 0 4px !important;
+  margin:0 0 3px !important;
   font-size:11px !important;
   color:#bdb5a8 !important;
 }
@@ -160,29 +184,12 @@ html[data-page="chat"] .chat-event span{
   padding:3px 10px !important;border-radius:9px !important;
 }
 
-/* ── 八、用量：消息下面那行收掉，改用底部一条总览 ── */
-html[data-page="chat"] .msg-tag{display:none !important}
-html[data-page="chat"] .chat-meter{display:none !important}
-
-html[data-page="chat"] .xw-hit{
-  padding:0 6px 7px;
-  font-size:9.5px;
-  line-height:1.5;
-  letter-spacing:.02em;
-  color:#b8b0a3;
-  text-align:center;
-  font-variant-numeric:tabular-nums;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-/* ── 九、滚动区 ── */
+/* ── 八、滚动区 ── */
 html[data-page="chat"] #chat-scroll{padding:4px 12px 6px}
 html[data-page="chat"] .quick{padding:0 0 8px !important}
 html[data-page="chat"] .quick-chip{font-size:12px !important}
 
-/* ── 十、输入条：宽的长方形，四角小圆，按钮小方块 ── */
+/* ── 九、输入条：宽的长方形，四角小圆，按钮小方块 ── */
 html[data-page="chat"] .composer{
   flex-wrap:nowrap !important;
   align-items:center !important;
