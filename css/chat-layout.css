@@ -177,18 +177,19 @@ html[data-page="chat"] .xw-hit{
   text-overflow:ellipsis;
 }
 
-/* ── 九、滚动区与输入条 ── */
+/* ── 九、滚动区 ── */
 html[data-page="chat"] #chat-scroll{padding:4px 12px 6px}
 html[data-page="chat"] .quick{padding:0 0 8px !important}
 html[data-page="chat"] .quick-chip{font-size:12px !important}
 
+/* ── 十、输入条：宽的长方形，四角小圆，按钮小方块 ── */
 html[data-page="chat"] .composer{
   flex-wrap:nowrap !important;
   align-items:center !important;
   gap:6px !important;
-  padding:5px !important;
-  border-radius:22px !important;
-  background:rgba(255,255,255,.88) !important;
+  padding:6px !important;
+  border-radius:11px !important;
+  background:rgba(255,255,255,.9) !important;
   box-shadow:0 3px 16px rgba(120,110,95,.10), inset 0 0 0 1px rgba(255,255,255,.85) !important;
   -webkit-backdrop-filter:blur(14px) saturate(1.4) !important;
   backdrop-filter:blur(14px) saturate(1.4) !important;
@@ -198,7 +199,7 @@ html[data-page="chat"] .composer input:focus{
   order:0 !important;
   flex:1 1 auto !important;
   width:auto !important;min-width:0 !important;
-  padding:8px 4px 8px 9px !important;
+  padding:7px 4px 7px 9px !important;
   border:0 !important;border-radius:0 !important;
   background:transparent !important;box-shadow:none !important;
   font-size:13.5px !important;
@@ -207,17 +208,17 @@ html[data-page="chat"] .composer input:focus{
 }
 html[data-page="chat"] .composer .plus-btn{
   order:-1 !important;flex:0 0 auto !important;
-  width:32px !important;height:32px !important;
-  padding:0 !important;border:0 !important;border-radius:50% !important;
+  width:30px !important;height:30px !important;
+  padding:0 !important;border:0 !important;border-radius:8px !important;
   background:#f3eee6 !important;color:#8d8578 !important;
   font-size:15px !important;
   display:grid !important;place-items:center !important;
 }
 html[data-page="chat"] .composer .btn-solid{
   flex:0 0 auto !important;
-  width:32px !important;height:32px !important;
+  width:30px !important;height:30px !important;
   padding:0 !important;margin-left:0 !important;
-  border-radius:50% !important;
+  border-radius:8px !important;
   display:grid !important;place-items:center !important;
   font-size:9px !important;
   background:#e9bcc8 !important;color:#fff !important;
@@ -225,8 +226,9 @@ html[data-page="chat"] .composer .btn-solid{
 }
 html[data-page="chat"] .composer .cs-heart-btn{
   flex:0 0 auto !important;
-  width:32px !important;height:32px !important;
+  width:30px !important;height:30px !important;
   padding:0 !important;
+  border-radius:8px !important;
   display:grid !important;place-items:center !important;
   font-size:13px !important;color:#b9a7b4 !important;
 }
