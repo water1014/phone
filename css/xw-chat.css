@@ -1,8 +1,8 @@
-/* xw-chat.css · 聊天页（定稿 v12） */
-/* 命名空间只认 body.xw-chat-on */
+/* xw-chat.css · 聊天页（v13） */
+/* 每条消息头顶只留水滴；用量全部去设置里看 */
 
 body.xw-chat-on::after{
-  content:'xw v12';
+  content:'xw v13';
   position:fixed;left:5px;top:1px;z-index:99999;
   font-size:8px;line-height:1;letter-spacing:.04em;
   color:rgba(176,166,150,.8);pointer-events:none;
@@ -14,15 +14,15 @@ body.xw-chat-on #app-body{padding-top:8px !important}
 body.xw-chat-on .chat-wrap{padding-left:8px !important;padding-right:8px !important}
 body.xw-chat-on .chat-status,
 body.xw-chat-on .chat-top,
-body.xw-chat-on .usage-bar{display:none !important}
+body.xw-chat-on .usage-bar,
 body.xw-chat-on .chat-meter{display:none !important}
 
-/* 顶栏上的“2 台”和右上角挂件，都不要 */
+/* 顶栏上的“2 台”与挂件 */
 body.xw-chat-on .cs-pair::before{display:none !important;content:none !important}
 body.xw-chat-on .cs-top::before,
 body.xw-chat-on .cs-top::after{display:none !important;content:none !important}
 
-/* ── 顶栏：头像 + 名字一行，整组居中 ── */
+/* ── 顶栏 ── */
 body.xw-chat-on .chat-wrap > .cs-top{
   display:grid !important;
   grid-template-columns:30px 1fr 30px !important;
@@ -38,8 +38,7 @@ body.xw-chat-on .chat-wrap > .cs-top{
 }
 body.xw-chat-on .cs-top .cs-pair{
   display:flex !important;align-items:center !important;justify-content:center !important;
-  gap:7px !important;min-width:0 !important;
-  padding-top:0 !important;
+  gap:7px !important;min-width:0 !important;padding-top:0 !important;
 }
 body.xw-chat-on .cs-pair .cs-one{
   flex-direction:row !important;align-items:center !important;
@@ -97,17 +96,46 @@ body.xw-chat-on #chat-scroll .msg-row .msg-main{
 body.xw-chat-on #chat-scroll .msg-row.ta .msg-main{order:1 !important;align-items:flex-start !important;text-align:left !important}
 body.xw-chat-on #chat-scroll .msg-row.me .msg-main{order:1 !important;align-items:flex-end !important;text-align:left !important}
 
-/* order：状态行与思考一律在气泡之上 */
+/* 顺序：时间 → 水滴 → 气泡 */
 body.xw-chat-on #chat-scroll .msg-main > .msg-name{display:none !important;order:-20 !important}
 body.xw-chat-on #chat-scroll .msg-main > .cc-time{order:-10 !important}
-body.xw-chat-on #chat-scroll .msg-main > .msg-tag{order:-9 !important}
-body.xw-chat-on #chat-scroll .msg-main > details.think{order:-8 !important}
+body.xw-chat-on #chat-scroll .msg-main > .msg-tag{display:none !important;order:-9 !important}
+body.xw-chat-on #chat-scroll .msg-main > details.think{display:none !important;order:-8 !important}
+body.xw-chat-on #chat-scroll .msg-main > .cc-cloud{order:-9 !important}
 body.xw-chat-on #chat-scroll .msg-main > .qblock{order:-6 !important}
 body.xw-chat-on #chat-scroll .msg-main > .msg-img{order:-4 !important}
 body.xw-chat-on #chat-scroll .msg-main > .bub{order:0 !important}
 body.xw-chat-on #chat-scroll .msg-main > .narr{order:0 !important}
 
-/* ── 气泡：靠左，不要两端对齐 ── */
+/* ── 水滴：就站在原来缓存率的位置 ── */
+body.xw-chat-on #chat-scroll .msg-main > .cc-cloud{
+  align-self:flex-start !important;
+  display:inline-grid !important;
+  place-items:center !important;
+  width:24px !important;height:24px !important;
+  margin:0 0 6px !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:50% !important;
+  background:rgba(255,255,255,.55) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.85), 0 2px 8px rgba(140,150,145,.07) !important;
+  vertical-align:middle !important;
+  -webkit-tap-highlight-color:transparent;
+}
+body.xw-chat-on #chat-scroll .msg-main > .cc-cloud svg{
+  display:block !important;
+  width:13px !important;height:13px !important;
+  fill:none !important;
+  stroke:#a9b8b6 !important;
+  stroke-width:1.35 !important;
+  stroke-linecap:round !important;
+  stroke-linejoin:round !important;
+}
+body.xw-chat-on #chat-scroll .msg-main > .cc-cloud:active svg{stroke:#7d9a97 !important}
+body.xw-chat-on #chat-scroll .cc-time .cc-cloud{display:none !important}
+body.xw-chat-on #chat-scroll .msg-row.me .cc-cloud{display:none !important}
+
+/* ── 气泡：靠左，两端对齐压掉 ── */
 body.xw-chat-on #chat-scroll .msg-row .bub{
   display:inline-block !important;
   max-width:86% !important;
@@ -150,8 +178,7 @@ body.xw-chat-on #chat-scroll .msg-row .cc-time{
   display:flex !important;align-items:center !important;justify-content:center !important;
   min-height:0 !important;
   margin:2px 0 8px !important;
-  font-size:10px !important;
-  letter-spacing:.1em !important;
+  font-size:10px !important;letter-spacing:.1em !important;
   color:rgba(150,140,125,.6) !important;
 }
 body.xw-chat-on #chat-scroll .msg-row.ta .cc-time{
@@ -159,71 +186,8 @@ body.xw-chat-on #chat-scroll .msg-row.ta .cc-time{
   width:calc(100% + 37px) !important;
 }
 body.xw-chat-on #chat-scroll .cc-dot{width:4px !important;height:4px !important;flex:0 0 auto !important;opacity:.5 !important}
-body.xw-chat-on #chat-scroll .cc-time .cc-cloud{display:none !important}
 
-/* ── 思考：一行小标签 ── */
-body.xw-chat-on #chat-scroll .msg-row details.think{
-  width:auto !important;max-width:100% !important;
-  margin:0 0 4px !important;text-align:left !important;
-}
-body.xw-chat-on #chat-scroll .msg-row.me details.think{text-align:right !important}
-body.xw-chat-on #chat-scroll details.think > summary{
-  display:inline-flex !important;align-items:center !important;
-  list-style:none !important;padding:0 !important;border:0 !important;background:none !important;
-  font-size:10.5px !important;line-height:1.4 !important;letter-spacing:.03em !important;
-  color:#b0a89b !important;cursor:pointer !important;
-  -webkit-tap-highlight-color:transparent;
-}
-body.xw-chat-on #chat-scroll details.think > summary::-webkit-details-marker{display:none !important}
-body.xw-chat-on #chat-scroll details.think > summary::marker{content:''}
-body.xw-chat-on #chat-scroll details.think > summary::before{
-  content:'\2726' !important;
-  display:inline-block !important;margin-right:5px !important;
-  font-size:9px !important;line-height:1 !important;transform:none !important;
-}
-body.xw-chat-on #chat-scroll details.think[open] > summary::before{transform:none !important}
-body.xw-chat-on #chat-scroll details.think .think-body{
-  margin:5px 0 6px !important;
-  padding:9px 11px !important;
-  border:0 !important;
-  border-radius:13px !important;
-  background:rgba(255,255,255,.55) !important;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.7) !important;
-  -webkit-backdrop-filter:blur(12px) !important;
-  backdrop-filter:blur(12px) !important;
-  font-size:11.5px !important;
-  line-height:1.75 !important;
-  color:rgba(110,102,122,.82) !important;
-  text-align:left !important;
-  width:100% !important;box-sizing:border-box !important;
-  max-height:52vh !important;overflow-y:auto !important;
-}
-
-/* ── 缓存率：短一行，不截断不省略 ── */
-body.xw-chat-on #chat-scroll .msg-row .msg-tag{
-  display:block !important;
-  margin:0 0 4px !important;
-  padding:0 !important;
-  border:0 !important;
-  border-radius:0 !important;
-  background:none !important;
-  box-shadow:none !important;
-  -webkit-backdrop-filter:none !important;
-  backdrop-filter:none !important;
-  font-family:inherit !important;
-  font-size:10.5px !important;
-  font-weight:400 !important;
-  line-height:1.4 !important;
-  letter-spacing:.03em !important;
-  color:#b0a89b !important;
-  max-width:100% !important;
-  white-space:normal !important;
-  overflow:visible !important;
-  text-overflow:clip !important;
-}
-body.xw-chat-on #chat-scroll .msg-row.me .msg-tag{display:none !important}
-
-/* ── 跨天分隔 ── */
+/* ── 跨天 / 提示 ── */
 body.xw-chat-on #chat-scroll .cf-day{
   display:block !important;
   margin:16px 0 12px !important;padding:0 !important;
@@ -233,40 +197,28 @@ body.xw-chat-on #chat-scroll .cf-day{
   color:rgba(150,140,125,.55) !important;
   background:none !important;border:0 !important;box-shadow:none !important;
 }
-
 body.xw-chat-on #chat-scroll .cf-greet{
-  position:static !important;
-  display:block !important;
-  width:fit-content !important;
-  margin:0 auto 12px !important;
-  padding:5px 13px !important;
-  border-radius:999px !important;
+  position:static !important;display:block !important;
+  width:fit-content !important;margin:0 auto 12px !important;
+  padding:5px 13px !important;border-radius:999px !important;
   background:rgba(255,255,255,.55) !important;
   -webkit-backdrop-filter:blur(12px) !important;
   backdrop-filter:blur(12px) !important;
-  font-size:10.5px !important;
-  color:rgba(140,130,118,.8) !important;
+  font-size:10.5px !important;color:rgba(140,130,118,.8) !important;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.7) !important;
 }
-
 body.xw-chat-on #chat-scroll .cf-more{
-  display:block !important;
-  margin:8px auto 14px !important;
-  padding:6px 15px !important;
-  border:0 !important;border-radius:999px !important;
+  display:block !important;margin:8px auto 14px !important;
+  padding:6px 15px !important;border:0 !important;border-radius:999px !important;
   background:rgba(255,255,255,.6) !important;
-  -webkit-backdrop-filter:blur(12px) !important;
-  backdrop-filter:blur(12px) !important;
   font-size:11px !important;color:#8d8578 !important;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.75) !important;
 }
 
 /* ── 旁白 ── */
 body.xw-chat-on #chat-scroll .msg-row .narr{
-  max-width:86% !important;
-  padding:0 0 0 9px !important;
-  border-left:2px solid rgba(0,0,0,.10) !important;
-  border-right:0 !important;
+  max-width:86% !important;padding:0 0 0 9px !important;
+  border-left:2px solid rgba(0,0,0,.10) !important;border-right:0 !important;
   font-size:13px !important;line-height:1.8 !important;color:#8d8578 !important;
 }
 body.xw-chat-on #chat-scroll .msg-row.me .narr{
@@ -287,10 +239,8 @@ body.xw-chat-on #chat-scroll .chat-event span{
 /* ── 快捷词 ── */
 body.xw-chat-on .chat-wrap > .quick{padding:0 2px 8px !important;display:flex !important;gap:6px !important}
 body.xw-chat-on .quick-chip{
-  flex:0 0 auto !important;
-  font-size:12px !important;
-  padding:5px 13px !important;
-  border:0 !important;border-radius:999px !important;
+  flex:0 0 auto !important;font-size:12px !important;
+  padding:5px 13px !important;border:0 !important;border-radius:999px !important;
   background:rgba(255,255,255,.5) !important;
   -webkit-backdrop-filter:blur(14px) !important;
   backdrop-filter:blur(14px) !important;
@@ -300,16 +250,11 @@ body.xw-chat-on .quick-chip{
 
 /* ── 输入条：两层玻璃大框 ── */
 body.xw-chat-on .chat-wrap > .composer{
-  display:flex !important;
-  flex-wrap:wrap !important;
-  align-items:center !important;
-  gap:8px !important;
-  margin:0 0 12px !important;
+  display:flex !important;flex-wrap:wrap !important;align-items:center !important;
+  gap:8px !important;margin:0 0 12px !important;
   padding:12px 12px 9px !important;
-  min-height:0 !important;
-  box-sizing:border-box !important;
-  border:0 !important;
-  border-radius:26px !important;
+  min-height:0 !important;box-sizing:border-box !important;
+  border:0 !important;border-radius:26px !important;
   background:rgba(255,255,255,.42) !important;
   -webkit-backdrop-filter:blur(26px) saturate(1.7) !important;
   backdrop-filter:blur(26px) saturate(1.7) !important;
@@ -320,17 +265,14 @@ body.xw-chat-on .chat-wrap > .composer{
 }
 body.xw-chat-on .composer input,
 body.xw-chat-on .composer input:focus{
-  order:0 !important;
-  flex:1 1 100% !important;
-  width:100% !important;min-width:0 !important;
-  min-height:24px !important;
+  order:0 !important;flex:1 1 100% !important;
+  width:100% !important;min-width:0 !important;min-height:24px !important;
   padding:4px 6px 10px !important;
   border:0 !important;border-radius:0 !important;
   background:transparent !important;box-shadow:none !important;
   font-size:15px !important;line-height:1.5 !important;color:#2f2b35 !important;
 }
 body.xw-chat-on .composer input::placeholder{color:rgba(120,112,130,.55) !important}
-
 body.xw-chat-on .composer .plus-btn{
   order:1 !important;flex:0 0 auto !important;
   width:34px !important;height:34px !important;
@@ -352,8 +294,8 @@ body.xw-chat-on .composer .cs-heart-btn{
 body.xw-chat-on .composer .btn-solid{
   order:3 !important;flex:0 0 auto !important;
   width:34px !important;height:34px !important;
-  margin-left:auto !important;
-  padding:0 !important;border:0 !important;border-radius:50% !important;
+  margin-left:auto !important;padding:0 !important;
+  border:0 !important;border-radius:50% !important;
   display:grid !important;place-items:center !important;
   font-size:0 !important;
   background:#3a3444 !important;color:#fff !important;
