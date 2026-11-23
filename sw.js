@@ -1,12 +1,12 @@
 /* sw.js · 小窝的离线壳
-   有网就强制拿新的（绕过 HTTP 缓存），没网才用缓存的
-   manifest 也由这里发，因为仓库里写不了纯 JSON 文件 */
-const CACHE = 'xiaowo-v2';
+   有网就强制拿新的（绕过 HTTP 缓存）；
+   自身更新后自动把打开的页面重载一次，不用手动刷 */
+const CACHE = 'xiaowo-v3';
 
 const MANIFEST = {
-  name: '小窝',
-  short_name: '小窝',
-  description: '我们的小家',
+  name: '\u5c0f\u7a9d',
+  short_name: '\u5c0f\u7a9d',
+  description: '\u6211\u4eec\u7684\u5c0f\u5bb6',
   lang: 'zh-CN',
   id: './',
   start_url: './',
@@ -32,7 +32,18 @@ self.addEventListener('activate', function (e) {
         if (k !== CACHE) return caches.delete(k);
         return null;
       }));
-    }).then(function () { return self.clients.claim(); })
+    }).then(function () {
+      return self.clients.claim();
+    }).then(function () {
+      /* 新版本接管后，把所有已打开的窗口重载一次 */
+      return self.clients.matchAll({ type: 'window' }).then(function (list) {
+        list.forEach(function (c) {
+          try {
+            if (c.navigate) c.navigate(c.url);
+          } catch (err) {}
+        });
+      });
+    })
   );
 });
 
@@ -54,7 +65,6 @@ self.addEventListener('fetch', function (e) {
   const fonts = (url.hostname === 'fonts.loli.net');
   if (!sameSite && !fonts) return;
 
-  /* 关键：一律 cache:'no-store'，不让浏览器拿旧副本 */
   e.respondWith(
     fetch(req.url, { cache: 'no-store', credentials: 'same-origin', redirect: 'follow' })
       .then(function (res) {
