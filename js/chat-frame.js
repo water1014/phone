@@ -8,7 +8,7 @@
     const l = D.createElement('link');
     l.id = 'xw-chat-layout';
     l.rel = 'stylesheet';
-    l.href = 'css/chat-layout.css?v=1';
+    l.href = 'css/chat-layout.css?v=2';
     D.head.appendChild(l);
   })();
 

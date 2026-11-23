@@ -1,4 +1,4 @@
-/* chat-layout.css · B 顺手：顶栏一行居中 / 输入一条 / 时间只在组间 / 用量收起 */
+/* chat-layout.css · B 顺手：顶栏一行居中 / 气泡 / 输入一条 / 时间只在组间 / 用量收起 */
 /* 由 js/chat-frame.js 动态插到 head 末尾，优先于 chat-frame.css */
 
 /* ── 一、顶栏：头像与名字并排，整组居中 ── */
@@ -49,10 +49,127 @@ html[data-page="chat"] .cs-more{
   font-size:.78rem;
 }
 
-/* ── 二、思考：一行带星的小标签，点开才出内容 ── */
-html[data-page="chat"] .think{
-  margin:0 0 .28rem;
+/* ── 二、消息行：两头各一颗 28px 小圆头像，贴在外侧 ── */
+html[data-page="chat"] .msg-row{
+  margin:0 0 .55rem !important;
 }
+html[data-page="chat"] .msg-row.ta{
+  display:grid !important;
+  grid-template-columns:28px minmax(0,1fr);
+  column-gap:9px;
+  align-items:start;
+}
+html[data-page="chat"] .msg-row.me{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) 28px;
+  column-gap:9px;
+  align-items:start;
+}
+
+html[data-page="chat"] .msg-row.ta .msg-ava{
+  display:grid !important;
+  place-items:center;
+  width:28px;
+  height:28px;
+  margin-top:1px;
+  border-radius:50%;
+  overflow:hidden;
+  background:#f0eaf4;
+  color:#8a7f96;
+  font-size:.44rem;
+  font-family:inherit;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.04);
+}
+html[data-page="chat"] .msg-row.me .msg-ava{
+  display:grid !important;
+  order:2;
+  place-items:center;
+  width:28px;
+  height:28px;
+  margin-top:1px;
+  border-radius:50%;
+  overflow:hidden;
+  background:#f5ebf0;
+  color:#a48e9c;
+  font-size:.44rem;
+  font-family:inherit;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.04);
+}
+html[data-page="chat"] .msg-ava img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+/* 同一人连发时头像留位不显形 */
+html[data-page="chat"] .msg-ava.ghost{
+  background:transparent !important;
+  box-shadow:none !important;
+  color:transparent !important;
+}
+html[data-page="chat"] .msg-ava.ghost img{ display:none !important; }
+
+html[data-page="chat"] .msg-main{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+}
+html[data-page="chat"] .msg-row.ta .msg-main{ order:1; align-items:flex-start; text-align:left; }
+html[data-page="chat"] .msg-row.me .msg-main{ order:1; align-items:flex-end; text-align:left; }
+
+/* ── 三、气泡：白的给他，淡紫的给她，靠头像那侧的角收小 ── */
+html[data-page="chat"] .bub,
+html[data-page="chat"] .bub.me{
+  max-width:86%;
+  padding:.56rem .82rem !important;
+  border:0 !important;
+  border-radius:16px !important;
+  background:rgba(255,255,255,.88) !important;
+  box-shadow:0 3px 12px rgba(120,110,140,.06) !important;
+  -webkit-backdrop-filter:blur(10px) !important;
+  backdrop-filter:blur(10px) !important;
+  font-size:.78rem !important;
+  line-height:1.74 !important;
+  letter-spacing:.01em !important;
+  color:#35312b !important;
+  text-align:left !important;
+  border-top-left-radius:5px !important;
+}
+html[data-page="chat"] .bub.me{
+  background:rgba(228,218,242,.88) !important;
+  color:#3d3646 !important;
+  border-top-left-radius:16px !important;
+  border-top-right-radius:5px !important;
+}
+html[data-page="chat"] .bub + .bub{ margin-top:4px; }
+/* 去掉之前那个勾 */
+html[data-page="chat"] .msg-row.me .msg-main > .bub:last-of-type::after{
+  content:none !important;
+  display:none !important;
+}
+
+/* 旁白：淡竖线，不套气泡 */
+html[data-page="chat"] .narr{
+  max-width:86%;
+  font-size:.66rem !important;
+  color:#8d8578 !important;
+}
+html[data-page="chat"] .msg-row.me .narr{
+  border-left:0 !important;
+  border-right:2px solid rgba(0,0,0,.10);
+  padding:.04rem .55rem .04rem 0 !important;
+}
+
+/* ── 四、时间：只在隔得久的地方出现 ── */
+html[data-page="chat"] .cc-time{
+  min-height:28px;
+  margin:0 0 .3rem !important;
+  font-size:.4rem !important;
+  color:#c0b8ab !important;
+}
+
+/* ── 五、思考：一行带星的小标签 ── */
+html[data-page="chat"] .think{ margin:0 0 .3rem; }
 html[data-page="chat"] .think > summary{
   display:inline-flex;
   align-items:center;
@@ -68,14 +185,13 @@ html[data-page="chat"] .think > summary::before{
   line-height:1;
   transform:none;
 }
-html[data-page="chat"] .think[open] > summary::before{
-  transform:none;
-}
+html[data-page="chat"] .think[open] > summary::before{ transform:none; }
 
-/* ── 三、用量：从每条消息下面收掉，只留底部一处 ── */
+/* ── 六、用量：每条下面的收掉，底部那条也收掉 ── */
 html[data-page="chat"] .msg-tag{ display:none !important; }
+html[data-page="chat"] .chat-meter{ display:none !important; }
 
-/* ── 四、输入：收成一条 ── */
+/* ── 七、输入：收成一条 ── */
 html[data-page="chat"] .quick{ padding:0 0 .4rem !important; }
 
 html[data-page="chat"] .composer{
