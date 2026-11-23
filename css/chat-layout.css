@@ -184,59 +184,66 @@ html[data-page="chat"] .chat-event span{
   padding:3px 10px !important;border-radius:9px !important;
 }
 
-/* ── 八、滚动区 ── */
-html[data-page="chat"] #chat-scroll{padding:4px 12px 6px}
-html[data-page="chat"] .quick{padding:0 0 8px !important}
+/* ── 八、整页左右留白压窄，输入条才能更宽 ── */
+html[data-page="chat"] .chat-wrap{
+  padding-left:8px !important;
+  padding-right:8px !important;
+}
+html[data-page="chat"] #chat-scroll{padding:4px 10px 6px}
+html[data-page="chat"] .quick{padding:0 2px 8px !important}
 html[data-page="chat"] .quick-chip{font-size:12px !important}
 
-/* ── 九、输入条：宽的长方形，四角小圆，按钮小方块 ── */
+/* ── 九、输入条：又宽又厚，大圆角 ── */
 html[data-page="chat"] .composer{
   flex-wrap:nowrap !important;
   align-items:center !important;
-  gap:6px !important;
-  padding:6px !important;
-  border-radius:11px !important;
-  background:rgba(255,255,255,.9) !important;
-  box-shadow:0 3px 16px rgba(120,110,95,.10), inset 0 0 0 1px rgba(255,255,255,.85) !important;
-  -webkit-backdrop-filter:blur(14px) saturate(1.4) !important;
-  backdrop-filter:blur(14px) saturate(1.4) !important;
+  gap:7px !important;
+  margin:0 0 12px !important;
+  padding:9px !important;
+  min-height:56px !important;
+  box-sizing:border-box !important;
+  border-radius:18px !important;
+  background:rgba(255,255,255,.92) !important;
+  box-shadow:0 4px 18px rgba(120,110,95,.11), inset 0 0 0 1px rgba(255,255,255,.9) !important;
+  -webkit-backdrop-filter:blur(16px) saturate(1.4) !important;
+  backdrop-filter:blur(16px) saturate(1.4) !important;
 }
 html[data-page="chat"] .composer input,
 html[data-page="chat"] .composer input:focus{
   order:0 !important;
   flex:1 1 auto !important;
   width:auto !important;min-width:0 !important;
-  padding:7px 4px 7px 9px !important;
+  padding:9px 2px 9px 10px !important;
   border:0 !important;border-radius:0 !important;
   background:transparent !important;box-shadow:none !important;
-  font-size:13.5px !important;
+  font-size:14.5px !important;
   line-height:1.5 !important;
   color:#35302a !important;
 }
 html[data-page="chat"] .composer .plus-btn{
   order:-1 !important;flex:0 0 auto !important;
-  width:30px !important;height:30px !important;
-  padding:0 !important;border:0 !important;border-radius:8px !important;
+  width:38px !important;height:38px !important;
+  padding:0 !important;border:0 !important;border-radius:13px !important;
   background:#f3eee6 !important;color:#8d8578 !important;
-  font-size:15px !important;
+  font-size:16px !important;
   display:grid !important;place-items:center !important;
 }
 html[data-page="chat"] .composer .btn-solid{
   flex:0 0 auto !important;
-  width:30px !important;height:30px !important;
+  width:38px !important;height:38px !important;
   padding:0 !important;margin-left:0 !important;
-  border-radius:8px !important;
+  border-radius:13px !important;
   display:grid !important;place-items:center !important;
-  font-size:9px !important;
+  font-size:10px !important;
   background:#e9bcc8 !important;color:#fff !important;
-  box-shadow:0 3px 10px rgba(233,188,200,.4) !important;
+  box-shadow:0 4px 12px rgba(233,188,200,.42) !important;
 }
 html[data-page="chat"] .composer .cs-heart-btn{
   flex:0 0 auto !important;
-  width:30px !important;height:30px !important;
+  width:38px !important;height:38px !important;
   padding:0 !important;
-  border-radius:8px !important;
+  border-radius:13px !important;
   display:grid !important;place-items:center !important;
-  font-size:13px !important;color:#b9a7b4 !important;
+  font-size:15px !important;color:#b9a7b4 !important;
 }
 html[data-page="chat"] .composer #chat-file{display:none !important}
