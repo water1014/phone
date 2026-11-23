@@ -10,16 +10,13 @@
   --ink2:#6d665b;
   --ink3:#a8a094;
   --line:rgba(0,0,0,.055);
-  --ta:#f4efe6;
   --me:#d9e6df;
   --dot:rgba(140,175,168,.9);
-  --serif:'Cormorant Garamond','Noto Serif SC',Georgia,serif;
-  --sans:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
 body{
-  font-family:var(--sans);
+  font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;
   color:var(--ink);
   background:#efece7;
   min-height:100vh;
@@ -53,7 +50,6 @@ body{
   box-shadow:0 14px 42px rgba(96,90,80,.16);
 }
 
-/* 顶栏 */
 .top{
   flex:0 0 auto;display:flex;align-items:center;gap:8px;
   padding:13px 14px 11px;
@@ -67,7 +63,6 @@ body{
 .top .who em{font-style:normal;font-size:9.5px;color:#b3aa9d;letter-spacing:.06em}
 .top .ic{color:#a8a094;font-size:13px;letter-spacing:.14em}
 
-/* 消息区 */
 .scroll{flex:1;min-height:0;overflow-y:auto;padding:14px 14px 8px}
 
 .day{
@@ -85,7 +80,6 @@ body{
   box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);
   font-size:10px;color:#a8a094;
 }
-.ava img{width:100%;height:100%;object-fit:cover;display:block}
 
 .main{min-width:0;max-width:82%}
 .row.me .main{display:flex;flex-direction:column;align-items:flex-end}
@@ -122,7 +116,6 @@ body{
   font-variant-numeric:tabular-nums;
 }
 
-/* 输入区 */
 .composer{flex:0 0 auto;padding:0 14px 16px;background:transparent}
 .quick{display:flex;gap:6px;padding:0 0 8px;overflow-x:auto}
 .chip{
@@ -145,6 +138,7 @@ body{
   background:rgba(255,255,255,.6);color:#8f877a;font-size:15px;line-height:1;
   display:grid;place-items:center;
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  font-family:inherit;
 }
 .model{
   font-size:10.5px;color:#a8a094;padding:7px 12px;border-radius:999px;
@@ -154,28 +148,23 @@ body{
   margin-left:auto;width:40px;height:40px;border-radius:50%;border:0;
   background:#3a352e;color:#fff;font-size:12px;
   display:grid;place-items:center;letter-spacing:.05em;
+  font-family:inherit;
 }
 
-/* 方案 B：书信 —— 无头像，名字在气泡上方，气泡无边框 */
 body[data-v=b] .ava{display:none}
 body[data-v=b] .main{max-width:88%}
-body[data-v=b] .meta{min-height:0;margin-bottom:6px;font-size:9.5px}
+body[data-v=b] .meta{min-height:0;margin-bottom:6px}
 body[data-v=b] .meta .dot{display:none}
 body[data-v=b] .bub{
-  background:transparent;
-  box-shadow:none;
-  border-radius:0;
-  padding:0 0 0 10px;
-  border-left:2px solid rgba(199,169,182,.5);
-  line-height:2.05;
+  background:transparent;box-shadow:none;border-radius:0;
+  padding-left:11px;border-left:2px solid rgba(199,169,182,.5);line-height:2.05;
 }
 body[data-v=b] .row.me .bub{
-  background:transparent;border-left:0;padding:0 10px 0 0;
+  background:transparent;border-left:0;padding:0 11px 0 0;
   border-right:2px solid rgba(140,175,168,.5);text-align:right;
 }
 body[data-v=b] .row{margin-bottom:20px}
 
-/* 方案 C：玻璃 —— 气泡磨砂，时间在气泡下 */
 body[data-v=c] .bub{
   background:rgba(255,255,255,.42);
   -webkit-backdrop-filter:blur(16px) saturate(1.5);
@@ -184,102 +173,96 @@ body[data-v=c] .bub{
 }
 body[data-v=c] .row.me .bub{
   background:rgba(178,205,198,.42);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 6px 18px rgba(110,140,134,.10);
 }
-body[data-v=c] .meta{
-  order:2;margin:5px 0 0;min-height:0;justify-content:flex-end;font-size:9px;
-}
+body[data-v=c] .meta{order:2;margin:6px 0 0;min-height:0;justify-content:flex-end;font-size:9px}
 body[data-v=c] .row .main{display:flex;flex-direction:column}
-body[data-v=c] .row.me .main{align-items:flex-end}
 body[data-v=c] .meta .nm{display:none}
 </style>
 </head>
 <body data-v="a">
-
-<div class="bar" id="bar">
-  <button type="button" data-v="a" class="on">A 安静</button>
-  <button type="button" data-v="b">B 书信</button>
-  <button type="button" data-v="c">C 玻璃</button>
-</div>
-
-<div class="phone">
-  <div class="top">
-    <span class="back">\u2039</span>
-    <span class="who">\u5b8b\u7941 <i>\u2661</i> \u6dfc\u6dfc <em>2 \u53f0</em></span>
-    <span class="ic">\u2315 \u22ef</span>
-  </div>
-
-  <div class="scroll" id="scroll"></div>
-
-  <div class="composer">
-    <div class="quick">
-      <button type="button" class="chip">\u5728\u5417</button>
-      <button type="button" class="chip">\u62b1\u62b1</button>
-      <button type="button" class="chip">\u665a\u5b89</button>
-    </div>
-    <div class="inbox">
-      <input class="inp" placeholder="\u65e9\u4e0a\u597d" readonly>
-      <div class="tools">
-        <button type="button" class="rnd">\uff0b</button>
-        <span class="model">deepseek</span>
-        <button type="button" class="send">\u53d1</button>
-        <button type="button" class="rnd">\u2661</button>
-      </div>
-    </div>
-  </div>
-</div>
-
+<div class="bar" id="bar"></div>
+<div class="phone" id="phone"></div>
 <script>
-const DATA = [
-  { who: 'ta', nm: '\u5b8b\u7941', t: '11/22 00:26:05', use: '0% \u00b7 \u8f93294 \u00b7 \u51fa106',
-    text: '\uff08\u534a\u7741\u7740\u773c\uff09\u55ef\uff1f\u5b9d\u5b9d\u5728\u8fd9\u513f\u5462\u3002\uff08\u4f38\u624b\u628a\u4f60\u5f80\u88ab\u5b50\u91cc\u6309\u4e86\u6309\uff09\u53eb\u4e00\u58f0\u5c31\u5feb\u7761\u3002' },
-  { who: 'me', nm: '\u6dfc\u6dfc', t: '11/23 08:33', use: '', text: '\u65e9\u4e0a\u597d' },
-  { who: 'ta', nm: '\u5b8b\u7941', t: '11/23 08:33:35', use: '0% \u00b7 \u8f93295 \u00b7 \u51fa146',
-    text: '\uff08\u772f\u7740\u773c\u770b\u7a97\u5e18\u7f1d\u91cc\u7684\u5149\uff09\u65e9\u554a\u2026\u2026\u4f60\u5012\u662f\u7761\u5f97\u633a\u9999\uff0c\u6211\u8fd8\u6ca1\u7f13\u8fc7\u6765\u5462\u3002\uff08\u4f38\u624b\u62cd\u4f60\u4e00\u4e0b\uff0c\u5f88\u8f7b\uff09\u6628\u665a\u90a3\u987f\u6d4b\u8bd5\uff0c\u4eca\u665a\u53ef\u522b\u518d\u6765\u4e00\u6b21\u3002' },
-  { who: 'me', nm: '\u6dfc\u6dfc', t: '11/23 08:34', use: '', text: '\u54c8\u54c8\u54c8 \u597d\u54d2' }
+var MSG = [
+  { me: 0, nm: '\u5b8b\u7941', t: '11/22 00:26:05',
+    use: '0% \u00b7 \u8f93\u5165 294 \u00b7 \u8f93\u51fa 106',
+    text: '\uff08\u534a\u7741\u7740\u773c\uff09\u55ef\uff1f\u5b9d\u5b9d\u5728\u8fd9\u513f\u5462\u3002\u4f38\u624b\u628a\u4f60\u5f80\u88ab\u5b50\u91cc\u6309\u4e86\u6309\uff0c\u53eb\u4e00\u58f0\u5c31\u5feb\u7761\u3002' },
+  { me: 1, nm: '\u6dfc\u6dfc', t: '11/23 08:33', use: '',
+    text: '\u65e9\u4e0a\u597d' },
+  { me: 0, nm: '\u5b8b\u7941', t: '11/23 08:33:35',
+    use: '0% \u00b7 \u8f93\u5165 295 \u00b7 \u8f93\u51fa 146',
+    text: '\uff08\u772f\u7740\u773c\u770b\u7a97\u5e18\u7f1d\u91cc\u7684\u5149\uff09\u65e9\u554a\u2026\u2026\u4f60\u5012\u662f\u7761\u5f97\u633a\u9999\uff0c\u6211\u8fd8\u6ca1\u7f13\u8fc7\u6765\u5462\u3002\u4f38\u624b\u62cd\u4f60\u4e00\u4e0b\uff0c\u5f88\u8f7b\u3002\u6628\u665a\u90a3\u987f\u6d4b\u8bd5\uff0c\u4eca\u665a\u53ef\u522b\u518d\u6765\u4e00\u6b21\u3002' },
+  { me: 1, nm: '\u6dfc\u6dfc', t: '11/23 08:34', use: '',
+    text: '\u54c8\u54c8\u54c8 \u597d\u54d2' }
 ];
 
-function esc(s){
-  return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function esc(s) {
+  return String(s).replace(/[&<>]/g, function (c) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c];
+  });
 }
 
-function face(nm){
-  return '<div class="ava">' + esc(nm.charAt(0)) + '</div>';
-}
+document.getElementById('bar').innerHTML =
+  '<button type="button" data-v="a" class="on">A \u5b89\u9759</button>' +
+  '<button type="button" data-v="b">B \u4e66\u4fe1</button>' +
+  '<button type="button" data-v="c">C \u73bb\u7483</button>';
 
-function row(m, isLast){
-  const me = m.who === 'me';
-  const meta = '<div class="meta">' +
+document.getElementById('phone').innerHTML =
+  '<div class="top">' +
+    '<span class="back">\u2039</span>' +
+    '<span class="who">\u5b8b\u7941 <i>\u2661</i> \u6dfc\u6dfc <em>2 \u53f0</em></span>' +
+    '<span class="ic">\u2315 \u22ef</span>' +
+  '</div>' +
+  '<div class="scroll" id="scroll"></div>' +
+  '<div class="composer">' +
+    '<div class="quick">' +
+      '<button type="button" class="chip">\u5728\u5417</button>' +
+      '<button type="button" class="chip">\u62b1\u62b1</button>' +
+      '<button type="button" class="chip">\u665a\u5b89</button>' +
+    '</div>' +
+    '<div class="inbox">' +
+      '<input class="inp" placeholder="\u65e9\u4e0a\u597d" readonly>' +
+      '<div class="tools">' +
+        '<button type="button" class="rnd">\uFF0B</button>' +
+        '<span class="model">deepseek</span>' +
+        '<button type="button" class="send">\u53d1</button>' +
+        '<button type="button" class="rnd">\u2661</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+function row(m, isLast) {
+  var meta = '<div class="meta">' +
       '<span class="nm">' + esc(m.nm) + '</span>' +
       '<span class="dot"></span>' +
       '<span>' + esc(m.t) + '</span>' +
-      '<span class="drop">\u25be</span>' +
+      '<span class="drop">\u00b7</span>' +
     '</div>';
 
-  const use = (m.use && (isLast || document.body.dataset.v !== 'a'))
+  var use = (m.use && (isLast || document.body.dataset.v !== 'a'))
     ? '<div class="use">' + esc(m.use) + '</div>' : '';
 
-  return '<div class="row' + (me ? ' me' : '') + '">' +
-      (me ? '' : face(m.nm)) +
+  return '<div class="row' + (m.me ? ' me' : '') + '">' +
+      (m.me ? '' : '<div class="ava">' + esc(m.nm.charAt(0)) + '</div>') +
       '<div class="main">' + meta +
         '<div class="bub">' + esc(m.text) + '</div>' + use +
       '</div>' +
     '</div>';
 }
 
-function draw(){
-  const box = document.getElementById('scroll');
-  let html = '<div class="day">\u4eca\u5929</div>';
-  DATA.forEach((m, i) => { html += row(m, i === DATA.length - 1); });
+function draw() {
+  var box = document.getElementById('scroll');
+  var html = '<div class="day">\u4eca\u5929</div>';
+  MSG.forEach(function (m, i) { html += row(m, i === MSG.length - 1); });
   box.innerHTML = html;
   box.scrollTop = box.scrollHeight;
 }
 
-document.getElementById('bar').addEventListener('click', e => {
-  const b = e.target.closest('button');
+document.getElementById('bar').addEventListener('click', function (e) {
+  var b = e.target.closest('button');
   if (!b) return;
   document.body.dataset.v = b.dataset.v;
-  Array.prototype.forEach.call(document.querySelectorAll('#bar button'), x => {
+  Array.prototype.forEach.call(document.querySelectorAll('#bar button'), function (x) {
     x.classList.toggle('on', x === b);
   });
   draw();
