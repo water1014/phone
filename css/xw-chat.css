@@ -1,9 +1,9 @@
-/* xw-chat.css · 聊天页独立命名空间：全部挂在 body.xw-chat-on 下 */
-/* 不写 html[data-page=chat]，不跟任何旧文件抢优先级 */
+/* xw-chat.css · 聊天页（定稿） */
+/* 命名空间只认 body.xw-chat-on，不跟旧文件抢优先级 */
 
 /* ===== 水印 ===== */
 body.xw-chat-on::after{
-  content:'xw v10';
+  content:'xw v11';
   position:fixed;
   left:5px;
   top:1px;
@@ -18,25 +18,24 @@ body.xw-chat-on::after{
 /* ── 外壳 ── */
 body.xw-chat-on .app-head{display:none !important}
 body.xw-chat-on #app-body{padding-top:8px !important}
-body.xw-chat-on .chat-wrap{
-  padding-left:8px !important;
-  padding-right:8px !important;
-}
+body.xw-chat-on .chat-wrap{padding-left:8px !important;padding-right:8px !important}
 body.xw-chat-on .chat-status,
 body.xw-chat-on .chat-top,
 body.xw-chat-on .usage-bar{display:none !important}
 body.xw-chat-on .chat-meter{display:none !important}
 
-/* ── 顶栏 ── */
+/* ── 顶栏：头像 + 名字排一行，整组居中 ── */
 body.xw-chat-on .chat-wrap > .cs-top{
   display:grid !important;
   grid-template-columns:30px 1fr 30px !important;
   align-items:center !important;
-  margin:0 0 8px !important;
+  margin:0 0 6px !important;
   padding:5px 7px !important;
   border-radius:16px !important;
-  background:rgba(255,253,249,.9) !important;
-  box-shadow:0 2px 14px rgba(120,108,90,.07), inset 0 0 0 1px rgba(255,255,255,.85) !important;
+  background:rgba(255,253,249,.72) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(1.4) !important;
+  backdrop-filter:blur(18px) saturate(1.4) !important;
+  box-shadow:0 2px 14px rgba(120,108,90,.06), inset 0 0 0 1px rgba(255,255,255,.8) !important;
 }
 body.xw-chat-on .cs-top .cs-pair{
   display:flex !important;align-items:center !important;justify-content:center !important;
@@ -64,8 +63,9 @@ body.xw-chat-on .cs-top .cs-more{
 }
 
 /* ── 消息行 ── */
-body.xw-chat-on #chat-scroll{padding:4px 10px 6px !important}
+body.xw-chat-on #chat-scroll{padding:6px 10px 4px !important}
 body.xw-chat-on #chat-scroll .msg-row{margin:0 0 10px !important}
+body.xw-chat-on #chat-scroll .msg-row:last-child{margin-bottom:18px !important}
 body.xw-chat-on #chat-scroll .msg-row.ta{
   display:grid !important;
   grid-template-columns:28px minmax(0,1fr) !important;
@@ -92,14 +92,12 @@ body.xw-chat-on #chat-scroll .msg-ava.ghost{
 body.xw-chat-on #chat-scroll .msg-ava.ghost img{display:none !important}
 
 body.xw-chat-on #chat-scroll .msg-row .msg-main{
-  display:flex !important;
-  flex-direction:column !important;
-  min-width:0 !important;
+  display:flex !important;flex-direction:column !important;min-width:0 !important;
 }
 body.xw-chat-on #chat-scroll .msg-row.ta .msg-main{order:1 !important;align-items:flex-start !important;text-align:left !important}
 body.xw-chat-on #chat-scroll .msg-row.me .msg-main{order:1 !important;align-items:flex-end !important;text-align:left !important}
 
-/* ========== 关键：用 order 硬排，思考链与缓存率一律在气泡之上 ========== */
+/* order：思考与缓存率一律在气泡之上 */
 body.xw-chat-on #chat-scroll .msg-main > .msg-name{display:none !important;order:-20 !important}
 body.xw-chat-on #chat-scroll .msg-main > .cc-time{order:-10 !important}
 body.xw-chat-on #chat-scroll .msg-main > .msg-tag{order:-9 !important}
@@ -120,8 +118,8 @@ body.xw-chat-on #chat-scroll .msg-row .bub{
   box-shadow:0 3px 12px rgba(120,110,140,.06) !important;
   -webkit-backdrop-filter:none !important;
   backdrop-filter:none !important;
-  font-size:14px !important;
-  line-height:1.7 !important;
+  font-size:14.5px !important;
+  line-height:1.72 !important;
   letter-spacing:.01em !important;
   color:#35312b !important;
   text-align:left !important;
@@ -143,7 +141,23 @@ body.xw-chat-on #chat-scroll .msg-row.me .msg-main > .bub:last-of-type::after{
   content:none !important;display:none !important;
 }
 
-/* ── 思考链：一行小标签 ── */
+/* ── 时间：只在隔得久的地方，居中一行小字 ── */
+body.xw-chat-on #chat-scroll .msg-row .cc-time{
+  display:flex !important;align-items:center !important;justify-content:center !important;
+  min-height:0 !important;
+  margin:2px 0 8px !important;
+  font-size:10px !important;
+  letter-spacing:.1em !important;
+  color:rgba(150,140,125,.6) !important;
+}
+body.xw-chat-on #chat-scroll .msg-row.ta .cc-time{
+  margin-left:-37px !important;
+  width:calc(100% + 37px) !important;
+}
+body.xw-chat-on #chat-scroll .cc-dot{width:4px !important;height:4px !important;flex:0 0 auto !important;opacity:.5 !important}
+body.xw-chat-on #chat-scroll .cc-time .cc-cloud{display:none !important}
+
+/* ── 思考：一行小标签，点开淡底 ── */
 body.xw-chat-on #chat-scroll .msg-row details.think{
   width:auto !important;max-width:100% !important;
   margin:0 0 4px !important;text-align:left !important;
@@ -153,7 +167,7 @@ body.xw-chat-on #chat-scroll details.think > summary{
   display:inline-flex !important;align-items:center !important;
   list-style:none !important;padding:0 !important;border:0 !important;background:none !important;
   font-size:10.5px !important;line-height:1.4 !important;letter-spacing:.03em !important;
-  color:#b3ab9e !important;cursor:pointer !important;
+  color:#b0a89b !important;cursor:pointer !important;
   -webkit-tap-highlight-color:transparent;
 }
 body.xw-chat-on #chat-scroll details.think > summary::-webkit-details-marker{display:none !important}
@@ -166,22 +180,22 @@ body.xw-chat-on #chat-scroll details.think > summary::before{
 body.xw-chat-on #chat-scroll details.think[open] > summary::before{transform:none !important}
 body.xw-chat-on #chat-scroll details.think .think-body{
   margin:5px 0 6px !important;
-  padding:8px 10px !important;
+  padding:9px 11px !important;
   border:0 !important;
-  border-radius:12px !important;
+  border-radius:13px !important;
   background:rgba(255,255,255,.55) !important;
-  box-shadow:none !important;
-  -webkit-backdrop-filter:none !important;
-  backdrop-filter:none !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.7) !important;
+  -webkit-backdrop-filter:blur(12px) !important;
+  backdrop-filter:blur(12px) !important;
   font-size:11.5px !important;
-  line-height:1.7 !important;
-  color:rgba(110,102,122,.8) !important;
+  line-height:1.75 !important;
+  color:rgba(110,102,122,.82) !important;
   text-align:left !important;
   width:100% !important;box-sizing:border-box !important;
   max-height:52vh !important;overflow-y:auto !important;
 }
 
-/* ── 缓存率 ── */
+/* ── 缓存率（没思考时单独一行） ── */
 body.xw-chat-on #chat-scroll .msg-row .msg-tag{
   display:block !important;
   margin:0 0 4px !important;
@@ -197,20 +211,55 @@ body.xw-chat-on #chat-scroll .msg-row .msg-tag{
   font-weight:400 !important;
   line-height:1.4 !important;
   letter-spacing:.03em !important;
-  color:#b3ab9e !important;
+  color:#b0a89b !important;
 }
 body.xw-chat-on #chat-scroll .msg-row.me .msg-tag{display:none !important}
 
-/* ── 时间行 ── */
-body.xw-chat-on #chat-scroll .msg-row .cc-time{
-  display:flex !important;align-items:center !important;gap:6px !important;
-  min-height:28px !important;
-  margin:0 0 2px !important;
-  font-size:11px !important;
-  color:#bdb5a8 !important;
+/* ── 跨天分隔 ── */
+body.xw-chat-on #chat-scroll .cf-day{
+  display:block !important;
+  margin:16px 0 12px !important;
+  padding:0 !important;
+  text-align:center !important;
+  font-size:10px !important;
+  font-weight:400 !important;
+  letter-spacing:.12em !important;
+  color:rgba(150,140,125,.55) !important;
+  background:none !important;
+  border:0 !important;
+  box-shadow:none !important;
 }
-body.xw-chat-on #chat-scroll .cc-dot{width:5px !important;height:5px !important;flex:0 0 auto !important}
-body.xw-chat-on #chat-scroll .cc-time .cc-cloud{display:none !important}
+
+/* ── 进门那句“上次说到” ── */
+body.xw-chat-on #chat-scroll .cf-greet{
+  position:static !important;
+  display:block !important;
+  width:fit-content !important;
+  margin:0 auto 12px !important;
+  padding:5px 13px !important;
+  border-radius:999px !important;
+  background:rgba(255,255,255,.55) !important;
+  -webkit-backdrop-filter:blur(12px) !important;
+  backdrop-filter:blur(12px) !important;
+  font-size:10.5px !important;
+  color:rgba(140,130,118,.8) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.7) !important;
+}
+
+/* ── 往上还有 N 条 ── */
+body.xw-chat-on #chat-scroll .cf-more{
+  display:block !important;
+  margin:8px auto 14px !important;
+  padding:6px 15px !important;
+  border:0 !important;
+  border-radius:999px !important;
+  background:rgba(255,255,255,.6) !important;
+  -webkit-backdrop-filter:blur(12px) !important;
+  backdrop-filter:blur(12px) !important;
+  font-size:11px !important;
+  color:#8d8578 !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.75) !important;
+}
 
 /* ── 旁白 ── */
 body.xw-chat-on #chat-scroll .msg-row .narr{
@@ -229,19 +278,27 @@ body.xw-chat-on #chat-scroll .msg-row.me .narr{
 }
 
 /* ── 系统事件 ── */
-body.xw-chat-on #chat-scroll .chat-event{text-align:center !important;margin:8px 0 !important}
+body.xw-chat-on #chat-scroll .chat-event{text-align:center !important;margin:10px 0 !important}
 body.xw-chat-on #chat-scroll .chat-event span{
+  display:inline-block !important;
   font-size:11px !important;color:#b3ab9e !important;
-  padding:3px 10px !important;border-radius:9px !important;
+  padding:4px 11px !important;border-radius:9px !important;
+  background:rgba(255,255,255,.45) !important;
 }
 
-/* ── 快捷词 ── */
-body.xw-chat-on .chat-wrap > .quick{padding:0 2px 8px !important}
+/* ── 快捷词：细小胶囊 ── */
+body.xw-chat-on .chat-wrap > .quick{padding:0 2px 8px !important;display:flex !important;gap:6px !important}
 body.xw-chat-on .quick-chip{
+  flex:0 0 auto !important;
   font-size:12px !important;
+  padding:5px 13px !important;
+  border:0 !important;
+  border-radius:999px !important;
   background:rgba(255,255,255,.5) !important;
   -webkit-backdrop-filter:blur(14px) !important;
   backdrop-filter:blur(14px) !important;
+  color:#7d7486 !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.7) !important;
 }
 
 /* ── 输入条：GPT 式两层大框 + 玻璃 ── */
@@ -260,9 +317,9 @@ body.xw-chat-on .chat-wrap > .composer{
   -webkit-backdrop-filter:blur(26px) saturate(1.7) !important;
   backdrop-filter:blur(26px) saturate(1.7) !important;
   box-shadow:
-    0 10px 30px rgba(108,98,132,.14),
+    0 10px 30px rgba(108,98,132,.13),
     inset 0 1px 0 rgba(255,255,255,.9),
-    inset 0 0 0 1px rgba(255,255,255,.6) !important;
+    inset 0 0 0 1px rgba(255,255,255,.55) !important;
 }
 body.xw-chat-on .composer input,
 body.xw-chat-on .composer input:focus{
@@ -320,7 +377,7 @@ body.xw-chat-on .composer .btn-solid{
   font-size:0 !important;
   background:#3a3444 !important;
   color:#fff !important;
-  box-shadow:0 4px 14px rgba(60,54,70,.28) !important;
+  box-shadow:0 4px 14px rgba(60,54,70,.26) !important;
 }
 body.xw-chat-on .composer .btn-solid::after{
   content:'\2191';
@@ -330,3 +387,11 @@ body.xw-chat-on .composer .btn-solid::after{
   color:#fff;
 }
 body.xw-chat-on .composer #chat-file{display:none !important}
+
+/* ── 正在输入的那三个点 ── */
+body.xw-chat-on #chat-scroll .bub.typing{
+  display:inline-block !important;
+  min-width:44px !important;
+  padding:12px 14px !important;
+  background:rgba(255,255,255,.9) !important;
+}
