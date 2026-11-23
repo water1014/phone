@@ -2,13 +2,13 @@
 (function () {
   const D = document;
 
-  /* 布局覆盖层：挂在 head 最后，优先于 chat-frame.css */
+  /* 布局覆盖层：挂在 head 最后，优先于所有 chat-*.css */
   (function () {
     if (D.getElementById('xw-chat-layout')) return;
     const l = D.createElement('link');
     l.id = 'xw-chat-layout';
     l.rel = 'stylesheet';
-    l.href = 'css/chat-layout.css?v=2';
+    l.href = 'css/chat-layout.css?v=3';
     D.head.appendChild(l);
   })();
 
