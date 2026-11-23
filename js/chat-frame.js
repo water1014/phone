@@ -154,4 +154,5 @@
   tick();
   setTimeout(tick, 600);
   setTimeout(tick, 1600);
+  setTimeout(tick, 3000);
 })();

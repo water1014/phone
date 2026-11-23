@@ -1,7 +1,7 @@
 /* sw.js · 小窝的离线壳
-   有网就走网络（每次都拿新的），没网才用缓存的
+   有网就强制拿新的（绕过 HTTP 缓存），没网才用缓存的
    manifest 也由这里发，因为仓库里写不了纯 JSON 文件 */
-const CACHE = 'xiaowo-v1';
+const CACHE = 'xiaowo-v2';
 
 const MANIFEST = {
   name: '小窝',
@@ -54,23 +54,26 @@ self.addEventListener('fetch', function (e) {
   const fonts = (url.hostname === 'fonts.loli.net');
   if (!sameSite && !fonts) return;
 
+  /* 关键：一律 cache:'no-store'，不让浏览器拿旧副本 */
   e.respondWith(
-    fetch(req).then(function (res) {
-      if (res && res.status === 200) {
-        const copy = res.clone();
-        caches.open(CACHE).then(function (c) { c.put(req, copy); }).catch(function () {});
-      }
-      return res;
-    }).catch(function () {
-      return caches.match(req).then(function (hit) {
-        if (hit) return hit;
-        if (req.mode === 'navigate') {
-          return caches.match('./index.html').then(function (page) {
-            return page || new Response('断网了，先连上再开一次。');
-          });
+    fetch(req.url, { cache: 'no-store', credentials: 'same-origin', redirect: 'follow' })
+      .then(function (res) {
+        if (res && res.status === 200) {
+          const copy = res.clone();
+          caches.open(CACHE).then(function (c) { c.put(req, copy); }).catch(function () {});
         }
-        return new Response('', { status: 504 });
-      });
-    })
+        return res;
+      })
+      .catch(function () {
+        return caches.match(req).then(function (hit) {
+          if (hit) return hit;
+          if (req.mode === 'navigate') {
+            return caches.match('./index.html').then(function (page) {
+              return page || new Response('\u65ad\u7f51\u4e86\uff0c\u5148\u8fde\u4e0a\u518d\u5f00\u4e00\u6b21\u3002');
+            });
+          }
+          return new Response('', { status: 504 });
+        });
+      })
   );
 });
