@@ -1,5 +1,5 @@
 /* chat-layout.css · 照示例 B 重排聊天页 —— 数值全用 px，不跟 rem 比例 */
-/* 由 js/chat-frame.js 插到 head 末尾，优先于所有 chat-*.css */
+/* 由 index.html 排在所有样式表最后一位 */
 
 /* ── 一、顶栏：头像与名字并排，整组居中 ── */
 html[data-page="chat"] .cs-top{
@@ -160,9 +160,22 @@ html[data-page="chat"] .chat-event span{
   padding:3px 10px !important;border-radius:9px !important;
 }
 
-/* ── 八、用量：每条下面的收掉，底部那条也收掉 ── */
+/* ── 八、用量：消息下面那行收掉，改用底部一条总览 ── */
 html[data-page="chat"] .msg-tag{display:none !important}
 html[data-page="chat"] .chat-meter{display:none !important}
+
+html[data-page="chat"] .xw-hit{
+  padding:0 6px 7px;
+  font-size:9.5px;
+  line-height:1.5;
+  letter-spacing:.02em;
+  color:#b8b0a3;
+  text-align:center;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
 /* ── 九、滚动区与输入条 ── */
 html[data-page="chat"] #chat-scroll{padding:4px 12px 6px}
