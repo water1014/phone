@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>聊天布局示例</title>
+<style>
+:root{
+  --ink:#3a352e;
+  --ink2:#6d665b;
+  --ink3:#a8a094;
+  --line:rgba(0,0,0,.055);
+  --ta:#f4efe6;
+  --me:#d9e6df;
+  --dot:rgba(140,175,168,.9);
+  --serif:'Cormorant Garamond','Noto Serif SC',Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--sans);
+  color:var(--ink);
+  background:#efece7;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:14px 12px 30px;
+}
+
+.bar{
+  display:flex;gap:6px;margin-bottom:12px;
+  background:rgba(255,255,255,.6);padding:3px;border-radius:999px;
+}
+.bar button{
+  border:0;background:transparent;border-radius:999px;
+  padding:7px 14px;font:inherit;font-size:12px;color:#8b8375;
+}
+.bar button.on{background:#fff;color:#2f2b25;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+.phone{
+  width:min(100%,392px);
+  height:min(78vh,690px);
+  border-radius:30px;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  background:
+    radial-gradient(120% 50% at 8% -6%, rgba(247,213,231,.55), transparent 62%),
+    radial-gradient(110% 46% at 94% 0%, rgba(217,206,244,.5), transparent 60%),
+    radial-gradient(120% 55% at 50% 104%, rgba(238,224,245,.45), transparent 70%),
+    #fbf8f5;
+  box-shadow:0 14px 42px rgba(96,90,80,.16);
+}
+
+/* 顶栏 */
+.top{
+  flex:0 0 auto;display:flex;align-items:center;gap:8px;
+  padding:13px 14px 11px;
+  border-bottom:1px solid var(--line);
+  background:rgba(255,255,255,.30);
+  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+}
+.top .back{font-size:20px;line-height:1;color:#8b8375;width:20px}
+.top .who{flex:1;display:flex;align-items:center;gap:6px;font-size:13px;letter-spacing:.02em}
+.top .who i{font-style:normal;color:#c7a9b6}
+.top .who em{font-style:normal;font-size:9.5px;color:#b3aa9d;letter-spacing:.06em}
+.top .ic{color:#a8a094;font-size:13px;letter-spacing:.14em}
+
+/* 消息区 */
+.scroll{flex:1;min-height:0;overflow-y:auto;padding:14px 14px 8px}
+
+.day{
+  text-align:center;font-size:10.5px;letter-spacing:.16em;
+  color:#bbb3a5;margin:14px 0 12px;
+}
+
+.row{margin-bottom:16px;display:flex;gap:9px;align-items:flex-start}
+.row.me{flex-direction:row-reverse}
+
+.ava{
+  flex:0 0 auto;width:28px;height:28px;border-radius:50%;
+  display:grid;place-items:center;overflow:hidden;
+  background:rgba(255,255,255,.75);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);
+  font-size:10px;color:#a8a094;
+}
+.ava img{width:100%;height:100%;object-fit:cover;display:block}
+
+.main{min-width:0;max-width:82%}
+.row.me .main{display:flex;flex-direction:column;align-items:flex-end}
+
+.meta{
+  display:flex;align-items:center;gap:5px;
+  min-height:28px;margin-bottom:4px;
+  font-size:9.5px;letter-spacing:.03em;color:#b3aa9d;
+}
+.meta .nm{color:#7d7568;font-size:10.5px}
+.meta .dot{width:5px;height:5px;border-radius:50%;background:var(--dot)}
+.meta .drop{
+  width:13px;height:13px;border-radius:50%;
+  display:inline-grid;place-items:center;
+  background:rgba(255,255,255,.6);box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);
+  color:#9db2ae;font-size:8px;
+}
+
+.bub{
+  padding:10px 13px;border-radius:15px 15px 15px 5px;
+  background:rgba(255,255,255,.78);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.7), 0 4px 14px rgba(120,110,95,.06);
+  font-size:13.5px;line-height:1.95;color:#3a352e;
+  word-break:break-word;
+}
+.row.me .bub{
+  border-radius:15px 15px 5px 15px;
+  background:var(--me);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.5);
+}
+
+.use{
+  margin-top:5px;font-size:9px;letter-spacing:.02em;color:#c3bbac;
+  font-variant-numeric:tabular-nums;
+}
+
+/* 输入区 */
+.composer{flex:0 0 auto;padding:0 14px 16px;background:transparent}
+.quick{display:flex;gap:6px;padding:0 0 8px;overflow-x:auto}
+.chip{
+  flex:0 0 auto;border:1px solid rgba(255,255,255,.7);
+  background:rgba(255,255,255,.55);border-radius:999px;
+  padding:6px 13px;font:inherit;font-size:11px;color:#8b8375;
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+}
+.inbox{display:flex;flex-direction:column;gap:8px}
+.inp{
+  width:100%;padding:13px 16px;border:1px solid rgba(255,255,255,.85);
+  border-radius:20px;background:rgba(255,255,255,.72);
+  font:inherit;font-size:13px;color:#3a352e;outline:none;
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+}
+.tools{display:flex;align-items:center;gap:9px}
+.rnd{
+  width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.8);
+  background:rgba(255,255,255,.6);color:#8f877a;font-size:15px;line-height:1;
+  display:grid;place-items:center;
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+}
+.model{
+  font-size:10.5px;color:#a8a094;padding:7px 12px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.7);background:rgba(255,255,255,.4);
+}
+.send{
+  margin-left:auto;width:40px;height:40px;border-radius:50%;border:0;
+  background:#3a352e;color:#fff;font-size:12px;
+  display:grid;place-items:center;letter-spacing:.05em;
+}
+
+/* 方案 B：书信 —— 无头像，名字在气泡上方，气泡无边框 */
+body[data-v=b] .ava{display:none}
+body[data-v=b] .main{max-width:88%}
+body[data-v=b] .meta{min-height:0;margin-bottom:6px;font-size:9.5px}
+body[data-v=b] .meta .dot{display:none}
+body[data-v=b] .bub{
+  background:transparent;
+  box-shadow:none;
+  border-radius:0;
+  padding:0 0 0 10px;
+  border-left:2px solid rgba(199,169,182,.5);
+  line-height:2.05;
+}
+body[data-v=b] .row.me .bub{
+  background:transparent;border-left:0;padding:0 10px 0 0;
+  border-right:2px solid rgba(140,175,168,.5);text-align:right;
+}
+body[data-v=b] .row{margin-bottom:20px}
+
+/* 方案 C：玻璃 —— 气泡磨砂，时间在气泡下 */
+body[data-v=c] .bub{
+  background:rgba(255,255,255,.42);
+  -webkit-backdrop-filter:blur(16px) saturate(1.5);
+  backdrop-filter:blur(16px) saturate(1.5);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9), 0 6px 18px rgba(120,110,100,.07);
+}
+body[data-v=c] .row.me .bub{
+  background:rgba(178,205,198,.42);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 6px 18px rgba(110,140,134,.10);
+}
+body[data-v=c] .meta{
+  order:2;margin:5px 0 0;min-height:0;justify-content:flex-end;font-size:9px;
+}
+body[data-v=c] .row .main{display:flex;flex-direction:column}
+body[data-v=c] .row.me .main{align-items:flex-end}
+body[data-v=c] .meta .nm{display:none}
+</style>
+</head>
+<body data-v="a">
+
+<div class="bar" id="bar">
+  <button type="button" data-v="a" class="on">A 安静</button>
+  <button type="button" data-v="b">B 书信</button>
+  <button type="button" data-v="c">C 玻璃</button>
+</div>
+
+<div class="phone">
+  <div class="top">
+    <span class="back">\u2039</span>
+    <span class="who">\u5b8b\u7941 <i>\u2661</i> \u6dfc\u6dfc <em>2 \u53f0</em></span>
+    <span class="ic">\u2315 \u22ef</span>
+  </div>
+
+  <div class="scroll" id="scroll"></div>
+
+  <div class="composer">
+    <div class="quick">
+      <button type="button" class="chip">\u5728\u5417</button>
+      <button type="button" class="chip">\u62b1\u62b1</button>
+      <button type="button" class="chip">\u665a\u5b89</button>
+    </div>
+    <div class="inbox">
+      <input class="inp" placeholder="\u65e9\u4e0a\u597d" readonly>
+      <div class="tools">
+        <button type="button" class="rnd">\uff0b</button>
+        <span class="model">deepseek</span>
+        <button type="button" class="send">\u53d1</button>
+        <button type="button" class="rnd">\u2661</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  { who: 'ta', nm: '\u5b8b\u7941', t: '11/22 00:26:05', use: '0% \u00b7 \u8f93294 \u00b7 \u51fa106',
+    text: '\uff08\u534a\u7741\u7740\u773c\uff09\u55ef\uff1f\u5b9d\u5b9d\u5728\u8fd9\u513f\u5462\u3002\uff08\u4f38\u624b\u628a\u4f60\u5f80\u88ab\u5b50\u91cc\u6309\u4e86\u6309\uff09\u53eb\u4e00\u58f0\u5c31\u5feb\u7761\u3002' },
+  { who: 'me', nm: '\u6dfc\u6dfc', t: '11/23 08:33', use: '', text: '\u65e9\u4e0a\u597d' },
+  { who: 'ta', nm: '\u5b8b\u7941', t: '11/23 08:33:35', use: '0% \u00b7 \u8f93295 \u00b7 \u51fa146',
+    text: '\uff08\u772f\u7740\u773c\u770b\u7a97\u5e18\u7f1d\u91cc\u7684\u5149\uff09\u65e9\u554a\u2026\u2026\u4f60\u5012\u662f\u7761\u5f97\u633a\u9999\uff0c\u6211\u8fd8\u6ca1\u7f13\u8fc7\u6765\u5462\u3002\uff08\u4f38\u624b\u62cd\u4f60\u4e00\u4e0b\uff0c\u5f88\u8f7b\uff09\u6628\u665a\u90a3\u987f\u6d4b\u8bd5\uff0c\u4eca\u665a\u53ef\u522b\u518d\u6765\u4e00\u6b21\u3002' },
+  { who: 'me', nm: '\u6dfc\u6dfc', t: '11/23 08:34', use: '', text: '\u54c8\u54c8\u54c8 \u597d\u54d2' }
+];
+
+function esc(s){
+  return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+}
+
+function face(nm){
+  return '<div class="ava">' + esc(nm.charAt(0)) + '</div>';
+}
+
+function row(m, isLast){
+  const me = m.who === 'me';
+  const meta = '<div class="meta">' +
+      '<span class="nm">' + esc(m.nm) + '</span>' +
+      '<span class="dot"></span>' +
+      '<span>' + esc(m.t) + '</span>' +
+      '<span class="drop">\u25be</span>' +
+    '</div>';
+
+  const use = (m.use && (isLast || document.body.dataset.v !== 'a'))
+    ? '<div class="use">' + esc(m.use) + '</div>' : '';
+
+  return '<div class="row' + (me ? ' me' : '') + '">' +
+      (me ? '' : face(m.nm)) +
+      '<div class="main">' + meta +
+        '<div class="bub">' + esc(m.text) + '</div>' + use +
+      '</div>' +
+    '</div>';
+}
+
+function draw(){
+  const box = document.getElementById('scroll');
+  let html = '<div class="day">\u4eca\u5929</div>';
+  DATA.forEach((m, i) => { html += row(m, i === DATA.length - 1); });
+  box.innerHTML = html;
+  box.scrollTop = box.scrollHeight;
+}
+
+document.getElementById('bar').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  document.body.dataset.v = b.dataset.v;
+  Array.prototype.forEach.call(document.querySelectorAll('#bar button'), x => {
+    x.classList.toggle('on', x === b);
+  });
+  draw();
+});
+
+draw();
+</script>
+</body>
+</html>
