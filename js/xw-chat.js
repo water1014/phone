@@ -1,15 +1,14 @@
-/* xw-chat.js · 给聊天页挂独立命名空间，顺手把时间行与缓存率放好 */
+/* xw-chat.js · 给聊天页挂独立命名空间；思考与缓存率并作一行 */
 (function () {
   const D = document;
   const GAP = 5 * 60 * 1000;
 
-  /* 样式表保底：万一 index 还没带上，这里再挂一次 */
   (function () {
     if (D.getElementById('xw-chat-css')) return;
     const l = D.createElement('link');
     l.id = 'xw-chat-css';
     l.rel = 'stylesheet';
-    l.href = 'css/xw-chat.css?v=1';
+    l.href = 'css/xw-chat.css?v=2';
     D.head.appendChild(l);
   })();
 
@@ -118,13 +117,6 @@
     if (!tag) return;
     tag.style.display = '';
     if (tag.textContent !== label) tag.textContent = label;
-
-    const ref = main.querySelector('.cc-time');
-    if (ref) {
-      if (ref.nextElementSibling !== tag) main.insertBefore(tag, ref.nextElementSibling);
-    } else if (main.firstElementChild !== tag) {
-      main.insertBefore(tag, main.firstElementChild);
-    }
   }
 
   function work() {

@@ -3,7 +3,7 @@
 
 /* ===== 水印 ===== */
 body.xw-chat-on::after{
-  content:'xw v9';
+  content:'xw v10';
   position:fixed;
   left:5px;
   top:1px;
@@ -27,7 +27,7 @@ body.xw-chat-on .chat-top,
 body.xw-chat-on .usage-bar{display:none !important}
 body.xw-chat-on .chat-meter{display:none !important}
 
-/* ── 顶栏：头像 + 名字排一行，整组居中 ── */
+/* ── 顶栏 ── */
 body.xw-chat-on .chat-wrap > .cs-top{
   display:grid !important;
   grid-template-columns:30px 1fr 30px !important;
@@ -92,13 +92,22 @@ body.xw-chat-on #chat-scroll .msg-ava.ghost{
 body.xw-chat-on #chat-scroll .msg-ava.ghost img{display:none !important}
 
 body.xw-chat-on #chat-scroll .msg-row .msg-main{
-  display:flex !important;flex-direction:column !important;min-width:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  min-width:0 !important;
 }
 body.xw-chat-on #chat-scroll .msg-row.ta .msg-main{order:1 !important;align-items:flex-start !important;text-align:left !important}
 body.xw-chat-on #chat-scroll .msg-row.me .msg-main{order:1 !important;align-items:flex-end !important;text-align:left !important}
 
-/* 名字不要 */
-body.xw-chat-on #chat-scroll .msg-row .msg-name{display:none !important}
+/* ========== 关键：用 order 硬排，思考链与缓存率一律在气泡之上 ========== */
+body.xw-chat-on #chat-scroll .msg-main > .msg-name{display:none !important;order:-20 !important}
+body.xw-chat-on #chat-scroll .msg-main > .cc-time{order:-10 !important}
+body.xw-chat-on #chat-scroll .msg-main > .msg-tag{order:-9 !important}
+body.xw-chat-on #chat-scroll .msg-main > details.think{order:-8 !important}
+body.xw-chat-on #chat-scroll .msg-main > .qblock{order:-6 !important}
+body.xw-chat-on #chat-scroll .msg-main > .msg-img{order:-4 !important}
+body.xw-chat-on #chat-scroll .msg-main > .bub{order:0 !important}
+body.xw-chat-on #chat-scroll .msg-main > .narr{order:0 !important}
 
 /* ── 气泡 ── */
 body.xw-chat-on #chat-scroll .msg-row .bub{
@@ -134,10 +143,10 @@ body.xw-chat-on #chat-scroll .msg-row.me .msg-main > .bub:last-of-type::after{
   content:none !important;display:none !important;
 }
 
-/* ── 思考 + 缓存率 ── */
+/* ── 思考链：一行小标签 ── */
 body.xw-chat-on #chat-scroll .msg-row details.think{
   width:auto !important;max-width:100% !important;
-  margin:0 0 5px !important;text-align:left !important;
+  margin:0 0 4px !important;text-align:left !important;
 }
 body.xw-chat-on #chat-scroll .msg-row.me details.think{text-align:right !important}
 body.xw-chat-on #chat-scroll details.think > summary{
@@ -172,9 +181,10 @@ body.xw-chat-on #chat-scroll details.think .think-body{
   max-height:52vh !important;overflow-y:auto !important;
 }
 
+/* ── 缓存率 ── */
 body.xw-chat-on #chat-scroll .msg-row .msg-tag{
   display:block !important;
-  margin:0 0 5px !important;
+  margin:0 0 4px !important;
   padding:0 !important;
   border:0 !important;
   border-radius:0 !important;
@@ -195,7 +205,7 @@ body.xw-chat-on #chat-scroll .msg-row.me .msg-tag{display:none !important}
 body.xw-chat-on #chat-scroll .msg-row .cc-time{
   display:flex !important;align-items:center !important;gap:6px !important;
   min-height:28px !important;
-  margin:0 0 3px !important;
+  margin:0 0 2px !important;
   font-size:11px !important;
   color:#bdb5a8 !important;
 }
