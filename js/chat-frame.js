@@ -1,16 +1,10 @@
-/* chat-frame.js · 气泡外头像 + 时间行（只隔得久才出现）+ 底部缓存总览 */
+/* chat-frame.js · 头像保留；消息头顶那一行放「思考 + 缓存率」；时间只隔得久才出现 */
 (function () {
   const D = document;
 
   const GAP = 5 * 60 * 1000;
 
   function p2(n) { return String(n).padStart(2, '0'); }
-
-  function fmtK(n) {
-    const v = Number(n) || 0;
-    if (v < 1000) return String(v);
-    return (v / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-  }
 
   function stamp(ts) {
     const d = new Date(Number(ts) || Date.now());
@@ -91,39 +85,47 @@
     if (s && s.textContent !== text) s.textContent = text;
   }
 
-  /* 底部一条：缓存命中率 / 上下文占用 / 进出量 / 轮数 */
-  function meter() {
-    const wrap = D.querySelector('#app-body .chat-wrap');
-    if (!wrap) return;
+  /* 名字的位置腾出来：有思考时并进那一行，没思考就自己一小行 */
+  function head(row) {
+    const main = row.querySelector('.msg-main');
+    if (!main) return;
 
-    const u = XW.S.usage || {};
-    const input = Number(u.input) || 0;
-    const cached = Number(u.cached) || 0;
-    const output = Number(u.output) || 0;
-    const rounds = Number(u.rounds) || 0;
-    const limit = Number(XW.S.ctxLimit) || 128000;
+    const i = Number(row.getAttribute('data-i'));
+    const m = (Array.isArray(XW.S.chat) ? XW.S.chat : [])[i];
+    const u = m && m.usage;
 
-    let el = wrap.querySelector('.xw-hit');
+    const tag = main.querySelector('.msg-tag');
+    const sum = main.querySelector('details.think > summary');
 
-    if (!input) {
-      if (el) el.remove();
+    if (!tag && !sum) return;
+
+    if (!u) {
+      if (tag) tag.style.display = 'none';
       return;
     }
 
-    if (!el) {
-      el = D.createElement('div');
-      el.className = 'xw-hit';
-      const anchor = wrap.querySelector('.quick') || wrap.querySelector('.composer');
-      if (anchor) wrap.insertBefore(el, anchor);
-      else wrap.appendChild(el);
+    const input = Number(u.input) || 0;
+    const cached = Number(u.cached) || 0;
+    const pct = input > 0 ? Math.round(cached / input * 100) : 0;
+    const label = '\u7f13\u5b58 ' + pct + '%';
+
+    if (sum) {
+      const txt = '\u601d\u8003 \u00B7 ' + label;
+      if (sum.textContent !== txt) sum.textContent = txt;
+      if (tag) tag.style.display = 'none';
+      return;
     }
 
-    const hitPct = Math.round(cached / input * 100);
-    const ctxPct = Math.min(999, Math.round(input / limit * 100));
-    const txt = '缓存命中 ' + hitPct + '% \u00B7 上下文 ' + ctxPct + '% \u00B7 入 '
-      + fmtK(input) + ' \u00B7 出 ' + fmtK(output) + ' \u00B7 ' + rounds + ' 轮';
+    if (!tag) return;
+    tag.style.display = '';
+    if (tag.textContent !== label) tag.textContent = label;
 
-    if (el.textContent !== txt) el.textContent = txt;
+    const ref = main.querySelector('.cc-time');
+    if (ref) {
+      if (ref.nextElementSibling !== tag) main.insertBefore(tag, ref.nextElementSibling);
+    } else if (main.firstElementChild !== tag) {
+      main.insertBefore(tag, main.firstElementChild);
+    }
   }
 
   function tick() {
@@ -131,8 +133,8 @@
     Array.prototype.forEach.call(D.querySelectorAll('#chat-scroll .msg-row[data-i]'), function (row) {
       face(row);
       timeLine(row);
+      head(row);
     });
-    meter();
   }
 
   let timer = null;
