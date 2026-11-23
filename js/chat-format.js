@@ -1,25 +1,10 @@
-/* chat-format.js · 每条消息头上那行只留缓存率 */
+/* chat-format.js · 聊天页不再显示用量；用量去设置里看 */
 (function () {
   const D = document;
 
   function retag() {
-    const list = Array.isArray(XW.S.chat) ? XW.S.chat : [];
-    if (!list.length) return;
-
-    Array.prototype.forEach.call(D.querySelectorAll('#chat-scroll .msg-row[data-i]'), function (row) {
-      const i = Number(row.getAttribute('data-i'));
-      const m = list[i];
-      if (!m || !m.usage) return;
-
-      const tag = row.querySelector('.msg-tag');
-      if (!tag) return;
-
-      const input = Number(m.usage.input) || 0;
-      const hit = Number(m.usage.cached) || 0;
-      const ratio = input ? Math.round(hit / input * 100) : 0;
-
-      const txt = '\u7f13\u5b58 ' + ratio + '%';
-      if (tag.textContent !== txt) tag.textContent = txt;
+    Array.prototype.forEach.call(D.querySelectorAll('#chat-scroll .msg-row .msg-tag'), function (t) {
+      if (t.style.display !== 'none') t.style.display = 'none';
     });
   }
 

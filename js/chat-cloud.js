@@ -1,5 +1,5 @@
-/* chat-cloud.js · 思考链：点水滴弹整页
-   标题是「名字的碎碎念」 */
+/* chat-cloud.js · 思考链：点水滴弹整页，标题是「名字的碎碎念」
+   水滴放在气泡上方那行的位置（原来放缓存率的地方） */
 (function () {
   const D = document;
 
@@ -69,6 +69,12 @@
       btn.addEventListener(n, function (e) { e.stopPropagation(); }, { passive: true });
     });
 
+    const main = row.querySelector('.msg-main');
+    if (main) {
+      main.insertBefore(btn, main.firstChild);
+      return;
+    }
+
     const time = row.querySelector('.cc-time');
     if (time) {
       time.appendChild(btn);
@@ -76,12 +82,7 @@
     }
 
     const tag = row.querySelector('.msg-tag');
-    if (tag && tag.parentNode) {
-      tag.parentNode.insertBefore(btn, tag);
-    } else {
-      const main = row.querySelector('.msg-main');
-      if (main) main.appendChild(btn);
-    }
+    if (tag && tag.parentNode) tag.parentNode.insertBefore(btn, tag);
   }
 
   function chip() {
