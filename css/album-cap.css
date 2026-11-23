@@ -1,0 +1,29 @@
+/* album-cap.css · 大图底部那一行写一句话 */
+
+.ap-capin{
+  flex:0 0 auto;
+  margin:0 20px 4px;
+  padding:9px 14px;
+  border:0;
+  border-radius:12px;
+  background:rgba(255,255,255,.10);
+  color:rgba(255,255,255,.92);
+  font:inherit;
+  font-size:.54rem;
+  letter-spacing:.02em;
+  line-height:1.5;
+  outline:none;
+}
+.ap-capin::placeholder{ color:rgba(255,255,255,.30); }
+.ap-view.ap-hide .ap-capin{ opacity:0; pointer-events:none; }
+
+#app-body .ap-dot{
+  position:absolute;
+  top:5px;
+  right:5px;
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  background:rgba(255,255,255,.95);
+  box-shadow:0 0 0 2px rgba(0,0,0,.12);
+}
