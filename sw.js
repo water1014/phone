@@ -1,6 +1,4 @@
-/* sw.js · 小窝的离线壳
-   有网就强制拿新的（绕过 HTTP 缓存）；
-   自身更新后自动把打开的页面重载一次，不用手动刷 */
+/* sw.js · 小窝的离线壳；有网拿新的，自身更新后自动重载已开页面 */
 const CACHE = 'xiaowo-v3';
 
 const MANIFEST = {
@@ -35,12 +33,9 @@ self.addEventListener('activate', function (e) {
     }).then(function () {
       return self.clients.claim();
     }).then(function () {
-      /* 新版本接管后，把所有已打开的窗口重载一次 */
       return self.clients.matchAll({ type: 'window' }).then(function (list) {
         list.forEach(function (c) {
-          try {
-            if (c.navigate) c.navigate(c.url);
-          } catch (err) {}
+          try { if (c.navigate) c.navigate(c.url); } catch (err) {}
         });
       });
     })
