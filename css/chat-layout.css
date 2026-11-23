@@ -1,9 +1,9 @@
 /* chat-layout.css · 照示例 B 重排聊天页 */
 /* 选择器一律带上 #chat-scroll / .chat-wrap，保证比旧文件更具体 */
 
-/* ===== 版本水印：看见 v7 才算加载到新版 ===== */
+/* ===== 版本水印：看见 v8 才算加载到新版 ===== */
 html[data-page="chat"] body::after{
-  content:'layout v7';
+  content:'layout v8';
   position:fixed;
   left:5px;
   top:1px;
@@ -87,7 +87,7 @@ html[data-page="chat"] #chat-scroll .msg-row.me .msg-main{order:1 !important;ali
 html[data-page="chat"] #chat-scroll .msg-row .msg-main > .msg-name{display:none !important}
 html[data-page="chat"] #chat-scroll .msg-row .msg-name{display:none !important}
 
-/* ── 三、气泡（要压过 chat-bubble 的双属性选择器） ── */
+/* ── 三、气泡 ── */
 html[data-page="chat"] #chat-scroll .msg-row .msg-main > .bub,
 html[data-page="chat"] #chat-scroll .msg-row .msg-main > .bub.me,
 html[data-page="chat"] #chat-scroll .msg-row .bub{
@@ -177,7 +177,7 @@ html[data-page="chat"] #chat-scroll .msg-row .msg-main > .msg-tag{
 html[data-page="chat"] #chat-scroll .msg-row.me .msg-tag{display:none !important}
 html[data-page="chat"] .chat-meter{display:none !important}
 
-/* ── 五、时间行（SS上的水滴不要） ── */
+/* ── 五、时间行 ── */
 html[data-page="chat"] #chat-scroll .msg-row .cc-time{
   display:flex !important;align-items:center !important;gap:6px !important;
   min-height:28px !important;
@@ -218,60 +218,100 @@ html[data-page="chat"] .chat-wrap{
 }
 html[data-page="chat"] #chat-scroll{padding:4px 10px 6px !important}
 html[data-page="chat"] .chat-wrap > .quick{padding:0 2px 8px !important}
-html[data-page="chat"] .quick-chip{font-size:12px !important}
+html[data-page="chat"] .quick-chip{
+  font-size:12px !important;
+  background:rgba(255,255,255,.5) !important;
+  -webkit-backdrop-filter:blur(14px) !important;
+  backdrop-filter:blur(14px) !important;
+}
 
-/* ── 九、输入条：又宽又厚，大圆角 ── */
+/* ── 九、输入条：GPT 那种两层大框 + 玻璃 ── */
 html[data-page="chat"] .chat-wrap > .composer{
   display:flex !important;
-  flex-wrap:nowrap !important;
+  flex-wrap:wrap !important;
   align-items:center !important;
-  gap:7px !important;
+  gap:8px !important;
   margin:0 0 12px !important;
-  padding:9px !important;
-  min-height:56px !important;
+  padding:12px 12px 9px !important;
+  min-height:0 !important;
   box-sizing:border-box !important;
-  border-radius:18px !important;
-  background:rgba(255,255,255,.92) !important;
-  box-shadow:0 4px 18px rgba(120,110,95,.11), inset 0 0 0 1px rgba(255,255,255,.9) !important;
-  -webkit-backdrop-filter:blur(16px) saturate(1.4) !important;
-  backdrop-filter:blur(16px) saturate(1.4) !important;
+  border:0 !important;
+  border-radius:26px !important;
+  background:rgba(255,255,255,.42) !important;
+  -webkit-backdrop-filter:blur(26px) saturate(1.7) !important;
+  backdrop-filter:blur(26px) saturate(1.7) !important;
+  box-shadow:
+    0 10px 30px rgba(108,98,132,.14),
+    inset 0 1px 0 rgba(255,255,255,.9),
+    inset 0 0 0 1px rgba(255,255,255,.6) !important;
 }
 html[data-page="chat"] .composer input,
 html[data-page="chat"] .composer input:focus{
   order:0 !important;
-  flex:1 1 auto !important;
-  width:auto !important;min-width:0 !important;
-  padding:9px 2px 9px 10px !important;
-  border:0 !important;border-radius:0 !important;
-  background:transparent !important;box-shadow:none !important;
-  font-size:14.5px !important;
+  flex:1 1 100% !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:24px !important;
+  padding:4px 6px 10px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  font-size:15px !important;
   line-height:1.5 !important;
-  color:#35302a !important;
+  color:#2f2b35 !important;
 }
+html[data-page="chat"] .composer input::placeholder{
+  color:rgba(120,112,130,.55) !important;
+}
+
+/* 左下：加号 */
 html[data-page="chat"] .composer .plus-btn{
-  order:-1 !important;flex:0 0 auto !important;
-  width:38px !important;height:38px !important;
-  padding:0 !important;border:0 !important;border-radius:13px !important;
-  background:#f3eee6 !important;color:#8d8578 !important;
-  font-size:16px !important;
+  order:1 !important;
+  flex:0 0 auto !important;
+  width:34px !important;height:34px !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:50% !important;
+  background:rgba(255,255,255,.55) !important;
+  color:#6f6678 !important;
+  font-size:18px !important;
   display:grid !important;place-items:center !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.8) !important;
+}
+/* 右下：心 + 发送 */
+html[data-page="chat"] .composer .cs-heart-btn{
+  order:2 !important;
+  flex:0 0 auto !important;
+  width:34px !important;height:34px !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:50% !important;
+  display:grid !important;place-items:center !important;
+  font-size:15px !important;
+  color:#8a7f90 !important;
+  background:rgba(255,255,255,.45) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.7) !important;
 }
 html[data-page="chat"] .composer .btn-solid{
+  order:3 !important;
   flex:0 0 auto !important;
-  width:38px !important;height:38px !important;
-  padding:0 !important;margin-left:0 !important;
-  border-radius:13px !important;
-  display:grid !important;place-items:center !important;
-  font-size:10px !important;
-  background:#e9bcc8 !important;color:#fff !important;
-  box-shadow:0 4px 12px rgba(233,188,200,.42) !important;
-}
-html[data-page="chat"] .composer .cs-heart-btn{
-  flex:0 0 auto !important;
-  width:38px !important;height:38px !important;
+  width:34px !important;height:34px !important;
+  margin-left:auto !important;
   padding:0 !important;
-  border-radius:13px !important;
+  border:0 !important;
+  border-radius:50% !important;
   display:grid !important;place-items:center !important;
-  font-size:15px !important;color:#b9a7b4 !important;
+  font-size:0 !important;
+  background:#3a3444 !important;
+  color:#fff !important;
+  box-shadow:0 4px 14px rgba(60,54,70,.28) !important;
+}
+html[data-page="chat"] .composer .btn-solid::after{
+  content:'\2191';
+  font-size:17px;
+  font-weight:400;
+  line-height:1;
+  color:#fff;
 }
 html[data-page="chat"] .composer #chat-file{display:none !important}
