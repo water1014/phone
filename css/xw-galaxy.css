@@ -1,22 +1,47 @@
-/* xw-galaxy.css · 记忆页上的银河入口 */
-.xw-mem-search{
+/* xw-galaxy.css · 记忆页的银河入口 */
+
+.xw-mem-search {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--sp-4);
 }
-.xw-mem-search input{
+
+.xw-mem-search input {
   flex: 1 1 auto;
   min-width: 0;
 }
-.xw-mem-galaxy{
+
+.xw-mem-galaxy {
   flex: 0 0 auto;
   padding: var(--sp-2) 0;
+  margin: 0;
   font-family: inherit;
   font-size: var(--fs-2);
   letter-spacing: .12em;
+  line-height: 1.4;
   color: var(--c-accent-deep);
-  text-decoration: none;
+  background: none;
+  border: 0;
   white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
 }
-.xw-mem-galaxy:active{ opacity: .65; }
+
+.xw-mem-galaxy:active {
+  opacity: .6;
+}
+
+.xw-mem-galaxy.bad {
+  color: var(--c-err);
+}
+
+.xw-mem-galaxy-tip {
+  flex: 1 0 100%;
+  padding: 0 0 var(--sp-2);
+  font-size: var(--fs-1);
+  letter-spacing: .02em;
+  line-height: 1.6;
+  color: var(--c-ink3);
+  word-break: break-all;
+}

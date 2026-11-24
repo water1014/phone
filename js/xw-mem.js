@@ -1,4 +1,4 @@
-/* xw-mem.js · 记忆页增强 v4 */
+/* xw-mem.js · 记忆页增强 v5 */
 (function () {
   const D = document;
   const DAY = 86400000;
@@ -73,6 +73,43 @@
     });
   }
 
+  /* 先问一句“这个文件在不在、是不是银河”，再跳。
+     问不到就把原因和网址写在按钮下面，而不是默默回首页。 */
+  function goGalaxy(btn) {
+    let href;
+    try { href = new URL('galaxy.html', location.href).href; }
+    catch (err) { href = 'galaxy.html'; }
+
+    btn.disabled = true;
+    btn.textContent = '\u2026';
+    btn.classList.remove('bad');
+
+    const tipOld = D.getElementById('xw-mem-galaxy-tip');
+    if (tipOld) tipOld.parentNode.removeChild(tipOld);
+
+    fetch(href, { cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(function (txt) {
+        if (txt.indexOf('id="gl"') < 0) throw new Error('\u53d6\u5230\u7684\u4e0d\u662f\u94f6\u6cb3\u9875');
+        btn.textContent = '\u5f00\u4e86';
+        location.href = href;
+      })
+      .catch(function (err) {
+        btn.disabled = false;
+        btn.classList.add('bad');
+        btn.textContent = '\u6253\u4e0d\u5f00';
+
+        const tip = D.createElement('div');
+        tip.id = 'xw-mem-galaxy-tip';
+        tip.className = 'xw-mem-galaxy-tip';
+        tip.textContent = err.message + ' \u00b7 ' + href;
+        (btn.parentNode || btn).appendChild(tip);
+      });
+  }
+
   function addSearch(body) {
     if (D.getElementById('xw-mem-q')) return;
     const hero = body.querySelector('.hero');
@@ -89,10 +126,15 @@
     box.appendChild(input);
     input.addEventListener('input', function () { filter(this.value.trim()); });
 
-    const go = D.createElement('a');
+    const go = D.createElement('button');
+    go.type = 'button';
     go.className = 'xw-mem-galaxy';
-    go.href = 'galaxy.html';
     go.textContent = '\u94f6\u6cb3 \u2192';
+    go.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      goGalaxy(go);
+    });
     box.appendChild(go);
 
     hero.insertAdjacentElement('afterend', box);

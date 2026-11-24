@@ -1,5 +1,5 @@
 /* sw.js · 小窝的离线壳；有网拿新的，自身更新后自动重载已开页面 */
-const CACHE = 'xiaowo-v4';
+const CACHE = 'xiaowo-v5';
 
 const MANIFEST = {
   name: '\u5c0f\u7a9d',
@@ -41,6 +41,13 @@ self.addEventListener('activate', function (e) {
   );
 });
 
+/* 只把「首页」请求兜到 index.html。
+   其他页面（galaxy.html 这类独立页）取不到就直说取不到，
+   不能拿首页去充，那样会看起来像“点了没反应”。 */
+function isHome(pathname) {
+  return pathname.slice(-1) === '/' || pathname.slice(-11) === '/index.html';
+}
+
 self.addEventListener('fetch', function (e) {
   const req = e.request;
   if (req.method !== 'GET') return;
@@ -71,11 +78,25 @@ self.addEventListener('fetch', function (e) {
       .catch(function () {
         return caches.match(req).then(function (hit) {
           if (hit) return hit;
+
           if (req.mode === 'navigate') {
-            return caches.match('./index.html').then(function (page) {
-              return page || new Response('\u65ad\u7f51\u4e86\uff0c\u5148\u8fde\u4e0a\u518d\u5f00\u4e00\u6b21\u3002');
-            });
+            if (isHome(url.pathname)) {
+              return caches.match('./index.html').then(function (page) {
+                return page || new Response('\u65ad\u7f51\u4e86\uff0c\u5148\u8fde\u4e0a\u518d\u5f00\u4e00\u6b21\u3002', {
+                  headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+                });
+              });
+            }
+
+            return new Response(
+              '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+              '<div style="font:14px/1.9 -apple-system,sans-serif;color:#9b948a;text-align:center;margin-top:36vh;padding:0 24px">' +
+              '\u8fd9\u4e00\u9875\u6ca1\u53d6\u5230\u3002<br><span style="font-size:12px;word-break:break-all">' +
+              url.pathname + '</span><br><br>\u8fde\u4e0a\u7f51\u518d\u8bd5\u4e00\u6b21\u3002</div>',
+              { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+            );
           }
+
           return new Response('', { status: 504 });
         });
       })
