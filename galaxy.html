@@ -162,7 +162,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
   resize();
 
-  /* ══ 预渲染圆点贴图：不再用 fillRect 方块 ══ */
+  /* 贴图：中心硬、外圈快死，不是一坨雾 */
   function makeDot(r, g, b, hard) {
     var S = 32;
     var c = document.createElement('canvas');
@@ -170,15 +170,25 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     c.height = S;
     var x = c.getContext('2d');
     var gr = x.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
-    gr.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',1)');
-    gr.addColorStop(hard ? 0.55 : 0.22, 'rgba(' + r + ',' + g + ',' + b + ',' + (hard ? 0.75 : 0.3) + ')');
-    gr.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',0)');
+
+    if (hard) {
+      gr.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',1)');
+      gr.addColorStop(0.30, 'rgba(' + r + ',' + g + ',' + b + ',0.92)');
+      gr.addColorStop(0.52, 'rgba(' + r + ',' + g + ',' + b + ',0.22)');
+      gr.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',0)');
+    } else {
+      gr.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',1)');
+      gr.addColorStop(0.22, 'rgba(' + r + ',' + g + ',' + b + ',0.5)');
+      gr.addColorStop(0.45, 'rgba(' + r + ',' + g + ',' + b + ',0.12)');
+      gr.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',0)');
+    }
+
     x.fillStyle = gr;
     x.fillRect(0, 0, S, S);
     return c;
   }
 
-  var DOT = makeDot(226, 212, 246, false);
+  var DOT = makeDot(222, 208, 242, false);
   var DOT_HOT = makeDot(255, 255, 255, true);
 
   var MDOT = {};
@@ -186,33 +196,34 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     MDOT[k] = makeDot(PAL[k][0], PAL[k][1], PAL[k][2], true);
   });
 
-  /* ══ 背景星：内密外疏，低饱和淡紫 ══ */
+  /* 背景星：中心留空なし、内圈更散、外面有边 */
   var BG = [];
 
   (function () {
-    var N = 2600;
+    var N = 2300;
 
     for (var i = 0; i < N; i++) {
       var arm = i % 4;
       var u = Math.random();
-      var r = Math.pow(u, 1.85) * 92 + 1.5;
-      var th = r * 0.19 + arm * (Math.PI / 2) + (Math.random() - 0.5) * (0.5 + r * 0.012);
 
-      var br = Math.pow(Math.random(), 2.2);
+      var r = Math.pow(u, 1.45) * 90 + 7;
+
+      var jit = (Math.random() - 0.5) * (1.45 + r * 0.024);
+      var th = r * 0.088 + arm * (Math.PI / 2) + jit;
+
+      var br = Math.pow(Math.random(), 2.6);
 
       BG.push({
         x: Math.cos(th) * r,
-        y: (Math.random() - 0.5) * (2.4 + r * 0.11),
+        y: (Math.random() - 0.5) * (2.2 + r * 0.10),
         z: Math.sin(th) * r,
         br: br,
-        hot: br > 0.93
+        hot: br > 0.955
       });
     }
-
-    BG.sort(function (a, b) { return b.z - a.z; });
   })();
 
-  /* ══ 记忆星 ══ */
+  /* 记忆星 */
   var NODES = [];
 
   if (STARS.length) {
@@ -221,40 +232,38 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     var t1 = Math.max.apply(null, times);
     var span = Math.max(1, t1 - t0);
 
-    var SIZE = [1.2, 2.2];
-
     STARS.forEach(function (s, i) {
       var ratio = (s.t - t0) / span;
-      var r = 2.4 + Math.pow(ratio, 0.72) * 38;
-      var th = i * 2.39996 + (Math.random() - 0.5) * 0.4;
+      var r = 2.4 + Math.pow(ratio, 0.72) * 34;
+      var th = i * 2.39996 + (Math.random() - 0.5) * 0.5;
 
       NODES.push({
         d: s,
         x: Math.cos(th) * r,
         y: (Math.random() - 0.5) * (1.2 + r * 0.05),
         z: Math.sin(th) * r,
-        size: s.pinned ? SIZE[1] : SIZE[0],
+        size: s.pinned ? 2.6 : 1.7,
         tier: s.pinned ? 3 : 1,
         phase: Math.random() * 6.28
       });
     });
 
-    var core = 0;
-    NODES.forEach(function (n, i) { if (n.d.t < NODES[core].d.t) core = i; });
-    NODES[core].x = 0;
-    NODES[core].y = 0;
-    NODES[core].z = 0;
-    NODES[core].core = true;
-    NODES[core].size = 3.4;
+    var ci = 0;
+    NODES.forEach(function (n, i) { if (n.d.t < NODES[ci].d.t) ci = i; });
+    NODES[ci].x = 0;
+    NODES[ci].y = 0;
+    NODES[ci].z = 0;
+    NODES[ci].core = true;
+    NODES[ci].size = 3.6;
   }
 
-  /* ══ 相机 ══ */
+  /* 相机 */
   var yaw = 0.55;
-  var pitch = -0.36;
-  var dist = 86;
+  var pitch = -0.34;
+  var dist = 92;
   var FOCAL = 1;
 
-  function syncFocal() { FOCAL = Math.max(W, H) * 1.05; }
+  function syncFocal() { FOCAL = Math.max(W, H) * 0.95; }
   syncFocal();
 
   function project(x, y, z) {
@@ -279,11 +288,11 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     };
   }
 
-  /* ══ 标签 ══ */
+  /* 标签 */
   var labelBox = document.getElementById('labels');
   var labels = [];
 
-  NODES.forEach(function (n) {
+  NODES.forEach(function (n, i) {
     if (!n.core && n.tier < 3 && NODES.length > 26) return;
 
     var el = document.createElement('div');
@@ -294,7 +303,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     el.querySelector('.d').textContent = n.d.day.slice(5);
     labelBox.appendChild(el);
 
-    labels.push({ el: el, n: n });
+    labels.push({ el: el, n: n, i: i });
   });
 
   if (!NODES.length) {
@@ -303,7 +312,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     note.innerHTML = '星云还空着。<br>去记忆里写一句，它就多一颗星。';
   }
 
-  /* ══ 交互 ══ */
+  /* 交互 */
   var dragging = false;
   var moved = 0;
   var lastX = 0, lastY = 0;
@@ -408,64 +417,68 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     if (e.touches.length < 2) pinch0 = 0;
   }, { passive: true });
 
-  /* ══ 画 ══ */
+  /* 画 */
   var tStart = performance.now();
-  var coreGlow = null;
-  var coreKey = '';
+  var edgeR = 1;
 
   function frame(now) {
     requestAnimationFrame(frame);
 
     var t = (now - tStart) * 0.001;
 
-    if (!dragging) yaw += 0.0014;
+    if (!dragging) yaw += 0.0013;
 
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.fillStyle = '#050209';
     ctx.fillRect(0, 0, W, H);
 
-    /* 中心一团雾：有它才像星系，不然是一盘散沙 */
-    var ck = W + 'x' + H;
-    if (ck !== coreKey) {
-      coreKey = ck;
-      var R = Math.max(W, H) * 0.5;
-      coreGlow = ctx.createRadialGradient(W * 0.5, H * 0.47, 0, W * 0.5, H * 0.47, R);
-      coreGlow.addColorStop(0, 'rgba(120,92,168,0.20)');
-      coreGlow.addColorStop(0.35, 'rgba(86,62,132,0.09)');
-      coreGlow.addColorStop(0.7, 'rgba(60,44,100,0.03)');
-      coreGlow.addColorStop(1, 'rgba(0,0,0,0)');
-    }
+    edgeR = Math.max(W, H) * 0.60;
 
-    ctx.fillStyle = coreGlow;
+    var cx0 = W * 0.5;
+    var cy0 = H * 0.47;
+
+    /* 中心一团薄雾，很淡 */
+    var g2 = ctx.createRadialGradient(cx0, cy0, 0, cx0, cy0, Math.max(W, H) * 0.46);
+    g2.addColorStop(0, 'rgba(112,86,158,0.13)');
+    g2.addColorStop(0.38, 'rgba(76,56,120,0.055)');
+    g2.addColorStop(0.72, 'rgba(48,34,82,0.018)');
+    g2.addColorStop(1, 'rgba(0,0,0,0)');
+
+    ctx.fillStyle = g2;
     ctx.fillRect(0, 0, W, H);
 
-    /* ── 背景星云 ── */
     ctx.globalCompositeOperation = 'lighter';
 
+    /* 背景星云 */
     for (var i = 0; i < BG.length; i++) {
       var b = BG[i];
       var p = project(b.x, b.y, b.z);
       if (!p) continue;
-      if (p.x < -30 || p.x > W + 30 || p.y < -30 || p.y > H + 30) continue;
+      if (p.x < -20 || p.x > W + 20 || p.y < -20 || p.y > H + 20) continue;
 
-      var depth = Math.min(1, p.f * 1.9);
-      var a = (0.14 + b.br * 0.6) * depth;
-      if (a < 0.03) continue;
+      var dx = p.x - cx0;
+      var dy = p.y - cy0;
+      var rr = Math.sqrt(dx * dx + dy * dy) / edgeR;
+      var fade = 1 - rr * rr;
+      if (fade <= 0) continue;
 
-      var d = (1.1 + b.br * 2.4) * Math.min(1.5, p.f * 1.5);
+      var a = (0.05 + b.br * 0.26) * fade;
+      if (a < 0.012) continue;
+
+      var d = (0.35 + b.br * 0.85) * Math.min(1.15, p.f * 0.72);
+      if (d < 0.3) d = 0.3;
 
       ctx.globalAlpha = a;
       ctx.drawImage(b.hot ? DOT_HOT : DOT, p.x - d, p.y - d, d * 2, d * 2);
     }
 
-    /* ── 记忆星 ── */
+    /* 记忆星 */
     var vis = [];
 
     for (var j = 0; j < NODES.length; j++) {
-      var n = NODES[j];
-      var q = project(n.x, n.y, n.z);
+      var q = project(NODES[j].x, NODES[j].y, NODES[j].z);
       if (!q) continue;
-      vis.push({ n: n, p: q, i: j });
+      vis.push({ n: NODES[j], p: q, i: j });
     }
 
     vis.sort(function (a, b) { return b.p.z - a.p.z; });
@@ -476,28 +489,28 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
       var dim = 1;
       if (picked >= 0 && picked !== v.i) {
-        dim = n.d.domain === NODES[picked].d.domain ? 1.15 : 0.16;
+        dim = n.d.domain === NODES[picked].d.domain ? 1.12 : 0.14;
       }
 
-      var breathe = n.core ? 1 : (1 + Math.sin(t * 0.9 + n.phase) * 0.05);
-      var rad = Math.max(2.6, n.size * pp.f * breathe * 2.2);
+      var breathe = n.core ? 1 : (1 + Math.sin(t * 0.85 + n.phase) * 0.05);
+      var rad = Math.max(1.6, n.size * 1.05 * breathe * Math.min(1.5, pp.f * 0.72));
 
-      ctx.globalAlpha = Math.min(1, 0.5 * dim + 0.5);
+      ctx.globalAlpha = Math.min(1, 0.42 * dim + 0.48);
       ctx.drawImage(MDOT[n.d.domain] || DOT, pp.x - rad, pp.y - rad, rad * 2, rad * 2);
 
-      ctx.globalAlpha = 0.85 * Math.min(1, dim);
-      ctx.drawImage(DOT_HOT, pp.x - rad * 0.3, pp.y - rad * 0.3, rad * 0.6, rad * 0.6);
+      ctx.globalAlpha = 0.9 * Math.min(1, dim);
+      ctx.drawImage(DOT_HOT, pp.x - rad * 0.26, pp.y - rad * 0.26, rad * 0.52, rad * 0.52);
     });
 
-    /* ── 同类连线 ── */
+    /* 同类连线 */
     if (picked >= 0 && NODES[picked]) {
       var from = project(NODES[picked].x, NODES[picked].y, NODES[picked].z);
 
       if (from) {
         var rgb = PAL[NODES[picked].d.domain] || [200, 190, 220];
         ctx.globalAlpha = 1;
-        ctx.strokeStyle = 'rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',0.22)';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',0.2)';
+        ctx.lineWidth = 0.8;
 
         NODES.forEach(function (n) {
           if (n === NODES[picked]) return;
@@ -517,7 +530,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = 'source-over';
 
-    /* ── 标签 ── */
+    /* 标签 */
     labels.forEach(function (L) {
       var p = project(L.n.x, L.n.y, L.n.z);
 
@@ -526,9 +539,9 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
         return;
       }
 
-      L.el.style.opacity = picked >= 0 && picked !== NODES.indexOf(L.n) ? '0.2' : '0.85';
+      L.el.style.opacity = (picked >= 0 && picked !== L.i) ? '0.18' : '0.8';
       L.el.style.left = p.x + 'px';
-      L.el.style.top = (p.y + Math.max(10, L.n.size * p.f * 2.2) + 10) + 'px';
+      L.el.style.top = (p.y + Math.max(9, L.n.size * p.f * 0.7) + 9) + 'px';
     });
   }
 
