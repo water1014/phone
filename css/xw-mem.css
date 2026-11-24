@@ -1,10 +1,10 @@
-/* xw-mem.css · 记忆页 v3
+/* xw-mem.css · 记忆页 v4
 
    形态不动（卡片 + 左侧置顶细条），只改尺子。
-   另加两样：搜索框、卡片上的置顶开关。 */
+   另加三样：搜索框、置顶开关、状态与衰减行。 */
 
 #app-body:has(.mcard)::after{
-  content: 'mem v3';
+  content: 'mem v4';
   position: fixed; left: 5px; top: 1px; z-index: 99999;
   font-size: var(--fs-1); line-height: 1; letter-spacing: .04em;
   color: var(--c-ink4); pointer-events: none;
@@ -26,9 +26,7 @@
   color: var(--c-ink1);
   -webkit-appearance: none;
 }
-.xw-mem-search input::placeholder{
-  color: var(--c-ink3);
-}
+.xw-mem-search input::placeholder{ color: var(--c-ink3); }
 .xw-mem-search input:focus{
   outline: none;
   border-color: var(--c-accent);
@@ -103,9 +101,7 @@
   color: var(--c-ink4);
   font-size: var(--fs-6);
 }
-.mdel:active{
-  background: var(--c-fill);
-}
+.mdel:active{ background: var(--c-fill); }
 
 /* ── 正文 ── */
 .mtext{
@@ -115,4 +111,17 @@
   color: var(--c-ink1);
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* ── 状态与衰减：一行小字，退到最弱 ── */
+.mmeta{
+  margin-top: var(--sp-2);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: var(--fs-1);
+  letter-spacing: .04em;
+  color: var(--c-ink4);
+  font-variant-numeric: tabular-nums;
+}
+.mmeta.faint{
+  color: var(--c-accent);
 }
