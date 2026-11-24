@@ -1,0 +1,162 @@
+/* xw-home.css · 桌面首页，按 UI-SPEC 重量一遍
+
+   特点：不用一个 !important。
+   特异性与 home.css 持平（同为 #home .x），靠后面加载取胜。
+   这是对宪法第一条的实验：默认样式压不过主题时，先检查是不是自己写得不够具体
+   或者加载太早，而不是先摸 !important。
+
+   只动尺寸、颜色、字体，不动布局结构。 */
+
+/* ── 页边与卡间距 ── */
+#home{
+  padding: var(--sp-7) var(--pad-x) calc(92px + env(safe-area-inset-bottom, 0px));
+}
+#home .grid{
+  gap: var(--sp-4);
+}
+
+/* ── 卡片：同一层用同一个角 ── */
+#home .wdg,
+#home .wdg-clock,
+#home .wdg-days,
+#home .wdg-cal,
+#home .wdg-quote,
+#home .rows,
+#home .trio,
+#home .pair > section{
+  padding: var(--sp-5);
+  background: var(--c-card);
+  border: 1px solid var(--c-line);
+  border-radius: var(--rd-card);
+  box-shadow: var(--sh-1);
+}
+
+/* ── 大数字：展示衬线 + 等宽数字，防跳动 ── */
+#home .wdg-days .days-num,
+#home .wdg-clock .dclock{
+  font-family: "Cormorant Garamond", Georgia, "Songti SC", serif;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -.5px;
+  color: var(--c-ink1);
+}
+#home .wdg-days .days-num{
+  font-size: 56px;
+  line-height: .92;
+  margin: var(--sp-2) 0 var(--sp-1);
+}
+#home .wdg-clock .dclock{
+  font-size: 44px;
+  line-height: 1;
+}
+#home .wdg-days .days-num small{
+  margin-left: var(--sp-2);
+  font-size: var(--fs-2);
+  font-weight: 400;
+  letter-spacing: .22em;
+  color: var(--c-ink4);
+}
+
+/* ── 小标题：统一一档、统一字距。现在它们在页面里占了四种色 ── */
+#home .wdg-days .kicker,
+#home .wdg-days .days-since,
+#home .wdg-cal .kicker,
+#home .pair .kicker,
+#home .trio i{
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: var(--fs-2);
+  font-weight: 400;
+  letter-spacing: .22em;
+  color: var(--c-ink4);
+}
+#home .wdg-clock::before{
+  content: 'LOCAL TIME';
+  display: block;
+  margin-bottom: var(--sp-3);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: var(--fs-2);
+  letter-spacing: .28em;
+  color: var(--c-ink4);
+}
+
+/* ── 正文色阶 ── */
+#home .wdg-clock .ddate,
+#home .wdg-cal .cal-dow{
+  font-size: var(--fs-2);
+  letter-spacing: .1em;
+  color: var(--c-ink4);
+}
+#home .wdg-clock .ddate{ margin-top: var(--sp-3); }
+
+#home .wdg-days .wdg-names{
+  font-size: var(--fs-3);
+  letter-spacing: .14em;
+  color: var(--c-ink3);
+}
+#home .wdg-cal .cal-ym{
+  font-size: var(--fs-3);
+  letter-spacing: .06em;
+  color: var(--c-ink3);
+}
+#home .wx-sub{
+  font-size: var(--fs-2);
+  letter-spacing: .04em;
+  color: var(--c-ink3);
+}
+/* 天气 / 语录的主数字：不再是正文体，用同一套展示衬线 */
+#home .wx-big,
+#home .q-big{
+  font-family: "Cormorant Garamond", Georgia, "Songti SC", serif;
+  font-size: 30px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+  letter-spacing: -.4px;
+  color: var(--c-ink1);
+}
+#home .q-big small{
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  font-size: var(--fs-3);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--c-ink3);
+}
+
+/* ── 三格数字 ── */
+#home .trio b{
+  font-family: "Cormorant Garamond", Georgia, "Songti SC", serif;
+  font-size: 24px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--c-ink1);
+}
+#home .trio > button{
+  gap: var(--sp-2);
+}
+
+/* ── 线条：全部换成一档，不再四种灰 ── */
+#home .wdg-days .days-rule{
+  width: 64%;
+  height: 1px;
+  margin: var(--sp-4) 0 var(--sp-3);
+  background: repeating-linear-gradient(90deg, var(--c-line) 0 2px, transparent 2px 6px);
+}
+#home .trio > button + button::before{
+  background: var(--c-line);
+}
+#home .q-bar{
+  height: 3px;
+  border-radius: var(--rd-full);
+  background: var(--c-fill);
+  overflow: hidden;
+}
+#home .q-bar i{
+  background: var(--c-accent);
+}
+
+/* ── 按下态：用面差，不用阴影 ── */
+#home .trio > button:active{
+  background: var(--c-fill);
+}
