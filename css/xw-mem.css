@@ -1,19 +1,18 @@
-/* xw-mem.css · 记忆页 v4
+/* xw-mem.css · 记忆页 v5
 
    形态不动（卡片 + 左侧置顶细条），只改尺子。
-   另加三样：搜索框、置顶开关、状态与衰减行。 */
+   另加：搜索框、置顶开关、状态与衰减行、云端面板。 */
 
-#app-body:has(.mcard)::after{
-  content: 'mem v4';
+#app-body:has(.mcard)::after,
+#app-body:has(#mem-input)::after{
+  content: 'mem v5';
   position: fixed; left: 5px; top: 1px; z-index: 99999;
   font-size: var(--fs-1); line-height: 1; letter-spacing: .04em;
   color: var(--c-ink4); pointer-events: none;
 }
 
 /* ── 搜索 ── */
-.xw-mem-search{
-  margin-bottom: var(--sp-4);
-}
+.xw-mem-search{ margin-bottom: var(--sp-4); }
 .xw-mem-search input{
   width: 100%;
   box-sizing: border-box;
@@ -27,13 +26,65 @@
   -webkit-appearance: none;
 }
 .xw-mem-search input::placeholder{ color: var(--c-ink3); }
-.xw-mem-search input:focus{
-  outline: none;
-  border-color: var(--c-accent);
+.xw-mem-search input:focus{ outline: none; border-color: var(--c-accent); }
+.xw-mem-search input::-webkit-search-cancel-button{ -webkit-appearance: none; }
+
+/* ── 云端面板 ── */
+.xw-cloud{
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4);
+  border-radius: var(--rd-3);
+  background: var(--c-fill);
+  font-family: inherit;
 }
-.xw-mem-search input::-webkit-search-cancel-button{
+.xw-cloud-hd{
+  margin-bottom: var(--sp-3);
+  font-size: var(--fs-1);
+  font-weight: var(--fw-2);
+  letter-spacing: .22em;
+  color: var(--c-ink3);
+}
+.xw-cloud input{
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--c-line);
+  border-radius: var(--rd-2);
+  background: var(--c-card);
+  font-family: inherit;
+  font-size: var(--fs-3);
+  color: var(--c-ink1);
   -webkit-appearance: none;
 }
+.xw-cloud input::placeholder{ color: var(--c-ink4); }
+.xw-cloud input:focus{ outline: none; border-color: var(--c-accent); }
+.xw-cloud .row{
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+.xw-cloud button{
+  min-height: var(--tap-1);
+  padding: 0 var(--sp-4);
+  border: 1px solid var(--c-line);
+  border-radius: var(--rd-full);
+  background: var(--c-card);
+  font-family: inherit;
+  font-size: var(--fs-2);
+  color: var(--c-ink2);
+  -webkit-tap-highlight-color: transparent;
+}
+.xw-cloud button:active{ background: var(--c-fill); }
+.xw-cloud .msg{
+  margin-top: var(--sp-3);
+  font-size: var(--fs-1);
+  line-height: 1.6;
+  color: var(--c-ink3);
+  word-break: break-all;
+}
+.xw-cloud .msg.bad{ color: var(--c-err); }
 
 /* ── 卡片 ── */
 .mcard{
@@ -43,7 +94,6 @@
   background: var(--c-card);
   box-shadow: var(--sh-1);
 }
-
 .mcard.pinned::before{
   left: 0;
   top: var(--sp-4);
@@ -52,13 +102,9 @@
   border-radius: var(--rd-full);
   background: var(--c-accent);
 }
+.mcard-top{ margin-bottom: var(--sp-3); gap: var(--sp-2); }
 
-.mcard-top{
-  margin-bottom: var(--sp-3);
-  gap: var(--sp-2);
-}
-
-/* ── 卡片上的置顶开关 ── */
+/* ── 置顶开关 ── */
 .xw-mem-pin{
   flex: 0 0 auto;
   min-height: var(--tap-1);
@@ -78,7 +124,7 @@
   background: var(--c-accent-soft);
 }
 
-/* ── 日期：票根式虚框 ── */
+/* ── 日期票根 ── */
 .mstamp{
   flex: 0 1 auto;
   margin-right: auto;
@@ -113,7 +159,7 @@
   word-break: break-word;
 }
 
-/* ── 状态与衰减：一行小字，退到最弱 ── */
+/* ── 状态与衰减 ── */
 .mmeta{
   margin-top: var(--sp-2);
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
@@ -122,6 +168,4 @@
   color: var(--c-ink4);
   font-variant-numeric: tabular-nums;
 }
-.mmeta.faint{
-  color: var(--c-accent);
-}
+.mmeta.faint{ color: var(--c-accent); }
