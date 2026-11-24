@@ -1,0 +1,198 @@
+/* xw-pages.css · 内页公共版式接入令牌
+
+   日记 / 记忆 / 相册 / 天气 共用这一套：hero / sheet / field / btn / empty / dcard。
+   原来这些字号是 .38rem 到 .44rem（6px～7px），正文 .74rem（11.8px）。
+   现在全部走令牌。
+
+   这一层是全局类（没有 ID 前缀），靠后加载取胜。
+   聊天页里的 .btn-solid 有自己的更具体选择器，不受影响。 */
+
+#app-body:has(.hero)::after{
+  content: 'pages v1';
+  position: fixed; left: 5px; top: 1px; z-index: 99999;
+  font-size: var(--fs-1); line-height: 1; letter-spacing: .04em;
+  color: var(--c-ink4); pointer-events: none;
+}
+
+/* ══ 页首 ══ */
+.hero{
+  padding: 0 0 var(--sp-5);
+}
+.hero .kicker{
+  display: block;
+  font-size: var(--fs-1);
+  letter-spacing: .26em;
+  color: var(--c-ink4);
+}
+.hero-title{
+  margin: var(--sp-3) 0 0;
+  font-size: var(--fs-7);
+  font-weight: var(--fw-3);
+  letter-spacing: .01em;
+  line-height: var(--lh-title);
+  color: var(--c-ink1);
+}
+.hero-sub{
+  margin-top: var(--sp-3);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: var(--fs-2);
+  letter-spacing: .06em;
+  color: var(--c-ink3);
+}
+
+/* ══ 白色卡 ══ */
+.sheet{
+  padding: var(--sp-5);
+  margin-bottom: var(--sp-6);
+  border-radius: var(--rd-card);
+  background: var(--c-card);
+  box-shadow: var(--sh-1);
+}
+.sheet-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+.sheet-title{
+  font-size: var(--fs-4);
+  font-weight: var(--fw-2);
+  color: var(--c-ink1);
+}
+.sheet-note{
+  margin-top: var(--sp-4);
+  font-size: var(--fs-3);
+  line-height: var(--lh-body);
+  color: var(--c-ink-4, var(--c-ink4));
+}
+
+/* ══ 表单 ══ */
+.field{
+  display: block;
+}
+.field > span{
+  display: block;
+  margin-bottom: var(--sp-3);
+  font-size: var(--fs-3);
+  font-weight: var(--fw-2);
+  letter-spacing: .02em;
+  color: var(--c-ink2);
+}
+.field textarea,
+.field input{
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--sp-4);
+  border: 1px solid var(--c-line);
+  border-radius: var(--rd-3);
+  background: var(--c-card);
+  font-family: inherit;
+  font-size: var(--fs-5);
+  line-height: var(--lh-body);
+  color: var(--c-ink1);
+  resize: vertical;
+  -webkit-appearance: none;
+}
+.field textarea::placeholder,
+.field input::placeholder{
+  color: var(--c-ink3);
+}
+.field textarea:focus,
+.field input:focus{
+  outline: none;
+  border-color: var(--c-accent);
+}
+
+.row-actions{
+  display: flex;
+  gap: var(--sp-3);
+  justify-content: flex-end;
+  margin-top: var(--sp-4);
+}
+
+/* ══ 按钮 ══ */
+.btn-solid{
+  min-height: var(--hit);
+  padding: 0 var(--sp-6);
+  border: 0;
+  border-radius: var(--rd-full);
+  background: var(--c-ink1);
+  color: var(--c-card);
+  font-family: inherit;
+  font-size: var(--fs-4);
+  font-weight: var(--fw-2);
+  letter-spacing: .02em;
+}
+.btn-solid:active{ opacity: .78; }
+
+.btn-glass{
+  min-height: var(--hit);
+  padding: 0 var(--sp-5);
+  border: 1px solid var(--c-line);
+  border-radius: var(--rd-full);
+  background: transparent;
+  color: var(--c-ink2);
+  font-family: inherit;
+  font-size: var(--fs-4);
+  letter-spacing: .02em;
+}
+.btn-glass.on{
+  border-color: var(--c-accent);
+  color: var(--c-accent-deep);
+  background: var(--c-accent-soft);
+}
+
+/* ══ 空状态 ══ */
+.empty-state{
+  padding: var(--sp-8) var(--sp-5);
+  text-align: center;
+  font-size: var(--fs-3);
+  line-height: var(--lh-body);
+  color: var(--c-ink3);
+}
+
+/* ══ 分组小标 ══ */
+.album-date-band{
+  margin: var(--sp-6) var(--sp-1) var(--sp-3);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: var(--fs-2);
+  letter-spacing: .1em;
+  color: var(--c-ink4);
+}
+
+/* ══ 日记卡（保留手账胶带，只换材质） ══ */
+.cards{ display: block; }
+
+.dcard{
+  padding: var(--sp-5);
+  margin-bottom: var(--sp-4);
+  border: 1px solid var(--c-line);
+  border-radius: var(--rd-card);
+  background: var(--c-card);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: var(--sh-1);
+}
+.dcard-date{
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: var(--fs-1);
+  letter-spacing: .08em;
+  color: var(--c-ink3);
+  font-variant-numeric: tabular-nums;
+}
+.dcard-text{
+  margin: var(--sp-3) 0 0;
+  font-size: var(--fs-5);
+  line-height: var(--lh-body);
+  letter-spacing: .01em;
+  color: var(--c-ink1);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.dcard-meta{
+  margin-top: var(--sp-3);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: var(--fs-1);
+  letter-spacing: .08em;
+  color: var(--c-ink4);
+}
