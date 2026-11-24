@@ -1,4 +1,4 @@
-/* xw-mem.js · 记忆页增强 v5 */
+/* xw-mem.js · 记忆页增强 v6 */
 (function () {
   const D = document;
   const DAY = 86400000;
@@ -73,42 +73,56 @@
     });
   }
 
-  /* 先问一句“这个文件在不在、是不是银河”，再跳。
-     问不到就把原因和网址写在按钮下面，而不是默默回首页。 */
-  function goGalaxy(btn) {
+  /* 银河：嵌进来开，不跳页。收起来的时候记忆页原样在那。 */
+  function shutGalaxy() {
+    const w = D.getElementById('xw-galaxy-wrap');
+    if (w && w.parentNode) w.parentNode.removeChild(w);
+    D.body.classList.remove('xw-galaxy-on');
+  }
+
+  function openGalaxy(btn) {
     let href;
     try { href = new URL('galaxy.html', location.href).href; }
-    catch (err) { href = 'galaxy.html'; }
+    catch (e) { href = 'galaxy.html'; }
 
-    btn.disabled = true;
-    btn.textContent = '\u2026';
-    btn.classList.remove('bad');
+    shutGalaxy();
+
+    const wrap = D.createElement('div');
+    wrap.id = 'xw-galaxy-wrap';
+    wrap.className = 'xw-galaxy-wrap';
+
+    const frame = D.createElement('iframe');
+    frame.className = 'xw-galaxy-frame';
+    frame.setAttribute('allow', 'fullscreen');
+    frame.src = href;
+
+    wrap.appendChild(frame);
+    D.body.appendChild(wrap);
+    D.body.classList.add('xw-galaxy-on');
+
+    if (btn) {
+      btn.classList.remove('bad');
+      btn.textContent = '\u94f6\u6cb3 \u2192';
+    }
 
     const tipOld = D.getElementById('xw-mem-galaxy-tip');
     if (tipOld) tipOld.parentNode.removeChild(tipOld);
 
-    fetch(href, { cache: 'no-store' })
-      .then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.text();
-      })
-      .then(function (txt) {
-        if (txt.indexOf('id="gl"') < 0) throw new Error('\u53d6\u5230\u7684\u4e0d\u662f\u94f6\u6cb3\u9875');
-        btn.textContent = '\u5f00\u4e86';
-        location.href = href;
-      })
-      .catch(function (err) {
-        btn.disabled = false;
-        btn.classList.add('bad');
-        btn.textContent = '\u6253\u4e0d\u5f00';
+    /* 万一 iframe 根本打不开，退到整页跳转，总比一片黑好 */
+    let guard = setTimeout(function () {
+      try {
+        if (!frame.contentWindow || !frame.contentWindow.document) return;
+      } catch (e) { return; }
+      shutGalaxy();
+      location.href = href;
+    }, 4000);
 
-        const tip = D.createElement('div');
-        tip.id = 'xw-mem-galaxy-tip';
-        tip.className = 'xw-mem-galaxy-tip';
-        tip.textContent = err.message + ' \u00b7 ' + href;
-        (btn.parentNode || btn).appendChild(tip);
-      });
+    frame.addEventListener('load', function () { clearTimeout(guard); });
   }
+
+  window.addEventListener('message', function (e) {
+    if (e && e.data === 'xw-galaxy-close') shutGalaxy();
+  });
 
   function addSearch(body) {
     if (D.getElementById('xw-mem-q')) return;
@@ -133,7 +147,7 @@
     go.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      goGalaxy(go);
+      openGalaxy(go);
     });
     box.appendChild(go);
 
