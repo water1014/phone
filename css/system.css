@@ -26,6 +26,11 @@
   --c-accent-soft: #F0E2E3;
   --c-accent-grad: linear-gradient(135deg, #F9F0EF 0%, #F0DCDA 55%, #E5CFCB 100%);
 
+  /* 状态三色：只给「成功 / 注意 / 失败」这类字，不当装饰 */
+  --c-ok: #6F8A72;
+  --c-warn: #A98A4E;
+  --c-err: #B07A5A;
+
   /* ── 例外登记（经她本人拍定，不得被规范推翻） ────────── */
   /* 1. 她那一侧气泡的淡紫。
         来历：2026-11-23 截图确认「淡紫气泡对了」。
@@ -51,9 +56,9 @@
   --glass-blur-sm: blur(12px) saturate(1.10);
 
   /* ── 间距：8 的倍数，同级一档 ─────────────── */
-  --sp-1: 4px;    /* 紧贴 */
-  --sp-2: 6px;    /* 小间隙 */
-  --sp-3: 8px;    /* 小内边距 */
+  --sp-1: 4px;
+  --sp-2: 6px;
+  --sp-3: 8px;
   --sp-4: 12px;   /* 卡间距 */
   --sp-5: 18px;   /* 卡内 */
   --sp-6: 22px;   /* 板块之间 */
@@ -80,10 +85,10 @@
   --lh-title: 1.35;
 
   /* ── 圆角：同层同角 ────────────────────── */
-  --rd-1: 6px;    /* 气泡靠头像那一个角 */
+  --rd-1: 6px;
   --rd-2: 9px;
   --rd-3: 13px;
-  --rd-4: 16px;   /* 气泡 */
+  --rd-4: 16px;
   --rd-card: 22px;
   --rd-hero: 26px;
   --rd-full: 999px;
@@ -96,9 +101,9 @@
   --av-1: 22px;
   --av-2: 28px;
   --av-3: 36px;
-  --tap-0: 24px;   /* 水滴 */
-  --tap-1: 28px;   /* 顶栏圆钮 */
-  --tap-2: 34px;   /* 输入区圆钮（= 手指下限） */
+  --tap-0: 24px;
+  --tap-1: 28px;
+  --tap-2: 34px;
   --hit: 34px;
   --bar-h: 40px;
   --maxw: 640px;
@@ -132,6 +137,10 @@ html.dark {
   --c-accent-deep: #D8A9B2;
   --c-accent-soft: #3A2E33;
   --c-accent-grad: linear-gradient(135deg, #2A2226 0%, #1E191D 55%, #171316 100%);
+
+  --c-ok: #8FAE93;
+  --c-warn: #C9A870;
+  --c-err: #C9907A;
 
   --c-bub-me: rgba(58, 50, 70, .88);
   --c-bub-him: rgba(30, 29, 30, .90);

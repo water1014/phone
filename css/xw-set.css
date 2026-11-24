@@ -1,0 +1,294 @@
+/* xw-set.css · 设置页（首页 + 接线的地方），按 UI-SPEC 重量一遍
+
+   不用 !important。用 #app-body 前缀把特异性抬到原文件之上（原文件多是 .sh-row 这样的单类）。
+   只动尺寸、颜色、字体，不动结构。 */
+
+/* ══ 设置首页 ══ */
+#app-body .sh{
+  padding: var(--sp-2) 0 var(--sp-8);
+}
+#app-body .sh-hero{
+  margin: var(--sp-3) 0 var(--sp-7);
+}
+#app-body .sh-kicker{
+  font-size: var(--fs-1);
+  letter-spacing: .26em;
+  color: var(--c-ink4);
+  margin-bottom: var(--sp-3);
+}
+#app-body .sh-title{
+  font-size: var(--fs-7);
+  line-height: var(--lh-title);
+  font-weight: var(--fw-3);
+  letter-spacing: .01em;
+  color: var(--c-ink1);
+  margin: 0 0 var(--sp-3);
+}
+#app-body .sh-sub{
+  font-size: var(--fs-3);
+  line-height: var(--lh-body);
+  color: var(--c-ink3);
+}
+#app-body .sh-label{
+  margin: var(--sp-6) 0 var(--sp-3) var(--sp-1);
+  font-size: var(--fs-2);
+  font-weight: var(--fw-2);
+  letter-spacing: .22em;
+  color: var(--c-ink4);
+}
+
+#app-body .sh-row{
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  margin-bottom: var(--sp-3);
+  border-radius: var(--rd-4);
+  background: var(--c-card);
+  box-shadow: var(--sh-1);
+}
+#app-body .sh-row:active{
+  background: var(--c-fill);
+}
+#app-body .sh-ico{
+  flex: 0 0 var(--tap-2);
+  width: var(--tap-2);
+  height: var(--tap-2);
+  border-radius: var(--rd-2);
+  background: var(--c-fill);
+}
+#app-body .sh-ico svg{
+  width: 17px;
+  height: 17px;
+  stroke: var(--c-ink3);
+}
+#app-body .sh-txt b{
+  font-size: var(--fs-5);
+  font-weight: var(--fw-2);
+  letter-spacing: .01em;
+  color: var(--c-ink1);
+}
+#app-body .sh-txt i{
+  font-size: var(--fs-3);
+  line-height: 1.5;
+  color: var(--c-ink3);
+}
+#app-body .sh-arr{
+  color: var(--c-ink4);
+  font-size: var(--fs-6);
+}
+#app-body .sh-crumb{
+  gap: var(--sp-3);
+  margin: var(--sp-1) 0 var(--sp-5) var(--sp-1);
+}
+#app-body .sh-back{
+  width: var(--tap-2);
+  height: var(--tap-2);
+  background: var(--c-fill);
+  color: var(--c-ink2);
+  font-size: var(--fs-6);
+}
+#app-body .sh-crumb b{
+  font-size: var(--fs-4);
+  font-weight: var(--fw-2);
+  letter-spacing: .02em;
+  color: var(--c-ink2);
+}
+
+/* ══ 接线的地方 ══ */
+#app-body .api-sheet{
+  padding: var(--sp-2) 0 var(--sp-8);
+}
+#app-body .api-top{
+  margin: var(--sp-1) 0 var(--sp-6);
+}
+#app-body .api-kicker{
+  font-size: var(--fs-1);
+  letter-spacing: .26em;
+  color: var(--c-ink4);
+  margin-bottom: var(--sp-3);
+}
+#app-body .api-title{
+  font-size: var(--fs-7);
+  line-height: var(--lh-title);
+  font-weight: var(--fw-3);
+  letter-spacing: .01em;
+  color: var(--c-ink1);
+  margin: 0 0 var(--sp-3);
+}
+#app-body .api-sub{
+  font-size: var(--fs-3);
+  line-height: var(--lh-body);
+  color: var(--c-ink3);
+}
+
+/* 当前生效的那条：灰底，不抢 */
+#app-body .api-live{
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-6);
+  border-radius: var(--rd-3);
+  background: var(--c-fill);
+  font-size: var(--fs-3);
+  line-height: var(--lh-body);
+  color: var(--c-ink2);
+}
+
+#app-body .api-field{
+  margin-bottom: var(--sp-6);
+}
+#app-body .api-cap{
+  font-size: var(--fs-3);
+  font-weight: var(--fw-2);
+  letter-spacing: .02em;
+  color: var(--c-ink2);
+  margin-bottom: var(--sp-3);
+}
+#app-body .api-field input[type=text],
+#app-body .api-field input[type=password],
+#app-body .api-field input[type=number],
+#app-body .api-field textarea{
+  padding: var(--sp-4);
+  border: 1px solid var(--c-line);
+  border-radius: var(--rd-3);
+  background: var(--c-card);
+  font-size: var(--fs-5);
+  color: var(--c-ink1);
+}
+#app-body .api-field input::placeholder,
+#app-body .api-field textarea::placeholder{
+  color: var(--c-ink3);
+}
+#app-body .api-field input:focus,
+#app-body .api-field textarea:focus{
+  border-color: var(--c-accent);
+}
+#app-body .api-hint{
+  margin-top: var(--sp-2);
+  font-size: var(--fs-3);
+  line-height: 1.65;
+  color: var(--c-ink4);
+}
+
+/* 分段控件 */
+#app-body .api-seg{
+  gap: var(--sp-1);
+  padding: var(--sp-1);
+  border-radius: var(--rd-3);
+  background: var(--c-fill);
+}
+#app-body .api-seg-b{
+  padding: var(--sp-3) var(--sp-2);
+  border-radius: var(--rd-2);
+  font-size: var(--fs-3);
+  color: var(--c-ink3);
+}
+#app-body .api-seg-b.on{
+  background: var(--c-card);
+  color: var(--c-ink1);
+  font-weight: var(--fw-2);
+  box-shadow: var(--sh-1);
+}
+
+/* 拉模型的按钮 */
+#app-body .api-pull{
+  padding: var(--sp-2) var(--sp-5);
+  border: 1px solid var(--c-line);
+  border-radius: var(--rd-full);
+  font-size: var(--fs-3);
+  color: var(--c-ink2);
+}
+
+/* 模型胶囊：选中的那个才用干玫瑰 */
+#app-body .api-chips{
+  gap: var(--sp-2);
+  margin: calc(var(--sp-3) * -1) 0 var(--sp-6);
+}
+#app-body .api-chip{
+  padding: var(--sp-1) var(--sp-4);
+  border: 1px solid var(--c-line);
+  border-radius: var(--rd-full);
+  font-size: var(--fs-3);
+  color: var(--c-ink2);
+}
+#app-body .api-chip.on{
+  color: var(--c-accent-deep);
+  border-color: var(--c-accent);
+  background: var(--c-accent-soft);
+}
+
+/* 滑杆 */
+#app-body .api-range::-webkit-slider-runnable-track{
+  height: 2px;
+  border-radius: var(--rd-full);
+  background: var(--c-line);
+}
+#app-body .api-range::-webkit-slider-thumb{
+  width: 16px;
+  height: 16px;
+  margin-top: -7px;
+  background: var(--c-ink1);
+}
+
+/* 动作 */
+#app-body .api-actions{
+  gap: var(--sp-4);
+}
+#app-body .api-btn{
+  padding: var(--sp-4) var(--sp-4);
+  border: 1px solid var(--c-line);
+  border-radius: var(--rd-3);
+  background: var(--c-card);
+  font-size: var(--fs-4);
+  font-weight: var(--fw-2);
+  color: var(--c-ink2);
+}
+#app-body .api-btn.solid{
+  background: var(--c-ink1);
+  border-color: var(--c-ink1);
+  color: var(--c-card);
+}
+#app-body .api-btn:disabled{
+  opacity: .45;
+}
+
+/* 结果与记录 */
+#app-body .api-res{
+  margin-top: var(--sp-4);
+  font-size: var(--fs-3);
+  line-height: var(--lh-body);
+  color: var(--c-ink3);
+}
+#app-body .api-res.ok{ color: var(--c-ok); }
+#app-body .api-res.warn{ color: var(--c-warn); }
+#app-body .api-res.bad{ color: var(--c-err); }
+
+#app-body .api-hist{
+  margin-top: var(--sp-6);
+}
+#app-body .api-hist-cap{
+  font-size: var(--fs-2);
+  font-weight: var(--fw-2);
+  letter-spacing: .22em;
+  color: var(--c-ink4);
+  margin-bottom: var(--sp-2);
+}
+#app-body .api-hist-row{
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--c-line);
+  font-size: var(--fs-3);
+  line-height: var(--lh-body);
+}
+#app-body .api-hist-t{
+  color: var(--c-ink4);
+  font-variant-numeric: tabular-nums;
+}
+#app-body .api-hist-x{
+  color: var(--c-ink2);
+}
+#app-body .api-hist-row.ok .api-hist-x{ color: var(--c-ok); }
+#app-body .api-hist-row.bad .api-hist-x{ color: var(--c-err); }
+
+#app-body .api-note{
+  margin-top: var(--sp-6);
+  font-size: var(--fs-3);
+  line-height: var(--lh-body);
+  color: var(--c-ink4);
+}
