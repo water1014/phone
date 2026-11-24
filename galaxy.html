@@ -78,18 +78,31 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 .c-name i{display:block;font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;
   font-size:11.5px;letter-spacing:.12em;color:rgba(228,204,242,.5);margin-top:2px}
 
-.c-meta{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-left:37px}
+.c-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-left:37px}
 .c-date{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;
   font-size:12.5px;letter-spacing:.08em;color:rgba(232,208,244,.72)}
 .c-tag{font-size:10.5px;letter-spacing:.08em;color:#F7E4F0;
   padding:2px 10px;border-radius:999px;
   background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16)}
 
-.c-body{font-size:15px;line-height:2;font-weight:300;letter-spacing:.02em;
+/* 正文：折起来三行，点一下展开 */
+.c-body{position:relative;
+  font-size:15px;line-height:2;font-weight:300;letter-spacing:.02em;
   color:rgba(246,236,250,.9);white-space:pre-wrap;word-break:break-word;
-  max-height:38vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-.c-body::-webkit-scrollbar{width:3px}
-.c-body::-webkit-scrollbar-thumb{background:rgba(230,180,230,.22);border-radius:3px}
+  max-height:6em;overflow:hidden;
+  transition:max-height .48s cubic-bezier(.22,.7,.3,1);
+  -webkit-mask-image:linear-gradient(to bottom,#000 60%,rgba(0,0,0,0) 100%);
+  mask-image:linear-gradient(to bottom,#000 60%,rgba(0,0,0,0) 100%)}
+
+#card.open .c-body{max-height:52vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  -webkit-mask-image:none;mask-image:none}
+#card.open .c-body::-webkit-scrollbar{width:3px}
+#card.open .c-body::-webkit-scrollbar-thumb{background:rgba(230,180,230,.22);border-radius:3px}
+
+.c-tip{display:none;margin-top:6px;font-size:10.5px;letter-spacing:.14em;
+  color:rgba(226,190,236,.42)}
+.c-tip.on{display:block}
 
 .c-close{position:absolute;right:16px;top:56px;width:34px;height:34px;border:0;border-radius:50%;
   background:rgba(255,255,255,.07);color:rgba(235,210,240,.7);font-size:16px;
@@ -133,6 +146,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     <span class="c-tag" id="c-tag"></span>
   </div>
   <div class="c-body" id="c-body"></div>
+  <div class="c-tip" id="c-tip"></div>
 </div>
 
 <a class="back" href="index.html">←</a>
@@ -141,9 +155,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 (function () {
   'use strict';
 
-  /* ── 记忆星的四色：固定，不跟主题走。
-     这四色在四种主题的背景下都不撞（背景全是低饱和雾，
-     这里是高饱和，且色相刻意避开粉/金/蓝灰/紫四套）── */
   var MEMCOL = {
     '恋爱': '#FF3A78',
     '工程': '#28C8FF',
@@ -412,9 +423,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     });
     putPSP(BM, mpos, msize, mph);
 
-    /* 记忆星颜色：高饱和，且故意过曝——
-       值乘 1.5 之后加法混合会把中心烧成白，边缘留色，
-       看起来就是“白心彩边”的真星。 */
     var mc = new Float32Array(MEM.length * 3);
     MEM.forEach(function (m, i) {
       var c = hex(MEMCOL[m.d.domain] || MEMCOL['日常']);
@@ -602,30 +610,66 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
   var card = document.getElementById('card');
   var scrim = document.getElementById('scrim');
   var hint = document.getElementById('hint');
+  var bodyEl = document.getElementById('c-body');
+  var tipEl = document.getElementById('c-tip');
 
   var STAR_SVG = '<svg viewBox="0 0 24 24"><path d="M12 0L14.2 9.8 24 12 14.2 14.2 12 24 9.8 14.2 0 12 9.8 9.8Z"/></svg>';
+
+  function syncTip() {
+    var open = card.classList.contains('open');
+    if (!tipEl._more) {
+      tipEl.className = 'c-tip';
+      tipEl.textContent = '';
+      return;
+    }
+    tipEl.className = 'c-tip on';
+    tipEl.textContent = open ? '收起' : '点开看全文';
+  }
+
+  function measure() {
+    tipEl._more = bodyEl.scrollHeight > bodyEl.clientHeight + 4;
+    if (!tipEl._more) {
+      card.classList.add('open');
+      tipEl.className = 'c-tip';
+      tipEl.textContent = '';
+      return;
+    }
+    card.classList.remove('open');
+    syncTip();
+  }
+
+  bodyEl.addEventListener('click', function () {
+    if (!tipEl._more) return;
+    card.classList.toggle('open');
+    syncTip();
+  });
 
   function openCard(m) {
     picked = MEM.indexOf(m);
 
     var st = document.getElementById('c-star');
     st.innerHTML = STAR_SVG;
-    st.querySelector('svg').setAttribute('fill', MEMCOL[m.d.domain] || MEMCOL['日常']);
+    st.querySelector('svg').setAttribute('fill', MEMCOL[m.d.domain] || MEMCOL['\u65e5\u5e38']);
 
     document.getElementById('c-name').textContent = m.core ? '开始' : (m.d.name || '一条记忆');
     document.getElementById('c-en').textContent = m.d.domain;
     document.getElementById('c-day').textContent = m.d.day.replace(/-/g, '.');
     document.getElementById('c-tag').textContent = m.d.pinned ? '钉着' : m.d.domain;
-    document.getElementById('c-body').textContent = m.d.text;
-    document.getElementById('c-body').scrollTop = 0;
+    bodyEl.textContent = m.d.text;
+    bodyEl.scrollTop = 0;
 
     card.classList.add('show');
     scrim.classList.add('show');
     hint.style.opacity = '0';
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(measure);
+    });
   }
 
   function closeCard() {
     card.classList.remove('show');
+    card.classList.remove('open');
     scrim.classList.remove('show');
     picked = -1;
     hint.style.opacity = '';
@@ -753,7 +797,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
-    /* 背景退成底子 */
     gl.uniform1f(U.fade, 0.66);
     gl.uniform1f(U.pix, DPR * PIX_BASE);
 
@@ -763,7 +806,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     bind(BP);
     gl.drawArrays(gl.POINTS, 0, BP.n);
 
-    /* 记忆星：一大圈彩色光晕 + 一颗白心 */
     if (BM) {
       bind(BM);
 
