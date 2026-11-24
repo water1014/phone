@@ -12,20 +12,23 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 #gl{position:fixed;inset:0;display:block;touch-action:none;width:100%;height:100%}
 
 #glow{position:fixed;inset:0;z-index:2;pointer-events:none;mix-blend-mode:screen}
+#veil{position:fixed;inset:0;z-index:3;pointer-events:none;
+  background:linear-gradient(to top,#050209 0%,rgba(5,2,9,.72) 9%,rgba(5,2,9,.18) 20%,rgba(5,2,9,0) 30%)}
 
 .head{position:fixed;top:0;left:0;right:0;z-index:10;text-align:center;
   padding:calc(env(safe-area-inset-top) + 14px) 16px 0;pointer-events:none;
   opacity:0;transition:opacity 1.4s ease .4s}
 .head.in{opacity:1}
-.head h1{font-size:25px;font-weight:400;letter-spacing:.14em;color:#FCF0FA;
-  text-shadow:0 0 24px rgba(210,150,230,.5)}
+.head h1{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;
+  font-size:34px;font-weight:400;letter-spacing:.04em;color:#FDF4FB;
+  text-shadow:0 0 30px rgba(220,160,235,.55)}
 .head .sub{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;
-  font-size:12.5px;letter-spacing:.1em;color:rgba(230,205,242,.7);margin-top:5px}
-.head .zh{font-size:11.5px;font-weight:300;letter-spacing:.16em;color:rgba(220,205,238,.32);margin-top:10px}
+  font-size:12px;letter-spacing:.14em;color:rgba(228,204,242,.55);margin-top:4px}
+.head .zh{font-size:12px;font-weight:300;letter-spacing:.18em;color:rgba(220,205,238,.30);margin-top:12px}
 
 .pal{position:fixed;right:14px;top:calc(env(safe-area-inset-top) + 12px);z-index:14;
   width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.06);display:grid;place-items:center;gap:0;padding:0}
+  background:rgba(255,255,255,.05);padding:0}
 .pal i{display:block;width:13px;height:13px;border-radius:50%;position:absolute;
   transition:background .45s ease}
 .pal i:nth-child(1){transform:translate(-4px,-4px)}
@@ -38,57 +41,79 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
 .back{position:fixed;left:14px;bottom:calc(env(safe-area-inset-bottom) + 14px);z-index:12;
   width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
-  background:rgba(255,255,255,.07);color:rgba(240,225,245,.7);font-size:16px;
-  text-decoration:none}
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+  color:rgba(240,225,245,.7);font-size:16px;text-decoration:none;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 
 .hint{position:fixed;left:50%;transform:translateX(-50%);z-index:7;
-  bottom:calc(env(safe-area-inset-bottom) + 20px);
-  font-size:10.5px;letter-spacing:.16em;color:rgba(225,205,240,.22);
+  bottom:calc(env(safe-area-inset-bottom) + 22px);
+  font-size:10.5px;letter-spacing:.16em;color:rgba(225,205,240,.26);
   white-space:nowrap;pointer-events:none;transition:opacity .8s ease}
 
 #labels{position:fixed;inset:0;z-index:6;pointer-events:none;overflow:hidden}
 .lbl{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;
-  transition:opacity .6s ease;will-change:transform,opacity}
-.lbl .t{font-size:11.5px;color:rgba(251,239,250,.92);letter-spacing:.04em;
-  text-shadow:0 0 10px rgba(255,180,230,.5),0 1px 4px rgba(0,0,0,.9)}
-.lbl .d{font-size:9.5px;color:rgba(230,205,240,.5);letter-spacing:.08em;margin-top:1px;
-  text-shadow:0 1px 4px rgba(0,0,0,.9)}
+  transition:opacity .7s ease;will-change:transform,opacity}
+.lbl .t{font-size:12px;color:rgba(253,245,252,.94);letter-spacing:.05em;
+  text-shadow:0 0 12px rgba(255,190,240,.6),0 1px 5px rgba(0,0,0,.95)}
+.lbl .d{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;
+  font-size:10.5px;color:rgba(230,205,240,.55);letter-spacing:.1em;margin-top:2px;
+  text-align:center;text-shadow:0 1px 5px rgba(0,0,0,.95)}
 
 #scrim{position:fixed;inset:0;z-index:20;opacity:0;pointer-events:none;transition:opacity .4s ease}
 #scrim.show{opacity:1;pointer-events:auto}
 
-#card{position:fixed;left:0;right:0;bottom:0;z-index:21;max-height:54vh;
-  display:flex;flex-direction:column;
-  padding:36px 24px calc(24px + env(safe-area-inset-bottom));
-  background:linear-gradient(to top,rgba(5,2,12,.95) 40%,rgba(5,2,12,.6) 72%,rgba(5,2,12,0));
-  opacity:0;transform:translateY(20px);pointer-events:none;
-  transition:opacity .5s ease,transform .5s ease}
+/* ── 卡片：照参考图，底色长在字下面，不画方块 ── */
+#card{position:fixed;left:0;right:0;bottom:0;z-index:21;
+  padding:74px 26px calc(26px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,rgba(4,1,9,.97) 0%,rgba(4,1,9,.95) 46%,rgba(4,1,9,.72) 72%,rgba(4,1,9,.30) 90%,rgba(4,1,9,0) 100%);
+  opacity:0;transform:translateY(26px);pointer-events:none;
+  transition:opacity .55s ease,transform .55s cubic-bezier(.22,.7,.3,1)}
 #card.show{opacity:1;transform:none;pointer-events:auto}
-.c-head{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;padding-right:42px}
-.c-head b{font-size:15px;font-weight:500;color:#FBEFFA}
-.c-head i{font-style:normal;font-family:"Cormorant Garamond",Georgia,serif;
-  font-size:13px;letter-spacing:.06em;color:rgba(232,208,244,.75)}
-.c-body{font-size:14px;line-height:2.05;color:rgba(244,234,248,.9);
-  white-space:pre-wrap;word-break:break-word;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.c-close{position:absolute;right:14px;top:8px;width:32px;height:32px;border:0;border-radius:50%;
-  background:rgba(255,255,255,.07);color:rgba(230,205,242,.55);font-size:15px;font-family:inherit}
 
-#note{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 64px);z-index:8;
-  text-align:center;font-size:11.5px;line-height:2;color:rgba(230,210,240,.42);
-  padding:0 36px;display:none;pointer-events:none}
+.c-top{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.c-star{flex:0 0 auto;width:26px;height:26px;display:block}
+.c-star svg{width:100%;height:100%;display:block}
+.c-name{flex:1;min-width:0}
+.c-name b{display:block;font-size:17px;font-weight:500;line-height:1.35;color:#FDF3FB;
+  letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-name i{display:block;font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;
+  font-size:11.5px;letter-spacing:.12em;color:rgba(228,204,242,.5);margin-top:2px}
+
+.c-meta{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-left:37px}
+.c-date{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;
+  font-size:12.5px;letter-spacing:.08em;color:rgba(232,208,244,.72)}
+.c-tag{font-size:10.5px;letter-spacing:.08em;color:#F2D6E8;
+  padding:2px 10px;border-radius:999px;
+  background:rgba(158,106,113,.20);border:1px solid rgba(200,140,170,.28)}
+
+.c-body{font-size:15px;line-height:2;font-weight:300;letter-spacing:.02em;
+  color:rgba(246,236,250,.9);white-space:pre-wrap;word-break:break-word;
+  max-height:38vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.c-body::-webkit-scrollbar{width:3px}
+.c-body::-webkit-scrollbar-thumb{background:rgba(230,180,230,.22);border-radius:3px}
+
+.c-close{position:absolute;right:16px;top:56px;width:34px;height:34px;border:0;border-radius:50%;
+  background:rgba(255,255,255,.07);color:rgba(235,210,240,.7);font-size:16px;
+  font-family:inherit;line-height:1}
+
+#note{position:fixed;left:0;right:0;top:50%;z-index:9;text-align:center;
+  font-size:13px;line-height:2.1;color:rgba(240,222,246,.6);
+  padding:0 40px;display:none;pointer-events:none;letter-spacing:.04em}
 #note.on{display:block}
+#note em{display:block;font-style:normal;font-size:11px;color:rgba(226,190,236,.38);margin-top:8px}
 </style>
 </head>
 <body>
 
 <canvas id="gl"></canvas>
 <div id="glow"></div>
+<div id="veil"></div>
 <div id="labels"></div>
 
 <div class="head" id="head">
-  <h1>小窝</h1>
+  <h1>Memory</h1>
   <div class="sub">A constellation of our days</div>
-  <div class="zh">这里，是我们一起过掉的日子。</div>
+  <div class="zh">这里，记录着我们共同创造的星光。</div>
 </div>
 
 <button class="pal" id="pal" aria-label="换颜色"><i></i><i></i></button>
@@ -100,7 +125,14 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 <div id="scrim"></div>
 <div id="card">
   <button class="c-close" id="c-close" aria-label="关闭">×</button>
-  <div class="c-head"><b id="c-name"></b><i id="c-day"></i></div>
+  <div class="c-top">
+    <span class="c-star" id="c-star"></span>
+    <div class="c-name"><b id="c-name"></b><i id="c-en"></i></div>
+  </div>
+  <div class="c-meta">
+    <span class="c-date" id="c-day"></span>
+    <span class="c-tag" id="c-tag"></span>
+  </div>
   <div class="c-body" id="c-body"></div>
 </div>
 
@@ -110,27 +142,26 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 (function () {
   'use strict';
 
-  /* ══ 四套颜色 ══ */
   var THEMES = [
     {
       id: 'rose', name: '雾玫瑰',
       cIn: '#F6E2E4', cMid: '#C08F99', cOut: '#7A666E', gold: '#E8C89A',
       dust: ['#E2C4C8', '#A8909A', '#F0D8DC', '#9E8A92', '#E8C89A'],
-      dom: { '恋爱': '#E8A6B6', '工程': '#94A2BE', '情绪': '#BCA6CE', '日常': '#A6B6BE' },
+      dom: { '恋爱': '#F0A6BC', '工程': '#9AA8C8', '情绪': '#C0A6D8', '日常': '#A8BCC4' },
       glow: ['255,236,238', '222,170,180', '148,118,128']
     },
     {
       id: 'gold', name: '雾金',
       cIn: '#FFF4E2', cMid: '#DDBB90', cOut: '#86765F', gold: '#F0D0A0',
       dust: ['#E8D0AE', '#B8A686', '#F5E6CC', '#9E8E76', '#F0D0A0'],
-      dom: { '恋爱': '#E0B49A', '工程': '#A6A8B8', '情绪': '#C8B090', '日常': '#ACB4AC' },
+      dom: { '恋爱': '#E8B89E', '工程': '#AAB0C0', '情绪': '#D0B898', '日常': '#B0BAAE' },
       glow: ['255,246,230', '232,200,154', '158,138,110']
     },
     {
       id: 'blue', name: '夜灰蓝',
       cIn: '#EDF3FA', cMid: '#9CB0C8', cOut: '#5F7288', gold: '#D8C8A8',
       dust: ['#BCD0E4', '#8EA2BC', '#DCE8F5', '#7E92A8', '#D8C8A8'],
-      dom: { '恋爱': '#C8A8C0', '工程': '#8EA8D0', '情绪': '#A898C8', '日常': '#96AEC0' },
+      dom: { '恋爱': '#C8A8C8', '工程': '#8EACD8', '情绪': '#A898CC', '日常': '#96B2C4' },
       glow: ['238,245,252', '172,194,218', '108,128,152']
     },
     {
@@ -166,7 +197,8 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     var out = [];
 
     raw.forEach(function (it) {
-      var text = String((it && it.text) || '');
+      if (!it) return;
+      var text = String(it.text || it.content || '');
       if (!text.trim()) return;
 
       var t = it.t ? Number(it.t) : NaN;
@@ -178,10 +210,10 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
       out.push({
         text: text,
         domain: kindOf(text),
-        pinned: !!(it && it.pinned),
+        pinned: !!(it.pinned),
         t: t,
         day: ymd(new Date(t)),
-        name: text.replace(/\s+/g, ' ').slice(0, 14)
+        name: text.replace(/\s+/g, ' ').slice(0, 16)
       });
     });
 
@@ -190,13 +222,13 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
   var STARS = loadStars();
 
-  /* ══ WebGL ══ */
   var cv = document.getElementById('gl');
   var gl = cv.getContext('webgl', { alpha: false, antialias: false, depth: false, premultipliedAlpha: false });
 
   if (!gl) {
-    document.getElementById('note').className = 'on';
-    document.getElementById('note').textContent = '这个浏览器开不了 WebGL。';
+    var nb = document.getElementById('note');
+    nb.className = 'on';
+    nb.textContent = '这个浏览器开不了 WebGL。';
     return;
   }
 
@@ -226,13 +258,14 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
   var FS = [
     'precision mediump float;',
+    'uniform float uFade;',
     'varying vec3 vCol;',
     'varying float vTw;',
     'void main(){',
     '  float d = length(gl_PointCoord - vec2(0.5));',
     '  float a = smoothstep(0.5, 0.0, d);',
-    '  a = pow(a, 1.6) * vTw;',
-    '  if (a < 0.012) discard;',
+    '  a = pow(a, 1.6) * vTw * uFade;',
+    '  if (a < 0.01) discard;',
     '  gl_FragColor = vec4(vCol, a);',
     '}'
   ].join('\n');
@@ -261,7 +294,8 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     view: gl.getUniformLocation(prog, 'uView'),
     proj: gl.getUniformLocation(prog, 'uProj'),
     time: gl.getUniformLocation(prog, 'uTime'),
-    pix: gl.getUniformLocation(prog, 'uPix')
+    pix: gl.getUniformLocation(prog, 'uPix'),
+    fade: gl.getUniformLocation(prog, 'uFade')
   };
 
   function hex(h) {
@@ -274,7 +308,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
   var GAL_R = 5, BRANCHES = 2, SPIN = 1.15, SCAT = 0.55;
 
-  /* ══ 几何只算一次，颜色单独生成 ══ */
   var G = { pos: [], size: [], ph: [], tN: [], isGold: [] };
   var DST = { pos: [], size: [], ph: [], ci: [] };
 
@@ -291,10 +324,10 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
       var tN = r / GAL_R;
 
       G.pos.push(Math.cos(branch + spin) * r + sx, sy, Math.sin(branch + spin) * r + sz);
-      G.size.push(rnd(1.4, 5.0) * (tN < 0.3 ? 1.15 : 1));
+      G.size.push(rnd(1.4, 4.4) * (tN < 0.3 ? 1.15 : 1));
       G.ph.push(Math.random() * 6.283);
       G.tN.push(tN);
-      G.isGold.push(Math.random() < 0.06);
+      G.isGold.push(Math.random() < 0.05);
     }
 
     for (var j = 0; j < 6400; j++) {
@@ -302,13 +335,12 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
       var th = Math.random() * Math.PI * 2;
 
       DST.pos.push(Math.cos(th) * r2, (Math.random() - 0.5) * GAL_R * 1.1, Math.sin(th) * r2);
-      DST.size.push(rnd(0.5, 1.8));
+      DST.size.push(rnd(0.5, 1.6));
       DST.ph.push(Math.random() * 6.283);
       DST.ci.push(Math.floor(Math.random() * 5));
     }
   })();
 
-  /* 记忆星位置 */
   var MEM = [];
 
   if (STARS.length) {
@@ -319,7 +351,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
     sorted.forEach(function (s, i) {
       var tt = (s.t - tA) / span;
-      var r = 0.15 + Math.pow(tt, 0.85) * GAL_R * 0.96;
+      var r = 0.15 + Math.pow(tt, 0.85) * GAL_R * 0.92;
       var branch = (i % BRANCHES) / BRANCHES * Math.PI * 2;
       var spin = r * SPIN;
 
@@ -327,12 +359,12 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
       MEM.push({
         d: s,
-        x: Math.cos(branch + spin) * r + rnd(-0.35, 0.35),
-        y: rnd(-0.16, 0.16),
-        z: Math.sin(branch + spin) * r + rnd(-0.35, 0.35),
+        x: Math.cos(branch + spin) * r + rnd(-0.3, 0.3),
+        y: rnd(-0.14, 0.14),
+        z: Math.sin(branch + spin) * r + rnd(-0.3, 0.3),
         tier: tier,
-        size: [5, 9, 12, 13][tier],
-        dim: [0.62, 0.85, 1.0, 1.15][tier]
+        size: [9, 13, 17, 21][tier],
+        dim: [0.9, 1.0, 1.1, 1.2][tier]
       });
     });
 
@@ -344,16 +376,15 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     MEM[c0].z = 0;
     MEM[c0].core = true;
     MEM[c0].tier = 3;
-    MEM[c0].size = 13;
-    MEM[c0].dim = 1.15;
+    MEM[c0].size = 21;
+    MEM[c0].dim = 1.2;
   }
 
-  /* ══ buffer ══ */
   function mkBuf(n) {
     return { n: n, pos: gl.createBuffer(), col: gl.createBuffer(), size: gl.createBuffer(), ph: gl.createBuffer() };
   }
 
-  function putPosSizePh(b, pos, size, ph) {
+  function putPSP(b, pos, size, ph) {
     gl.bindBuffer(gl.ARRAY_BUFFER, b.pos);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pos), gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, b.size);
@@ -366,8 +397,8 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
   var BD = mkBuf(DST.size.length);
   var BM = MEM.length ? mkBuf(MEM.length) : null;
 
-  putPosSizePh(BP, G.pos, G.size, G.ph);
-  putPosSizePh(BD, DST.pos, DST.size, DST.ph);
+  putPSP(BP, G.pos, G.size, G.ph);
+  putPSP(BD, DST.pos, DST.size, DST.ph);
 
   if (BM) {
     var mpos = [], msize = [], mph = [];
@@ -376,10 +407,9 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
       msize.push(m.size);
       mph.push(Math.random() * 6.283);
     });
-    putPosSizePh(BM, mpos, msize, mph);
+    putPSP(BM, mpos, msize, mph);
   }
 
-  /* ══ 上色 ══ */
   function paint(theme) {
     var cIn = hex(theme.cIn), cMid = hex(theme.cMid), cOut = hex(theme.cOut), gold = hex(theme.gold);
     var pc = new Float32Array(G.size.length * 3);
@@ -434,11 +464,11 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
     document.getElementById('glow').style.background =
       'radial-gradient(circle at 50% 47%,' +
-      'rgba(' + theme.glow[0] + ',.20) 0%,' +
-      'rgba(' + theme.glow[0] + ',.10) 14%,' +
-      'rgba(' + theme.glow[1] + ',.045) 30%,' +
-      'rgba(' + theme.glow[2] + ',.015) 48%,' +
-      'rgba(0,0,0,0) 66%)';
+      'rgba(' + theme.glow[0] + ',.22) 0%,' +
+      'rgba(' + theme.glow[0] + ',.11) 13%,' +
+      'rgba(' + theme.glow[1] + ',.05) 28%,' +
+      'rgba(' + theme.glow[2] + ',.016) 46%,' +
+      'rgba(0,0,0,0) 64%)';
 
     var pal = document.getElementById('pal');
     pal.children[0].style.background = theme.cIn;
@@ -468,7 +498,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     gl.vertexAttribPointer(A.ph, 1, gl.FLOAT, false, 0, 0);
   }
 
-  /* ══ 相机 ══ */
   var FOV = 55 * Math.PI / 180;
   var yaw = 0;
   var pitch = 0.457;
@@ -499,6 +528,8 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     proj[12] = 0; proj[13] = 0; proj[14] = 2 * far * near / (near - far); proj[15] = 0;
   }
 
+  var PIX_BASE = 3.2;
+
   function resize() {
     DPR = Math.min(window.devicePixelRatio || 1, 2);
     W = window.innerWidth;
@@ -513,7 +544,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
     setProj();
     gl.uniformMatrix4fv(U.proj, false, proj);
-    gl.uniform1f(U.pix, DPR * 3.2);
   }
 
   resize();
@@ -538,20 +568,20 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     };
   }
 
-  /* ══ 标签 ══ */
+  /* 标签：记忆不多时全挂，多了只挂钉住的 */
   var labelBox = document.getElementById('labels');
   var labels = [];
 
   if (MEM.length) {
     MEM.forEach(function (m) {
-      if (m.tier < 2 && MEM.length > 30) return;
+      if (!m.core && m.tier < 2 && MEM.length > 14) return;
 
       var el = document.createElement('div');
       el.className = 'lbl';
       el.style.opacity = '0';
       el.innerHTML = '<div class="t"></div><div class="d"></div>';
       el.querySelector('.t').textContent = m.core ? '开始' : m.d.name;
-      el.querySelector('.d').textContent = m.d.day.slice(5);
+      el.querySelector('.d').textContent = m.d.day.slice(5).replace('-', '.');
       labelBox.appendChild(el);
 
       labels.push({ el: el, m: m });
@@ -559,10 +589,10 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
   } else {
     var note = document.getElementById('note');
     note.className = 'on';
-    note.innerHTML = '星云已经在这儿了。<br>写一条记忆，它就亮一颗。';
+    note.innerHTML = '这片星云还没有记忆星。' +
+      '<em>去记忆里写一句，这里就多一颗亮星。</em>';
   }
 
-  /* ══ 交互 ══ */
   var dragging = false;
   var moved = 0;
   var lastX = 0, lastY = 0;
@@ -572,12 +602,23 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
   var scrim = document.getElementById('scrim');
   var hint = document.getElementById('hint');
 
+  var STAR_SVG = '<svg viewBox="0 0 24 24"><path d="M12 0L14.2 9.8 24 12 14.2 14.2 12 24 9.8 14.2 0 12 9.8 9.8Z"/></svg>';
+
   function openCard(m) {
     picked = MEM.indexOf(m);
 
+    var st = document.getElementById('c-star');
+    st.innerHTML = STAR_SVG;
+    st.style.color = (window.__themeRef ? (window.__themeRef.dom[m.d.domain] || '#F0A6BC') : '#F0A6BC');
+    st.querySelector('svg').setAttribute('fill', 'currentColor');
+    st.style.opacity = '.95';
+
     document.getElementById('c-name').textContent = m.core ? '开始' : (m.d.name || '一条记忆');
-    document.getElementById('c-day').textContent = m.d.day + (m.d.pinned ? ' · 钉着' : '');
+    document.getElementById('c-en').textContent = m.d.domain;
+    document.getElementById('c-day').textContent = m.d.day.replace(/-/g, '.');
+    document.getElementById('c-tag').textContent = m.d.pinned ? '钉着' : m.d.domain;
     document.getElementById('c-body').textContent = m.d.text;
+    document.getElementById('c-body').scrollTop = 0;
 
     card.classList.add('show');
     scrim.classList.add('show');
@@ -631,7 +672,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
       var dx = p.x - e.clientX;
       var dy = p.y - e.clientY;
 
-      if (dx * dx + dy * dy < 1400 && p.z < bestZ) {
+      if (dx * dx + dy * dy < 2200 && p.z < bestZ) {
         best = m;
         bestZ = p.z;
       }
@@ -672,7 +713,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     if (e.touches.length < 2) pinch0 = 0;
   }, { passive: true });
 
-  /* ══ 换色 ══ */
   var ti = 0;
 
   try {
@@ -680,20 +720,20 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     THEMES.forEach(function (t, i) { if (t.id === saved) ti = i; });
   } catch (e) {}
 
+  window.__themeRef = THEMES[ti];
   paint(THEMES[ti]);
 
   document.getElementById('pal').addEventListener('click', function () {
     ti = (ti + 1) % THEMES.length;
+    window.__themeRef = THEMES[ti];
     paint(THEMES[ti]);
   });
 
-  /* ══ 渲染 ══ */
   var t0 = performance.now();
   var lastT = t0;
 
   gl.disable(gl.DEPTH_TEST);
   gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
   function frame(now) {
     requestAnimationFrame(frame);
@@ -714,28 +754,42 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     gl.clearColor(0.020, 0.008, 0.036, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+
+    /* 背景：压暗，让它退成底子 */
+    gl.uniform1f(U.fade, 0.72);
+    gl.uniform1f(U.pix, DPR * PIX_BASE);
+
     bind(BD);
     gl.drawArrays(gl.POINTS, 0, BD.n);
 
     bind(BP);
     gl.drawArrays(gl.POINTS, 0, BP.n);
 
+    /* 记忆星：先一圈大光晕，再一颗亮核心 */
     if (BM) {
       bind(BM);
+
+      gl.uniform1f(U.fade, 0.15);
+      gl.uniform1f(U.pix, DPR * PIX_BASE * 2.9);
+      gl.drawArrays(gl.POINTS, 0, BM.n);
+
+      gl.uniform1f(U.fade, 1.0);
+      gl.uniform1f(U.pix, DPR * PIX_BASE * 1.05);
       gl.drawArrays(gl.POINTS, 0, BM.n);
     }
 
     labels.forEach(function (L) {
       var p = screenOf(L.m.x, L.m.y, L.m.z);
 
-      if (!p || p.x < -60 || p.x > W + 60 || p.y < 60 || p.y > H - 40) {
+      if (!p || p.x < -60 || p.x > W + 60 || p.y < 80 || p.y > H - 60) {
         L.el.style.opacity = '0';
         return;
       }
 
-      L.el.style.opacity = (picked >= 0 && MEM[picked] !== L.m) ? '0.16' : (L.m.core ? '1' : '0.88');
+      L.el.style.opacity = (picked >= 0 && MEM[picked] !== L.m) ? '0.12' : (L.m.core ? '1' : '0.9');
       L.el.style.left = p.x + 'px';
-      L.el.style.top = (p.y + 12) + 'px';
+      L.el.style.top = (p.y + 16) + 'px';
     });
   }
 
