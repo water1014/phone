@@ -1,15 +1,4 @@
-/* xw-mem.js · 记忆页增强 v3
-
-   不动 pages.js，渲染完在它上面接一层。
-
-   参照 wanyingsun357-ship-it/pwa-location-guide 的 memory 文档：
-     数据结构  {status, decayClass, event, feel, act}
-     状态机    ACTIVE / PENDING / COMPLETED / SUPERSEDED / ARCHIVED
-     衰减公式  2 ^ -(天数 / 半衰期)
-
-   v3 增加：云端配置入口 + 两个手动同步动作。
-*/
-
+/* xw-mem.js · 记忆页增强 v4 */
 (function () {
   const D = document;
   const DAY = 86400000;
@@ -28,18 +17,11 @@
     none: '\u4e0d\u8870\u51cf'
   };
 
-  function notes() {
-    return Array.isArray(XW.S.notes) ? XW.S.notes : [];
-  }
+  function notes() { return Array.isArray(XW.S.notes) ? XW.S.notes : []; }
 
-  function save() {
-    XW.S.notes = notes();
-    XW.save('notes');
-  }
+  function save() { XW.S.notes = notes(); XW.save('notes'); }
 
-  function rerender() {
-    if (window.Router && Router.reopen) Router.reopen('memory');
-  }
+  function rerender() { if (window.Router && Router.reopen) Router.reopen('memory'); }
 
   function normalize() {
     let dirty = false;
@@ -70,7 +52,6 @@
     return Math.pow(2, -ageDays(it) / half);
   }
 
-  /* ── 搜索 ── */
   function filter(q) {
     const body = D.getElementById('app-body');
     if (!body) return;
@@ -108,10 +89,15 @@
     box.appendChild(input);
     input.addEventListener('input', function () { filter(this.value.trim()); });
 
+    const go = D.createElement('a');
+    go.className = 'xw-mem-galaxy';
+    go.href = 'galaxy.html';
+    go.textContent = '\u94f6\u6cb3 \u2192';
+    box.appendChild(go);
+
     hero.insertAdjacentElement('afterend', box);
   }
 
-  /* ── 云端面板 ── */
   function addCloud(body) {
     if (D.getElementById('xw-cloud')) return;
 
@@ -123,7 +109,7 @@
     box.id = 'xw-cloud';
     box.className = 'xw-cloud';
 
-    const c = window.XWCloud ? XWCloud.cfg() : { url: '', key: '', ok: false };
+    const c = window.XWCloud ? XWCloud.cfg() : { url: '', key: '' };
 
     box.innerHTML =
       '<div class="xw-cloud-hd">\u4e91\u7aef\u5907\u4efd</div>' +
@@ -167,9 +153,7 @@
     D.getElementById('xw-sb-up').addEventListener('click', function () {
       XWCloud.setCfg(uEl.value, kEl.value);
       const list = notes();
-      let n = 0;
-      let fail = 0;
-
+      let n = 0, fail = 0;
       say('\u4f20\u7740\u2026 0/' + list.length);
 
       const run = function (i) {
@@ -184,14 +168,12 @@
         XWCloud.push(it)
           .then(function (id) {
             if (id) it.cloudId = id;
-            n++;
-            save();
+            n++; save();
             say('\u4f20\u7740\u2026 ' + (i + 1) + '/' + list.length);
           })
           .catch(function () { fail++; })
           .then(function () { run(i + 1); });
       };
-
       run(0);
     });
 
@@ -211,7 +193,6 @@
     });
   }
 
-  /* ── 每张卡 ── */
   function dressCard(card, item, i) {
     const top = card.querySelector('.mcard-top');
     const del = card.querySelector('.mdel');
@@ -238,7 +219,6 @@
         if (window.UI && UI.toast) {
           UI.toast(now[i].pinned ? '\u9489\u4f4f\u4e86' : '\u53d6\u4e0b\u6765\u4e86');
         }
-
         rerender();
       });
 
