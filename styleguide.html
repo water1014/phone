@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#F5F4F1">
 <title>小窝 · 规范</title>
 <link rel="stylesheet" href="css/system.css?v=2">
+<link rel="stylesheet" href="css/ui.css?v=1">
 <style>
   * { box-sizing: border-box; }
 
@@ -48,7 +49,6 @@
   .theme {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
     margin-top: 20px;
     padding: 7px 14px;
     border: 0;
@@ -62,10 +62,8 @@
     font-family: inherit;
   }
 
-  section {
-    padding: 0 var(--pad-x);
-    margin-bottom: var(--sp-8);
-  }
+  section { padding: 0 var(--pad-x); margin-bottom: var(--sp-8); }
+
   .sec-hd {
     display: flex;
     align-items: baseline;
@@ -98,11 +96,7 @@
     box-shadow: var(--sh-1);
   }
 
-  .swatches {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--sp-3);
-  }
+  .swatches { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-3); }
   .sw {
     border-radius: var(--rd-2);
     overflow: hidden;
@@ -184,11 +178,7 @@
     font-size: var(--fs-3);
     color: var(--c-ink2);
   }
-  .gbox.flat {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: rgba(255,255,255,.56);
-  }
+  .gbox.flat { backdrop-filter: none; -webkit-backdrop-filter: none; }
   .gwrap {
     padding: var(--sp-5);
     border-radius: var(--rd-card);
@@ -196,10 +186,7 @@
     background-image: var(--c-aura);
     background-size: cover;
   }
-  .gwrap.blank {
-    background-image: none;
-    background-color: var(--c-card);
-  }
+  .gwrap.blank { background-image: none; background-color: var(--c-card); }
   .glabel {
     margin: 0 0 8px;
     font-size: var(--fs-1);
@@ -299,56 +286,6 @@
     color: var(--c-ink3);
   }
 
-  .composer {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--sp-3);
-    padding: var(--sp-4) var(--sp-4) var(--sp-3);
-    border-radius: var(--rd-hero);
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    box-shadow: var(--sh-2), inset 0 0 0 1px var(--glass-brd);
-  }
-  .composer .fake {
-    flex: 1 1 100%;
-    padding: 4px 6px 10px;
-    font-size: var(--fs-6);
-    color: var(--c-ink3);
-  }
-  .cbtn {
-    display: grid;
-    place-items: center;
-    width: var(--tap-2);
-    height: var(--tap-2);
-    border: 0;
-    border-radius: var(--rd-full);
-    background: var(--glass-bg);
-    box-shadow: inset 0 0 0 1px var(--glass-brd);
-    font-size: var(--fs-6);
-    color: var(--c-ink2);
-    font-family: inherit;
-  }
-  .cbtn.heart { color: var(--c-accent); }
-  .cbtn.send {
-    margin-left: auto;
-    background: var(--c-ink1);
-    color: var(--c-card);
-    box-shadow: var(--sh-1);
-  }
-  .chips { display: flex; gap: var(--sp-2); margin-bottom: var(--sp-3); flex-wrap: wrap; }
-  .chip {
-    padding: var(--sp-1) var(--sp-4);
-    border-radius: var(--rd-full);
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur-sm);
-    -webkit-backdrop-filter: var(--glass-blur-sm);
-    box-shadow: inset 0 0 0 1px var(--glass-brd);
-    font-size: var(--fs-3);
-    color: var(--c-ink2);
-  }
-
   .ex { width: 100%; border-collapse: collapse; font-size: var(--fs-3); }
   .ex th {
     padding: 0 0 10px;
@@ -369,6 +306,9 @@
   .ex td:first-child { width: 24px; color: var(--c-accent); font-family: ui-monospace, Menlo, monospace; }
   .ex tr:last-child td { border-bottom: 0; }
   .ex code { font-size: var(--fs-2); color: var(--c-ink3); }
+
+  .stack { display: grid; gap: var(--sp-4); }
+  .hstack { display: flex; gap: var(--sp-3); flex-wrap: wrap; align-items: center; }
 </style>
 </head>
 <body>
@@ -376,25 +316,25 @@
 <header class="hd">
   <span class="en">Design tokens</span>
   <h1>小窝 · 规范</h1>
-  <p>这不是页面，是尺子。所有页面的颜色、字号、间距、圆角只从这套里取。哪一档看着不对，告诉我编号，我改一处，全站跟着动。</p>
+  <p>这不是页面，是尺子。所有页面的颜色、字号、间距、圆角只从这套里取。哪一档看着不对，告诉我编号。</p>
   <button type="button" class="theme" id="theme">切到夜幕</button>
 </header>
 
 <section>
   <div class="sec-hd"><span class="no">01</span><h2>色板</h2></div>
-  <p class="sec-note">雾的家族 + 墨的骨架。彩色全部低饱和、高明度，真正撑骨架的是墨黑。强调色全站只有一个，占比不超过 5%。</p>
+  <p class="sec-note">雾的家族 + 墨的骨架。真正撑骨架的是墨黑，彩色只做点缀。强调色全站只有一个。</p>
   <div class="swatches">
-    <div class="sw"><i style="background:#F5F4F1"></i><div><b>页面底</b><em>--c-paper #F5F4F1</em></div></div>
-    <div class="sw"><i style="background:#FFFFFF;box-shadow:inset 0 0 0 1px #E7E3DC"></i><div><b>卡片</b><em>--c-card #FFFFFF</em></div></div>
-    <div class="sw"><i style="background:#E7E3DC"></i><div><b>线条</b><em>--c-line #E7E3DC</em></div></div>
-    <div class="sw"><i style="background:#EFEAE3"></i><div><b>轨道 / 凹陷</b><em>--c-fill #EFEAE3</em></div></div>
-    <div class="sw"><i style="background:#26221E"></i><div><b>主文字</b><em>--c-ink1 #26221E</em></div></div>
-    <div class="sw"><i style="background:#4A443D"></i><div><b>次要</b><em>--c-ink2 #4A443D</em></div></div>
-    <div class="sw"><i style="background:#9B948A"></i><div><b>弱化</b><em>--c-ink3 #9B948A</em></div></div>
-    <div class="sw"><i style="background:#C9C3B9"></i><div><b>极弱</b><em>--c-ink4 #C9C3B9</em></div></div>
-    <div class="sw"><i style="background:#9E6A71"></i><div><b>强调 · 干玫瑰</b><em>--c-accent #9E6A71</em></div></div>
-    <div class="sw"><i style="background:#7E5259"></i><div><b>强调 · 深</b><em>--c-accent-deep #7E5259</em></div></div>
-    <div class="sw"><i style="background:#F0E2E3"></i><div><b>强调 · 浅</b><em>--c-accent-soft #F0E2E3</em></div></div>
+    <div class="sw"><i style="background:#F5F4F1"></i><div><b>页面底</b><em>--c-paper</em></div></div>
+    <div class="sw"><i style="background:#FFFFFF;box-shadow:inset 0 0 0 1px #E7E3DC"></i><div><b>卡片</b><em>--c-card</em></div></div>
+    <div class="sw"><i style="background:#E7E3DC"></i><div><b>线条</b><em>--c-line</em></div></div>
+    <div class="sw"><i style="background:#EFEAE3"></i><div><b>轨道 / 凹陷</b><em>--c-fill</em></div></div>
+    <div class="sw"><i style="background:#26221E"></i><div><b>主文字</b><em>--c-ink1</em></div></div>
+    <div class="sw"><i style="background:#4A443D"></i><div><b>次要</b><em>--c-ink2</em></div></div>
+    <div class="sw"><i style="background:#9B948A"></i><div><b>弱化</b><em>--c-ink3</em></div></div>
+    <div class="sw"><i style="background:#C9C3B9"></i><div><b>极弱</b><em>--c-ink4</em></div></div>
+    <div class="sw"><i style="background:#9E6A71"></i><div><b>强调 · 干玫瑰</b><em>--c-accent</em></div></div>
+    <div class="sw"><i style="background:#7E5259"></i><div><b>强调 · 深</b><em>--c-accent-deep</em></div></div>
+    <div class="sw"><i style="background:#F0E2E3"></i><div><b>强调 · 浅</b><em>--c-accent-soft</em></div></div>
     <div class="sw"><i style="background:linear-gradient(135deg,#F9F0EF,#F0DCDA 55%,#E5CFCB)"></i><div><b>重点卡渐变</b><em>--c-accent-grad</em></div></div>
   </div>
 </section>
@@ -447,7 +387,7 @@
 
 <section>
   <div class="sec-hd"><span class="no">05</span><h2>玻璃</h2></div>
-  <p class="sec-note">玻璃的三件套是背景、模糊、一道细边。但前提是底下先铺了氛围光——没有光可糊，玻璃就是一块白。</p>
+  <p class="sec-note">玻璃的三件套是背景、模糊、一道细边。前提是底下先铺了氛围光——没光可糊，玻璃就是一块白。</p>
   <div class="glass-pair">
     <div class="gwrap">
       <p class="glabel">底下有氛围光</p>
@@ -470,10 +410,61 @@
 </section>
 
 <section>
-  <div class="sec-hd"><span class="no">07</span><h2>组件样片</h2></div>
-  <p class="sec-note">聊天页的实物。气泡、水滴、时间、旁白、输入条，都是按这套尺子量出来的。</p>
+  <div class="sec-hd"><span class="no">07</span><h2>组件</h2></div>
+  <p class="sec-note">已入册的组件（css/ui.css）。页面里只准用这些拼，不准现编。</p>
 
-  <div class="card chat-demo">
+  <p class="ui-group">卡片 · 三种</p>
+  <div class="stack">
+    <div class="ui-card">普通卡片。白底、圆角 22、贴着的那层薄影。</div>
+    <div class="ui-card line">描边卡片。不要影子的时候用这个。</div>
+    <div class="ui-card hero">重点卡。玫瑰渐变，一屏最多一张。</div>
+    <div class="ui-card float">玻璃卡片。里面装浮层内容，不装长文本。</div>
+  </div>
+
+  <p class="ui-group">列表</p>
+  <div class="ui-list">
+    <div class="ui-row"><span class="ui-label">导出聊天</span><span class="ui-value">全部</span></div>
+    <div class="ui-row"><span class="ui-label">清空聊天</span><span class="ui-value" style="color:var(--c-accent-deep)">不可撤销</span></div>
+    <div class="ui-row"><span class="ui-label">收发模型</span><span class="ui-value ui-mono">deepseek-chat</span></div>
+  </div>
+
+  <p class="ui-group">按钮</p>
+  <div class="hstack">
+    <button type="button" class="ui-btn">普通</button>
+    <button type="button" class="ui-btn fill">实心</button>
+    <button type="button" class="ui-btn ghost">玻璃</button>
+    <button type="button" class="ui-btn accent">强调</button>
+    <button type="button" class="ui-btn danger">危险</button>
+  </div>
+
+  <p class="ui-group">胶囊</p>
+  <div class="hstack">
+    <span class="ui-chip">未选</span>
+    <span class="ui-chip on">已选</span>
+  </div>
+
+  <p class="ui-group">输入行</p>
+  <div class="ui-list">
+    <label class="ui-field"><span class="ui-label">接口地址</span><input type="text" placeholder="https://…"></label>
+  </div>
+
+  <p class="ui-group">空状态</p>
+  <div class="ui-card">
+    <div class="ui-empty"><b>还没有照片。</b>图放进 images/，我一张张摆上。</div>
+  </div>
+
+  <p class="ui-group">两套数字字体</p>
+  <div class="ui-list">
+    <div class="ui-row"><span class="ui-label">等宽（对表、金额、token）</span><span class="ui-value ui-mono">302,863</span></div>
+    <div class="ui-row"><span class="ui-label">展示衬线（天数、时间）</span><span class="ui-value ui-num" style="font-size:24px">102</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-hd"><span class="no">08</span><h2>聊天页样片</h2></div>
+  <p class="sec-note">气泡、水滴、时间、旁白。这四样已经真在用的。</p>
+
+  <div class="ui-card chat-demo">
     <div class="row">
       <div class="ava">祁</div>
       <div class="main">
@@ -499,25 +490,11 @@
       </div>
     </div>
   </div>
-
-  <div style="margin-top:var(--sp-4)">
-    <div class="chips">
-      <span class="chip">早</span>
-      <span class="chip">在干嘛</span>
-      <span class="chip">眠了吗</span>
-    </div>
-    <div class="composer">
-      <div class="fake">输入消息…</div>
-      <button type="button" class="cbtn">＋</button>
-      <button type="button" class="cbtn heart">♡</button>
-      <button type="button" class="cbtn send">↑</button>
-    </div>
-  </div>
 </section>
 
 <section>
-  <div class="sec-hd"><span class="no">08</span><h2>例外登记</h2></div>
-  <p class="sec-note">这几条是本人拍定的，规范改不动它。新增例外必须写进这张表，注明来历和边界。</p>
+  <div class="sec-hd"><span class="no">09</span><h2>例外登记</h2></div>
+  <p class="sec-note">这几条是本人拍定的，规范改不动。新增例外必须写进这张表，注明来历和边界。</p>
   <div class="card">
     <table class="ex">
       <thead><tr><th>#</th><th>例外 / 边界</th></tr></thead>
