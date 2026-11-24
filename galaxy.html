@@ -11,10 +11,7 @@ html,body{height:100%;overflow:hidden;background:#050209}
 body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 #gl{position:fixed;inset:0;display:block;touch-action:none;width:100%;height:100%}
 
-/* 中心柔光：叠在 WebGL 上面，屏幕混合 */
-#glow{position:fixed;inset:0;z-index:2;pointer-events:none;
-  background:radial-gradient(circle at 50% 47%, rgba(255,226,246,.20) 0%, rgba(234,178,242,.10) 14%, rgba(186,142,236,.045) 30%, rgba(120,90,180,.015) 48%, rgba(0,0,0,0) 66%);
-  mix-blend-mode:screen}
+#glow{position:fixed;inset:0;z-index:2;pointer-events:none;mix-blend-mode:screen}
 
 .head{position:fixed;top:0;left:0;right:0;z-index:10;text-align:center;
   padding:calc(env(safe-area-inset-top) + 14px) 16px 0;pointer-events:none;
@@ -25,6 +22,19 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 .head .sub{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;
   font-size:12.5px;letter-spacing:.1em;color:rgba(230,205,242,.7);margin-top:5px}
 .head .zh{font-size:11.5px;font-weight:300;letter-spacing:.16em;color:rgba(220,205,238,.32);margin-top:10px}
+
+.pal{position:fixed;right:14px;top:calc(env(safe-area-inset-top) + 12px);z-index:14;
+  width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);display:grid;place-items:center;gap:0;padding:0}
+.pal i{display:block;width:13px;height:13px;border-radius:50%;position:absolute;
+  transition:background .45s ease}
+.pal i:nth-child(1){transform:translate(-4px,-4px)}
+.pal i:nth-child(2){transform:translate(4px,4px)}
+
+.palname{position:fixed;right:14px;top:calc(env(safe-area-inset-top) + 56px);z-index:14;
+  font-size:10px;letter-spacing:.16em;color:rgba(235,215,240,.5);
+  opacity:0;transition:opacity .4s ease;pointer-events:none}
+.palname.on{opacity:1}
 
 .back{position:fixed;left:14px;bottom:calc(env(safe-area-inset-bottom) + 14px);z-index:12;
   width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
@@ -81,6 +91,9 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
   <div class="zh">这里，是我们一起过掉的日子。</div>
 </div>
 
+<button class="pal" id="pal" aria-label="换颜色"><i></i><i></i></button>
+<div class="palname" id="palname"></div>
+
 <div class="hint" id="hint">拖动 · 双指缩放 · 点一颗星</div>
 <div id="note"></div>
 
@@ -97,12 +110,37 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 (function () {
   'use strict';
 
-  var PAL = {
-    '恋爱': '#ff8fd0',
-    '工程': '#8f9fff',
-    '情绪': '#b48ce8',
-    '日常': '#cfd8f0'
-  };
+  /* ══ 四套颜色 ══ */
+  var THEMES = [
+    {
+      id: 'rose', name: '雾玫瑰',
+      cIn: '#F6E2E4', cMid: '#C08F99', cOut: '#7A666E', gold: '#E8C89A',
+      dust: ['#E2C4C8', '#A8909A', '#F0D8DC', '#9E8A92', '#E8C89A'],
+      dom: { '恋爱': '#E8A6B6', '工程': '#94A2BE', '情绪': '#BCA6CE', '日常': '#A6B6BE' },
+      glow: ['255,236,238', '222,170,180', '148,118,128']
+    },
+    {
+      id: 'gold', name: '雾金',
+      cIn: '#FFF4E2', cMid: '#DDBB90', cOut: '#86765F', gold: '#F0D0A0',
+      dust: ['#E8D0AE', '#B8A686', '#F5E6CC', '#9E8E76', '#F0D0A0'],
+      dom: { '恋爱': '#E0B49A', '工程': '#A6A8B8', '情绪': '#C8B090', '日常': '#ACB4AC' },
+      glow: ['255,246,230', '232,200,154', '158,138,110']
+    },
+    {
+      id: 'blue', name: '夜灰蓝',
+      cIn: '#EDF3FA', cMid: '#9CB0C8', cOut: '#5F7288', gold: '#D8C8A8',
+      dust: ['#BCD0E4', '#8EA2BC', '#DCE8F5', '#7E92A8', '#D8C8A8'],
+      dom: { '恋爱': '#C8A8C0', '工程': '#8EA8D0', '情绪': '#A898C8', '日常': '#96AEC0' },
+      glow: ['238,245,252', '172,194,218', '108,128,152']
+    },
+    {
+      id: 'violet', name: '粉紫（原色）',
+      cIn: '#FFDCF2', cMid: '#C891FF', cOut: '#8FB0FF', gold: '#FFCF9A',
+      dust: ['#E8B8FF', '#9FB8FF', '#FFD0EC', '#C8A0F0', '#FFE0B0'],
+      dom: { '恋爱': '#FF8FD0', '工程': '#8F9FFF', '情绪': '#B48CE8', '日常': '#CFD8F0' },
+      glow: ['255,226,246', '234,178,242', '162,126,226']
+    }
+  ];
 
   var KIND = [
     ['恋爱', /喜欢|爱|想你|抱|亲亲|陪|一起|老公|老婆|宝宝|暖|甜/],
@@ -117,8 +155,8 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     return '日常';
   }
 
-  function pad(n) { return String(n).padStart(2, '0'); }
-  function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  function ymd(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
 
   function loadStars() {
     var raw = [];
@@ -234,22 +272,13 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
   var pw = function (p) { return Math.pow(Math.random(), p); };
   var sgn = function () { return Math.random() < 0.5 ? 1 : -1; };
 
-  /* ══ 盘（照教程：双臂、大散射、薄盘）══ */
   var GAL_R = 5, BRANCHES = 2, SPIN = 1.15, SCAT = 0.55;
 
-  var P = { pos: [], col: [], size: [], ph: [] };
-  var D = { pos: [], col: [], size: [], ph: [] };
-
-  function push(arr, x, y, z, c, s) {
-    arr.pos.push(x, y, z);
-    arr.col.push(c[0], c[1], c[2]);
-    arr.size.push(s);
-    arr.ph.push(Math.random() * 6.283);
-  }
+  /* ══ 几何只算一次，颜色单独生成 ══ */
+  var G = { pos: [], size: [], ph: [], tN: [], isGold: [] };
+  var DST = { pos: [], size: [], ph: [], ci: [] };
 
   (function () {
-    var cIn = hex('#ffdcf2'), cMid = hex('#c891ff'), cOut = hex('#8fb0ff'), gold = hex('#ffcf9a');
-
     for (var i = 0; i < 14000; i++) {
       var r = pw(1.7) * GAL_R;
       var branch = (i % BRANCHES) / BRANCHES * Math.PI * 2;
@@ -259,63 +288,52 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
       var sz = pw(2.6) * sgn() * SCAT * (r + 0.4);
       var sy = pw(3.0) * sgn() * SCAT * 0.34 * (r + 0.3);
 
-      var x = Math.cos(branch + spin) * r + sx;
-      var z = Math.sin(branch + spin) * r + sz;
-
       var tN = r / GAL_R;
-      var c;
 
-      if (tN < 0.5) {
-        var k1 = tN / 0.5;
-        c = [cIn[0] + (cMid[0] - cIn[0]) * k1, cIn[1] + (cMid[1] - cIn[1]) * k1, cIn[2] + (cMid[2] - cIn[2]) * k1];
-      } else {
-        var k2 = (tN - 0.5) / 0.5;
-        c = [cMid[0] + (cOut[0] - cMid[0]) * k2, cMid[1] + (cOut[1] - cMid[1]) * k2, cMid[2] + (cOut[2] - cMid[2]) * k2];
-      }
-
-      if (Math.random() < 0.06) c = gold;
-
-      push(P, x, sy, z, c, rnd(1.4, 5.0) * (tN < 0.3 ? 1.15 : 1));
+      G.pos.push(Math.cos(branch + spin) * r + sx, sy, Math.sin(branch + spin) * r + sz);
+      G.size.push(rnd(1.4, 5.0) * (tN < 0.3 ? 1.15 : 1));
+      G.ph.push(Math.random() * 6.283);
+      G.tN.push(tN);
+      G.isGold.push(Math.random() < 0.06);
     }
-
-    /* 星尘：铺满空间，撑景深 */
-    var dustCols = [hex('#e8b8ff'), hex('#9fb8ff'), hex('#ffd0ec'), hex('#c8a0f0'), hex('#ffe0b0')];
 
     for (var j = 0; j < 6400; j++) {
       var r2 = pw(1.1) * GAL_R * 1.7 + 0.5;
       var th = Math.random() * Math.PI * 2;
-      var yy = (Math.random() - 0.5) * GAL_R * 1.1;
 
-      push(D, Math.cos(th) * r2, yy, Math.sin(th) * r2, dustCols[Math.floor(Math.random() * dustCols.length)], rnd(0.5, 1.8));
+      DST.pos.push(Math.cos(th) * r2, (Math.random() - 0.5) * GAL_R * 1.1, Math.sin(th) * r2);
+      DST.size.push(rnd(0.5, 1.8));
+      DST.ph.push(Math.random() * 6.283);
+      DST.ci.push(Math.floor(Math.random() * 5));
     }
   })();
 
-  /* ══ 记忆星 ══ */
+  /* 记忆星位置 */
   var MEM = [];
-  var M = { pos: [], col: [], size: [], ph: [] };
 
   if (STARS.length) {
     var sorted = STARS.slice().sort(function (a, b) { return a.t - b.t; });
-    var t0 = sorted[0].t;
-    var t1 = sorted[sorted.length - 1].t;
-    var span = Math.max(1, t1 - t0);
+    var tA = sorted[0].t;
+    var tB = sorted[sorted.length - 1].t;
+    var span = Math.max(1, tB - tA);
 
     sorted.forEach(function (s, i) {
-      var tt = (s.t - t0) / span;
+      var tt = (s.t - tA) / span;
       var r = 0.15 + Math.pow(tt, 0.85) * GAL_R * 0.96;
       var branch = (i % BRANCHES) / BRANCHES * Math.PI * 2;
       var spin = r * SPIN;
 
-      var x = Math.cos(branch + spin) * r + rnd(-0.35, 0.35);
-      var z = Math.sin(branch + spin) * r + rnd(-0.35, 0.35);
-      var y = rnd(-0.16, 0.16);
-
       var tier = s.pinned ? 2 : 0;
-      var dim = [0.62, 0.85, 1.0, 1.15][tier];
-      var c = hex(PAL[s.domain] || '#cfd8f0');
 
-      MEM.push({ d: s, x: x, y: y, z: z, tier: tier, size: [5, 9, 12, 13][tier] });
-      push(M, x, y, z, [c[0] * dim, c[1] * dim, c[2] * dim], [5, 9, 12, 13][tier]);
+      MEM.push({
+        d: s,
+        x: Math.cos(branch + spin) * r + rnd(-0.35, 0.35),
+        y: rnd(-0.16, 0.16),
+        z: Math.sin(branch + spin) * r + rnd(-0.35, 0.35),
+        tier: tier,
+        size: [5, 9, 12, 13][tier],
+        dim: [0.62, 0.85, 1.0, 1.15][tier]
+      });
     });
 
     var c0 = 0;
@@ -327,67 +345,132 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     MEM[c0].core = true;
     MEM[c0].tier = 3;
     MEM[c0].size = 13;
-
-    M.pos[c0 * 3] = 0;
-    M.pos[c0 * 3 + 1] = 0;
-    M.pos[c0 * 3 + 2] = 0;
-    M.size[c0] = 13;
-    M.col[c0 * 3] *= 1.15;
-    M.col[c0 * 3 + 1] *= 1.15;
-    M.col[c0 * 3 + 2] *= 1.15;
+    MEM[c0].dim = 1.15;
   }
 
-  /* ══ 上传 buffer ══ */
-  function build(arr) {
-    var n = arr.size.length;
-    var g = {
-      n: n,
-      pos: gl.createBuffer(),
-      col: gl.createBuffer(),
-      size: gl.createBuffer(),
-      ph: gl.createBuffer()
-    };
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, g.pos);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr.pos), gl.STATIC_DRAW);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, g.col);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr.col), gl.STATIC_DRAW);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, g.size);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr.size), gl.STATIC_DRAW);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, g.ph);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr.ph), gl.STATIC_DRAW);
-
-    return g;
+  /* ══ buffer ══ */
+  function mkBuf(n) {
+    return { n: n, pos: gl.createBuffer(), col: gl.createBuffer(), size: gl.createBuffer(), ph: gl.createBuffer() };
   }
 
-  var GB = build(P);
-  var GDT = build(D);
-  var GM = M.size.length ? build(M) : null;
+  function putPosSizePh(b, pos, size, ph) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, b.pos);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pos), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, b.size);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(size), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, b.ph);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ph), gl.STATIC_DRAW);
+  }
 
-  function bind(g) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, g.pos);
+  var BP = mkBuf(G.size.length);
+  var BD = mkBuf(DST.size.length);
+  var BM = MEM.length ? mkBuf(MEM.length) : null;
+
+  putPosSizePh(BP, G.pos, G.size, G.ph);
+  putPosSizePh(BD, DST.pos, DST.size, DST.ph);
+
+  if (BM) {
+    var mpos = [], msize = [], mph = [];
+    MEM.forEach(function (m) {
+      mpos.push(m.x, m.y, m.z);
+      msize.push(m.size);
+      mph.push(Math.random() * 6.283);
+    });
+    putPosSizePh(BM, mpos, msize, mph);
+  }
+
+  /* ══ 上色 ══ */
+  function paint(theme) {
+    var cIn = hex(theme.cIn), cMid = hex(theme.cMid), cOut = hex(theme.cOut), gold = hex(theme.gold);
+    var pc = new Float32Array(G.size.length * 3);
+
+    for (var i = 0; i < G.size.length; i++) {
+      var tN = G.tN[i];
+      var c;
+
+      if (G.isGold[i]) {
+        c = gold;
+      } else if (tN < 0.5) {
+        var k1 = tN / 0.5;
+        c = [cIn[0] + (cMid[0] - cIn[0]) * k1, cIn[1] + (cMid[1] - cIn[1]) * k1, cIn[2] + (cMid[2] - cIn[2]) * k1];
+      } else {
+        var k2 = Math.min(1, (tN - 0.5) / 0.5);
+        c = [cMid[0] + (cOut[0] - cMid[0]) * k2, cMid[1] + (cOut[1] - cMid[1]) * k2, cMid[2] + (cOut[2] - cMid[2]) * k2];
+      }
+
+      pc[i * 3] = c[0];
+      pc[i * 3 + 1] = c[1];
+      pc[i * 3 + 2] = c[2];
+    }
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, BP.col);
+    gl.bufferData(gl.ARRAY_BUFFER, pc, gl.STATIC_DRAW);
+
+    var dc = new Float32Array(DST.size.length * 3);
+
+    for (var j = 0; j < DST.size.length; j++) {
+      var c2 = hex(theme.dust[DST.ci[j]]);
+      dc[j * 3] = c2[0];
+      dc[j * 3 + 1] = c2[1];
+      dc[j * 3 + 2] = c2[2];
+    }
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, BD.col);
+    gl.bufferData(gl.ARRAY_BUFFER, dc, gl.STATIC_DRAW);
+
+    if (BM) {
+      var mc = new Float32Array(MEM.length * 3);
+
+      MEM.forEach(function (m, i) {
+        var cc = hex(theme.dom[m.d.domain] || theme.dom['日常']);
+        mc[i * 3] = cc[0] * m.dim;
+        mc[i * 3 + 1] = cc[1] * m.dim;
+        mc[i * 3 + 2] = cc[2] * m.dim;
+      });
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, BM.col);
+      gl.bufferData(gl.ARRAY_BUFFER, mc, gl.STATIC_DRAW);
+    }
+
+    document.getElementById('glow').style.background =
+      'radial-gradient(circle at 50% 47%,' +
+      'rgba(' + theme.glow[0] + ',.20) 0%,' +
+      'rgba(' + theme.glow[0] + ',.10) 14%,' +
+      'rgba(' + theme.glow[1] + ',.045) 30%,' +
+      'rgba(' + theme.glow[2] + ',.015) 48%,' +
+      'rgba(0,0,0,0) 66%)';
+
+    var pal = document.getElementById('pal');
+    pal.children[0].style.background = theme.cIn;
+    pal.children[1].style.background = theme.cMid;
+
+    var nm = document.getElementById('palname');
+    nm.textContent = theme.name;
+    nm.classList.add('on');
+    clearTimeout(nm._t);
+    nm._t = setTimeout(function () { nm.classList.remove('on'); }, 1600);
+
+    try { localStorage.setItem('xw_galaxy_theme', theme.id); } catch (e) {}
+  }
+
+  function bind(b) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, b.pos);
     gl.enableVertexAttribArray(A.pos);
     gl.vertexAttribPointer(A.pos, 3, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, g.col);
+    gl.bindBuffer(gl.ARRAY_BUFFER, b.col);
     gl.enableVertexAttribArray(A.col);
     gl.vertexAttribPointer(A.col, 3, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, g.size);
+    gl.bindBuffer(gl.ARRAY_BUFFER, b.size);
     gl.enableVertexAttribArray(A.size);
     gl.vertexAttribPointer(A.size, 1, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, g.ph);
+    gl.bindBuffer(gl.ARRAY_BUFFER, b.ph);
     gl.enableVertexAttribArray(A.ph);
     gl.vertexAttribPointer(A.ph, 1, gl.FLOAT, false, 0, 0);
   }
 
-  /* ══ 相机：仰 0.457 rad（26°），dist 7.02，和模板一致 ══ */
+  /* ══ 相机 ══ */
   var FOV = 55 * Math.PI / 180;
-  var yaw = 0.0;
+  var yaw = 0;
   var pitch = 0.457;
   var dist = 8.4;
   var distTarget = 7.02;
@@ -399,10 +482,10 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     var cy = Math.cos(yaw), sy = Math.sin(yaw);
     var cp = Math.cos(pitch), sp = Math.sin(pitch);
 
-    view[0] = cy;      view[1] = sp * sy; view[2] = -cp * sy; view[3] = 0;
-    view[4] = 0;       view[5] = cp;      view[6] = sp;       view[7] = 0;
-    view[8] = sy;      view[9] = -sp * cy; view[10] = cp * cy; view[11] = 0;
-    view[12] = 0;      view[13] = 0;      view[14] = -dist;   view[15] = 1;
+    view[0] = cy; view[1] = sp * sy; view[2] = -cp * sy; view[3] = 0;
+    view[4] = 0; view[5] = cp; view[6] = sp; view[7] = 0;
+    view[8] = sy; view[9] = -sp * cy; view[10] = cp * cy; view[11] = 0;
+    view[12] = 0; view[13] = 0; view[14] = -dist; view[15] = 1;
   }
 
   function setProj() {
@@ -435,7 +518,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
   resize();
 
-  /* ══ 点击投影（CPU 端，和 shader 同一套矩阵）══ */
   function screenOf(x, y, z) {
     var cy = Math.cos(yaw), sy = Math.sin(yaw);
     var cp = Math.cos(pitch), sp = Math.sin(pitch);
@@ -524,6 +606,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
     var dx = e.clientX - lastX;
     var dy = e.clientY - lastY;
+
     lastX = e.clientX;
     lastY = e.clientY;
 
@@ -589,6 +672,21 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     if (e.touches.length < 2) pinch0 = 0;
   }, { passive: true });
 
+  /* ══ 换色 ══ */
+  var ti = 0;
+
+  try {
+    var saved = localStorage.getItem('xw_galaxy_theme');
+    THEMES.forEach(function (t, i) { if (t.id === saved) ti = i; });
+  } catch (e) {}
+
+  paint(THEMES[ti]);
+
+  document.getElementById('pal').addEventListener('click', function () {
+    ti = (ti + 1) % THEMES.length;
+    paint(THEMES[ti]);
+  });
+
   /* ══ 渲染 ══ */
   var t0 = performance.now();
   var lastT = t0;
@@ -607,10 +705,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
     if (!dragging && pinch0 === 0) yaw += dt * 0.035;
 
-    /* 开场推近 */
-    if (dist > distTarget) {
-      dist = Math.max(distTarget, dist - dt * 12);
-    }
+    if (dist > distTarget) dist = Math.max(distTarget, dist - dt * 12);
 
     setView();
     gl.uniformMatrix4fv(U.view, false, view);
@@ -619,18 +714,17 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     gl.clearColor(0.020, 0.008, 0.036, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    bind(GDT);
-    gl.drawArrays(gl.POINTS, 0, GDT.n);
+    bind(BD);
+    gl.drawArrays(gl.POINTS, 0, BD.n);
 
-    bind(GB);
-    gl.drawArrays(gl.POINTS, 0, GB.n);
+    bind(BP);
+    gl.drawArrays(gl.POINTS, 0, BP.n);
 
-    if (GM) {
-      bind(GM);
-      gl.drawArrays(gl.POINTS, 0, GM.n);
+    if (BM) {
+      bind(BM);
+      gl.drawArrays(gl.POINTS, 0, BM.n);
     }
 
-    /* 标签 */
     labels.forEach(function (L) {
       var p = screenOf(L.m.x, L.m.y, L.m.z);
 
@@ -649,9 +743,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
   document.getElementById('head').classList.add('in');
 
-  window.addEventListener('resize', function () {
-    resize();
-  });
+  window.addEventListener('resize', resize);
 })();
 </script>
 </body>
