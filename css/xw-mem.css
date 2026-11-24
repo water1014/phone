@@ -1,0 +1,75 @@
+/* xw-mem.css · 记忆页接入令牌
+
+   原来字号：印章 .4rem（6.4px）、正文 .64rem（10.2px）。都小到看不清。
+   形态不动（卡片 + 左侧置顶细条），只改尺子。 */
+
+#app-body:has(.mcard)::after{
+  content: 'mem v1';
+  position: fixed; left: 5px; top: 1px; z-index: 99999;
+  font-size: var(--fs-1); line-height: 1; letter-spacing: .04em;
+  color: var(--c-ink4); pointer-events: none;
+}
+
+/* ── 卡片 ── */
+.mcard{
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: var(--rd-card);
+  background: var(--c-card);
+  box-shadow: var(--sh-1);
+}
+
+/* 置顶：左侧一道干玫瑰，全页唯一带色的地方 */
+.mcard.pinned::before{
+  left: 0;
+  top: var(--sp-4);
+  bottom: var(--sp-4);
+  width: 2px;
+  border-radius: var(--rd-full);
+  background: var(--c-accent);
+}
+
+.mcard-top{
+  margin-bottom: var(--sp-3);
+}
+
+/* ── 日期：票根式虚框，手账味 ── */
+.mstamp{
+  padding: var(--sp-0, 2px) var(--sp-2);
+  border: 1px dashed var(--c-line);
+  border-radius: var(--rd-1);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: var(--fs-1);
+  letter-spacing: .04em;
+  color: var(--c-ink3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 删除 ── */
+.mdel{
+  width: var(--tap-1);
+  height: var(--tap-1);
+  border-radius: var(--rd-full);
+  color: var(--c-ink4);
+  font-size: var(--fs-6);
+}
+.mdel:active{
+  background: var(--c-fill);
+}
+
+/* ── 正文：从 10.2px 抬到 14px ── */
+.mtext{
+  font-size: var(--fs-5);
+  line-height: var(--lh-body);
+  letter-spacing: .01em;
+  color: var(--c-ink1);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── 筛选钮的选中态 ── */
+.btn-glass.on{
+  border-color: var(--c-accent);
+  color: var(--c-accent-deep);
+  background: var(--c-accent-soft);
+}
