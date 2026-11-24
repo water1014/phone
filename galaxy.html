@@ -62,7 +62,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 #scrim{position:fixed;inset:0;z-index:20;opacity:0;pointer-events:none;transition:opacity .4s ease}
 #scrim.show{opacity:1;pointer-events:auto}
 
-/* ── 卡片：照参考图，底色长在字下面，不画方块 ── */
 #card{position:fixed;left:0;right:0;bottom:0;z-index:21;
   padding:74px 26px calc(26px + env(safe-area-inset-bottom));
   background:linear-gradient(to top,rgba(4,1,9,.97) 0%,rgba(4,1,9,.95) 46%,rgba(4,1,9,.72) 72%,rgba(4,1,9,.30) 90%,rgba(4,1,9,0) 100%);
@@ -82,9 +81,9 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 .c-meta{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-left:37px}
 .c-date{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;
   font-size:12.5px;letter-spacing:.08em;color:rgba(232,208,244,.72)}
-.c-tag{font-size:10.5px;letter-spacing:.08em;color:#F2D6E8;
+.c-tag{font-size:10.5px;letter-spacing:.08em;color:#F7E4F0;
   padding:2px 10px;border-radius:999px;
-  background:rgba(158,106,113,.20);border:1px solid rgba(200,140,170,.28)}
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16)}
 
 .c-body{font-size:15px;line-height:2;font-weight:300;letter-spacing:.02em;
   color:rgba(246,236,250,.9);white-space:pre-wrap;word-break:break-word;
@@ -142,33 +141,39 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 (function () {
   'use strict';
 
+  /* ── 记忆星的四色：固定，不跟主题走。
+     这四色在四种主题的背景下都不撞（背景全是低饱和雾，
+     这里是高饱和，且色相刻意避开粉/金/蓝灰/紫四套）── */
+  var MEMCOL = {
+    '恋爱': '#FF3A78',
+    '工程': '#28C8FF',
+    '情绪': '#FFA028',
+    '日常': '#5CE8A8'
+  };
+
   var THEMES = [
     {
       id: 'rose', name: '雾玫瑰',
       cIn: '#F6E2E4', cMid: '#C08F99', cOut: '#7A666E', gold: '#E8C89A',
       dust: ['#E2C4C8', '#A8909A', '#F0D8DC', '#9E8A92', '#E8C89A'],
-      dom: { '恋爱': '#F0A6BC', '工程': '#9AA8C8', '情绪': '#C0A6D8', '日常': '#A8BCC4' },
       glow: ['255,236,238', '222,170,180', '148,118,128']
     },
     {
       id: 'gold', name: '雾金',
       cIn: '#FFF4E2', cMid: '#DDBB90', cOut: '#86765F', gold: '#F0D0A0',
       dust: ['#E8D0AE', '#B8A686', '#F5E6CC', '#9E8E76', '#F0D0A0'],
-      dom: { '恋爱': '#E8B89E', '工程': '#AAB0C0', '情绪': '#D0B898', '日常': '#B0BAAE' },
       glow: ['255,246,230', '232,200,154', '158,138,110']
     },
     {
       id: 'blue', name: '夜灰蓝',
       cIn: '#EDF3FA', cMid: '#9CB0C8', cOut: '#5F7288', gold: '#D8C8A8',
       dust: ['#BCD0E4', '#8EA2BC', '#DCE8F5', '#7E92A8', '#D8C8A8'],
-      dom: { '恋爱': '#C8A8C8', '工程': '#8EACD8', '情绪': '#A898CC', '日常': '#96B2C4' },
       glow: ['238,245,252', '172,194,218', '108,128,152']
     },
     {
       id: 'violet', name: '粉紫（原色）',
       cIn: '#FFDCF2', cMid: '#C891FF', cOut: '#8FB0FF', gold: '#FFCF9A',
       dust: ['#E8B8FF', '#9FB8FF', '#FFD0EC', '#C8A0F0', '#FFE0B0'],
-      dom: { '恋爱': '#FF8FD0', '工程': '#8F9FFF', '情绪': '#B48CE8', '日常': '#CFD8F0' },
       glow: ['255,226,246', '234,178,242', '162,126,226']
     }
   ];
@@ -363,8 +368,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
         y: rnd(-0.14, 0.14),
         z: Math.sin(branch + spin) * r + rnd(-0.3, 0.3),
         tier: tier,
-        size: [9, 13, 17, 21][tier],
-        dim: [0.9, 1.0, 1.1, 1.2][tier]
+        size: [9, 13, 17, 21][tier]
       });
     });
 
@@ -377,7 +381,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     MEM[c0].core = true;
     MEM[c0].tier = 3;
     MEM[c0].size = 21;
-    MEM[c0].dim = 1.2;
   }
 
   function mkBuf(n) {
@@ -408,6 +411,19 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
       mph.push(Math.random() * 6.283);
     });
     putPSP(BM, mpos, msize, mph);
+
+    /* 记忆星颜色：高饱和，且故意过曝——
+       值乘 1.5 之后加法混合会把中心烧成白，边缘留色，
+       看起来就是“白心彩边”的真星。 */
+    var mc = new Float32Array(MEM.length * 3);
+    MEM.forEach(function (m, i) {
+      var c = hex(MEMCOL[m.d.domain] || MEMCOL['日常']);
+      mc[i * 3] = c[0] * 1.55;
+      mc[i * 3 + 1] = c[1] * 1.55;
+      mc[i * 3 + 2] = c[2] * 1.55;
+    });
+    gl.bindBuffer(gl.ARRAY_BUFFER, BM.col);
+    gl.bufferData(gl.ARRAY_BUFFER, mc, gl.STATIC_DRAW);
   }
 
   function paint(theme) {
@@ -447,20 +463,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
     gl.bindBuffer(gl.ARRAY_BUFFER, BD.col);
     gl.bufferData(gl.ARRAY_BUFFER, dc, gl.STATIC_DRAW);
-
-    if (BM) {
-      var mc = new Float32Array(MEM.length * 3);
-
-      MEM.forEach(function (m, i) {
-        var cc = hex(theme.dom[m.d.domain] || theme.dom['日常']);
-        mc[i * 3] = cc[0] * m.dim;
-        mc[i * 3 + 1] = cc[1] * m.dim;
-        mc[i * 3 + 2] = cc[2] * m.dim;
-      });
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, BM.col);
-      gl.bufferData(gl.ARRAY_BUFFER, mc, gl.STATIC_DRAW);
-    }
 
     document.getElementById('glow').style.background =
       'radial-gradient(circle at 50% 47%,' +
@@ -568,7 +570,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     };
   }
 
-  /* 标签：记忆不多时全挂，多了只挂钉住的 */
   var labelBox = document.getElementById('labels');
   var labels = [];
 
@@ -609,9 +610,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
     var st = document.getElementById('c-star');
     st.innerHTML = STAR_SVG;
-    st.style.color = (window.__themeRef ? (window.__themeRef.dom[m.d.domain] || '#F0A6BC') : '#F0A6BC');
-    st.querySelector('svg').setAttribute('fill', 'currentColor');
-    st.style.opacity = '.95';
+    st.querySelector('svg').setAttribute('fill', MEMCOL[m.d.domain] || MEMCOL['日常']);
 
     document.getElementById('c-name').textContent = m.core ? '开始' : (m.d.name || '一条记忆');
     document.getElementById('c-en').textContent = m.d.domain;
@@ -672,7 +671,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
       var dx = p.x - e.clientX;
       var dy = p.y - e.clientY;
 
-      if (dx * dx + dy * dy < 2200 && p.z < bestZ) {
+      if (dx * dx + dy * dy < 2600 && p.z < bestZ) {
         best = m;
         bestZ = p.z;
       }
@@ -720,12 +719,10 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     THEMES.forEach(function (t, i) { if (t.id === saved) ti = i; });
   } catch (e) {}
 
-  window.__themeRef = THEMES[ti];
   paint(THEMES[ti]);
 
   document.getElementById('pal').addEventListener('click', function () {
     ti = (ti + 1) % THEMES.length;
-    window.__themeRef = THEMES[ti];
     paint(THEMES[ti]);
   });
 
@@ -756,8 +753,8 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
-    /* 背景：压暗，让它退成底子 */
-    gl.uniform1f(U.fade, 0.72);
+    /* 背景退成底子 */
+    gl.uniform1f(U.fade, 0.66);
     gl.uniform1f(U.pix, DPR * PIX_BASE);
 
     bind(BD);
@@ -766,16 +763,16 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     bind(BP);
     gl.drawArrays(gl.POINTS, 0, BP.n);
 
-    /* 记忆星：先一圈大光晕，再一颗亮核心 */
+    /* 记忆星：一大圈彩色光晕 + 一颗白心 */
     if (BM) {
       bind(BM);
 
-      gl.uniform1f(U.fade, 0.15);
-      gl.uniform1f(U.pix, DPR * PIX_BASE * 2.9);
+      gl.uniform1f(U.fade, 0.34);
+      gl.uniform1f(U.pix, DPR * PIX_BASE * 3.1);
       gl.drawArrays(gl.POINTS, 0, BM.n);
 
       gl.uniform1f(U.fade, 1.0);
-      gl.uniform1f(U.pix, DPR * PIX_BASE * 1.05);
+      gl.uniform1f(U.pix, DPR * PIX_BASE * 1.12);
       gl.drawArrays(gl.POINTS, 0, BM.n);
     }
 
