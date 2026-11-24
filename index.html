@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-ver="2026-11-24-2">
+<html lang="zh-CN" data-ver="2026-11-24-3">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -69,6 +69,7 @@
 <link rel="stylesheet" href="css/xw-home.css?v=2">
 <link rel="stylesheet" href="css/xw-set.css?v=2">
 <link rel="stylesheet" href="css/xw-album.css?v=2">
+<link rel="stylesheet" href="css/xw-mem.css?v=1">
 <link rel="stylesheet" id="xw-chat-css" href="css/xw-chat.css?v=7">
 </head>
 <body>
@@ -116,10 +117,7 @@
 <script src="js/pwa.js?v=1"></script>
 <script src="js/xw-chat.js?v=2"></script>
 <script>
-/* 版本守卫：
-   WebView 一直挂着不刷新，光靠 SW 靠不住。
-   所以页面每次重新可见时，自己去线上拿一份 index，比对 data-ver。
-   不一致就自己 reload。她不用找刷新键，也不用杀 App。 */
+/* 版本守卫：页面重新可见时比对线上 data-ver，不一致就自己 reload。 */
 (function () {
   var KEY = 'xw_page_ver';
   var mine = document.documentElement.getAttribute('data-ver') || '';
