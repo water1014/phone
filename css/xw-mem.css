@@ -1,40 +1,74 @@
-/* xw-mem.css · 记忆页 v5
+/* xw-mem.css · 记忆页 v6（美化）
 
-   形态不动（卡片 + 左侧置顶细条），只改尺子。
-   另加：搜索框、置顶开关、状态与衰减行、云端面板。 */
+   定位：档案抽屉。一张张纸片、票根、铅笔小注。
+   装饰只用波点成形（没有线条画），一页两处强调色。
 
-#app-body:has(.mcard)::after,
+   样式层：页面底氛围光 → 卡片细边 → 票根 → 分组线 → 空态意象。
+*/
+
+#app-body{
+  --orn-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1.5 14.2 9.8 22.5 12 14.2 14.2 12 22.5 9.8 14.2 1.5 12 9.8 9.8Z'/%3E%3C/svg%3E");
+  --orn-moon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 2.5a9.5 9.5 0 1 0 0 19A9.8 9.8 0 0 1 15.5 2.5Z'/%3E%3C/svg%3E");
+  --orn-dots: radial-gradient(circle at 50% 50%, currentColor 38%, transparent 44%);
+}
+
 #app-body:has(#mem-input)::after{
-  content: 'mem v5';
+  content: 'mem v6';
   position: fixed; left: 5px; top: 1px; z-index: 99999;
   font-size: var(--fs-1); line-height: 1; letter-spacing: .04em;
   color: var(--c-ink4); pointer-events: none;
 }
 
-/* ── 搜索 ── */
-.xw-mem-search{ margin-bottom: var(--sp-4); }
+/* ══ 页面底：铺氛围光，卡片才有东西可衬 ══ */
+#app-body:has(#mem-input){
+  background-color: var(--c-paper);
+  background-image: var(--c-aura);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* ══ 页首 ══ */
+#app-body:has(#mem-input) .hero-title{
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px dotted var(--c-line);
+}
+#app-body:has(#mem-input) .hero-sub{
+  letter-spacing: .1em;
+  color: var(--c-ink4);
+}
+
+/* ══ 搜索：一条极淡的线，不是框 ══ */
+.xw-mem-search{
+  margin: var(--sp-4) 0 var(--sp-5);
+}
 .xw-mem-search input{
   width: 100%;
   box-sizing: border-box;
-  padding: var(--sp-3) var(--sp-5);
-  border: 1px solid var(--c-line);
-  border-radius: var(--rd-full);
-  background: var(--c-card);
+  padding: var(--sp-3) var(--sp-2);
+  border: 0;
+  border-bottom: 1px solid var(--c-line);
+  border-radius: 0;
+  background: transparent;
   font-family: inherit;
   font-size: var(--fs-4);
+  letter-spacing: .02em;
   color: var(--c-ink1);
   -webkit-appearance: none;
 }
-.xw-mem-search input::placeholder{ color: var(--c-ink3); }
-.xw-mem-search input:focus{ outline: none; border-color: var(--c-accent); }
+.xw-mem-search input::placeholder{ color: var(--c-ink4); }
+.xw-mem-search input:focus{
+  outline: none;
+  border-bottom-color: var(--c-accent);
+}
 .xw-mem-search input::-webkit-search-cancel-button{ -webkit-appearance: none; }
 
-/* ── 云端面板 ── */
+/* ══ 云端面板：退到后面，不抢记忆 ══ */
 .xw-cloud{
   margin-bottom: var(--sp-5);
   padding: var(--sp-4);
+  border: 1px dashed var(--c-line);
   border-radius: var(--rd-3);
-  background: var(--c-fill);
+  background: transparent;
   font-family: inherit;
 }
 .xw-cloud-hd{
@@ -42,7 +76,7 @@
   font-size: var(--fs-1);
   font-weight: var(--fw-2);
   letter-spacing: .22em;
-  color: var(--c-ink3);
+  color: var(--c-ink4);
 }
 .xw-cloud input{
   width: 100%;
@@ -86,70 +120,107 @@
 }
 .xw-cloud .msg.bad{ color: var(--c-err); }
 
-/* ── 卡片 ── */
+/* ══ 卡片：纸片。靠线条分层，不靠阴影 ══ */
 .mcard{
-  margin-bottom: var(--sp-4);
+  position: relative;
+  margin-bottom: var(--sp-3);
   padding: var(--sp-4) var(--sp-5);
+  border: 1px solid var(--c-line);
   border-radius: var(--rd-card);
   background: var(--c-card);
-  box-shadow: var(--sh-1);
+  box-shadow: none;
+}
+
+/* 置顶：左侧一道玫瑰，日期也跟着变玫瑰 */
+.mcard.pinned{
+  padding-left: calc(var(--sp-5) + 2px);
 }
 .mcard.pinned::before{
-  left: 0;
-  top: var(--sp-4);
-  bottom: var(--sp-4);
-  width: 2px;
-  border-radius: var(--rd-full);
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: var(--sp-5);
+  bottom: var(--sp-5);
+  width: 3px;
+  border-radius: 0 var(--rd-full) var(--rd-full) 0;
   background: var(--c-accent);
 }
-.mcard-top{ margin-bottom: var(--sp-3); gap: var(--sp-2); }
+.mcard.pinned .mstamp{
+  border-color: var(--c-accent-soft);
+  color: var(--c-accent-deep);
+}
 
-/* ── 置顶开关 ── */
+.mcard-top{
+  margin-bottom: var(--sp-3);
+  gap: var(--sp-2);
+}
+
+/* ══ 日期票根 ══ */
+.mstamp{
+  flex: 0 1 auto;
+  margin-right: auto;
+  position: relative;
+  padding: 0 0 0 calc(var(--sp-2) + 6px);
+  border: 0;
+  border-radius: 0;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: var(--fs-1);
+  letter-spacing: .1em;
+  color: var(--c-ink4);
+  font-variant-numeric: tabular-nums;
+}
+/* 票根前一颗波点小方，像档案编号前的标记 */
+.mstamp::before{
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 1px;
+  background: var(--c-ink4);
+}
+.mcard.pinned .mstamp::before{
+  background: var(--c-accent);
+}
+
+/* ══ 置顶开关 ══ */
 .xw-mem-pin{
   flex: 0 0 auto;
   min-height: var(--tap-1);
   padding: 0 var(--sp-3);
-  border: 1px solid var(--c-line);
+  border: 1px solid transparent;
   border-radius: var(--rd-full);
   background: transparent;
   color: var(--c-ink4);
   font-family: inherit;
   font-size: var(--fs-1);
-  letter-spacing: .04em;
+  letter-spacing: .06em;
   -webkit-tap-highlight-color: transparent;
 }
 .xw-mem-pin.on{
-  border-color: var(--c-accent);
+  border-color: var(--c-accent-soft);
   color: var(--c-accent-deep);
   background: var(--c-accent-soft);
 }
 
-/* ── 日期票根 ── */
-.mstamp{
-  flex: 0 1 auto;
-  margin-right: auto;
-  padding: var(--sp-0, 2px) var(--sp-2);
-  border: 1px dashed var(--c-line);
-  border-radius: var(--rd-1);
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  font-size: var(--fs-1);
-  letter-spacing: .04em;
-  color: var(--c-ink3);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── 删除 ── */
+/* ══ 删除：平时几乎看不见 ══ */
 .mdel{
   flex: 0 0 auto;
   width: var(--tap-1);
   height: var(--tap-1);
   border-radius: var(--rd-full);
-  color: var(--c-ink4);
-  font-size: var(--fs-6);
+  background: transparent;
+  color: transparent;
+  font-size: var(--fs-5);
 }
-.mdel:active{ background: var(--c-fill); }
+.mdel:active{
+  background: var(--c-fill);
+  color: var(--c-accent-deep);
+}
 
-/* ── 正文 ── */
+/* ══ 正文 ══ */
 .mtext{
   font-size: var(--fs-5);
   line-height: var(--lh-body);
@@ -159,13 +230,88 @@
   word-break: break-word;
 }
 
-/* ── 状态与衰减 ── */
+/* ══ 状态行：铅笔注。斜体、极弱 ══ */
 .mmeta{
-  margin-top: var(--sp-2);
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-2);
+  border-top: 1px dotted var(--c-line);
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
   font-size: var(--fs-1);
-  letter-spacing: .04em;
+  font-style: italic;
+  letter-spacing: .06em;
   color: var(--c-ink4);
   font-variant-numeric: tabular-nums;
 }
 .mmeta.faint{ color: var(--c-accent); }
+
+/* ══ 分组标题：一颗点 + 一条线 ══ */
+#app-body:has(#mem-input) .album-date-band{
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: var(--sp-7) 0 var(--sp-3);
+  padding: 0;
+  font-family: inherit;
+  font-size: var(--fs-2);
+  letter-spacing: .2em;
+  color: var(--c-ink4);
+}
+#app-body:has(#mem-input) .album-date-band::before{
+  content: '';
+  flex: 0 0 auto;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--c-accent);
+}
+#app-body:has(#mem-input) .album-date-band::after{
+  content: '';
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--c-line);
+}
+
+/* ══ 记一条：便笺 ══ */
+#app-body:has(#mem-input) .sheet{
+  border: 1px solid var(--c-line);
+  border-radius: var(--rd-card);
+  background: var(--c-card);
+  box-shadow: none;
+}
+#app-body:has(#mem-input) .field > span{
+  font-size: var(--fs-1);
+  font-weight: var(--fw-2);
+  letter-spacing: .22em;
+  color: var(--c-ink4);
+}
+#mem-input{
+  min-height: 84px;
+  border: 1px dashed var(--c-line);
+  border-radius: var(--rd-3);
+  background: var(--c-paper);
+}
+#mem-input:focus{
+  border-style: solid;
+  border-color: var(--c-accent);
+  background: var(--c-card);
+}
+
+/* ══ 空状态：一轮波点月 ══ */
+#app-body:has(#mem-input) .empty-state::before{
+  content: '';
+  display: block;
+  width: 22px;
+  height: 22px;
+  margin: 0 auto var(--sp-4);
+  background-image: var(--orn-dots);
+  background-size: 2.5px 2.5px;
+  color: var(--c-ink4);
+  -webkit-mask-image: var(--orn-moon);
+  mask-image: var(--orn-moon);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
