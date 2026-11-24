@@ -1,7 +1,14 @@
-/* xw-set.css · 设置页（首页 + 接线的地方），按 UI-SPEC 重量一遍
+/* xw-set.css · 设置页 v2（加了水印）
 
-   不用 !important。用 #app-body 前缀把特异性抬到原文件之上（原文件多是 .sh-row 这样的单类）。
-   只动尺寸、颜色、字体，不动结构。 */
+   不用 !important。用 #app-body 前缀把特异性抬到原文件之上。 */
+
+#app-body .sh::after,
+#app-body .api-sheet::after{
+  content: 'set v2';
+  position: fixed; left: 5px; top: 1px; z-index: 99999;
+  font-size: var(--fs-1); line-height: 1; letter-spacing: .04em;
+  color: var(--c-ink4); pointer-events: none;
+}
 
 /* ══ 设置首页 ══ */
 #app-body .sh{
@@ -120,7 +127,6 @@
   color: var(--c-ink3);
 }
 
-/* 当前生效的那条：灰底，不抢 */
 #app-body .api-live{
   padding: var(--sp-4);
   margin-bottom: var(--sp-6);
@@ -167,7 +173,6 @@
   color: var(--c-ink4);
 }
 
-/* 分段控件 */
 #app-body .api-seg{
   gap: var(--sp-1);
   padding: var(--sp-1);
@@ -187,7 +192,6 @@
   box-shadow: var(--sh-1);
 }
 
-/* 拉模型的按钮 */
 #app-body .api-pull{
   padding: var(--sp-2) var(--sp-5);
   border: 1px solid var(--c-line);
@@ -196,7 +200,6 @@
   color: var(--c-ink2);
 }
 
-/* 模型胶囊：选中的那个才用干玫瑰 */
 #app-body .api-chips{
   gap: var(--sp-2);
   margin: calc(var(--sp-3) * -1) 0 var(--sp-6);
@@ -214,7 +217,6 @@
   background: var(--c-accent-soft);
 }
 
-/* 滑杆 */
 #app-body .api-range::-webkit-slider-runnable-track{
   height: 2px;
   border-radius: var(--rd-full);
@@ -227,7 +229,6 @@
   background: var(--c-ink1);
 }
 
-/* 动作 */
 #app-body .api-actions{
   gap: var(--sp-4);
 }
@@ -249,7 +250,6 @@
   opacity: .45;
 }
 
-/* 结果与记录 */
 #app-body .api-res{
   margin-top: var(--sp-4);
   font-size: var(--fs-3);

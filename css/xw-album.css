@@ -1,13 +1,18 @@
-/* xw-album.css · 相册页接入令牌
+/* xw-album.css · 相册页 v2（加了水印）
 
-   这个页面的形态是她定的：仿苹果相册——方角网格、1px 圆角、小控件、密度高。
-   不把它改成卡片，只把颜色和字号收进尺子。
+   形态是她定的：仿苹果相册——方角网格、1px 圆角、小控件。
+   只把颜色和字号收进尺子。
 
    例外登记 #4：相册页底保留淡粉淡紫氛围光（album-pro.css 里的三层径向渐变）。
-   宪法说页面底统一 --c-paper，但「淡淡的粉和紫」是她亲自定的，写在需求里。
-   边界：只给相册页。其他页不得抄这个底。 */
+   边界：只给相册页。 */
 
-/* ══ 标题 ══ */
+#app-body .ap-head::after{
+  content: 'album v2';
+  position: fixed; left: 5px; top: 1px; z-index: 99999;
+  font-size: var(--fs-1); line-height: 1; letter-spacing: .04em;
+  color: var(--c-ink4); pointer-events: none;
+}
+
 #app-body .ap-n{
   font-family: "Cormorant Garamond", "Songti SC", Georgia, serif;
   font-size: var(--fs-7);
@@ -17,7 +22,6 @@
   color: var(--c-ink1);
 }
 
-/* ══ 右上两个小钮 ══ */
 #app-body .ap-sel{
   height: var(--tap-2);
   padding: 0 var(--sp-3);
@@ -44,7 +48,6 @@
   color: var(--c-ink2);
 }
 
-/* ══ 分段控件 ══ */
 #app-body .ap-seg{
   gap: 2px;
   padding: 2px;
@@ -67,7 +70,6 @@
   box-shadow: var(--sh-1);
 }
 
-/* ══ 分组标题 ══ */
 #app-body .ap-sec-t{
   font-size: var(--fs-4);
   font-weight: var(--fw-3);
@@ -81,7 +83,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ══ 年视图 ══ */
 #app-body .ap-ymon{
   width: var(--sp-7);
   font-size: var(--fs-1);
@@ -101,7 +102,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ══ 网格：方角是她的指定，不动 ══ */
 #app-body .ap-cell{
   background: var(--c-fill);
 }
@@ -109,7 +109,6 @@
   background: var(--c-ink1);
 }
 
-/* ══ 底部说明 ══ */
 #app-body .ap-note{
   font-size: var(--fs-1);
   line-height: var(--lh-body);
@@ -117,7 +116,6 @@
   color: var(--c-ink4);
 }
 
-/* ══ 多选底栏 ══ */
 #app-body .ap-selbar{
   gap: var(--sp-3);
   padding: var(--sp-2) var(--sp-3);

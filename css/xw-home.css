@@ -1,11 +1,11 @@
-/* xw-home.css · 桌面首页，按 UI-SPEC 重量一遍
+/* xw-home.css · 桌面首页 v2（加了水印） */
 
-   特点：不用一个 !important。
-   特异性与 home.css 持平（同为 #home .x），靠后面加载取胜。
-   这是对宪法第一条的实验：默认样式压不过主题时，先检查是不是自己写得不够具体
-   或者加载太早，而不是先摸 !important。
-
-   只动尺寸、颜色、字体，不动布局结构。 */
+#home::after{
+  content: 'home v2';
+  position: fixed; left: 5px; top: 1px; z-index: 99999;
+  font-size: var(--fs-1); line-height: 1; letter-spacing: .04em;
+  color: var(--c-ink4); pointer-events: none;
+}
 
 /* ── 页边与卡间距 ── */
 #home{
@@ -31,7 +31,7 @@
   box-shadow: var(--sh-1);
 }
 
-/* ── 大数字：展示衬线 + 等宽数字，防跳动 ── */
+/* ── 大数字：展示衷线 + 等宽数字 ── */
 #home .wdg-days .days-num,
 #home .wdg-clock .dclock{
   font-family: "Cormorant Garamond", Georgia, "Songti SC", serif;
@@ -58,7 +58,7 @@
   color: var(--c-ink4);
 }
 
-/* ── 小标题：统一一档、统一字距。现在它们在页面里占了四种色 ── */
+/* ── 小标题：统一一档、统一字距 ── */
 #home .wdg-days .kicker,
 #home .wdg-days .days-since,
 #home .wdg-cal .kicker,
@@ -104,7 +104,6 @@
   letter-spacing: .04em;
   color: var(--c-ink3);
 }
-/* 天气 / 语录的主数字：不再是正文体，用同一套展示衬线 */
 #home .wx-big,
 #home .q-big{
   font-family: "Cormorant Garamond", Georgia, "Songti SC", serif;
@@ -136,7 +135,7 @@
   gap: var(--sp-2);
 }
 
-/* ── 线条：全部换成一档，不再四种灰 ── */
+/* ── 线条：全部换成一档 ── */
 #home .wdg-days .days-rule{
   width: 64%;
   height: 1px;
