@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F5F4F1">
+<title>小窝 · 规范</title>
+<link rel="stylesheet" href="css/system.css?v=2">
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0 0 64px;
+    background-color: var(--c-paper);
+    background-image: var(--c-aura);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    color: var(--c-ink1);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── 页头 ── */
+  .hd {
+    padding: 56px var(--pad-x) 32px;
+  }
+  .hd h1 {
+    margin: 0;
+    font-size: var(--fs-7);
+    font-weight: var(--fw-3);
+    line-height: var(--lh-title);
+    letter-spacing: .02em;
+  }
+  .hd .en {
+    display: block;
+    margin-bottom: 10px;
+    font-size: var(--fs-1);
+    letter-spacing: .28em;
+    color: var(--c-ink4);
+    text-transform: uppercase;
+  }
+  .hd p {
+    margin: 14px 0 0;
+    font-size: var(--fs-3);
+    line-height: var(--lh-body);
+    color: var(--c-ink3);
+  }
+
+  .theme {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 20px;
+    padding: 7px 14px;
+    border: 0;
+    border-radius: var(--rd-full);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur-sm);
+    -webkit-backdrop-filter: var(--glass-blur-sm);
+    box-shadow: inset 0 0 0 1px var(--glass-brd);
+    font-size: var(--fs-3);
+    color: var(--c-ink2);
+    font-family: inherit;
+  }
+
+  /* ── 节 ── */
+  section {
+    padding: 0 var(--pad-x);
+    margin-bottom: var(--sp-8);
+  }
+  .sec-hd {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0 0 var(--sp-4);
+  }
+  .sec-hd .no {
+    font-size: var(--fs-1);
+    letter-spacing: .2em;
+    color: var(--c-ink4);
+  }
+  .sec-hd h2 {
+    margin: 0;
+    font-size: var(--fs-4);
+    font-weight: var(--fw-3);
+    letter-spacing: .06em;
+    color: var(--c-ink1);
+  }
+  .sec-note {
+    margin: 0 0 var(--sp-5);
+    font-size: var(--fs-3);
+    line-height: var(--lh-body);
+    color: var(--c-ink3);
+  }
+
+  .card {
+    padding: var(--sp-5);
+    border-radius: var(--rd-card);
+    background: var(--c-card);
+    box-shadow: var(--sh-1);
+  }
+
+  /* ── 色板 ── */
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-3);
+  }
+  .sw {
+    border-radius: var(--rd-2);
+    overflow: hidden;
+    background: var(--c-card);
+    box-shadow: var(--sh-1);
+  }
+  .sw i {
+    display: block;
+    height: 56px;
+  }
+  .sw div {
+    padding: 8px 10px 10px;
+  }
+  .sw b {
+    display: block;
+    font-size: var(--fs-2);
+    font-weight: var(--fw-2);
+    color: var(--c-ink1);
+  }
+  .sw span {
+    display: block;
+    margin-top: 2px;
+    font-size: var(--fs-1);
+    font-family: ui-monospace, Menlo, monospace;
+    color: var(--c-ink4);
+  }
+
+  /* ── 字阶 ── */
+  .type-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--c-line);
+  }
+  .type-row:last-child { border-bottom: 0; }
+  .type-row .tag {
+    flex: 0 0 62px;
+    font-size: var(--fs-1);
+    font-family: ui-monospace, Menlo, monospace;
+    color: var(--c-ink4);
+  }
+  .type-row .demo {
+    flex: 1;
+    min-width: 0;
+    color: var(--c-ink1);
+  }
+
+  /* ── 圆角 ── */
+  .radii {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+  }
+  .rad {
+    text-align: center;
+  }
+  .rad i {
+    display: block;
+    width: 64px;
+    height: 64px;
+    background: var(--c-fill);
+    border: 1px solid var(--c-line);
+  }
+  .rad span {
+    display: block;
+    margin-top: 6px;
+    font-size: var(--fs-1);
+    font-family: ui-monospace, Menlo, monospace;
+    color: var(--c-ink4);
+  }
+
+  /* ── 间距 ── */
+  .space-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0;
+  }
+  .space-row .bar {
+    height: 12px;
+    background: var(--c-accent-soft);
+    border-left: 2px solid var(--c-accent);
+    flex: 0 0 auto;
+  }
+  .space-row .tag {
+    font-size: var(--fs-1);
+    font-family: ui-monospace, Menlo, monospace;
+    color: var(--c-ink4);
+  }
+
+  /* ── 玻璃对比 ── */
+  .glass-pair {
+    display: grid;
+    gap: var(--sp-4);
+  }
+  .gbox {
+    padding: var(--sp-5);
+    border-radius: var(--rd-card);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow: inset 0 0 0 1px var(--glass-brd), var(--sh-1);
+    font-size: var(--fs-3);
+    color: var(--c-ink2);
+  }
+  .gbox.flat {
+    background-image: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .gwrap {
+    padding: var(--sp-5);
+    border-radius: var(--rd-card);
+    background-color: var(--c-paper);
+    background-image: var(--c-aura);
+    background-size: cover;
+  }
+  .gwrap.blank {
+    background-image: none;
+    background-color: var(--c-card);
+  }
+  .glabel {
+    margin: 0 0 8px;
+    font-size: var(--fs-1);
+    letter-spacing: .16em;
+    color: var(--c-ink4);
+  }
+
+  /* ── 阴影 ── */
+  .shadows {
+    display: flex;
+    gap: var(--sp-4);
+  }
+  .shitem {
+    flex: 1;
+    padding: var(--sp-5);
+    border-radius: var(--rd-card);
+    background: var(--c-card);
+    text-align: center;
+    font-size: var(--fs-1);
+    font-family: ui-monospace, Menlo, monospace;
+    color: var(--c-ink4);
+  }
+
+  /* ── 组件样片 ── */
+  .chat-demo {
+    padding: var(--sp-4) 0;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    column-gap: var(--sp-3);
+    align-items: start;
+    margin-bottom: var(--sp-4);
+  }
+  .row.me {
+    grid-template-columns: minmax(0, 1fr) 28px;
+  }
+  .ava {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--rd-full);
+    background: var(--c-fill);
+    font-size: var(--fs-1);
+    color: var(--c-ink3);
+  }
+  .row.me .ava {
+    order: 2;
+    background: var(--c-accent-soft);
+  }
+  .main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+  }
+  .row.me .main {
+    align-items: flex-end;
+  }
+  .time {
+    margin: 4px 0 8px;
+    font-size: var(--fs-2);
+    letter-spacing: .1em;
+    color: var(--c-ink4);
+  }
+  .row.me .time { align-self: flex-end; }
+  .drop {
+    display: grid;
+    place-items: center;
+    width: var(--tap-0);
+    height: var(--tap-0);
+    margin-bottom: var(--sp-2);
+    border-radius: var(--rd-full);
+    background: var(--glass-bg);
+    box-shadow: inset 0 0 0 1px var(--glass-brd);
+  }
+  .drop svg {
+    width: 13px;
+    height: 13px;
+    fill: none;
+    stroke: var(--c-ink3);
+    stroke-width: 1.35;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .bub {
+    display: inline-block;
+    max-width: var(--bub-max);
+    padding: var(--sp-3) var(--sp-4);
+    border-radius: var(--rd-4);
+    background: var(--c-bub-him);
+    box-shadow: var(--sh-1);
+    font-size: var(--fs-5);
+    line-height: var(--lh-body);
+    color: var(--c-ink1);
+    text-align: left;
+    border-top-left-radius: var(--rd-1);
+  }
+  .row.me .bub {
+    background: var(--c-bub-me);
+    border-top-left-radius: var(--rd-4);
+    border-top-right-radius: var(--rd-1);
+  }
+  .narr {
+    max-width: var(--bub-max);
+    padding-left: var(--sp-3);
+    border-left: 2px solid var(--c-line);
+    font-size: var(--fs-3);
+    line-height: var(--lh-body);
+    color: var(--c-ink3);
+  }
+
+  .composer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-4) var(--sp-4) var(--sp-3);
+    border-radius: var(--rd-hero);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow: var(--sh-2), inset 0 0 0 1px var(--glass-brd);
+  }
+  .composer .fake {
+    flex: 1 1 100%;
+    padding: 4px 6px 10px;
+    font-size: var(--fs-6);
+    color: var(--c-ink3);
+  }
+  .cbtn {
+    display: grid;
+    place-items: center;
+    width: var(--tap-2);
+    height: var(--tap-2);
+    border: 0;
+    border-radius: var(--rd-full);
+    background: var(--glass-bg);
+    box-shadow: inset 0 0 0 1px var(--glass-brd);
+    font-size: var(--fs-6);
+    color: var(--c-ink2);
+    font-family: inherit;
+  }
+  .cbtn.heart { color: var(--c-accent); }
+  .cbtn.send {
+    margin-left: auto;
+    background: var(--c-ink1);
+    color: var(--c-card);
+    box-shadow: var(--sh-1);
+  }
+  .chips {
+    display: flex;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-3);
+    flex-wrap: wrap;
+  }
+  .chip {
+    padding: var(--sp-1) var(--sp-4);
+    border-radius: var(--rd-full);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur-sm);
+    -webkit-backdrop-filter: var(--glass-blur-sm);
+    box-shadow: inset 0 0 0 1px var(--glass-brd);
+    font-size: var(--fs-3);
+    color: var(--c-ink2);
+  }
+
+  /* ── 例外表 ── */
+  .ex {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-3);
+  }
+  .ex th {
+    padding: 0 0 10px;
+    text-align: left;
+    font-size: var(--fs-1);
+    font-weight: var(--fw-2);
+    letter-spacing: .14em;
+    color: var(--c-ink4);
+    border-bottom: 1px solid var(--c-line);
+  }
+  .ex td {
+    padding: 12px 0;
+    vertical-align: top;
+    line-height: 1.65;
+    color: var(--c-ink2);
+    border-bottom: 1px solid var(--c-line);
+  }
+  .ex td:first-child {
+    width: 24px;
+    color: var(--c-accent);
+    font-family: ui-monospace, Menlo, monospace;
+  }
+  .ex tr:last-child td { border-bottom: 0; }
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <span class="en">Design tokens</span>
+  <h1>小窝 · 规范</h1>
+  <p>这不是页面，是尺子。所有页面的颜色、字号、间距、圆角只从这套里取。<br>哪一档看着不对，告诉我编号，我改一处，全站跟着动。</p>
+  <button type="button" class="theme" id="theme">切到夜幕</button>
+</header>
+
+<!-- 一 · 色板 -->
+<section>
+  <div class="sec-hd"><span class="no">01</span><h2>色板</h2></div>
+  <p class="sec-note">雾的家族 + 墨的骨架。彩色全部低饱和、高明度，真正撑骨架的是墨黑。强调色全站只有一个，占比不超过 5%。</p>
+
+  <div class="swatches">
+    <div class="sw"><i style="background:#F5F4F1"></i><div><b>页面底</b><span>--c-paper #F5F4F1</span></div></div>
+    <div class="sw"><i style="background:#FFFFFF;box-shadow:inset 0 0 0 1px #E7E3DC"></i><div><b>卡片</b><span>--c-card #FFFFFF</span></div></div>
+    <div class="sw"><i style="background:#E7E3DC"></i><div><b>线条</b><span>--c-line #E7E3DC</span></div></div>
+    <div class="sw"><i style="background:#EFEAE3"></i><div><b>轨道 / 凹陷</b><span>--c-fill #EFEAE3</span></div></div>
+    <div class="sw"><i style="background:#26221E"></i><div><b>主文字</b><span>--c-ink1 #26221E</span></div></div>
+    <div class="sw"><i style="background:#4A443D"></i><div><b>次要</b><span>--c-ink2 #4A443D</span></div></div>
+    <div class="sw"><i style="background:#9B948A"></i><div><b>弱化</b><span>--c-ink3 #9B948A</span></div></div>
+    <div class="sw"><i style="background:#C9C3B9"></i><div><b>极弱</b><span>--c-ink4 #C9C3B9</span></div></div>
+<    div class="sw"><i style="background:#9E6A71"></i><div><b>强调 · 干玫瑰</b><span>--c-accent #9E6A71</span></div></div>
+    <div class="sw"><i style="background:#7E5259"></i><div><b>强调 · 深</b><span>--c-accent-deep #7E5259</span></div></div>
+    <div class="sw"><i style="background:#F0E2E3"></i><div><b>强调 · 浅</b><span>--c-accent-soft #F0E2E3</span></div></div>
+    <div class="sw"><i style="background:linear-gradient(135deg,#F9F0EF,#F0DCDA 55%,#E5CFCB)"></i><div><b>重点卡渐变</b><span>--c-accent-grad</span></div></div>
+  </div>
+</section>
+
+<!-- 二 · 字阶 -->
+<section>
+  <div class="sec-hd"><span class="no">02</span><h2>字阶</h2></div>
+  <p class="sec-note">八档，只增不减。中间没有 13.5、没有 14.5、没有 17。正文行高 1.75，标题 1.35。</p>
+  <div class="card">
+    <div class="type-row"><span class="tag">--fs-1<br>9.5</span><span class="demo" style="font-size:var(--fs-1)">刻字、角标、英文小注</span></div>
+    <div class="type-row"><span class="tag">--fs-2<br>11</span><span class="demo" style="font-size:var(--fs-2)">时间 09:24、说明</span></div>
+    <div class="type-row"><span class="tag">--fs-3<br>12</span><span class="demo" style="font-size:var(--fs-3)">旁白、备注这类次要的字</span></div>
+    <div class="type-row"><span class="tag">--fs-4<br>13</span><span class="demo" style="font-size:var(--fs-4)">次要正文、导航条</span></div>
+    <div class="type-row"><span class="tag">--fs-5<br>14</span><span class="demo" style="font-size:var(--fs-5)">正文。气泡里的话就是这个大小。</span></div>
+    <div class="type-row"><span class="tag">--fs-6<br>15</span><span class="demo" style="font-size:var(--fs-6)">输入框、引导句</span></div>
+    <div class="type-row"><span class="tag">--fs-7<br>24</span><span class="demo" style="font-size:var(--fs-7);font-weight:500">卡片标题</span></div>
+    <div class="type-row"><span class="tag">--fs-8<br>32</span><span class="demo" style="font-size:var(--fs-8);font-family:Cormorant Garamond,Georgia,serif">102</span></div>
+  </div>
+</section>
+
+<!-- 三 · 圆角 -->
+<section>
+  <div class="sec-hd"><span class="no">03</span><h2>圆角</h2></div>
+  <p class="sec-note">同层同角。一个东西身上只准用同一档，或者相邻一档。</p>
+  <div class="card">
+    <div class="radii">
+      <div class="rad"><i style="border-radius:6px"></i><span>6</span></div>
+      <div class="rad"><i style="border-radius:9px"></i><span>9</span></div>
+      <div class="rad"><i style="border-radius:13px"></i><span>13</span></div>
+      <div class="rad"><i style="border-radius:16px"></i><span>16</span></div>
+      <div class="rad"><i style="border-radius:22px"></i><span>22</span></div>
+      <div class="rad"><i style="border-radius:26px"></i><span>26</span></div>
+      <div class="rad"><i style="border-radius:32px"></i><span>999</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 四 · 间距 -->
+<section>
+  <div class="sec-hd"><span class="no">04</span><h2>间距</h2></div>
+  <p class="sec-note">8 的倍数。同级一档，上级永远比下级松。</p>
+  <div class="card">
+    <div class="space-row"><span class="tag" style="width:34px">4</span><i class="bar" style="width:4px"></i><span class="tag">紧贴</span></div>
+    <div class="space-row"><span class="tag" style="width:34px">6</span><i class="bar" style="width:6px"></i><span class="tag">图标之间</span></div>
+    <div class="space-row"><span class="tag" style="width:34px">8</span><i class="bar" style="width:8px"></i><span class="tag">小内边距</span></div>
+    <div class="space-row"><span class="tag" style="width:34px">12</span><i class="bar" style="width:12px"></i><span class="tag">卡间距</span></div>
+    <div class="space-row"><span class="tag" style="width:34px">18</span><i class="bar" style="width:18px"></i><span class="tag">卡内</span></div>
+    <div class="space-row"><span class="tag" style="width:34px">22</span><i class="bar" style="width:22px"></i><span class="tag">板块之间</span></div>
+    <div class="space-row"><span class="tag" style="width:34px">24</span><i class="bar" style="width:24px"></i><span class="tag">页边</span></div>
+    <div class="space-row"><span class="tag" style="width:34px">32</span><i class="bar" style="width:32px"></i><span class="tag">大区块</span></div>
+  </div>
+</section>
+
+<!-- 五 · 玻璃 -->
+<section>
+  <div class="sec-hd"><span class="no">05</span><h2>玻璃</h2></div>
+  <p class="sec-note">玻璃的三件套是背景、模糊、一道细边。但前提是底下先铺了氛围光——没有光可糊，玻璃就是一块白。</p>
+  <div class="glass-pair">
+    <div class="gwrap">
+      <p class="glabel">底下有氛围光</p>
+      <div class="gbox">这样才是玻璃：背后的光被糊开，透过来的是雾。</div>
+    </div>
+    <div class="gwrap blank">
+      <p class="glabel">底下是纯白</p>
+      <div class="gbox flat">同样三件套，但底下没光，结果就是一块灰白方块。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 六 · 阴影 -->
+<section>
+  <div class="sec-hd"><span class="no">06</span><h2>阴影</h2></div>
+  <p class="sec-note">只有两档。分层优先用「底色差 + 线条」，别靠阴影硬拉。</p>
+  <div class="shadows">
+    <div class="shitem" style="box-shadow:var(--sh-1)">--sh-1 贴合</div>
+    <div class="shitem" style="box-shadow:var(--sh-2)">--sh-2 浮起</div>
+  </div>
+</section>
+
+<!-- 七 · 组件样片 -->
+<section>
+  <div class="sec-hd"><span class="no">07</span><h2>组件样片</h2></div>
+  <p class="sec-note">聊天页的实物。气泡、水滴、时间、旁白、输入条，都是按这套尺子量出来的。</p>
+
+  <div class="card chat-demo">
+    <div class="row">
+      <div class="ava">祁</div>
+      <div class="main">
+        <span class="drop"><svg viewBox="0 0 24 24"><path d="M12 3.4c0 0 6.1 6.5 6.1 10.4a6.1 6.1 0 0 1-12.2 0C5.9 9.9 12 3.4 12 3.4z"/><path d="M9.4 13.8a2.6 2.6 0 0 0 2.2 2.9"/></svg></span>
+        <div class="bub">今天风挺大，我回来的时候路灯刚亮。</div>
+        <div class="bub">你那边降温了没？</div>
+      </div>
+    </div>
+
+    <div class="row me">
+      <div class="ava">淼</div>
+      <div class="main">
+        <div class="time">09:24</div>
+        <div class="bub">降了，早上出门忘带外套。</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="ava">祁</div>
+      <div class="main">
+        <div class="narr">他停了一下，好像在想要不要问下去。</div>
+        <div class="bub">明天带我的。</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:var(--sp-4)">
+    <div class="chips">
+      <span class="chip">早</span>
+      <span class="chip">在干嘛</span>
+      <span class="chip">眠了吗</span>
+    </div>
+    <div class="composer">
+      <div class="fake">输入消息…</div>
+      <button type="button" class="cbtn">＋</button>
+      <button type="button" class="cbtn heart">♡</button>
+      <button type="button" class="cbtn send">↑</button>
+    </div>
+  </div>
+</section>
+
+<!-- 八 · 例外 -->
+<section>
+  <div class="sec-hd"><span class="no">08</span><h2>例外登记</h2></div>
+  <p class="sec-note">这几条是本人拍定的，规范改不动它。新增例外必须写进这张表，注明来历和边界。</p>
+  <div class="card">
+    <table class="ex">
+      <thead><tr><th>#</th><th>例外 / 边界</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><b>她那一侧气泡用淡紫</b> <code>rgba(228,218,242,.92)</code><br>只做气泡底，不许扩散到卡片、按钮、导航。</td></tr>
+        <tr><td>2</td><td><b>聊天页页边 8px</b>（全站 24px）<br>聊天要装下头像和气泡，24px 会挤成一条。</td></tr>
+        <tr><td>3</td><td><b>水滴 24px 圆</b><br>只做消息头顶那一颗。</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var btn = document.getElementById('theme');
+    var root = document.documentElement;
+
+    function paint() {
+      var night = root.getAttribute('data-theme') === 'night';
+      btn.textContent = night ? '切回白昼' : '切到夜幕';
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', night ? '#131313' : '#F5F4F1');
+    }
+
+    btn.addEventListener('click', function () {
+      root.setAttribute('data-theme', root.getAttribute('data-theme') === 'night' ? '' : 'night');
+      paint();
+    });
+
+    paint();
+  })();
+</script>
+
+</body>
+</html>
