@@ -1,5 +1,5 @@
 /* sw.js · 小窝的离线壳；有网拿新的，自身更新后自动重载已开页面 */
-const CACHE = 'xiaowo-v3';
+const CACHE = 'xiaowo-v4';
 
 const MANIFEST = {
   name: '\u5c0f\u7a9d',
@@ -27,8 +27,7 @@ self.addEventListener('activate', function (e) {
   e.waitUntil(
     caches.keys().then(function (keys) {
       return Promise.all(keys.map(function (k) {
-        if (k !== CACHE) return caches.delete(k);
-        return null;
+        return caches.delete(k);
       }));
     }).then(function () {
       return self.clients.claim();

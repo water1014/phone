@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-ver="2026-11-24-2">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -66,10 +66,10 @@
 <link rel="stylesheet" href="css/album-cap.css?v=1">
 <link rel="stylesheet" href="css/app-guard.css?v=1">
 <link rel="stylesheet" href="css/glass.css?v=1">
-<link rel="stylesheet" href="css/xw-home.css?v=1">
-<link rel="stylesheet" href="css/xw-set.css?v=1">
-<link rel="stylesheet" href="css/xw-album.css?v=1">
-<link rel="stylesheet" id="xw-chat-css" href="css/xw-chat.css?v=6">
+<link rel="stylesheet" href="css/xw-home.css?v=2">
+<link rel="stylesheet" href="css/xw-set.css?v=2">
+<link rel="stylesheet" href="css/xw-album.css?v=2">
+<link rel="stylesheet" id="xw-chat-css" href="css/xw-chat.css?v=7">
 </head>
 <body>
 <div id="screen"></div>
@@ -115,5 +115,48 @@
 <script src="js/chat-flow.js?v=1"></script>
 <script src="js/pwa.js?v=1"></script>
 <script src="js/xw-chat.js?v=2"></script>
+<script>
+/* 版本守卫：
+   WebView 一直挂着不刷新，光靠 SW 靠不住。
+   所以页面每次重新可见时，自己去线上拿一份 index，比对 data-ver。
+   不一致就自己 reload。她不用找刷新键，也不用杀 App。 */
+(function () {
+  var KEY = 'xw_page_ver';
+  var mine = document.documentElement.getAttribute('data-ver') || '';
+  var busy = false;
+
+  function check() {
+    if (busy || !mine) return;
+    busy = true;
+
+    fetch('index.html?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.text() : ''; })
+      .then(function (html) {
+        var m = html && html.match(/<html[^>]*\sdata-ver="([^"]+)"/);
+        var live = m ? m[1] : '';
+
+        if (live && live !== mine) {
+          try { localStorage.setItem(KEY, live); } catch (e) {}
+          location.reload();
+          return;
+        }
+
+        try { localStorage.setItem(KEY, mine); } catch (e) {}
+        busy = false;
+      })
+      .catch(function () { busy = false; });
+  }
+
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) check();
+  });
+
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) check();
+  });
+
+  setTimeout(check, 1200);
+})();
+</script>
 </body>
 </html>
