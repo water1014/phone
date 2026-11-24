@@ -15,27 +15,27 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
   padding:calc(env(safe-area-inset-top) + 14px) 16px 0;pointer-events:none;
   opacity:0;transition:opacity 1.4s ease .4s}
 .head.in{opacity:1}
-.head h1{font-size:26px;font-weight:400;letter-spacing:.12em;color:#F6ECFA;
-  text-shadow:0 0 24px rgba(210,150,230,.55)}
-.head .sub{font-size:10.5px;letter-spacing:.24em;color:rgba(220,200,240,.46);margin-top:5px}
-.head .zh{font-size:12px;font-weight:300;letter-spacing:.16em;color:rgba(220,205,238,.4);margin-top:11px}
+.head h1{font-size:25px;font-weight:400;letter-spacing:.14em;color:#F6ECFA;
+  text-shadow:0 0 24px rgba(210,150,230,.5)}
+.head .sub{font-size:10px;letter-spacing:.24em;color:rgba(220,200,240,.38);margin-top:5px}
+.head .zh{font-size:11.5px;font-weight:300;letter-spacing:.16em;color:rgba(220,205,238,.32);margin-top:10px}
 
 .back{position:fixed;left:14px;bottom:calc(env(safe-area-inset-bottom) + 14px);z-index:12;
   width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
-  background:rgba(255,255,255,.08);color:rgba(240,225,245,.75);font-size:16px;
+  background:rgba(255,255,255,.07);color:rgba(240,225,245,.7);font-size:16px;
   text-decoration:none}
 
 .hint{position:fixed;left:50%;transform:translateX(-50%);z-index:7;
-  bottom:calc(env(safe-area-inset-bottom) + 22px);
-  font-size:11px;letter-spacing:.16em;color:rgba(225,205,240,.28);
+  bottom:calc(env(safe-area-inset-bottom) + 20px);
+  font-size:10.5px;letter-spacing:.16em;color:rgba(225,205,240,.22);
   white-space:nowrap;pointer-events:none;transition:opacity .8s ease}
 
 #labels{position:fixed;inset:0;z-index:6;pointer-events:none;overflow:hidden}
 .lbl{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;
   transition:opacity .6s ease;will-change:transform,opacity}
-.lbl .t{font-size:12px;color:#FBEFFA;letter-spacing:.04em;
-  text-shadow:0 0 12px rgba(255,180,230,.6),0 1px 4px rgba(0,0,0,.9)}
-.lbl .d{font-size:10px;color:rgba(230,205,240,.6);letter-spacing:.08em;margin-top:1px;
+.lbl .t{font-size:11.5px;color:rgba(251,239,250,.92);letter-spacing:.04em;
+  text-shadow:0 0 10px rgba(255,180,230,.5),0 1px 4px rgba(0,0,0,.9)}
+.lbl .d{font-size:9.5px;color:rgba(230,205,240,.5);letter-spacing:.08em;margin-top:1px;
   text-shadow:0 1px 4px rgba(0,0,0,.9)}
 
 #scrim{position:fixed;inset:0;z-index:20;opacity:0;pointer-events:none;transition:opacity .4s ease}
@@ -43,23 +43,23 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
 #card{position:fixed;left:0;right:0;bottom:0;z-index:21;max-height:54vh;
   display:flex;flex-direction:column;
-  padding:38px 24px calc(24px + env(safe-area-inset-bottom));
-  background:linear-gradient(to top,rgba(5,2,12,.94) 38%,rgba(5,2,12,.56) 70%,rgba(5,2,12,0));
+  padding:36px 24px calc(24px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,rgba(5,2,12,.95) 40%,rgba(5,2,12,.6) 72%,rgba(5,2,12,0));
   opacity:0;transform:translateY(20px);pointer-events:none;
   transition:opacity .5s ease,transform .5s ease}
 #card.show{opacity:1;transform:none;pointer-events:auto}
 .c-head{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;padding-right:42px}
 .c-head b{font-size:15px;font-weight:500;color:#FBEFFA}
 .c-head i{font-size:10.5px;font-style:normal;letter-spacing:.12em;
-  color:rgba(230,205,240,.46);font-variant-numeric:tabular-nums}
+  color:rgba(230,205,240,.44);font-variant-numeric:tabular-nums}
 .c-body{font-size:14px;line-height:1.9;color:rgba(240,228,246,.86);
   white-space:pre-wrap;word-break:break-word;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .c-close{position:absolute;right:14px;top:8px;width:32px;height:32px;border:0;border-radius:50%;
   background:rgba(255,255,255,.07);color:rgba(240,225,245,.7);font-size:15px;font-family:inherit}
 
-#note{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 68px);z-index:8;
-  text-align:center;font-size:12px;line-height:1.9;color:rgba(230,210,240,.5);
-  padding:0 32px;display:none;pointer-events:none}
+#note{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 64px);z-index:8;
+  text-align:center;font-size:11.5px;line-height:2;color:rgba(230,210,240,.42);
+  padding:0 36px;display:none;pointer-events:none}
 #note.on{display:block}
 </style>
 </head>
@@ -90,12 +90,11 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 (function () {
   'use strict';
 
-  /* ══ 配色 ══ */
   var PAL = {
-    '恋爱': [255, 158, 196],
-    '工程': [155, 140, 255],
-    '情绪': [255, 196, 138],
-    '日常': [127, 212, 232]
+    '恋爱': [255, 176, 205],
+    '工程': [172, 158, 246],
+    '情绪': [255, 206, 158],
+    '日常': [150, 216, 232]
   };
 
   var KIND = [
@@ -114,7 +113,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
   function pad(n) { return String(n).padStart(2, '0'); }
   function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
 
-  /* ══ 读记忆 ══ */
   function loadStars() {
     var raw = [];
     try { raw = JSON.parse(localStorage.getItem('xw_notes') || '[]'); } catch (e) { raw = []; }
@@ -122,7 +120,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
     var out = [];
 
-    raw.forEach(function (it, i) {
+    raw.forEach(function (it) {
       var text = String((it && it.text) || '');
       if (!text.trim()) return;
 
@@ -147,7 +145,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
   var STARS = loadStars();
 
-  /* ══ 画布 ══ */
   var cv = document.getElementById('gl');
   var ctx = cv.getContext('2d');
   var W = 0, H = 0, DPR = 1;
@@ -164,32 +161,58 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
   }
 
   resize();
-  window.addEventListener('resize', resize);
 
-  /* ══ 背景星：四条旋臂 ══ */
+  /* ══ 预渲染圆点贴图：不再用 fillRect 方块 ══ */
+  function makeDot(r, g, b, hard) {
+    var S = 32;
+    var c = document.createElement('canvas');
+    c.width = S;
+    c.height = S;
+    var x = c.getContext('2d');
+    var gr = x.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+    gr.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',1)');
+    gr.addColorStop(hard ? 0.55 : 0.22, 'rgba(' + r + ',' + g + ',' + b + ',' + (hard ? 0.75 : 0.3) + ')');
+    gr.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',0)');
+    x.fillStyle = gr;
+    x.fillRect(0, 0, S, S);
+    return c;
+  }
+
+  var DOT = makeDot(226, 212, 246, false);
+  var DOT_HOT = makeDot(255, 255, 255, true);
+
+  var MDOT = {};
+  Object.keys(PAL).forEach(function (k) {
+    MDOT[k] = makeDot(PAL[k][0], PAL[k][1], PAL[k][2], true);
+  });
+
+  /* ══ 背景星：内密外疏，低饱和淡紫 ══ */
   var BG = [];
 
   (function () {
-    var N = 3600;
+    var N = 2600;
 
     for (var i = 0; i < N; i++) {
       var arm = i % 4;
-      var r = Math.pow(Math.random(), 0.62) * 96 + 2;
-      var th = r * 0.115 + arm * (Math.PI / 2) + (Math.random() - 0.5) * 0.68;
+      var u = Math.random();
+      var r = Math.pow(u, 1.85) * 92 + 1.5;
+      var th = r * 0.19 + arm * (Math.PI / 2) + (Math.random() - 0.5) * (0.5 + r * 0.012);
 
-      var hue = 0.74 + Math.random() * 0.1;
+      var br = Math.pow(Math.random(), 2.2);
 
       BG.push({
         x: Math.cos(th) * r,
-        y: (Math.random() - 0.5) * (5 + r * 0.075),
+        y: (Math.random() - 0.5) * (2.4 + r * 0.11),
         z: Math.sin(th) * r,
-        br: 0.2 + Math.random() * 0.8,
-        hue: hue
+        br: br,
+        hot: br > 0.93
       });
     }
+
+    BG.sort(function (a, b) { return b.z - a.z; });
   })();
 
-  /* ══ 记忆星：时间当半径 ══ */
+  /* ══ 记忆星 ══ */
   var NODES = [];
 
   if (STARS.length) {
@@ -198,45 +221,41 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     var t1 = Math.max.apply(null, times);
     var span = Math.max(1, t1 - t0);
 
-    var SIZE = [1.4, 2.4, 3.6, 5.2];
+    var SIZE = [1.2, 2.2];
 
     STARS.forEach(function (s, i) {
-      var tier = s.pinned ? 3 : 1;
       var ratio = (s.t - t0) / span;
-      var r = 3.5 + Math.pow(ratio, 0.75) * 40;
-      var th = i * 2.39996 + (Math.random() - 0.5) * 0.35;
+      var r = 2.4 + Math.pow(ratio, 0.72) * 38;
+      var th = i * 2.39996 + (Math.random() - 0.5) * 0.4;
 
       NODES.push({
         d: s,
         x: Math.cos(th) * r,
-        y: (Math.random() - 0.5) * (2 + r * 0.06),
+        y: (Math.random() - 0.5) * (1.2 + r * 0.05),
         z: Math.sin(th) * r,
-        size: SIZE[tier],
-        tier: tier,
-        phase: Math.random() * 6.28,
-        rgb: PAL[s.domain] || [207, 196, 224]
+        size: s.pinned ? SIZE[1] : SIZE[0],
+        tier: s.pinned ? 3 : 1,
+        phase: Math.random() * 6.28
       });
     });
 
-    /* 核心：最早那条，放正中心 */
     var core = 0;
     NODES.forEach(function (n, i) { if (n.d.t < NODES[core].d.t) core = i; });
     NODES[core].x = 0;
     NODES[core].y = 0;
     NODES[core].z = 0;
     NODES[core].core = true;
-    NODES[core].size = 6.4;
+    NODES[core].size = 3.4;
   }
 
   /* ══ 相机 ══ */
   var yaw = 0.55;
-  var pitch = -0.42;
-  var dist = 118;
-  var FOCAL = 1.0;
+  var pitch = -0.36;
+  var dist = 86;
+  var FOCAL = 1;
 
-  function syncFocal() { FOCAL = Math.max(W, H) * 0.95; }
+  function syncFocal() { FOCAL = Math.max(W, H) * 1.05; }
   syncFocal();
-  window.addEventListener('resize', syncFocal);
 
   function project(x, y, z) {
     var cy = Math.cos(yaw), sy = Math.sin(yaw);
@@ -254,7 +273,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
     return {
       x: W * 0.5 + x1 * f,
-      y: H * 0.5 + y2 * f,
+      y: H * 0.47 + y2 * f,
       f: f,
       z: zc
     };
@@ -278,11 +297,10 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     labels.push({ el: el, n: n });
   });
 
-  /* ══ 提示：空的时候说一句 ══ */
   if (!NODES.length) {
     var note = document.getElementById('note');
     note.className = 'on';
-    note.innerHTML = '这片星云是你俩的底子，记忆还没长上去。<br>去记忆里写一句，它就多一颗星。';
+    note.innerHTML = '星云还空着。<br>去记忆里写一句，它就多一颗星。';
   }
 
   /* ══ 交互 ══ */
@@ -298,7 +316,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
   function openCard(i) {
     var n = NODES[i];
     if (!n) return;
-
     picked = i;
 
     document.getElementById('c-name').textContent = n.core ? '开始' : (n.d.name || '一条记忆');
@@ -335,7 +352,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
     lastY = e.clientY;
     moved += Math.abs(dx) + Math.abs(dy);
     yaw += dx * 0.007;
-    pitch = Math.max(-1.35, Math.min(0.6, pitch + dy * 0.005));
+    pitch = Math.max(-1.3, Math.min(0.55, pitch + dy * 0.005));
   });
 
   cv.addEventListener('pointerup', function (e) {
@@ -351,7 +368,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
       if (!p) return;
       var dx = p.x - e.clientX;
       var dy = p.y - e.clientY;
-      if (dx * dx + dy * dy < 900 && p.z < bestZ) {
+      if (dx * dx + dy * dy < 1100 && p.z < bestZ) {
         best = i;
         bestZ = p.z;
       }
@@ -363,7 +380,6 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
   cv.addEventListener('pointercancel', function () { dragging = false; });
 
-  /* 双指缩放 */
   var pinch0 = 0, dist0 = 0;
 
   function span2(t) {
@@ -384,7 +400,7 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
   cv.addEventListener('touchmove', function (e) {
     if (e.touches.length === 2 && pinch0) {
       e.preventDefault();
-      dist = Math.max(42, Math.min(280, dist0 * pinch0 / span2(e.touches)));
+      dist = Math.max(34, Math.min(220, dist0 * pinch0 / span2(e.touches)));
     }
   }, { passive: false });
 
@@ -393,60 +409,56 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
   }, { passive: true });
 
   /* ══ 画 ══ */
-  function hsl2rgb(h, s, l) {
-    var c = (1 - Math.abs(2 * l - 1)) * s;
-    var x = c * (1 - Math.abs((h * 6) % 2 - 1));
-    var m = l - c / 2;
-    var r = 0, g = 0, b = 0;
-    var k = Math.floor(h * 6) % 6;
-
-    if (k === 0) { r = c; g = x; }
-    else if (k === 1) { r = x; g = c; }
-    else if (k === 2) { g = c; b = x; }
-    else if (k === 3) { g = x; b = c; }
-    else if (k === 4) { r = x; b = c; }
-    else { r = c; b = x; }
-
-    return [
-      Math.round((r + m) * 255),
-      Math.round((g + m) * 255),
-      Math.round((b + m) * 255)
-    ];
-  }
-
   var tStart = performance.now();
+  var coreGlow = null;
+  var coreKey = '';
 
   function frame(now) {
     requestAnimationFrame(frame);
 
     var t = (now - tStart) * 0.001;
 
-    if (!dragging) yaw += 0.0017;
+    if (!dragging) yaw += 0.0014;
 
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.fillStyle = '#050209';
     ctx.fillRect(0, 0, W, H);
 
-    /* 背景星云 */
+    /* 中心一团雾：有它才像星系，不然是一盘散沙 */
+    var ck = W + 'x' + H;
+    if (ck !== coreKey) {
+      coreKey = ck;
+      var R = Math.max(W, H) * 0.5;
+      coreGlow = ctx.createRadialGradient(W * 0.5, H * 0.47, 0, W * 0.5, H * 0.47, R);
+      coreGlow.addColorStop(0, 'rgba(120,92,168,0.20)');
+      coreGlow.addColorStop(0.35, 'rgba(86,62,132,0.09)');
+      coreGlow.addColorStop(0.7, 'rgba(60,44,100,0.03)');
+      coreGlow.addColorStop(1, 'rgba(0,0,0,0)');
+    }
+
+    ctx.fillStyle = coreGlow;
+    ctx.fillRect(0, 0, W, H);
+
+    /* ── 背景星云 ── */
     ctx.globalCompositeOperation = 'lighter';
 
     for (var i = 0; i < BG.length; i++) {
       var b = BG[i];
       var p = project(b.x, b.y, b.z);
       if (!p) continue;
-      if (p.x < -20 || p.x > W + 20 || p.y < -20 || p.y > H + 20) continue;
+      if (p.x < -30 || p.x > W + 30 || p.y < -30 || p.y > H + 30) continue;
 
-      var a = b.br * Math.min(1, p.f * 1.5) * 0.85;
-      if (a <= 0.02) continue;
+      var depth = Math.min(1, p.f * 1.9);
+      var a = (0.14 + b.br * 0.6) * depth;
+      if (a < 0.03) continue;
 
-      var rgb = hsl2rgb(b.hue, 0.55, 0.45 * b.br + 0.18);
-      ctx.fillStyle = 'rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',' + a.toFixed(3) + ')';
+      var d = (1.1 + b.br * 2.4) * Math.min(1.5, p.f * 1.5);
 
-      var s = Math.max(1, p.f * 1.1);
-      ctx.fillRect(p.x, p.y, s, s);
+      ctx.globalAlpha = a;
+      ctx.drawImage(b.hot ? DOT_HOT : DOT, p.x - d, p.y - d, d * 2, d * 2);
     }
 
-    /* 记忆星：远到近排序 */
+    /* ── 记忆星 ── */
     var vis = [];
 
     for (var j = 0; j < NODES.length; j++) {
@@ -460,40 +472,31 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
     vis.forEach(function (v) {
       var n = v.n;
-      var p = v.p;
+      var pp = v.p;
 
       var dim = 1;
-      if (picked >= 0 && picked !== NODES.indexOf(n)) {
-        dim = n.d.domain === NODES[picked].d.domain ? 1.25 : 0.2;
+      if (picked >= 0 && picked !== v.i) {
+        dim = n.d.domain === NODES[picked].d.domain ? 1.15 : 0.16;
       }
 
-      var breathe = n.core ? 1 : (1 + Math.sin(t * 0.9 + n.phase) * 0.06);
-      var rad = Math.max(1.2, n.size * p.f * breathe);
+      var breathe = n.core ? 1 : (1 + Math.sin(t * 0.9 + n.phase) * 0.05);
+      var rad = Math.max(2.6, n.size * pp.f * breathe * 2.2);
 
-      var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rad * 5);
-      var c = n.rgb;
+      ctx.globalAlpha = Math.min(1, 0.5 * dim + 0.5);
+      ctx.drawImage(MDOT[n.d.domain] || DOT, pp.x - rad, pp.y - rad, rad * 2, rad * 2);
 
-      glow.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (0.9 * dim) + ')');
-      glow.addColorStop(0.35, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (0.22 * dim) + ')');
-      glow.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
-
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, rad * 5, 0, 6.2832);
-      ctx.fill();
-
-      ctx.fillStyle = 'rgba(255,255,255,' + (0.85 * Math.min(1, dim)) + ')';
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, Math.max(0.9, rad * 0.42), 0, 6.2832);
-      ctx.fill();
+      ctx.globalAlpha = 0.85 * Math.min(1, dim);
+      ctx.drawImage(DOT_HOT, pp.x - rad * 0.3, pp.y - rad * 0.3, rad * 0.6, rad * 0.6);
     });
 
-    /* 同类连线 */
+    /* ── 同类连线 ── */
     if (picked >= 0 && NODES[picked]) {
       var from = project(NODES[picked].x, NODES[picked].y, NODES[picked].z);
 
       if (from) {
-        ctx.strokeStyle = 'rgba(' + NODES[picked].rgb.join(',') + ',0.28)';
+        var rgb = PAL[NODES[picked].d.domain] || [200, 190, 220];
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = 'rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',0.22)';
         ctx.lineWidth = 1;
 
         NODES.forEach(function (n) {
@@ -511,9 +514,10 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
       }
     }
 
+    ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = 'source-over';
 
-    /* 标签跟随 */
+    /* ── 标签 ── */
     labels.forEach(function (L) {
       var p = project(L.n.x, L.n.y, L.n.z);
 
@@ -522,9 +526,9 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
         return;
       }
 
-      L.el.style.opacity = picked >= 0 && picked !== NODES.indexOf(L.n) ? '0.25' : '0.9';
+      L.el.style.opacity = picked >= 0 && picked !== NODES.indexOf(L.n) ? '0.2' : '0.85';
       L.el.style.left = p.x + 'px';
-      L.el.style.top = (p.y + L.n.size * p.f * 2.4 + 12) + 'px';
+      L.el.style.top = (p.y + Math.max(10, L.n.size * p.f * 2.2) + 10) + 'px';
     });
   }
 
@@ -532,6 +536,11 @@ body{font-family:"Noto Serif SC","Songti SC",serif;color:#F3EAF5}
 
   requestAnimationFrame(function () {
     document.getElementById('head').classList.add('in');
+  });
+
+  window.addEventListener('resize', function () {
+    resize();
+    syncFocal();
   });
 })();
 </script>
