@@ -1,0 +1,127 @@
+/* xw-album.css · 相册页接入令牌
+
+   这个页面的形态是她定的：仿苹果相册——方角网格、1px 圆角、小控件、密度高。
+   不把它改成卡片，只把颜色和字号收进尺子。
+
+   例外登记 #4：相册页底保留淡粉淡紫氛围光（album-pro.css 里的三层径向渐变）。
+   宪法说页面底统一 --c-paper，但「淡淡的粉和紫」是她亲自定的，写在需求里。
+   边界：只给相册页。其他页不得抄这个底。 */
+
+/* ══ 标题 ══ */
+#app-body .ap-n{
+  font-family: "Cormorant Garamond", "Songti SC", Georgia, serif;
+  font-size: var(--fs-7);
+  font-weight: 300;
+  line-height: var(--lh-title);
+  letter-spacing: 0;
+  color: var(--c-ink1);
+}
+
+/* ══ 右上两个小钮 ══ */
+#app-body .ap-sel{
+  height: var(--tap-2);
+  padding: 0 var(--sp-3);
+  border-radius: var(--rd-2);
+  color: var(--c-ink3);
+  font-size: var(--fs-2);
+  letter-spacing: .06em;
+}
+#app-body .ap-sel.on{
+  color: var(--c-ink1);
+}
+
+#app-body .ap-add{
+  width: var(--tap-2);
+  height: var(--tap-2);
+  border: 1px solid var(--c-line);
+  border-radius: var(--rd-full);
+  background: var(--c-card);
+  color: var(--c-ink3);
+  font-size: var(--fs-6);
+}
+#app-body .ap-add:active{
+  background: var(--c-fill);
+  color: var(--c-ink2);
+}
+
+/* ══ 分段控件 ══ */
+#app-body .ap-seg{
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--rd-2);
+  background: var(--glass-bg);
+  box-shadow: inset 0 0 0 1px var(--glass-brd);
+}
+#app-body .ap-sg{
+  padding: var(--sp-2) 0;
+  border-radius: var(--rd-1);
+  color: var(--c-ink3);
+  font-size: var(--fs-2);
+  letter-spacing: .06em;
+  line-height: 1.3;
+}
+#app-body .ap-sg.on{
+  background: var(--c-card);
+  color: var(--c-ink1);
+  font-weight: var(--fw-2);
+  box-shadow: var(--sh-1);
+}
+
+/* ══ 分组标题 ══ */
+#app-body .ap-sec-t{
+  font-size: var(--fs-4);
+  font-weight: var(--fw-3);
+  letter-spacing: .005em;
+  color: var(--c-ink1);
+}
+#app-body .ap-sec-n{
+  font-size: var(--fs-1);
+  letter-spacing: .04em;
+  color: var(--c-ink4);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ══ 年视图 ══ */
+#app-body .ap-ymon{
+  width: var(--sp-7);
+  font-size: var(--fs-1);
+  letter-spacing: .02em;
+  color: var(--c-ink3);
+  font-variant-numeric: tabular-nums;
+}
+#app-body .ap-ythumbs img{
+  width: 42px;
+  height: 42px;
+  border-radius: 1px;
+  background: var(--c-fill);
+}
+#app-body .ap-ycount{
+  font-size: var(--fs-1);
+  color: var(--c-ink4);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ══ 网格：方角是她的指定，不动 ══ */
+#app-body .ap-cell{
+  background: var(--c-fill);
+}
+#app-body .ap-cell.picked .ap-pick::after{
+  background: var(--c-ink1);
+}
+
+/* ══ 底部说明 ══ */
+#app-body .ap-note{
+  font-size: var(--fs-1);
+  line-height: var(--lh-body);
+  letter-spacing: .02em;
+  color: var(--c-ink4);
+}
+
+/* ══ 多选底栏 ══ */
+#app-body .ap-selbar{
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--rd-full);
+  background: var(--c-card);
+  box-shadow: var(--sh-2);
+}
