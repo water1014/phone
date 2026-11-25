@@ -1,68 +1,10 @@
-/* chat-format.css · 照图补的：顶部小标签、挂件、状态行、提示字 */
-
-/* 头像上方那条深色小字 */
-html[data-page="chat"] .cs-pair {
-  position: relative;
-  padding-top: .95rem;
-}
-
-html[data-page="chat"] .cs-pair::before {
-  content: '2 台';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: .09rem .4rem;
-  border-radius: 999px;
-  background: #33302b;
-  color: #f6f2ea;
-  font-size: .36rem;
-  letter-spacing: .08em;
-  line-height: 1.5;
-  white-space: nowrap;
-}
-
-/* 右上角垂下来的小挂件 */
-html[data-page="chat"] .cs-top {
-  position: relative;
-  overflow: visible;
-}
-
-html[data-page="chat"] .cs-top::before {
-  content: '';
-  position: absolute;
-  top: -13px;
-  right: 22px;
-  width: 1px;
-  height: 16px;
-  background: rgba(150, 135, 110, .38);
-}
-
-html[data-page="chat"] .cs-top::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  right: 15px;
-  width: 14px;
-  height: 17px;
-  border: 1px solid rgba(150, 135, 110, .5);
-  border-radius: 3px;
-  background: #fdfaf4;
-  transform: rotate(-7deg);
-}
-
-/* 无气泡时正文宽度也收一点，不要贴边 */
-html[data-page="chat"][data-chat-bubble="0"] .bub {
-  max-width: 94%;
-}
-
-/* 状态行：一行小字，像图里那样 */
-html[data-page="chat"] .msg-tag {
-  font-size: .34rem !important;
-  letter-spacing: .01em;
-  color: #b7b0a2 !important;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 96%;
-}
+/* chat-format.css */
+.fmt-bar{display:flex;gap:.15rem;padding:.3rem .5rem;background:var(--fill);border-radius:var(--r-sm);margin-bottom:.3rem;overflow-x:auto;scrollbar-width:none}
+.fmt-bar::-webkit-scrollbar{display:none}
+.fmt-btn{width:1.6rem;height:1.6rem;border-radius:var(--r-sm);border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-3);font-size:.7rem;flex-shrink:0}
+.fmt-btn:hover{background:var(--card)}
+.fmt-btn.on{background:var(--dark);color:var(--on-dark)}
+.fmt-preview{padding:.5rem;background:var(--fill);border-radius:var(--r-sm);font-size:.58rem;min-height:3rem;white-space:pre-wrap;word-break:break-word}
+.fmt-seg{display:flex;gap:.2rem;margin:.2rem 0}
+.fmt-seg button{flex:1;padding:.3rem;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--card);font-size:.5rem;cursor:pointer;color:var(--ink-2)}
+.fmt-seg button.on{background:var(--dark);color:var(--on-dark);border-color:var(--dark)}

@@ -1,126 +1,16 @@
-/* chat-extra.css · 长按动作 / 引用条 / 日期页眉 */
-
-/* 按天分的页眉：挂在左边，像手账页眉 */
-.chat-day {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  margin: 1.2rem 0 .8rem;
-  padding-left: .1rem;
-}
-.chat-day span {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: .42rem;
-  letter-spacing: .1em;
-  color: #a3aeb9;
-  white-space: nowrap;
-}
-.chat-day::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background-image: linear-gradient(to right, rgba(0, 0, 0, .12) 50%, transparent 0);
-  background-size: 6px 1px;
-  background-repeat: repeat-x;
-}
-
-/* 引用块：挂在气泡上方 */
-.qblock {
-  display: flex;
-  flex-direction: column;
-  gap: .1rem;
-  max-width: 82%;
-  margin-bottom: .22rem;
-  padding: .3rem .6rem;
-  border-left: 2px solid rgba(141, 154, 168, .55);
-  border-radius: 0 8px 8px 0;
-  background: rgba(141, 154, 168, .06);
-}
-.qblock b {
-  font-size: .4rem;
-  font-weight: 500;
-  letter-spacing: .06em;
-  color: #8d9aa8;
-}
-.qblock span {
-  font-size: .52rem;
-  line-height: 1.7;
-  color: #9a9a9a;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.msg-row.me .qblock { margin-left: auto; }
-
-/* 输入框上方的引用条 */
-.quote-bar {
-  display: flex;
-  align-items: center;
-  gap: .45rem;
-  margin: 0 .05rem .35rem;
-  padding: .35rem .5rem .35rem .6rem;
-  border-left: 2px solid #8d9aa8;
-  border-radius: 0 10px 10px 0;
-  background: rgba(141, 154, 168, .07);
-}
-.quote-bar .qb-name {
-  font-size: .4rem;
-  letter-spacing: .06em;
-  color: #8d9aa8;
-  flex: 0 0 auto;
-}
-.quote-bar .qb-text {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-size: .52rem;
-  color: #9a9a9a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.quote-bar .qb-x {
-  flex: 0 0 auto;
-  width: 1.25rem;
-  height: 1.25rem;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: #b0b0b0;
-  font: inherit;
-  font-size: .72rem;
-  line-height: 1;
-}
-
-/* 长按弹出的动作条 */
-.msg-actions {
-  position: fixed;
-  left: 50%;
-  bottom: 4.6rem;
-  transform: translateX(-50%);
-  z-index: 60;
-  display: flex;
-  gap: .3rem;
-  padding: .35rem;
-  border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, .13), inset 0 0 0 1px rgba(0, 0, 0, .05);
-}
-.msg-actions button {
-  min-width: 3.1rem;
-  padding: .45rem .6rem;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: #4f4f4f;
-  font: inherit;
-  font-size: .56rem;
-  letter-spacing: .02em;
-}
-.msg-actions button:active { background: rgba(141, 154, 168, .12); }
-.msg-actions [data-act="del"] { color: #b46a6a; }
-.msg-actions [data-act="close"] { color: #b0b0b0; }
-
-html.dark .msg-actions { background: #1b1a19; }
-html.dark .msg-actions button { color: #d8d8d8; }
+/* chat-extra.css */
+.ce-wrap{padding:var(--pad)}
+.ce-section{margin-bottom:.8rem}
+.ce-section h4{font-size:.58rem;color:var(--ink-3);margin:0 0 .3rem;text-transform:uppercase;letter-spacing:.05em}
+.ce-row{display:flex;align-items:center;gap:.4rem;padding:.45rem 0;border-bottom:1px solid var(--line)}
+.ce-row:last-child{border-bottom:none}
+.ce-row .ico{width:1.8rem;height:1.8rem;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;background:var(--fill);font-size:.7rem}
+.ce-row .txt{flex:1}
+.ce-row .txt .name{font-size:.58rem;font-weight:500}
+.ce-row .txt .desc{font-size:.46rem;color:var(--ink-3);margin-top:.05rem}
+.ce-row .val{font-size:.54rem;color:var(--ink-3)}
+.ce-row .arr{color:var(--ink-4)}
+.ce-toggle{width:2.4rem;height:1.4rem;border-radius:999px;background:var(--fill);position:relative;cursor:pointer;transition:background .2s;border:none}
+.ce-toggle::after{content:'';position:absolute;top:2px;left:2px;width:1rem;height:1rem;border-radius:50%;background:#fff;transition:transform .2s}
+.ce-toggle.on{background:var(--accent)}
+.ce-toggle.on::after{transform:translateX(1rem)}

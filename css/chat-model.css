@@ -1,26 +1,13 @@
-/* chat-model.css · 聊天设置顶部的模型提示 */
-.cd-row{
-  margin:0 0 14px;
-  padding:10px 12px;
-  border-radius:12px;
-  background:rgba(0,0,0,.032);
-}
-.cd-line{
-  font-size:12px;
-  letter-spacing:.02em;
-  line-height:1.6;
-  color:#7b7469;
-  word-break:break-all;
-}
-.cd-line.no{ color:#b07a5a; }
-.cd-line.ok{ color:#6f8a72; }
-.cd-btn{
-  margin-top:9px;
-  padding:6px 13px;
-  border:1px solid rgba(0,0,0,.14);
-  border-radius:999px;
-  background:transparent;
-  font-size:12px;
-  color:#4a453d;
-}
-.cd-btn:active{ background:rgba(0,0,0,.05); }
+/* chat-model.css */
+.cm-wrap{padding:var(--pad)}
+.cm-section{margin-bottom:.7rem}
+.cm-section h4{font-size:.58rem;color:var(--ink-3);margin:0 0 .3rem;text-transform:uppercase;letter-spacing:.05em}
+.cm-row{display:flex;align-items:center;gap:.4rem;padding:.45rem 0;border-bottom:1px solid var(--line)}
+.cm-row:last-child{border-bottom:none}
+.cm-row .ico{width:1.8rem;height:1.8rem;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;background:var(--fill);font-size:.7rem}
+.cm-row .txt{flex:1}
+.cm-row .txt .name{font-size:.6rem;font-weight:500}
+.cm-row .txt .desc{font-size:.46rem;color:var(--ink-3);margin-top:.05rem}
+.cm-row .tag{font-size:.46rem;padding:.15rem .35rem;border-radius:999px;background:var(--fill);color:var(--ink-3)}
+.cm-row .arr{color:var(--ink-4)}
+.cm-row.on .tag{background:var(--accent-mist);color:var(--accent)}
