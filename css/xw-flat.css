@@ -1,0 +1,65 @@
+/* xw-flat.css · 把 home.css 里写死的阴影与 18px 圆角压平
+   照 ui-aesthetic-palette：无阴影、圆角 8–12、线 #E0E0E0。
+   最后加载，只改这些表面，不碰布局。 */
+
+#home .wdg,
+#home .wdg-clock,
+#home .wdg-days,
+#home .wdg-cal,
+#home .wdg-quote,
+#home .rows,
+#home .pair > section {
+  border-radius: 12px;
+  border: 1px solid #E0E0E0;
+  box-shadow: none;
+}
+
+#home .trio {
+  border-radius: 12px;
+  border: 1px solid #E0E0E0;
+  box-shadow: none;
+}
+
+.dock {
+  border-radius: 16px;
+  border: 1px solid #E0E0E0;
+  box-shadow: none;
+}
+
+.drawer-inner {
+  border-radius: 16px 16px 0 0;
+  box-shadow: none;
+  border-top: 1px solid #E0E0E0;
+}
+
+.drawer-grid .appcell {
+  border-radius: 12px;
+  box-shadow: none;
+  border: 1px solid #E0E0E0;
+}
+
+#home .pair > section,
+#home .wdg,
+#home .rows,
+#home .trio {
+  background: #FFFFFF;
+}
+
+/* 大号字重：规范要求主标题粗黑 */
+#home .wdg-days .days-num,
+#home .wdg-clock .dclock,
+#home .wx-big,
+#home .q-big {
+  font-weight: 600;
+  color: #000000;
+}
+
+/* 小号灰色大写英文标签，字距 +0.05em */
+#home .kicker,
+#home .wdg-cal .kicker,
+#home .wdg-quote .kicker,
+#home .pair .kicker,
+#home .wdg-days .kicker {
+  color: #999999;
+  letter-spacing: .18em;
+}

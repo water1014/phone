@@ -1,41 +1,38 @@
 /* tokens.css · 颜色与尺寸变量（唯一色值来源）— 韩系黑白极简版
-   2026-11-25 补回缺失的旧变量：--fill / --ink-4 / --accent / --ok / --warn / --err
-   缺 --fill 会让 layout / profile / daycard / desktop / app-shell 里
-   所有 var(--fill) 的底色、分隔、图标底整片失效 */
+   2026-11-25 按 ui-aesthetic-palette 规范搬正 */
 :root {
   --ink: #000000;
   --ink-2: #333333;
-  --ink-3: #888888;
-  --ink-4: #BBBBBB;
+  --ink-3: #999999;
+  --ink-4: #C0C0C0;
 
   /* 玻璃：已移除 */
   --glass: #FFFFFF;
   --glass-strong: #FFFFFF;
-  --glass-brd: #EEEEEE;
+  --glass-brd: #E0E0E0;
   --glass-hi: none;
   --blur: none;
 
   --card: #FFFFFF;
-  --line: #EEEEEE;
+  --line: #E0E0E0;
   --fill: #F5F5F5;
   --dark: #000000;
   --on-dark: #FFFFFF;
 
   --accent: #000000;
   --ok: #333333;
-  --warn: #666666;
+  --warn: #999999;
   --err: #000000;
 
-  /* 底色：纯白 */
   --bg: #FFFFFF;
 
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --serif: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   --sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
 
-  --r-sm: .5rem;
-  --r-md: .8rem;
-  --r-lg: 1.1rem;
+  --r-sm: .4rem;
+  --r-md: .55rem;
+  --r-lg: .75rem;
 
   --dock-h: 4.4rem;
   --pad: 1rem;
@@ -44,7 +41,7 @@
 html.dark {
   --ink: #FFFFFF;
   --ink-2: #CCCCCC;
-  --ink-3: #888888;
+  --ink-3: #999999;
   --ink-4: #555555;
 
   --glass: #111111;
@@ -59,7 +56,7 @@ html.dark {
 
   --accent: #FFFFFF;
   --ok: #CCCCCC;
-  --warn: #888888;
+  --warn: #999999;
   --err: #FFFFFF;
 
   --bg: #000000;

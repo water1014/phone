@@ -1,65 +1,61 @@
 /* system.css · 小窝的尺子 — 韩系黑白极简版
-   2026-11-25 重构：去掉暖色、玻璃、氛围光，纯白底纯黑字 */
+   2026-11-25 按 ui-aesthetic-palette 规范搬正：无阴影、圆角 8–12、线 #E0E0E0 */
 
 :root {
 
-  /* ── 色彩：韩系黑白灰阶 ─────────────── */
-  --c-paper: #FFFFFF;   /* 页面底 */
-  --c-card:  #FFFFFF;   /* 卡片 */
-  --c-line:  #EEEEEE;   /* 线条 */
-  --c-fill:  #F5F5F5;   /* 轨道 / 凹陷 */
-  --c-ink1:  #000000;   /* 主文字 */
-  --c-ink2:  #333333;   /* 次要 */
-  --c-ink3:  #888888;   /* 弱化 */
-  --c-ink4:  #BBBBBB;   /* 极弱 */
+  --c-paper: #FFFFFF;
+  --c-card:  #FFFFFF;
+  --c-line:  #E0E0E0;
+  --c-fill:  #F5F5F5;
+  --c-ink1:  #000000;
+  --c-ink2:  #333333;
+  --c-ink3:  #999999;
+  --c-ink4:  #C0C0C0;
 
   --c-accent:      #000000;
   --c-accent-deep: #000000;
   --c-accent-soft: #F5F5F5;
-  --c-accent-grad: linear-gradient(135deg, #F5F5F5 0%, #EEEEEE 55%, #E5E5E5 100%);
+  --c-accent-grad: linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 55%, #EEEEEE 100%);
 
-  /* 状态三色 */
-  --c-ok:  #333333;
-  --c-warn: #666666;
-  --c-err: #000000;
+  /* 状态：只用灰阶 */
+  --c-ok:   #333333;
+  --c-warn: #999999;
+  --c-err:  #000000;
 
-  /* ── 气泡：保留淡紫例外 ────────── */
+  /* 气泡：保留淡紫例外 */
   --c-bub-me:  rgba(228, 218, 242, .92);
   --c-bub-him: rgba(255, 255, 255, .93);
 
-  /* 聊天页页边 */
   --pad-x-chat: 8px;
 
-  /* ── 氛围光：已移除 ───────── */
   --c-aura: none;
 
-  /* ── 玻璃三件套：已弱化 ───────────────────────── */
   --glass-bg:  #FFFFFF;
-  --glass-brd: #EEEEEE;
+  --glass-brd: #E0E0E0;
   --glass-blur: none;
   --glass-blur-sm: none;
 
-  /* ── 间距：8 的倍数，同级一档 ─────────────── */
+  /* 间距 */
   --sp-1: 4px;
   --sp-2: 6px;
   --sp-3: 8px;
-  --sp-4: 12px;   /* 卡间距 */
-  --sp-5: 18px;   /* 卡内 */
-  --sp-6: 22px;   /* 板块之间 */
-  --sp-7: 24px;   /* 页边 */
+  --sp-4: 12px;
+  --sp-5: 18px;
+  --sp-6: 22px;
+  --sp-7: 24px;
   --sp-8: 32px;
 
   --pad-x: var(--sp-7);
 
-  /* ── 字阶：八档，只增不减 ───────────────── */
-  --fs-1: 9.5px;  /* 刻字、角标 */
-  --fs-2: 11px;   /* 时间、小注 */
-  --fs-3: 12px;   /* 说明、旁白 */
-  --fs-4: 13px;   /* 次要正文、导航 */
-  --fs-5: 14px;   /* 正文 */
-  --fs-6: 15px;   /* 输入、引导句 */
-  --fs-7: 24px;   /* 标题 */
-  --fs-8: 32px;   /* 一屏唯一的大数字 */
+  /* 字阶 */
+  --fs-1: 9.5px;
+  --fs-2: 11px;
+  --fs-3: 12px;
+  --fs-4: 13px;
+  --fs-5: 14px;
+  --fs-6: 15px;
+  --fs-7: 24px;
+  --fs-8: 32px;
 
   --fw-1: 400;
   --fw-2: 500;
@@ -68,20 +64,19 @@
   --lh-body: 1.75;
   --lh-title: 1.35;
 
-  /* ── 圆角：同层同角（适当收紧） ────────────────────── */
-  --rd-1: 4px;
+  /* 圆角：规范 8–12 */
+  --rd-1: 6px;
   --rd-2: 8px;
-  --rd-3: 12px;
-  --rd-4: 14px;
-  --rd-card: 16px;
-  --rd-hero: 20px;
+  --rd-3: 10px;
+  --rd-4: 12px;
+  --rd-card: 12px;
+  --rd-hero: 16px;
   --rd-full: 999px;
 
-  /* ── 阴影：极度弱化 ────────────────── */
-  --sh-1: 0 1px 0 rgba(0, 0, 0, .04);
-  --sh-2: 0 2px 8px rgba(0, 0, 0, .06);
+  /* 阴影：规范禁用 */
+  --sh-1: none;
+  --sh-2: none;
 
-  /* ── 尺寸 ─────────────────────────── */
   --av-1: 22px;
   --av-2: 28px;
   --av-3: 36px;
@@ -94,18 +89,15 @@
   --cell: 68px;
   --bub-max: 86%;
 
-  /* ── 动效 ─────────────────────────── */
   --mo-out: cubic-bezier(.22, .7, .3, 1);
   --du-1: .18s;
   --du-2: .3s;
 
-  /* ── 层级 ─────────────────────────── */
   --z-bar: 10;
   --z-sheet: 300;
   --z-toast: 500;
 }
 
-/* 夜幕：纯黑夜间面 */
 html[data-theme="night"],
 html.dark {
   --c-paper: #000000;
@@ -114,7 +106,7 @@ html.dark {
   --c-fill:  #1A1A1A;
   --c-ink1:  #FFFFFF;
   --c-ink2:  #CCCCCC;
-  --c-ink3:  #888888;
+  --c-ink3:  #999999;
   --c-ink4:  #555555;
 
   --c-accent:      #FFFFFF;
@@ -122,9 +114,9 @@ html.dark {
   --c-accent-soft: #1A1A1A;
   --c-accent-grad: linear-gradient(135deg, #1A1A1A 0%, #111111 55%, #0A0A0A 100%);
 
-  --c-ok:  #CCCCCC;
-  --c-warn: #888888;
-  --c-err: #FFFFFF;
+  --c-ok:   #CCCCCC;
+  --c-warn: #999999;
+  --c-err:  #FFFFFF;
 
   --c-bub-me: rgba(58, 50, 70, .88);
   --c-bub-him: rgba(30, 29, 30, .90);
@@ -133,7 +125,4 @@ html.dark {
 
   --glass-bg:  #111111;
   --glass-brd: #222222;
-
-  --sh-1: 0 1px 0 rgba(255, 255, 255, .04);
-  --sh-2: 0 2px 8px rgba(255, 255, 255, .06);
 }
