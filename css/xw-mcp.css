@@ -1,6 +1,54 @@
-/* xw-mcp.css · 连线页 */
+/* xw-mcp.css · 连线页 v2 */
+
+#app-body .xw-stats {
+  display: flex;
+  gap: 0;
+  margin: var(--sp-5) 0 var(--sp-6);
+  padding: var(--sp-4) 0;
+  border-top: 1px solid var(--c-line);
+  border-bottom: 1px solid var(--c-line);
+}
+
+#app-body .xw-stats > div {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+}
+
+#app-body .xw-stats b {
+  display: block;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 300;
+  font-size: var(--fs-6);
+  line-height: 1.1;
+  color: var(--c-ink1);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+#app-body .xw-stats span {
+  display: block;
+  margin-top: 3px;
+  font-size: 9.5px;
+  letter-spacing: .14em;
+  color: var(--c-ink4);
+}
 
 #app-body .xw-sec { margin-top: var(--sp-6); }
+
+#app-body .xw-hd {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--sp-2);
+}
+
+#app-body .xw-hd em {
+  font-style: normal;
+  font-size: 9.5px;
+  letter-spacing: .2em;
+  color: var(--c-ink4);
+}
 
 #app-body .xw-list { border-top: 1px solid var(--c-line); }
 
@@ -57,7 +105,7 @@
   grid-column: 1 / -1;
   justify-self: start;
   margin-top: var(--sp-3);
-  padding: var(--sp-2) var(--sp-4);
+  padding: 3px var(--sp-4);
   font-family: inherit;
   font-size: var(--fs-2);
   letter-spacing: .1em;
@@ -78,6 +126,28 @@
 #app-body .xw-tap[disabled] {
   color: var(--c-ink4);
   border-style: dashed;
+}
+
+/* 还没开的门 */
+#app-body .xw-gates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: var(--sp-3);
+}
+
+#app-body .xw-gate {
+  padding: 4px 11px;
+  font-size: var(--fs-2);
+  letter-spacing: .06em;
+  color: var(--c-ink3);
+  background: var(--c-fill);
+  border-radius: var(--rd-full);
+}
+
+#app-body .xw-gate.on {
+  color: var(--c-accent-deep);
+  background: var(--c-accent-soft);
 }
 
 #app-body .xw-foot {
@@ -102,4 +172,5 @@
   letter-spacing: .1em;
   color: var(--c-ink4);
   font-variant-numeric: tabular-nums;
+  word-break: break-all;
 }
