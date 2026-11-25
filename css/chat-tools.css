@@ -1,89 +1,14 @@
-/* chat-tools.css · 草稿 / 回到底 / 重发 / 找一句话 */
-
-.chat-wrap { position: relative; }
-
-/* ---------- 回到底 ---------- */
-.cs-jump {
-  position: absolute;
-  right: .65rem;
-  bottom: 4.4rem;
-  z-index: 8;
-  padding: .38rem .8rem;
-  border: 1px solid rgba(0, 0, 0, .07);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .94);
-  box-shadow: 0 3px 14px rgba(80, 70, 55, .14);
-  font: inherit;
-  font-size: .52rem;
-  color: #7d776c;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .18s ease;
-}
-
-.cs-jump.on { opacity: 1; pointer-events: auto; }
-
-/* ---------- 顶部右边两颗按钮 ---------- */
-.cs-top-right {
-  display: flex;
-  align-items: center;
-  justify-self: end;
-  gap: .05rem;
-}
-
-html[data-page="chat"] .cs-top-right .cs-more {
-  justify-self: auto;
-  width: 26px;
-}
-
-/* ---------- 找一句话 ---------- */
-.cs-find {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: .35rem;
-  margin: 0 0 .55rem;
-  padding: .3rem .45rem .3rem .7rem;
-  border: 1px solid rgba(0, 0, 0, .07);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .88);
-}
-
-.cs-find input {
-  flex: 1 1 auto;
-  min-width: 0;
-  border: 0;
-  background: transparent;
-  outline: none;
-  font: inherit;
-  font-size: .66rem;
-  color: #3a3630;
-}
-
-.cs-find-x {
-  flex: 0 0 auto;
-  width: 1.5rem;
-  height: 1.5rem;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, .05);
-  color: #7d776c;
-  font: inherit;
-  font-size: .7rem;
-  line-height: 1;
-}
-
-#chat-scroll .msg-row.cs-dim { opacity: .16; }
-
-/* ---------- 失败重发 ---------- */
-.cs-retry {
-  margin-left: .45rem;
-  padding: .14rem .55rem;
-  border: 1px solid rgba(180, 106, 106, .35);
-  border-radius: 999px;
-  background: transparent;
-  font: inherit;
-  font-size: .44rem;
-  color: #b46a6a;
-}
+/* chat-tools.css */
+.tools-panel{position:fixed;bottom:0;left:0;right:0;z-index:var(--z-sheet);background:var(--card);border-radius:var(--r-lg) var(--r-lg) 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.1);transform:translateY(100%);transition:transform .3s var(--mo-out);max-height:60vh;display:flex;flex-direction:column}
+.tools-panel.show{transform:translateY(0)}
+.tools-hd{padding:var(--pad);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:.6rem}
+.tools-hd h3{flex:1;font-size:.72rem;font-weight:600;margin:0}
+.tools-hd .close{width:1.8rem;height:1.8rem;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--fill);border:none;cursor:pointer;color:var(--ink-2)}
+.tools-bd{flex:1;overflow-y:auto;padding:var(--pad)}
+.tools-cat{margin-bottom:.6rem}
+.tools-cat h4{font-size:.56rem;color:var(--ink-3);margin:0 0 .25rem;text-transform:uppercase;letter-spacing:.05em}
+.tools-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.3rem}
+.tools-item{display:flex;flex-direction:column;align-items:center;gap:.15rem;padding:.4rem .2rem;border-radius:var(--r-sm);background:var(--fill);cursor:pointer;border:none;font:inherit}
+.tools-item:active{transform:scale(.95)}
+.tools-item .ico{width:1.8rem;height:1.8rem;border-radius:var(--r-sm);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.tools-item .name{font-size:.46rem;color:var(--ink-2);text-align:center}

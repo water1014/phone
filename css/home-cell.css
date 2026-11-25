@@ -1,33 +1,10 @@
-/* home-cell.css · 拼贴单元与拖动状态 */
-
-#home .grid > .cell {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  border-radius: 18px;
-  transition: box-shadow .16s ease, transform .12s ease;
-}
-
-#home .grid > .cell.s2 { grid-column: 1 / -1; }
-#home .grid > .cell > * { width: 100%; }
-
-/* 拖动中 */
-#home .cell.dragging {
-  opacity: .94;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, .16);
-  z-index: 5;
-  position: relative;
-}
-
-#home .cell.drop-target {
-  outline: 2px dashed rgba(141, 154, 168, .5);
-  outline-offset: -3px;
-}
-
-/* 顶栏也当成一个 cell */
-#home .grid > .topline {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  padding: 0 2px 2px;
-}
+/* home-cell.css */
+.home-cell{display:flex;align-items:center;gap:.5rem;padding:.5rem .6rem;border-radius:var(--r-md);background:var(--card);border:1px solid var(--line);cursor:pointer;transition:transform .15s}
+.home-cell:active{transform:scale(.98)}
+.home-cell .ico{width:2.2rem;height:2.2rem;border-radius:var(--r-sm);background:var(--fill);display:flex;align-items:center;justify-content:center;font-size:1rem}
+.home-cell .ico img{width:100%;height:100%;object-fit:cover;border-radius:var(--r-sm)}
+.home-cell .txt{flex:1;min-width:0}
+.home-cell .txt .name{font-size:.6rem;font-weight:500}
+.home-cell .txt .desc{font-size:.46rem;color:var(--ink-3);margin-top:.05rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.home-cell .badge{font-size:.42rem;padding:.08rem .3rem;border-radius:999px;background:var(--accent);color:#fff;min-width:1rem;text-align:center}
+.home-cell .arr{color:var(--ink-4)}

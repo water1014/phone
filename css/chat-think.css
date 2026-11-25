@@ -1,15 +1,8 @@
-/* chat-think.css · 思考那一行要像能点的 */
-html[data-page=chat] details.think > summary{
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-  -webkit-user-select:none;
-  user-select:none;
-}
-html[data-page=chat] details.think[open] > summary{
-  margin-bottom:2px;
-}
-html[data-page=chat] details.think .think-body{
-  max-height:52vh;
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-}
+/* chat-think.css */
+.think{border-radius:var(--r-sm);margin:.15rem 0}
+.think > summary{display:flex;align-items:center;gap:.3rem;padding:.25rem .4rem;font-size:.48rem;color:var(--ink-3);cursor:pointer;list-style:none;user-select:none}
+.think > summary::-webkit-details-marker{display:none}
+.think > summary svg{width:12px;height:12px;transition:transform .2s}
+.think[open] > summary svg{transform:rotate(90deg)}
+.think-body{padding:.4rem .5rem;font-size:.52rem;color:var(--ink-2);line-height:1.7;background:var(--fill);border-radius:0 0 var(--r-sm) var(--r-sm);border-left:2px solid var(--accent);white-space:pre-wrap;word-break:break-word}
+.think-body:empty{display:none}
