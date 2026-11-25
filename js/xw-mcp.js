@@ -1,17 +1,14 @@
-/* xw-mcp.js · 连线页（MCP）v2 */
+/* xw-mcp.js · MCP 连接器 v3 */
 (function () {
   'use strict';
 
   var D = document;
-  var DAY = 86400000;
+  var KEY = 'xw_mcp_servers';
 
-  var PROVIDERS = [
-    { id: 'deepseek', name: 'DeepSeek' },
-    { id: 'opencode', name: 'OpenCode Go' },
-    { id: 'openai', name: 'OpenAI 兼容' }
+  var DEF = [
+    { name: '小红书', type: 'streamable_http', url: 'http://127.0.0.1:18061/mcp', on: true },
+    { name: 'GitHub', type: 'streamable_http', url: '', on: false }
   ];
-
-  var BUILTIN = { chat: 1, settings: 1 };
 
   function esc(t) {
     if (window.UI && UI.esc) return UI.esc(t);
@@ -22,274 +19,225 @@
     return s;
   }
 
-  function stripSlash(u) {
-    var s = String(u || '');
-    while (s.length && s.charAt(s.length - 1) === '/') s = s.slice(0, -1);
-    return s;
+  function load() {
+    var raw = null;
+    try { raw = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { raw = null; }
+    if (!Array.isArray(raw)) raw = DEF.slice();
+    return raw;
   }
 
-  function hostOf(url) {
-    var s = String(url || '').trim();
-    var i = s.indexOf('//');
-    if (i >= 0) s = s.slice(i + 2);
-    return s.split('/')[0] || '';
+  function save(list) {
+    try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) {}
   }
 
-  function n(v) { return Array.isArray(v) ? v.length : 0; }
-
-  function daysTogether() {
-    var raw = (XW.S && XW.S.loveDate) || '';
-    if (!raw) return 0;
-    var d = new Date(raw);
-    if (isNaN(d.getTime())) return 0;
-    return Math.max(0, Math.floor((Date.now() - d.getTime()) / DAY));
+  function jsonOf(list) {
+    var obj = { mcpServers: {} };
+    list.forEach(function (s) {
+      if (!s.on || !s.url) return;
+      obj.mcpServers[s.name] = { type: s.type, url: s.url };
+    });
+    return JSON.stringify(obj, null, 2);
   }
 
-  function dot(kind) { return '<i class="xw-dot ' + kind + '"></i>'; }
+  function node(s, i) {
+    var has = !!s.url;
 
-  function item(html, key, value, kind, sub, extra) {
-    return '<div class="xw-item">' +
-        '<div class="xw-k">' + esc(key) + '</div>' +
-        '<div class="xw-v">' + esc(value) + dot(kind) + '</div>' +
-        (sub ? '<div class="xw-sub">' + esc(sub) + '</div>' : '') +
-        (extra || '') +
+    return '<div class="xw-node">' +
+        '<div class="xw-node-top">' +
+          '<span class="xw-node-name">' + esc(s.name) + '</span>' +
+          '<span class="xw-node-type">' + esc(s.type) + '</span>' +
+          '<button type="button" class="xw-switch' + (s.on ? ' on' : '') + '" data-act="sw" data-i="' + i + '" aria-label="开关"></button>' +
+        '</div>' +
+        '<div class="xw-node-url' + (has ? '' : ' empty') + '">' + esc(has ? s.url : '还没填地址') + '</div>' +
+        '<div class="xw-node-acts">' +
+          (has ? '<button type="button" class="xw-tap" data-act="test" data-i="' + i + '">测一下</button>' : '') +
+          '<button type="button" class="xw-tap quiet" data-act="del" data-i="' + i + '">删掉</button>' +
+        '</div>' +
       '</div>';
   }
 
-  function statsBar() {
-    var st = XW.S || {};
+  function view() {
+    var list = load();
+    var on = list.filter(function (s) { return s.on && s.url; }).length;
 
-    var cells = [
-      ['天', daysTogether()],
-      ['记忆', n(st.notes)],
-      ['日记', n(st.diary)],
-      ['照片', n(st.photos)],
-      ['消息', n(st.chat)]
-    ];
+    var nodes = '';
+    list.forEach(function (s, i) { nodes += node(s, i); });
 
-    var out = '';
-    cells.forEach(function (c) {
-      out += '<div><b>' + c[1] + '</b><span>' + c[0] + '</span></div>';
-    });
-
-    return '<div class="xw-stats">' + out + '</div>';
-  }
-
-  function providerBlock() {
-    var st = XW.S || {};
-    var pf = st.profiles || {};
-    var out = '';
-
-    PROVIDERS.forEach(function (p) {
-      var one = pf[p.id] || {};
-      var url = String(one.url || '').trim();
-      var model = String(one.model || '').trim();
-      var key = String(one.key || '').trim();
-
-      var kind = 'off';
-      var word = '没接';
-
-      if (url && key) { kind = 'ok'; word = '接好了'; }
-      else if (url) { kind = 'warn'; word = '缺钥匙'; }
-
-      var sub = (model || '没填模型') + (url ? ' · ' + hostOf(url) : '') +
-        (key ? ' · 钥匙 ' + key.length + ' 位' : '');
-
-      var extra = url
-        ? '<button type="button" class="xw-tap" id="xw-probe-' + p.id + '">测一下</button>'
-        : '';
-
-      out += '<div class="xw-item" id="xw-row-' + p.id + '">' +
-          '<div class="xw-k">' + esc(p.name) + '</div>' +
-          '<div class="xw-v" id="xw-state-' + p.id + '">' + esc(word) + dot(kind) + '</div>' +
-          '<div class="xw-sub">' + esc(sub) + '</div>' +
-          extra +
-        '</div>';
-    });
-
-    return out;
-  }
-
-  function cloudBlock() {
-    var c = (window.XWCloud && XWCloud.cfg) ? XWCloud.cfg() : { ok: false, url: '' };
-
-    if (c.ok) {
-      return '<div class="xw-item">' +
-          '<div class="xw-k">Supabase</div>' +
-          '<div class="xw-v" id="xw-state-cloud">接上了' + dot('ok') + '</div>' +
-          '<div class="xw-sub">' + esc(hostOf(c.url)) + '</div>' +
-          '<button type="button" class="xw-tap" id="xw-probe-cloud">试一下这条线</button>' +
-        '</div>';
+    if (!list.length) {
+      nodes = '<div class="xw-intro">一个都没有。下面加一个。</div>';
     }
 
-    return item('', 'Supabase', '还没填', 'off',
-      '去记忆页的「云端备份」里填 URL 和 key');
-  }
-
-  function gateBlock() {
-    if (!window.Apps) return '';
-
-    var open = [];
-    var shut = [];
-
-    Apps.ALL.forEach(function (a) {
-      var has = BUILTIN[a.id] || (window.Pages && typeof window.Pages[a.id] === 'function');
-      if (has) open.push(a); else shut.push(a);
-    });
-
-    var html = '<div class="xw-gates">';
-
-    open.forEach(function (a) {
-      html += '<span class="xw-gate on">' + esc(a.name) + '</span>';
-    });
-
-    shut.forEach(function (a) {
-      html += '<span class="xw-gate">' + esc(a.name) + '</span>';
-    });
-
-    html += '</div>';
-
-    return html;
-  }
-
-  function view() {
-    var st = XW.S || {};
-    var apps = (window.Apps && Apps.ALL) ? Apps.ALL.length : 0;
-
     return '<header class="hero">' +
-        '<span class="kicker">CONNECTIONS</span>' +
-        '<h1 class="hero-title">连线</h1>' +
-        '<div class="hero-sub">这个家伸出去的几条线</div>' +
+        '<span class="kicker">MCP</span>' +
+        '<h1 class="hero-title">连接器</h1>' +
+        '<div class="hero-sub">给模型装的手 · ' + on + ' / ' + list.length + ' 接着</div>' +
       '</header>' +
 
-      statsBar() +
-
-      '<div class="xw-sec">' +
-        '<div class="xw-hd"><em>说话</em></div>' +
-        '<div class="xw-list">' + providerBlock() + '</div>' +
+      '<div class="xw-intro">' +
+        'MCP 是 <b>Model Context Protocol</b>。一个连接器就是一个外部工具服务，' +
+        '接上之后模型能读它、用它。开关只管这份清单；真正让它们跑起来的，是 Operit 的 mcp_config.json。' +
       '</div>' +
 
-      '<div class="xw-sec">' +
-        '<div class="xw-hd"><em>记忆</em></div>' +
-        '<div class="xw-list">' + cloudBlock() + '</div>' +
-      '</div>' +
+      '<div class="xw-chain" id="xw-mcp-body">' + nodes + '</div>' +
 
-      '<div class="xw-sec">' +
-        '<div class="xw-hd"><em>别处</em></div>' +
-        '<div class="xw-list">' +
-          item('', '天气', '按需取', 'ok', 'wttr.in · 打开天气页才去问一次') +
-          item('', '标题字体', '接好了', 'ok', 'fonts.loli.net · Cormorant Garamond') +
-          item('', '这个家', '在线', 'ok', location.host + ' · ' + apps + ' 个格子') +
+      '<button type="button" class="xw-add" id="xw-mcp-add">＋ 加一个连接器</button>' +
+
+      '<div class="xw-form" id="xw-mcp-form">' +
+        '<input id="xw-f-name" placeholder="名字，比如 小红书" autocomplete="off">' +
+        '<input id="xw-f-url" placeholder="地址，比如 http://127.0.0.1:18061/mcp" autocomplete="off" inputmode="url">' +
+        '<select id="xw-f-type">' +
+          '<option value="streamable_http">streamable_http（现在惯用）</option>' +
+          '<option value="remote">remote（旧写法）</option>' +
+          '<option value="sse">sse</option>' +
+        '</select>' +
+        '<div class="xw-row">' +
+          '<button type="button" class="xw-tap" id="xw-f-save">存下来</button>' +
+          '<button type="button" class="xw-tap quiet" id="xw-f-cancel">算了</button>' +
         '</div>' +
       '</div>' +
 
-      '<div class="xw-sec">' +
-        '<div class="xw-hd"><em>门</em><em>亮的能进，灰的还没开</em></div>' +
-        gateBlock() +
+      '<div class="xw-json">' +
+        '<div class="xw-intro" style="margin:0">粘进 mcp_config.json 的那段（只算开着的）</div>' +
+        '<pre id="xw-mcp-json"></pre>' +
+        '<button type="button" class="xw-tap" id="xw-mcp-copy">复制这段</button>' +
       '</div>' +
 
       '<div class="xw-foot">' +
-        '<b>钥匙都放在这台手机上。</b><br>' +
-        '模型的 key、云端的 key，存在这个浏览器里；清缓存会丢。<br>' +
-        'GitHub 的 token 不在这里，它在 Operit 的 mcp_config.json 里。' +
-      '</div>' +
-
-      '<div class="xw-who">会话 ' + esc(String(st.sessionId || '—').slice(-10)) + '</div>';
+        '<b>两条实话。</b><br>' +
+        '一、这份清单存在这个浏览器里，只是给你自己看和抄的，不会去改 Operit 里的文件。<br>' +
+        '二、在 https 页面上测 http://127.0.0.1 这种地址，浏览器会直接拦住，测不出来不代表它没跑。' +
+      '</div>';
   }
 
-  /* ── 测：GET /models，不花额度 ── */
-  function probe(base, key, sid) {
-    var url = stripSlash(base);
-    if (!url) return Promise.resolve({ code: -2 });
-
-    var headers = {};
-    if (key) headers.Authorization = 'Bearer ' + key;
-    if (sid) headers['x-opencode-session'] = sid;
-
-    var opt = { headers: headers, cache: 'no-store' };
-    var ctl = null;
-
-    try {
-      ctl = new AbortController();
-      opt.signal = ctl.signal;
-    } catch (e) {}
-
-    var timer = setTimeout(function () {
-      if (ctl) { try { ctl.abort(); } catch (e) {} }
-    }, 7000);
-
-    return fetch(url + '/models', opt)
-      .then(function (r) { clearTimeout(timer); return { code: r.status }; })
-      .catch(function () { clearTimeout(timer); return { code: -1 }; });
+  function pick(el) {
+    while (el && el !== D) {
+      if (el.getAttribute && el.getAttribute('data-act')) return el;
+      el = el.parentNode;
+    }
+    return null;
   }
 
-  function verdict(code) {
-    if (code === 200) return { kind: 'ok', word: '通' };
-    if (code === 401 || code === 403) return { kind: 'warn', word: '钥匙不对' };
-    if (code === 404 || code === 405) return { kind: 'warn', word: '地址通，没这个接口' };
-    if (code === -1) return { kind: 'off', word: '连不到' };
-    if (code === -2) return { kind: 'off', word: '没填地址' };
-    return { kind: 'warn', word: 'HTTP ' + code };
-  }
-
-  function paint(el, v) {
-    if (!el) return;
-    el.innerHTML = esc(v.word) + dot(v.kind);
+  function rerender() {
+    if (window.Router && Router.reopen) Router.reopen('mcp');
   }
 
   function bind() {
-    var st = XW.S || {};
-    var pf = st.profiles || {};
-    var sid = st.sessionId || '';
+    var body = D.getElementById('xw-mcp-body');
+    var jsonEl = D.getElementById('xw-mcp-json');
 
-    PROVIDERS.forEach(function (p) {
-      var btn = D.getElementById('xw-probe-' + p.id);
-      var out = D.getElementById('xw-state-' + p.id);
-      if (!btn) return;
+    if (jsonEl) jsonEl.textContent = jsonOf(load());
 
-      var one = pf[p.id] || {};
+    if (body) {
+      body.addEventListener('click', function (e) {
+        var t = pick(e.target);
+        if (!t) return;
 
-      btn.addEventListener('click', function () {
-        btn.disabled = true;
-        btn.textContent = '测着…';
+        var act = t.getAttribute('data-act');
+        var i = Number(t.getAttribute('data-i'));
+        var list = load();
+        if (!list[i]) return;
 
-        probe(one.url, one.key, sid).then(function (r) {
-          var v = verdict(r.code);
-          paint(out, v);
-          btn.textContent = v.word;
-          setTimeout(function () {
-            btn.disabled = false;
-            btn.textContent = '再测一次';
-          }, 2200);
-        });
-      });
-    });
+        if (act === 'sw') {
+          list[i].on = !list[i].on;
+          save(list);
+          rerender();
+          return;
+        }
 
-    var cb = D.getElementById('xw-probe-cloud');
-    var co = D.getElementById('xw-state-cloud');
+        if (act === 'del') {
+          list.splice(i, 1);
+          save(list);
+          rerender();
+          return;
+        }
 
-    if (cb && window.XWCloud) {
-      cb.addEventListener('click', function () {
-        cb.disabled = true;
-        cb.textContent = '连着…';
+        if (act === 'test') {
+          var url = list[i].url;
+          if (!url) return;
 
-        XWCloud.ping()
-          .then(function () {
-            paint(co, { kind: 'ok', word: '接上了' });
-            cb.textContent = '通了';
-          })
-          .catch(function (e) {
-            paint(co, { kind: 'off', word: '不通' });
-            cb.textContent = '不通：' + (e && e.message ? e.message : '未知');
-          })
-          .then(function () {
-            setTimeout(function () {
-              cb.disabled = false;
-              cb.textContent = '再试一次';
-            }, 2400);
-          });
+          var old = t.textContent;
+          t.disabled = true;
+          t.textContent = '测着…';
+
+          fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' })
+            .then(function () { t.textContent = '地址能通'; })
+            .catch(function () { t.textContent = '连不到'; })
+            .then(function () {
+              setTimeout(function () {
+                t.disabled = false;
+                t.textContent = old;
+              }, 2400);
+            });
+        }
       });
     }
+
+    var add = D.getElementById('xw-mcp-add');
+    var form = D.getElementById('xw-mcp-form');
+
+    if (add && form) {
+      add.addEventListener('click', function () {
+        form.classList.toggle('on');
+        if (form.classList.contains('on')) {
+          var f = D.getElementById('xw-f-name');
+          if (f) setTimeout(function () { f.focus(); }, 60);
+        }
+      });
+    }
+
+    var cancel = D.getElementById('xw-f-cancel');
+    if (cancel && form) {
+      cancel.addEventListener('click', function () { form.classList.remove('on'); });
+    }
+
+    var saveBtn = D.getElementById('xw-f-save');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function () {
+        var name = String(D.getElementById('xw-f-name').value || '').trim();
+        var url = String(D.getElementById('xw-f-url').value || '').trim();
+        var type = D.getElementById('xw-f-type').value;
+
+        if (!name) {
+          if (window.UI && UI.toast) UI.toast('名字还没填');
+          return;
+        }
+
+        var list = load();
+        list.push({ name: name, type: type, url: url, on: !!url });
+        save(list);
+        rerender();
+      });
+    }
+
+    var copy = D.getElementById('xw-mcp-copy');
+    if (copy) {
+      copy.addEventListener('click', function () {
+        var text = jsonOf(load());
+        var done = function () {
+          var o = copy.textContent;
+          copy.textContent = '复制好了';
+          setTimeout(function () { copy.textContent = o; }, 1600);
+        };
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(function () { fallback(text, done); });
+        } else {
+          fallback(text, done);
+        }
+      });
+    }
+  }
+
+  function fallback(text, done) {
+    var ta = D.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    D.body.appendChild(ta);
+    ta.select();
+    try { D.execCommand('copy'); } catch (e) {}
+    if (ta.parentNode) ta.parentNode.removeChild(ta);
+    done();
   }
 
   window.Pages = window.Pages || {};
