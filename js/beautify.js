@@ -1,8 +1,8 @@
 /* beautify.js */
 const THEMES=[
-  {id:'minimal',name:'极简',accent:'#000000',bg:'#FFFFFF',card:'#FFFFFF'},
-  {id:'warm',name:'暖色',accent:'#000000',bg:'#FFFFFF',card:'#FFFFFF'},
-  {id:'cool',name:'冷色',accent:'#000000',bg:'#FFFFFF',card:'#FFFFFF'},
+  {id:'minimal',name:'极简',accent:'#333333',bg:'#FFFFFF',card:'#FFFFFF'},
+  {id:'warm',name:'暖色',accent:'#333333',bg:'#FFFFFF',card:'#FFFFFF'},
+  {id:'cool',name:'冷色',accent:'#333333',bg:'#FFFFFF',card:'#FFFFFF'},
   {id:'dark',name:'夜幕',accent:'#FFFFFF',bg:'#000000',card:'#111111'}
 ];
 const WALLS=[
