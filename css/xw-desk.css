@@ -1,0 +1,299 @@
+/* xw-desk.css · 首页重搓版（韩系黑白极简，照参考图）
+   完全独立，不依赖 .gpage / .gi 那套网格。 */
+
+#home.xd-home{
+  display: block !important;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  background: #FFFFFF;
+  padding: calc(env(safe-area-inset-top, 0px) + 26px) 18px calc(env(safe-area-inset-bottom, 0px) + 108px);
+}
+
+.xd-page{ max-width: 620px; margin: 0 auto; }
+
+/* 顶部时间 */
+.xd-top{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 26px;
+}
+
+.xd-clock{
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 44px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -.03em;
+  color: #000000;
+  font-variant-numeric: tabular-nums;
+}
+
+.xd-date{
+  text-align: right;
+  font-size: 11px;
+  line-height: 1.7;
+  letter-spacing: .1em;
+  color: #999999;
+}
+
+/* 卡片 */
+.xd-card{
+  background: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+/* 名片 */
+.xd-id{ display: flex; gap: 12px; }
+
+.xd-ava{
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #F5F5F5;
+  border: 1px solid #E0E0E0;
+  overflow: hidden;
+  background-position: center;
+  background-size: cover;
+}
+
+.xd-idmain{ flex: 1 1 auto; min-width: 0; }
+
+.xd-name{
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #000000;
+  letter-spacing: .01em;
+}
+
+.xd-name i{
+  font-style: normal;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #000000;
+  color: #FFFFFF;
+  font-size: 8px;
+  line-height: 13px;
+  text-align: center;
+}
+
+.xd-handle{
+  margin-top: 1px;
+  font-size: 12px;
+  letter-spacing: .04em;
+  color: #999999;
+}
+
+.xd-bio{
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.85;
+  color: #333333;
+  word-break: break-word;
+}
+
+.xd-see{
+  margin-top: 12px;
+  font-size: 10.5px;
+  letter-spacing: .1em;
+  color: #999999;
+}
+
+/* 数据行 */
+.xd-stats{
+  display: flex;
+  gap: 0;
+  padding: 4px 0 14px;
+  border-bottom: 1px solid #E0E0E0;
+  margin-bottom: 20px;
+}
+
+.xd-stats > div{ flex: 1 1 0; text-align: center; }
+
+.xd-stats b{
+  display: block;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: #000000;
+  font-variant-numeric: tabular-nums;
+}
+
+.xd-stats span{
+  display: block;
+  margin-top: 3px;
+  font-size: 9.5px;
+  letter-spacing: .16em;
+  color: #999999;
+}
+
+/* 小标 */
+.xd-k{
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  color: #999999;
+  margin-bottom: 10px;
+}
+
+/* 两宫格 */
+.xd-2{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.xd-2 > .xd-card{ margin-bottom: 0; min-height: 128px; display: flex; flex-direction: column; }
+
+.xd-big{
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 30px;
+  font-weight: 300;
+  line-height: 1;
+  color: #000000;
+  letter-spacing: -.02em;
+}
+
+.xd-sub{
+  margin-top: auto;
+  font-size: 11px;
+  line-height: 1.6;
+  letter-spacing: .03em;
+  color: #999999;
+}
+
+/* 最近 */
+.xd-li{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.xd-li:last-child{ border-bottom: 0; padding-bottom: 0; }
+
+.xd-li i{
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #F5F5F5;
+  border: 1px solid #E0E0E0;
+}
+
+.xd-li span{
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #333333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xd-li em{
+  flex: 0 0 auto;
+  font-style: normal;
+  font-size: 9.5px;
+  letter-spacing: .06em;
+  color: #C0C0C0;
+}
+
+/* 大标语 */
+.xd-hero{ padding: 20px 16px 16px; }
+
+.xd-hero .xd-quote{
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: .01em;
+  color: #000000;
+}
+
+.xd-hero .xd-qs{
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #999999;
+}
+
+.xd-thumbs{
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.xd-thumbs i{
+  flex: 1 1 0;
+  height: 62px;
+  border-radius: 8px;
+  background: #F5F5F5;
+  border: 1px solid #E0E0E0;
+  background-size: cover;
+  background-position: center;
+}
+
+/* 四宫格 */
+.xd-4{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.xd-4 button{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 76px;
+  padding: 0;
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  background: #FFFFFF;
+  font: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.xd-4 button:active{ background: #F5F5F5; }
+
+.xd-4 button svg{
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: #000000;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.xd-4 button span{
+  font-size: 10.5px;
+  letter-spacing: .04em;
+  color: #333333;
+}
+
+/* 底部 dock 压平 */
+.dock{
+  border-radius: 16px !important;
+  border: 1px solid #E0E0E0 !important;
+  box-shadow: none !important;
+  background: #FFFFFF !important;
+}
+
+.dock-item svg{ stroke: #000000 !important; }
+.dock-item span{ color: #999999 !important; }
