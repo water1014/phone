@@ -1,0 +1,105 @@
+/* xw-mcp.css · 连线页 */
+
+#app-body .xw-sec { margin-top: var(--sp-6); }
+
+#app-body .xw-list { border-top: 1px solid var(--c-line); }
+
+#app-body .xw-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 4px var(--sp-4);
+  padding: var(--sp-5) 0;
+  border-bottom: 1px solid var(--c-line);
+}
+
+#app-body .xw-k {
+  font-size: var(--fs-5);
+  line-height: var(--lh-title);
+  color: var(--c-ink1);
+  letter-spacing: .02em;
+}
+
+#app-body .xw-v {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--fs-3);
+  line-height: var(--lh-title);
+  color: var(--c-ink3);
+  white-space: nowrap;
+}
+
+#app-body .xw-sub {
+  grid-column: 1 / -1;
+  margin-top: 5px;
+  font-size: var(--fs-1);
+  line-height: 1.6;
+  letter-spacing: .05em;
+  color: var(--c-ink4);
+  word-break: break-all;
+}
+
+#app-body .xw-dot {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-ink4);
+}
+
+#app-body .xw-dot.ok { background: var(--c-ok); }
+#app-body .xw-dot.warn { background: var(--c-warn); }
+#app-body .xw-dot.off { background: var(--c-err); }
+
+#app-body .xw-tap {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin-top: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  font-family: inherit;
+  font-size: var(--fs-2);
+  letter-spacing: .1em;
+  color: var(--c-accent-deep);
+  background: none;
+  border: 1px solid var(--c-line);
+  border-radius: var(--rd-full);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+#app-body .xw-tap:active {
+  background: var(--c-accent-soft);
+  border-color: var(--c-accent);
+}
+
+#app-body .xw-tap[disabled] {
+  color: var(--c-ink4);
+  border-style: dashed;
+}
+
+#app-body .xw-foot {
+  margin-top: var(--sp-7);
+  padding: var(--sp-5);
+  border: 1px dashed var(--c-line);
+  border-radius: var(--rd-card);
+  font-size: var(--fs-1);
+  line-height: 1.95;
+  letter-spacing: .04em;
+  color: var(--c-ink3);
+}
+
+#app-body .xw-foot b {
+  font-weight: 500;
+  color: var(--c-ink2);
+}
+
+#app-body .xw-who {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-1);
+  letter-spacing: .1em;
+  color: var(--c-ink4);
+  font-variant-numeric: tabular-nums;
+}
