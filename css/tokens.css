@@ -1,30 +1,26 @@
-/* tokens.css · 颜色与尺寸变量（唯一色值来源） */
+/* tokens.css · 颜色与尺寸变量（唯一色值来源）— 韩系黑白极简版 */
 :root {
-  --ink: #1a1917;
-  --ink-2: #6a6660;
-  --ink-3: #9a958d;
+  --ink: #000000;
+  --ink-2: #333333;
+  --ink-3: #888888;
 
-  /* 玻璃 */
-  --glass: rgba(255, 255, 255, .42);
-  --glass-strong: rgba(255, 255, 255, .62);
-  --glass-brd: rgba(255, 255, 255, .60);
-  --glass-hi: inset 0 1px 0 rgba(255, 255, 255, .75);
-  --blur: blur(18px) saturate(1.18);
+  /* 玻璃：已移除 */
+  --glass: #FFFFFF;
+  --glass-strong: #FFFFFF;
+  --glass-brd: #EEEEEE;
+  --glass-hi: none;
+  --blur: none;
 
-  --card: rgba(255, 255, 255, .50);
-  --line: rgba(26, 25, 23, .10);
-  --dark: #171614;
-  --on-dark: #f8f7f4;
+  --card: #FFFFFF;
+  --line: #EEEEEE;
+  --dark: #000000;
+  --on-dark: #FFFFFF;
 
-  /* 底色：带光斑，玻璃才有东西可糊 */
-  --bg:
-    radial-gradient(900px 520px at 86% -6%, rgba(255, 255, 255, .92), transparent 62%),
-    radial-gradient(760px 480px at -8% 20%, rgba(198, 210, 226, .55), transparent 60%),
-    radial-gradient(820px 620px at 52% 110%, rgba(234, 216, 197, .48), transparent 62%),
-    linear-gradient(180deg, #f8f6f2 0%, #e9e5df 100%);
+  /* 底色：纯白 */
+  --bg: #FFFFFF;
 
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --serif: "Songti SC", "Noto Serif SC", Georgia, serif;
+  --serif: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   --sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
 
   --r-sm: .5rem;
@@ -36,23 +32,18 @@
 }
 
 html.dark {
-  --ink: #ecebe7;
-  --ink-2: #9b968e;
-  --ink-3: #5e5a54;
+  --ink: #FFFFFF;
+  --ink-2: #CCCCCC;
+  --ink-3: #888888;
 
-  --glass: rgba(34, 33, 30, .48);
-  --glass-strong: rgba(38, 37, 34, .64);
-  --glass-brd: rgba(255, 255, 255, .10);
-  --glass-hi: inset 0 1px 0 rgba(255, 255, 255, .08);
+  --glass: #111111;
+  --glass-strong: #111111;
+  --glass-brd: #222222;
 
-  --card: rgba(36, 35, 32, .52);
-  --line: rgba(255, 255, 255, .12);
-  --dark: #f4f2ee;
-  --on-dark: #131210;
+  --card: #111111;
+  --line: #222222;
+  --dark: #FFFFFF;
+  --on-dark: #000000;
 
-  --bg:
-    radial-gradient(900px 520px at 86% -8%, rgba(255, 255, 255, .09), transparent 62%),
-    radial-gradient(760px 480px at -6% 24%, rgba(150, 168, 190, .10), transparent 60%),
-    radial-gradient(820px 620px at 52% 112%, rgba(190, 165, 140, .08), transparent 62%),
-    linear-gradient(180deg, #0f0e0d 0%, #080807 100%);
+  --bg: #000000;
 }

@@ -1,59 +1,43 @@
-/* system.css · 小窝的尺子
-   对齐《用户审美宪法 v1.1》（design/AESTHETIC-CONSTITUTION.md）
-
-   规则：
-   - 组件里不许写裸色值（纹理材质除外，须注释）
-   - 间距走 8 的倍数，同级一档，上级永远比下级松
-   - 字阶八档，只增不减
-   - 阴影最多两档；背景层级最多三层
-   - 玻璃三件套 + 底下必须先铺氛围光
-*/
+/* system.css · 小窝的尺子 — 韩系黑白极简版
+   2026-11-25 重构：去掉暖色、玻璃、氛围光，纯白底纯黑字 */
 
 :root {
 
-  /* ── 色彩：雾的家族 + 墨的骨架 ─────────────── */
-  --c-paper: #F5F4F1;   /* 页面底 */
-  --c-card: #FFFFFF;    /* 卡片 */
-  --c-line: #E7E3DC;    /* 线条 */
-  --c-fill: #EFEAE3;    /* 轨道 / 凹陷 */
-  --c-ink1: #26221E;    /* 主文字 */
-  --c-ink2: #4A443D;    /* 次要 */
-  --c-ink3: #9B948A;    /* 弱化 */
-  --c-ink4: #C9C3B9;    /* 极弱 */
+  /* ── 色彩：韩系黑白灰阶 ─────────────── */
+  --c-paper: #FFFFFF;   /* 页面底 */
+  --c-card:  #FFFFFF;   /* 卡片 */
+  --c-line:  #EEEEEE;   /* 线条 */
+  --c-fill:  #F5F5F5;   /* 轨道 / 凹陷 */
+  --c-ink1:  #000000;   /* 主文字 */
+  --c-ink2:  #333333;   /* 次要 */
+  --c-ink3:  #888888;   /* 弱化 */
+  --c-ink4:  #BBBBBB;   /* 极弱 */
 
-  --c-accent: #9E6A71;      /* 干玫瑰：全站唯一强调，≤5% */
-  --c-accent-deep: #7E5259;
-  --c-accent-soft: #F0E2E3;
-  --c-accent-grad: linear-gradient(135deg, #F9F0EF 0%, #F0DCDA 55%, #E5CFCB 100%);
+  --c-accent:      #000000;
+  --c-accent-deep: #000000;
+  --c-accent-soft: #F5F5F5;
+  --c-accent-grad: linear-gradient(135deg, #F5F5F5 0%, #EEEEEE 55%, #E5E5E5 100%);
 
-  /* 状态三色：只给「成功 / 注意 / 失败」这类字，不当装饰 */
-  --c-ok: #6F8A72;
-  --c-warn: #A98A4E;
-  --c-err: #B07A5A;
+  /* 状态三色 */
+  --c-ok:  #333333;
+  --c-warn: #666666;
+  --c-err: #000000;
 
-  /* ── 例外登记（经她本人拍定，不得被规范推翻） ────────── */
-  /* 1. 她那一侧气泡的淡紫。
-        来历：2026-11-23 截图确认「淡紫气泡对了」。
-        边界：只做气泡底色，不得扩散到卡片、按钮、导航。 */
-  --c-bub-me: rgba(228, 218, 242, .92);
+  /* ── 气泡：保留淡紫例外 ────────── */
+  --c-bub-me:  rgba(228, 218, 242, .92);
   --c-bub-him: rgba(255, 255, 255, .93);
 
-  /* 2. 聊天页页边 8px（全站是 24px）。
-        来历：聊天要装下气泡与头像，24px 会把它挤成一条。
-        边界：只给聊天页内容区。 */
+  /* 聊天页页边 */
   --pad-x-chat: 8px;
 
-  /* ── 氛围光：玻璃底下必须先有它，否则玻璃是白的 ───────── */
-  --c-aura:
-    radial-gradient(760px 520px at 84% -8%, rgba(255, 255, 255, .94), transparent 62%),
-    radial-gradient(680px 460px at -6% 18%, rgba(226, 230, 240, .50), transparent 60%),
-    radial-gradient(760px 580px at 54% 108%, rgba(244, 232, 234, .48), transparent 62%);
+  /* ── 氛围光：已移除 ───────── */
+  --c-aura: none;
 
-  /* ── 玻璃三件套 ───────────────────────── */
-  --glass-bg: rgba(255, 255, 255, .56);
-  --glass-brd: rgba(255, 255, 255, .62);
-  --glass-blur: blur(18px) saturate(1.15);
-  --glass-blur-sm: blur(12px) saturate(1.10);
+  /* ── 玻璃三件套：已弱化 ───────────────────────── */
+  --glass-bg:  #FFFFFF;
+  --glass-brd: #EEEEEE;
+  --glass-blur: none;
+  --glass-blur-sm: none;
 
   /* ── 间距：8 的倍数，同级一档 ─────────────── */
   --sp-1: 4px;
@@ -84,18 +68,18 @@
   --lh-body: 1.75;
   --lh-title: 1.35;
 
-  /* ── 圆角：同层同角 ────────────────────── */
-  --rd-1: 6px;
-  --rd-2: 9px;
-  --rd-3: 13px;
-  --rd-4: 16px;
-  --rd-card: 22px;
-  --rd-hero: 26px;
+  /* ── 圆角：同层同角（适当收紧） ────────────────────── */
+  --rd-1: 4px;
+  --rd-2: 8px;
+  --rd-3: 12px;
+  --rd-4: 14px;
+  --rd-card: 16px;
+  --rd-hero: 20px;
   --rd-full: 999px;
 
-  /* ── 阴影：两档，到此为止 ────────────────── */
-  --sh-1: 0 1px 2px rgba(38, 34, 30, .05), 0 4px 14px rgba(38, 34, 30, .05);
-  --sh-2: 0 8px 28px rgba(38, 34, 30, .10);
+  /* ── 阴影：极度弱化 ────────────────── */
+  --sh-1: 0 1px 0 rgba(0, 0, 0, .04);
+  --sh-2: 0 2px 8px rgba(0, 0, 0, .06);
 
   /* ── 尺寸 ─────────────────────────── */
   --av-1: 22px;
@@ -121,38 +105,35 @@
   --z-toast: 500;
 }
 
-/* 夜幕：梦核夜间面（data-theme="night"，兼容旧页面的 html.dark） */
+/* 夜幕：纯黑夜间面 */
 html[data-theme="night"],
 html.dark {
-  --c-paper: #131313;
-  --c-card: #1B1B1B;
-  --c-line: #2A2A2A;
-  --c-fill: #202020;
-  --c-ink1: #EEE6E7;
-  --c-ink2: #C9C1C2;
-  --c-ink3: #8C8687;
-  --c-ink4: #5A5657;
+  --c-paper: #000000;
+  --c-card:  #111111;
+  --c-line:  #222222;
+  --c-fill:  #1A1A1A;
+  --c-ink1:  #FFFFFF;
+  --c-ink2:  #CCCCCC;
+  --c-ink3:  #888888;
+  --c-ink4:  #555555;
 
-  --c-accent: #C08F99;
-  --c-accent-deep: #D8A9B2;
-  --c-accent-soft: #3A2E33;
-  --c-accent-grad: linear-gradient(135deg, #2A2226 0%, #1E191D 55%, #171316 100%);
+  --c-accent:      #FFFFFF;
+  --c-accent-deep: #FFFFFF;
+  --c-accent-soft: #1A1A1A;
+  --c-accent-grad: linear-gradient(135deg, #1A1A1A 0%, #111111 55%, #0A0A0A 100%);
 
-  --c-ok: #8FAE93;
-  --c-warn: #C9A870;
-  --c-err: #C9907A;
+  --c-ok:  #CCCCCC;
+  --c-warn: #888888;
+  --c-err: #FFFFFF;
 
   --c-bub-me: rgba(58, 50, 70, .88);
   --c-bub-him: rgba(30, 29, 30, .90);
 
-  --c-aura:
-    radial-gradient(760px 520px at 84% -8%, rgba(255, 255, 255, .07), transparent 62%),
-    radial-gradient(680px 460px at -6% 18%, rgba(150, 168, 190, .09), transparent 60%),
-    radial-gradient(760px 580px at 54% 108%, rgba(192, 143, 153, .09), transparent 62%);
+  --c-aura: none;
 
-  --glass-bg: rgba(30, 29, 30, .52);
-  --glass-brd: rgba(255, 255, 255, .09);
+  --glass-bg:  #111111;
+  --glass-brd: #222222;
 
-  --sh-1: 0 1px 2px rgba(0, 0, 0, .50), 0 4px 14px rgba(0, 0, 0, .40);
-  --sh-2: 0 8px 28px rgba(0, 0, 0, .60);
+  --sh-1: 0 1px 0 rgba(255, 255, 255, .04);
+  --sh-2: 0 2px 8px rgba(255, 255, 255, .06);
 }

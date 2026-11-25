@@ -1,39 +1,24 @@
-/* glass.css · 全站磨砂玻璃
-   最后加载：用来盖掉 theme-soft.css 里的
-   * { backdrop-filter: none !important } 和 --glass:#fff 。
-   注意：必须用 !important，否则干不过那一条通配。 */
+/* glass.css · 韩系黑白极简 — 已移除全部毛玻璃效果 */
 
 :root{
-  --glass: rgba(255,255,255,.52);
-  --glass-strong: rgba(255,255,255,.68);
-  --glass-brd: rgba(255,255,255,.55);
-  --glass-hi:
-    inset 0 1px 0 rgba(255,255,255,.85),
-    0 6px 22px rgba(104,110,128,.08);
-  --blur: blur(20px) saturate(1.5);
+  --glass: #FFFFFF;
+  --glass-strong: #FFFFFF;
+  --glass-brd: #EEEEEE;
+  --glass-hi: none;
+  --blur: none;
 
-  /* 玻璃要有东西可糊：底子给一点冷灰蓝 + 一点暖粉光斑 */
-  --bg:
-    radial-gradient(880px 520px at 88% -8%, rgba(203,216,231,.55) 0%, rgba(203,216,231,0) 60%),
-    radial-gradient(720px 460px at -10% 18%, rgba(226,232,241,.62) 0%, rgba(226,232,241,0) 58%),
-    radial-gradient(780px 520px at 50% 108%, rgba(238,225,234,.48) 0%, rgba(238,225,234,0) 62%),
-    #f7f8fa;
+  --bg: #FFFFFF;
 }
 
 html.dark{
-  --glass: rgba(40,40,44,.52);
-  --glass-strong: rgba(48,48,52,.68);
-  --glass-brd: rgba(255,255,255,.10);
-  --glass-hi:
-    inset 0 1px 0 rgba(255,255,255,.07),
-    0 6px 22px rgba(0,0,0,.32);
-  --bg:
-    radial-gradient(880px 520px at 88% -8%, rgba(120,140,170,.14) 0%, rgba(120,140,170,0) 60%),
-    radial-gradient(720px 460px at -10% 18%, rgba(150,160,180,.10) 0%, rgba(150,160,180,0) 58%),
-    #0e0e10;
+  --glass: #111111;
+  --glass-strong: #111111;
+  --glass-brd: #222222;
+  --glass-hi: none;
+  --bg: #000000;
 }
 
-/* ══ 一、把模糊抬回来 ══ */
+/* ══ 移除模糊效果 ══ */
 .app,
 .app-head,
 .sheet,
@@ -58,25 +43,25 @@ html.dark{
 #app-body .ap-seg,
 #app-body .ap-add,
 .ap-selbar{
-  -webkit-backdrop-filter: blur(20px) saturate(1.5) !important;
-  backdrop-filter: blur(20px) saturate(1.5) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
-/* ══ 二、把纯白换成半透明 ══ */
+/* ══ 纯色替代半透明 ══ */
 .app{
-  background: rgba(250,249,247,.72) !important;
+  background: #FFFFFF !important;
 }
 html.dark .app{
-  background: rgba(14,14,16,.76) !important;
+  background: #000000 !important;
 }
 
 .app-head{
-  background: rgba(255,255,255,.38) !important;
-  border-bottom-color: rgba(255,255,255,.5) !important;
+  background: #FFFFFF !important;
+  border-bottom-color: #EEEEEE !important;
 }
 html.dark .app-head{
-  background: rgba(30,30,34,.42) !important;
-  border-bottom-color: rgba(255,255,255,.08) !important;
+  background: #111111 !important;
+  border-bottom-color: #222222 !important;
 }
 
 .sheet,
@@ -84,95 +69,104 @@ html.dark .app-head{
 .fold,
 .wdg,
 .dock{
-  background: var(--glass) !important;
-  border-color: var(--glass-brd) !important;
-  box-shadow: var(--glass-hi) !important;
+  background: #FFFFFF !important;
+  border: 1px solid #EEEEEE !important;
+  box-shadow: none !important;
+}
+html.dark .sheet,
+html.dark .dcard,
+html.dark .fold,
+html.dark .wdg,
+html.dark .dock{
+  background: #111111 !important;
+  border-color: #222222 !important;
 }
 
 .app-ico i{
-  background: rgba(255,255,255,.5) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.8) !important;
+  background: #FFFFFF !important;
+  border: 1px solid #EEEEEE !important;
+  box-shadow: none !important;
 }
 
 .app-back{
-  background: rgba(255,255,255,.5) !important;
-  border-color: rgba(255,255,255,.6) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.85) !important;
+  background: #FFFFFF !important;
+  border: 1px solid #EEEEEE !important;
+  box-shadow: none !important;
 }
 
 .field input,
 .field textarea,
 .field select,
 .composer input{
-  background: rgba(255,255,255,.55) !important;
-  border-color: rgba(255,255,255,.58) !important;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.55) !important;
+  background: #FFFFFF !important;
+  border: 1px solid #EEEEEE !important;
+  box-shadow: none !important;
 }
 html.dark .field input,
 html.dark .field textarea,
 html.dark .field select,
 html.dark .composer input{
-  background: rgba(255,255,255,.07) !important;
-  border-color: rgba(255,255,255,.10) !important;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06) !important;
+  background: #111111 !important;
+  border-color: #222222 !important;
 }
 
 .btn-glass{
-  background: rgba(255,255,255,.52) !important;
-  border-color: rgba(255,255,255,.6) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.8) !important;
+  background: #FFFFFF !important;
+  border: 1px solid #EEEEEE !important;
+  box-shadow: none !important;
 }
 
 .quick-chip,
 .chat-event span,
 .msg-tag{
-  background: rgba(255,255,255,.52) !important;
-  border-color: rgba(255,255,255,.55) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.78) !important;
+  background: #FFFFFF !important;
+  border: 1px solid #EEEEEE !important;
+  box-shadow: none !important;
 }
 
 .bub{
-  background: rgba(255,255,255,.58) !important;
-  border-color: rgba(255,255,255,.6) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 6px 18px rgba(104,110,128,.08) !important;
+  background: #FFFFFF !important;
+  border: 1px solid #EEEEEE !important;
+  box-shadow: none !important;
 }
 .bub.me{
-  background: rgba(112,128,143,.66) !important;
-  border-color: rgba(255,255,255,.18) !important;
-  box-shadow: 0 6px 18px rgba(96,110,126,.22) !important;
+  background: #000000 !important;
+  color: #FFFFFF !important;
+  border-color: #000000 !important;
+  box-shadow: none !important;
 }
 
 .think-body{
-  background: rgba(255,255,255,.46) !important;
-  border-color: rgba(255,255,255,.55) !important;
+  background: #FFFFFF !important;
+  border: 1px solid #EEEEEE !important;
 }
 
-/* ══ 三、浮层也一样 ══ */
+/* ══ 浮层 ══ */
 #cset{
-  background: rgba(255,255,255,.68) !important;
-  box-shadow: -8px 0 30px rgba(96,100,120,.12) !important;
+  background: #FFFFFF !important;
+  box-shadow: none !important;
 }
-html.dark #cset{ background: rgba(26,26,30,.78) !important; }
+html.dark #cset{ background: #111111 !important; }
 
 .cc-card{
-  background: rgba(255,255,255,.72) !important;
+  background: #FFFFFF !important;
 }
 
 .ap-selbar{
-  background: rgba(255,255,255,.72) !important;
-  box-shadow: 0 8px 26px rgba(90,86,104,.16) !important;
+  background: #FFFFFF !important;
+  box-shadow: none !important;
 }
 
 /* 相册里的分段控件与圆按钮 */
 #app-body .ap-seg{
-  background: rgba(255,255,255,.34) !important;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.5) !important;
+  background: #F5F5F5 !important;
+  box-shadow: none !important;
 }
 #app-body .ap-sg.on{
-  background: rgba(255,255,255,.88) !important;
-  box-shadow: 0 1px 3px rgba(120,100,120,.1), inset 0 1px 0 rgba(255,255,255,.9) !important;
+  background: #FFFFFF !important;
+  box-shadow: none !important;
 }
 #app-body .ap-add{
-  background: rgba(255,255,255,.5) !important;
-  border-color: rgba(255,255,255,.6) !important;
+  background: #FFFFFF !important;
+  border: 1px solid #EEEEEE !important;
 }
