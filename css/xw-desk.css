@@ -1,29 +1,16 @@
-/* xw-desk.css v3 · 首页 + 底栏 + 侧栏 */
+/* xw-desk.css v4 */
 
 .desk::before,
 .desk::after{ content: none !important; display: none !important; }
-
 .desk > *:not(#home){ display: none !important; }
-
-.desk{
-  overflow: hidden !important;
-  position: relative !important;
-  background: #FFFFFF !important;
-}
-
-.deco, .sticker, .pinned, .pin, .lace, .heart, .tape,
-.desk-bg, .home-deco, .xw-deco{ display: none !important; }
+.desk{ overflow: hidden !important; position: relative !important; background: #FFFFFF !important; }
+.deco,.sticker,.pinned,.pin,.lace,.heart,.tape,.desk-bg,.home-deco,.xw-deco{ display: none !important; }
 
 #home.xd-home{
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 6 !important;
-  display: block !important;
-  width: auto !important;
-  height: auto !important;
+  position: fixed !important; inset: 0 !important; z-index: 6 !important;
+  display: block !important; width: auto !important; height: auto !important;
   margin: 0 !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
+  overflow-y: auto !important; overflow-x: hidden !important;
   -webkit-overflow-scrolling: touch;
   background: #FFFFFF !important;
   padding: calc(env(safe-area-inset-top, 0px) + 16px) 18px calc(env(safe-area-inset-bottom, 0px) + 92px) !important;
@@ -31,88 +18,43 @@
 
 .xd-page{ max-width: 620px; margin: 0 auto; }
 
-/* 顶部 */
-.xd-top{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 22px;
-}
+.xd-top{ display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 22px; }
 
 .xd-burger{
-  flex: 0 0 auto;
-  width: 34px;
-  height: 34px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 0 !important;
-  border: 1px solid #E0E0E0 !important;
-  border-radius: 10px !important;
-  background: #FFFFFF !important;
-  box-shadow: none !important;
-  -webkit-appearance: none;
-  appearance: none;
-  cursor: pointer;
+  flex: 0 0 auto; width: 34px; height: 34px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  padding: 0 !important; border: 1px solid #E0E0E0 !important; border-radius: 10px !important;
+  background: #FFFFFF !important; box-shadow: none !important;
+  -webkit-appearance: none; appearance: none; cursor: pointer;
 }
-
 .xd-burger:active{ background: #F5F5F5 !important; }
+.xd-burger i{ display: block; width: 14px; height: 1.5px; background: #000000; border-radius: 2px; }
 
-.xd-burger i{
-  display: block;
-  width: 14px;
-  height: 1.5px;
-  background: #000000;
-  border-radius: 2px;
-}
-
-.xd-head{ flex: 1 1 auto; min-width: 0; display: flex; align-items: flex-end; gap: 10px; }
+.xd-head{ flex: 1 1 auto; min-width: 0; }
 
 .xd-clock{
   font-family: "Cormorant Garamond", Georgia, serif;
-  font-size: 38px;
-  font-weight: 300;
-  line-height: 1;
-  letter-spacing: -.03em;
-  color: #000000;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  font-size: 38px; font-weight: 300; line-height: 1; letter-spacing: -.03em;
+  color: #000000; font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 
 .xd-date{
-  flex: 0 0 auto;
-  text-align: right;
-  font-size: 10.5px;
-  line-height: 1.65;
-  letter-spacing: .08em;
-  color: #999999;
-  white-space: nowrap;
+  flex: 0 0 auto; text-align: right;
+  font-size: 10.5px; line-height: 1.65; letter-spacing: .08em;
+  color: #999999; white-space: nowrap;
 }
 
-/* 卡片 */
 .xd-card{
-  background: #FFFFFF;
-  border: 1px solid #E0E0E0;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: none;
+  background: #FFFFFF; border: 1px solid #E0E0E0; border-radius: 12px;
+  padding: 16px; margin-bottom: 12px; box-shadow: none;
 }
 
 .xd-id{ display: flex; gap: 12px; }
 
 .xd-ava{
-  flex: 0 0 auto;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: #F5F5F5;
-  border: 1px solid #E0E0E0;
-  background-position: center;
-  background-size: cover;
+  flex: 0 0 auto; width: 46px; height: 46px; border-radius: 50%;
+  background: #F5F5F5; border: 1px solid #E0E0E0;
+  background-position: center; background-size: cover;
 }
 
 .xd-idmain{ flex: 1 1 auto; min-width: 0; }
@@ -134,36 +76,43 @@
 .xd-bio{ margin: 10px 0 0; font-size: 13px; line-height: 1.85; color: #333333; word-break: break-word; }
 .xd-see{ margin-top: 10px; font-size: 10.5px; letter-spacing: .08em; color: #999999; }
 
-/* 数据行 */
-.xd-stats{
-  display: flex;
-  padding: 2px 0 16px;
-  border-bottom: 1px solid #E0E0E0;
-  margin-bottom: 20px;
+.xd-add{
+  display: inline-flex !important;
+  align-items: center; gap: 5px;
+  margin-top: 10px;
+  padding: 5px 10px !important;
+  border: 1px dashed #C0C0C0 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font: inherit;
+  font-size: 11px !important;
+  letter-spacing: .04em;
+  color: #999999 !important;
+  -webkit-appearance: none; appearance: none; cursor: pointer;
 }
+.xd-add:active{ background: #F5F5F5 !important; }
+.xd-add b{ font-weight: 400; font-size: 13px; line-height: 1; }
 
+.xd-stats{
+  display: flex; padding: 2px 0 16px;
+  border-bottom: 1px solid #E0E0E0; margin-bottom: 20px;
+}
 .xd-stats > div{ flex: 1 1 0; text-align: center; min-width: 0; }
-
 .xd-stats b{
   display: block;
   font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 22px; font-weight: 400; line-height: 1.1;
   color: #000000; font-variant-numeric: tabular-nums;
 }
-
-.xd-stats span{
-  display: block; margin-top: 3px;
-  font-size: 9.5px; letter-spacing: .14em; color: #999999;
-}
+.xd-stats span{ display: block; margin-top: 3px; font-size: 9.5px; letter-spacing: .14em; color: #999999; }
 
 .xd-k{ font-size: 9.5px; font-weight: 500; letter-spacing: .18em; color: #999999; margin-bottom: 10px; }
 
 .xd-2{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-
 .xd-2 > .xd-card{
   margin-bottom: 0; min-height: 132px;
-  display: flex; flex-direction: column;
-  min-width: 0; overflow: hidden;
+  display: flex; flex-direction: column; min-width: 0; overflow: hidden;
 }
 
 .xd-big{
@@ -178,50 +127,40 @@
   color: #999999; overflow: hidden; text-overflow: ellipsis;
 }
 
-.xd-li{
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 0; border-bottom: 1px solid #F0F0F0;
-}
-
+.xd-li{ display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #F0F0F0; }
 .xd-li:last-child{ border-bottom: 0; padding-bottom: 0; }
-
-.xd-li i{
-  flex: 0 0 auto; width: 20px; height: 20px;
-  border-radius: 50%; background: #F5F5F5; border: 1px solid #E0E0E0;
-}
-
+.xd-li i{ flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%; background: #F5F5F5; border: 1px solid #E0E0E0; }
 .xd-li span{
-  flex: 1 1 auto; min-width: 0;
-  font-size: 11.5px; line-height: 1.5; color: #333333;
+  flex: 1 1 auto; min-width: 0; font-size: 11.5px; line-height: 1.5; color: #333333;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-
 .xd-li em{ flex: 0 0 auto; font-style: normal; font-size: 9.5px; letter-spacing: .05em; color: #C0C0C0; }
 
 .xd-hero{ padding: 20px 16px 16px; }
-
 .xd-hero .xd-quote{
   margin: 0; font-size: 17px; font-weight: 600; line-height: 1.45;
   letter-spacing: .01em; color: #000000;
 }
-
 .xd-hero .xd-qs{ margin: 8px 0 0; font-size: 12px; line-height: 1.8; color: #999999; }
 
 .xd-thumbs{ display: flex; gap: 8px; margin-top: 14px; }
-
 .xd-thumbs i{
-  flex: 1 1 0; height: 62px;
-  border-radius: 8px; background: #F5F5F5; border: 1px solid #E0E0E0;
+  flex: 1 1 0; height: 62px; border-radius: 8px;
+  background: #F5F5F5; border: 1px solid #E0E0E0;
   background-size: cover; background-position: center;
 }
 
-/* ===== 底栏 ===== */
+.xd-recent{ padding: 16px; }
+.xd-recent .xd-rdate{ font-size: 9.5px; letter-spacing: .16em; color: #999999; margin-bottom: 8px; }
+.xd-recent .xd-rtext{
+  margin: 0; font-size: 13px; line-height: 1.9; color: #333333;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 #xd-dock{
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  z-index: 24;
-  display: flex;
-  align-items: stretch;
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 24;
+  display: flex; align-items: stretch;
   height: calc(56px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background: rgba(255,255,255,.97);
@@ -229,127 +168,72 @@
   transition: transform .26s cubic-bezier(.4,0,.2,1);
   will-change: transform;
 }
-
 #xd-dock.hide{ transform: translateY(110%); }
-
 #xd-dock button{
   flex: 1 1 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 3px;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  font: inherit;
-  -webkit-appearance: none;
-  appearance: none;
-  cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  padding: 0 !important; border: 0 !important;
+  background: transparent !important; box-shadow: none !important;
+  font: inherit; -webkit-appearance: none; appearance: none; cursor: pointer;
 }
-
 #xd-dock button svg{
   display: block !important;
   width: 21px !important; height: 21px !important; min-width: 21px !important;
-  fill: none !important;
-  stroke: #999999 !important;
-  stroke-width: 1.4 !important;
-  stroke-linecap: round; stroke-linejoin: round;
-  transition: stroke .18s;
+  fill: none !important; stroke: #999999 !important; stroke-width: 1.4 !important;
+  stroke-linecap: round; stroke-linejoin: round; transition: stroke .18s;
 }
-
 #xd-dock button span{
-  display: block !important;
-  font-size: 9.5px !important; line-height: 1 !important;
-  letter-spacing: .04em;
-  color: #999999 !important;
-  transition: color .18s;
+  display: block !important; font-size: 9.5px !important; line-height: 1 !important;
+  letter-spacing: .04em; color: #999999 !important; transition: color .18s;
 }
-
 #xd-dock button.on svg{ stroke: #000000 !important; }
 #xd-dock button.on span{ color: #000000 !important; font-weight: 600 !important; }
 
-/* ===== 侧栏 ===== */
 #xd-mask{
   position: fixed; inset: 0; z-index: 40;
   background: rgba(0,0,0,.28);
   opacity: 0; pointer-events: none;
   transition: opacity .24s;
 }
-
 #xd-mask.on{ opacity: 1; pointer-events: auto; }
 
 #xd-rail{
-  position: fixed;
-  top: 0; left: 0; bottom: 0;
-  z-index: 41;
-  width: 76%;
-  max-width: 320px;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 41;
+  width: 76%; max-width: 320px;
   display: flex; flex-direction: column;
-  background: #FFFFFF;
-  border-right: 1px solid #E0E0E0;
+  background: #FFFFFF; border-right: 1px solid #E0E0E0;
   transform: translateX(-102%);
   transition: transform .28s cubic-bezier(.4,0,.2,1);
   will-change: transform;
 }
-
 #xd-rail.on{ transform: translateX(0); }
 
-.xd-rail-hd{
-  padding: calc(env(safe-area-inset-top, 0px) + 24px) 20px 16px;
-  border-bottom: 1px solid #E0E0E0;
-}
-
-.xd-rail-hd b{
-  display: block;
-  font-size: 19px; font-weight: 600; letter-spacing: .02em; color: #000000;
-}
-
-.xd-rail-hd em{
-  display: block; margin-top: 6px;
-  font-style: normal; font-size: 9.5px;
-  letter-spacing: .18em; color: #999999;
-}
+.xd-rail-hd{ padding: calc(env(safe-area-inset-top, 0px) + 24px) 20px 16px; border-bottom: 1px solid #E0E0E0; }
+.xd-rail-hd b{ display: block; font-size: 19px; font-weight: 600; letter-spacing: .02em; color: #000000; }
+.xd-rail-hd em{ display: block; margin-top: 6px; font-style: normal; font-size: 9.5px; letter-spacing: .18em; color: #999999; }
 
 .xd-rail-list{
-  flex: 1 1 auto;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch;
   padding: 8px 0 calc(env(safe-area-inset-bottom, 0px) + 16px);
 }
-
 .xd-rail-list button{
-  display: flex !important;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
+  display: flex !important; align-items: center; gap: 12px; width: 100%;
   padding: 13px 20px !important;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  font: inherit;
-  text-align: left;
-  -webkit-appearance: none;
-  appearance: none;
-  cursor: pointer;
+  border: 0 !important; background: transparent !important; box-shadow: none !important;
+  font: inherit; text-align: left;
+  -webkit-appearance: none; appearance: none; cursor: pointer;
 }
-
 .xd-rail-list button:active{ background: #F5F5F5 !important; }
-
 .xd-rail-list button svg{
-  flex: 0 0 auto;
-  width: 19px !important; height: 19px !important;
-  fill: none !important;
-  stroke: #000000 !important;
-  stroke-width: 1.4 !important;
+  flex: 0 0 auto; width: 19px !important; height: 19px !important;
+  fill: none !important; stroke: #000000 !important; stroke-width: 1.4 !important;
   stroke-linecap: round; stroke-linejoin: round;
 }
+.xd-rail-list button span{ flex: 1 1 auto; min-width: 0; font-size: 13.5px; letter-spacing: .02em; color: #333333; }
+.xd-rail-list button em{ flex: 0 0 auto; font-style: normal; font-size: 9.5px; letter-spacing: .1em; color: #C0C0C0; }
 
-.xd-rail-list button span{
-  flex: 1 1 auto; min-width: 0;
-  font-size: 13.5px; letter-spacing: .02em; color: #333333;
-}
-
-.xd-rail-list button em{
-  flex: 0 0 auto; font-style: normal;
-  font-size: 9.5px; letter-spacing: .1em; color: #C0C0C0;
+.xd-rail-ft{
+  padding: 12px 20px calc(env(safe-area-inset-bottom, 0px) + 16px);
+  border-top: 1px solid #F0F0F0;
+  font-size: 9.5px; letter-spacing: .14em; color: #C0C0C0;
 }
