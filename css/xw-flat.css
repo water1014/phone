@@ -1,6 +1,6 @@
-/* xw-flat.css · 把 home.css 里写死的阴影与 18px 圆角压平
+/* xw-flat.css · 黑白极简的压平层
    照 ui-aesthetic-palette：无阴影、圆角 8–12、线 #E0E0E0。
-   最后加载，只改这些表面，不碰布局。 */
+   最后加载，只改表面，不碰布局。 */
 
 #home .wdg,
 #home .wdg-clock,
@@ -45,7 +45,6 @@
   background: #FFFFFF;
 }
 
-/* 大号字重：规范要求主标题粗黑 */
 #home .wdg-days .days-num,
 #home .wdg-clock .dclock,
 #home .wx-big,
@@ -54,7 +53,6 @@
   color: #000000;
 }
 
-/* 小号灰色大写英文标签，字距 +0.05em */
 #home .kicker,
 #home .wdg-cal .kicker,
 #home .wdg-quote .kicker,
@@ -62,4 +60,27 @@
 #home .wdg-days .kicker {
   color: #999999;
   letter-spacing: .18em;
+}
+
+/* ── 聊天气泡：他白底黑字，她黑底白字 ──
+   特异性比 xw-chat.css 多一个 .me，即使加载顺序靠前也压得住 */
+
+body.xw-chat-on #chat-scroll .msg-row .bub,
+body.xw-chat-on #chat-scroll .msg-row .bub.typing {
+  background: #FFFFFF !important;
+  color: #000000 !important;
+  border: 1px solid #E0E0E0 !important;
+}
+
+body.xw-chat-on #chat-scroll .msg-row.me .bub,
+body.xw-chat-on #chat-scroll .msg-row.me .bub.me {
+  background: #000000 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #000000 !important;
+}
+
+body.xw-chat-on #chat-scroll .msg-row.me .bub .narr,
+body.xw-chat-on #chat-scroll .msg-row.me .bub em,
+body.xw-chat-on #chat-scroll .msg-row.me .bub a {
+  color: #FFFFFF !important;
 }
