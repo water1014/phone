@@ -1,6 +1,46 @@
-/* xw-flat.css · 黑白极简的压平层
+/* xw-flat.css · 黑白极简的压平层 + 桌面容器
    照 ui-aesthetic-palette：无阴影、圆角 8–12、线 #E0E0E0。
    最后加载，只改表面，不碰布局。 */
+
+/* ── 桌面容器：横向翻页 + 每页四列 ── */
+
+.desk{
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#home{
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 0;
+  background: transparent;
+}
+
+#home::-webkit-scrollbar{ display: none; }
+
+#home .gpage{
+  flex: 0 0 100%;
+  width: 100%;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: calc(env(safe-area-inset-top, 0px) + 18px) 18px calc(env(safe-area-inset-bottom, 0px) + 96px);
+}
+
+/* ── 卡片表面压平 ── */
 
 #home .wdg,
 #home .wdg-clock,
@@ -8,22 +48,19 @@
 #home .wdg-cal,
 #home .wdg-quote,
 #home .rows,
-#home .pair > section {
-  border-radius: 12px;
-  border: 1px solid #E0E0E0;
-  box-shadow: none;
-}
-
+#home .pair > section,
 #home .trio {
   border-radius: 12px;
   border: 1px solid #E0E0E0;
   box-shadow: none;
+  background: #FFFFFF;
 }
 
 .dock {
   border-radius: 16px;
   border: 1px solid #E0E0E0;
   box-shadow: none;
+  background: #FFFFFF;
 }
 
 .drawer-inner {
@@ -36,13 +73,6 @@
   border-radius: 12px;
   box-shadow: none;
   border: 1px solid #E0E0E0;
-}
-
-#home .pair > section,
-#home .wdg,
-#home .rows,
-#home .trio {
-  background: #FFFFFF;
 }
 
 #home .wdg-days .days-num,
@@ -62,8 +92,7 @@
   letter-spacing: .18em;
 }
 
-/* ── 聊天气泡：他白底黑字，她黑底白字 ──
-   特异性比 xw-chat.css 多一个 .me，即使加载顺序靠前也压得住 */
+/* ── 聊天气泡：他白底黑字，她黑底白字 ── */
 
 body.xw-chat-on #chat-scroll .msg-row .bub,
 body.xw-chat-on #chat-scroll .msg-row .bub.typing {
