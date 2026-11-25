@@ -1,13 +1,16 @@
-/* xw-mcp.js · MCP 连接器 v3 */
+/* xw-mcp.js · MCP 连接器 v4 */
 (function () {
   'use strict';
 
   var D = document;
   var KEY = 'xw_mcp_servers';
+  var LOG = 'xw_mcp_log';
 
   var DEF = [
-    { name: '小红书', type: 'streamable_http', url: 'http://127.0.0.1:18061/mcp', on: true },
-    { name: 'GitHub', type: 'streamable_http', url: '', on: false }
+    { name: '小红书', kind: '本地插件', url: 'http://127.0.0.1:18061/mcp', on: true },
+    { name: 'GitHub', kind: '官方 MCP', url: '', on: false },
+    { name: '天气', kind: '开放接口', url: 'https://wttr.in', on: true },
+    { name: 'Supabase', kind: '云端', url: '', on: false }
   ];
 
   function esc(t) {
@@ -22,7 +25,7 @@
   function load() {
     var raw = null;
     try { raw = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { raw = null; }
-    if (!Array.isArray(raw)) raw = DEF.slice();
+    if (!Array.isArray(raw) || !raw.length) raw = DEF.slice();
     return raw;
   }
 
@@ -30,83 +33,77 @@
     try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) {}
   }
 
-  function jsonOf(list) {
-    var obj = { mcpServers: {} };
-    list.forEach(function (s) {
-      if (!s.on || !s.url) return;
-      obj.mcpServers[s.name] = { type: s.type, url: s.url };
-    });
-    return JSON.stringify(obj, null, 2);
+  function logs() {
+    var raw = null;
+    try { raw = JSON.parse(localStorage.getItem(LOG) || 'null'); } catch (e) { raw = null; }
+    return Array.isArray(raw) ? raw : [];
   }
 
-  function node(s, i) {
-    var has = !!s.url;
+  function say(text) {
+    var list = logs();
+    var d = new Date();
+    var t = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    list.unshift({ t: t, text: text });
+    if (list.length > 24) list = list.slice(0, 24);
+    try { localStorage.setItem(LOG, JSON.stringify(list)); } catch (e) {}
+  }
 
-    return '<div class="xw-node">' +
-        '<div class="xw-node-top">' +
-          '<span class="xw-node-name">' + esc(s.name) + '</span>' +
-          '<span class="xw-node-type">' + esc(s.type) + '</span>' +
-          '<button type="button" class="xw-switch' + (s.on ? ' on' : '') + '" data-act="sw" data-i="' + i + '" aria-label="开关"></button>' +
-        '</div>' +
-        '<div class="xw-node-url' + (has ? '' : ' empty') + '">' + esc(has ? s.url : '还没填地址') + '</div>' +
-        '<div class="xw-node-acts">' +
-          (has ? '<button type="button" class="xw-tap" data-act="test" data-i="' + i + '">测一下</button>' : '') +
-          '<button type="button" class="xw-tap quiet" data-act="del" data-i="' + i + '">删掉</button>' +
-        '</div>' +
-      '</div>';
+  function card(s, i) {
+    var on = !!(s.on && s.url);
+    var a = [];
+
+    a.push('<div class="xw-card' + (on ? ' on' : '') + '">');
+    a.push('<i class="xw-ring"></i>');
+    a.push('<div class="xw-main">');
+    a.push('<div class="xw-name">' + esc(s.name) + '</div>');
+    a.push('<div class="xw-stat">' + esc(s.kind || (on ? '已接入' : '尚未连接')) + '</div>');
+    a.push('</div>');
+    a.push('<button type="button" class="xw-act" data-act="open" data-i="' + i + '">' + (on ? '进入' : '连接') + '</button>');
+    a.push('</div>');
+
+    a.push('<div class="xw-panel" id="xw-panel-' + i + '">');
+    a.push('<input id="xw-name-' + i + '" value="' + esc(s.name) + '" placeholder="名字" autocomplete="off">');
+    a.push('<input id="xw-url-' + i + '" value="' + esc(s.url) + '" placeholder="地址" autocomplete="off" inputmode="url">');
+    a.push('<div class="xw-row">');
+    a.push('<button type="button" class="xw-tap" data-act="save" data-i="' + i + '">存</button>');
+    if (s.url) a.push('<button type="button" class="xw-tap" data-act="test" data-i="' + i + '">测一下</button>');
+    if (on) a.push('<button type="button" class="xw-tap plain" data-act="off" data-i="' + i + '">断开</button>');
+    a.push('<button type="button" class="xw-tap plain" data-act="del" data-i="' + i + '">删掉</button>');
+    a.push('</div>');
+    a.push('</div>');
+
+    return a.join('');
   }
 
   function view() {
     var list = load();
-    var on = list.filter(function (s) { return s.on && s.url; }).length;
+    var on = 0;
+    var cards = '';
+    var logHtml = '';
+    var i = 0;
 
-    var nodes = '';
-    list.forEach(function (s, i) { nodes += node(s, i); });
-
-    if (!list.length) {
-      nodes = '<div class="xw-intro">一个都没有。下面加一个。</div>';
+    for (i = 0; i < list.length; i++) {
+      if (list[i].on && list[i].url) on++;
+      cards += card(list[i], i);
     }
 
-    return '<header class="hero">' +
-        '<span class="kicker">MCP</span>' +
-        '<h1 class="hero-title">连接器</h1>' +
-        '<div class="hero-sub">给模型装的手 · ' + on + ' / ' + list.length + ' 接着</div>' +
-      '</header>' +
+    var lg = logs();
+    for (i = 0; i < lg.length; i++) {
+      logHtml += '<div class="xw-log-item">' + esc(lg[i].text) + '<i>' + esc(lg[i].t) + '</i></div>';
+    }
 
-      '<div class="xw-intro">' +
-        'MCP 是 <b>Model Context Protocol</b>。一个连接器就是一个外部工具服务，' +
-        '接上之后模型能读它、用它。开关只管这份清单；真正让它们跑起来的，是 Operit 的 mcp_config.json。' +
-      '</div>' +
+    if (!logHtml) logHtml = '<div class="xw-log-item">还没有记录。</div>';
 
-      '<div class="xw-chain" id="xw-mcp-body">' + nodes + '</div>' +
+    var a = [];
+    a.push('<div class="xw-bar">');
+    a.push('<button type="button" class="xw-plus" id="xw-mcp-add" aria-label="加一个">＋</button>');
+    a.push('</div>');
+    a.push('<div>' + cards + '</div>');
+    a.push('<details class="xw-log"><summary>调用记录</summary>' + logHtml + '</details>');
+    a.push('<div class="xw-foot"><b>' + on + ' 个接着，' + (list.length - on) + ' 个空着。</b><br>');
+    a.push('这份名单只在你的浏览器里，不会去改 Operit 里的文件。真要让它们跑起来，还得把地址拄进 mcp_config.json。</div>');
 
-      '<button type="button" class="xw-add" id="xw-mcp-add">＋ 加一个连接器</button>' +
-
-      '<div class="xw-form" id="xw-mcp-form">' +
-        '<input id="xw-f-name" placeholder="名字，比如 小红书" autocomplete="off">' +
-        '<input id="xw-f-url" placeholder="地址，比如 http://127.0.0.1:18061/mcp" autocomplete="off" inputmode="url">' +
-        '<select id="xw-f-type">' +
-          '<option value="streamable_http">streamable_http（现在惯用）</option>' +
-          '<option value="remote">remote（旧写法）</option>' +
-          '<option value="sse">sse</option>' +
-        '</select>' +
-        '<div class="xw-row">' +
-          '<button type="button" class="xw-tap" id="xw-f-save">存下来</button>' +
-          '<button type="button" class="xw-tap quiet" id="xw-f-cancel">算了</button>' +
-        '</div>' +
-      '</div>' +
-
-      '<div class="xw-json">' +
-        '<div class="xw-intro" style="margin:0">粘进 mcp_config.json 的那段（只算开着的）</div>' +
-        '<pre id="xw-mcp-json"></pre>' +
-        '<button type="button" class="xw-tap" id="xw-mcp-copy">复制这段</button>' +
-      '</div>' +
-
-      '<div class="xw-foot">' +
-        '<b>两条实话。</b><br>' +
-        '一、这份清单存在这个浏览器里，只是给你自己看和抄的，不会去改 Operit 里的文件。<br>' +
-        '二、在 https 页面上测 http://127.0.0.1 这种地址，浏览器会直接拦住，测不出来不代表它没跑。' +
-      '</div>';
+    return a.join('');
   }
 
   function pick(el) {
@@ -122,122 +119,98 @@
   }
 
   function bind() {
-    var body = D.getElementById('xw-mcp-body');
-    var jsonEl = D.getElementById('xw-mcp-json');
+    var body = D.getElementById('app-body');
+    if (!body) return;
 
-    if (jsonEl) jsonEl.textContent = jsonOf(load());
+    body.addEventListener('click', function (e) {
+      var el = e.target;
+      var add = null;
+      var t = null;
 
-    if (body) {
-      body.addEventListener('click', function (e) {
-        var t = pick(e.target);
-        if (!t) return;
+      while (el && el !== D) {
+        if (el.id === 'xw-mcp-add') { add = el; break; }
+        el = el.parentNode;
+      }
 
-        var act = t.getAttribute('data-act');
-        var i = Number(t.getAttribute('data-i'));
-        var list = load();
-        if (!list[i]) return;
+      if (add) {
+        var fresh = load();
+        fresh.push({ name: '新的', kind: '', url: '', on: false });
+        save(fresh);
+        rerender();
+        return;
+      }
 
-        if (act === 'sw') {
-          list[i].on = !list[i].on;
-          save(list);
-          rerender();
-          return;
-        }
+      t = pick(e.target);
+      if (!t) return;
 
-        if (act === 'del') {
-          list.splice(i, 1);
-          save(list);
-          rerender();
-          return;
-        }
+      var act = t.getAttribute('data-act');
+      var i = Number(t.getAttribute('data-i'));
+      var list = load();
+      if (!list[i]) return;
 
-        if (act === 'test') {
-          var url = list[i].url;
-          if (!url) return;
+      if (act === 'open') {
+        var panel = D.getElementById('xw-panel-' + i);
+        if (panel) panel.classList.toggle('on');
+        return;
+      }
 
-          var old = t.textContent;
-          t.disabled = true;
-          t.textContent = '测着…';
+      if (act === 'save') {
+        var nm = D.getElementById('xw-name-' + i);
+        var ur = D.getElementById('xw-url-' + i);
 
-          fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' })
-            .then(function () { t.textContent = '地址能通'; })
-            .catch(function () { t.textContent = '连不到'; })
-            .then(function () {
-              setTimeout(function () {
-                t.disabled = false;
-                t.textContent = old;
-              }, 2400);
-            });
-        }
-      });
-    }
+        list[i].name = String(nm ? nm.value : '').trim() || '没名字';
+        list[i].url = String(ur ? ur.value : '').trim();
+        if (list[i].url) list[i].on = true;
+        if (!list[i].kind) list[i].kind = '自己填的';
 
-    var add = D.getElementById('xw-mcp-add');
-    var form = D.getElementById('xw-mcp-form');
+        save(list);
+        say(String(list[i].name) + ' · 存好了');
+        rerender();
+        return;
+      }
 
-    if (add && form) {
-      add.addEventListener('click', function () {
-        form.classList.toggle('on');
-        if (form.classList.contains('on')) {
-          var f = D.getElementById('xw-f-name');
-          if (f) setTimeout(function () { f.focus(); }, 60);
-        }
-      });
-    }
+      if (act === 'off') {
+        list[i].on = false;
+        save(list);
+        say(String(list[i].name) + ' · 断开了');
+        rerender();
+        return;
+      }
 
-    var cancel = D.getElementById('xw-f-cancel');
-    if (cancel && form) {
-      cancel.addEventListener('click', function () { form.classList.remove('on'); });
-    }
-
-    var saveBtn = D.getElementById('xw-f-save');
-    if (saveBtn) {
-      saveBtn.addEventListener('click', function () {
-        var name = String(D.getElementById('xw-f-name').value || '').trim();
-        var url = String(D.getElementById('xw-f-url').value || '').trim();
-        var type = D.getElementById('xw-f-type').value;
-
-        if (!name) {
-          if (window.UI && UI.toast) UI.toast('名字还没填');
-          return;
-        }
-
-        var list = load();
-        list.push({ name: name, type: type, url: url, on: !!url });
+      if (act === 'del') {
+        say(String(list[i].name) + ' · 删掉了');
+        list.splice(i, 1);
         save(list);
         rerender();
-      });
-    }
+        return;
+      }
 
-    var copy = D.getElementById('xw-mcp-copy');
-    if (copy) {
-      copy.addEventListener('click', function () {
-        var text = jsonOf(load());
-        var done = function () {
-          var o = copy.textContent;
-          copy.textContent = '复制好了';
-          setTimeout(function () { copy.textContent = o; }, 1600);
-        };
+      if (act === 'test') {
+        var url = list[i].url;
+        if (!url) return;
 
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(done).catch(function () { fallback(text, done); });
-        } else {
-          fallback(text, done);
-        }
-      });
-    }
-  }
+        var old = t.textContent;
+        var name = String(list[i].name);
+        t.disabled = true;
+        t.textContent = '测着…';
 
-  function fallback(text, done) {
-    var ta = D.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    D.body.appendChild(ta);
-    ta.select();
-    try { D.execCommand('copy'); } catch (e) {}
-    if (ta.parentNode) ta.parentNode.removeChild(ta);
-    done();
+        fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' })
+          .then(function () {
+            say(name + ' · 地址能通');
+            t.textContent = '通了';
+          })
+          .catch(function () {
+            say(name + ' · 连不到');
+            t.textContent = '连不到';
+          })
+          .then(function () {
+            setTimeout(function () {
+              t.disabled = false;
+              t.textContent = old;
+            }, 2000);
+          });
+      }
+    });
   }
 
   window.Pages = window.Pages || {};
