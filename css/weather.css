@@ -1,80 +1,20 @@
-/* weather.css · 天气这一间 */
-
-.wx-now { padding: 1.05rem 1.1rem 1rem; }
-
-.wx-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-.wx-head .kicker {
-  font-size: .4rem;
-  letter-spacing: .24em;
-}
-.wx-sub {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: .38rem;
-  letter-spacing: .08em;
-  color: #c2cad2;
-}
-
-.wx-main {
-  display: flex;
-  align-items: baseline;
-  gap: .7rem;
-  margin-top: .55rem;
-}
-.wx-deg {
-  font-size: 2.4rem;
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: -.03em;
-  color: #2f3a44;
-}
-.wx-desc {
-  font-size: .6rem;
-  letter-spacing: .1em;
-  color: #8d9aa8;
-}
-
-.wx-meta {
-  margin-top: .6rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: .42rem;
-  letter-spacing: .04em;
-  color: #a8b2bd;
-}
-
-.wx-list { display: flex; flex-direction: column; gap: .5rem; }
-
-.wx-row {
-  display: grid;
-  grid-template-columns: 2.9rem 2.2rem 1fr auto;
-  align-items: center;
-  gap: .4rem;
-  padding: .72rem .95rem;
-  border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
-}
-.wx-day {
-  font-size: .52rem;
-  color: #4f4f4f;
-}
-.wx-date {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: .38rem;
-  letter-spacing: .04em;
-  color: #c2cad2;
-}
-.wx-txt {
-  font-size: .5rem;
-  letter-spacing: .06em;
-  color: #8d9aa8;
-}
-.wx-range {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: .46rem;
-  letter-spacing: .02em;
-  color: #5f6f7d;
-}
+/* weather.css */
+.wt-wrap{padding:var(--pad)}
+.wt-card{padding:var(--pad);border-radius:var(--r-lg);background:var(--card);border:1px solid var(--line);margin-bottom:.5rem;text-align:center}
+.wt-card .city{font-size:.58rem;color:var(--ink-3);margin-bottom:.2rem}
+.wt-card .temp{font-size:2.5rem;font-weight:300;font-family:var(--serif);line-height:1}
+.wt-card .desc{font-size:.58rem;color:var(--ink-2);margin:.2rem 0}
+.wt-card .range{font-size:.5rem;color:var(--ink-3)}
+.wt-card .icon{font-size:2rem;margin-bottom:.2rem}
+.wt-forecast{display:grid;grid-template-columns:repeat(5,1fr);gap:.2rem}
+.wt-forecast .day{padding:.4rem .2rem;border-radius:var(--r-sm);background:var(--fill);text-align:center}
+.wt-forecast .day .wd{font-size:.46rem;color:var(--ink-3);margin-bottom:.1rem}
+.wt-forecast .day .icon{font-size:1rem;margin-bottom:.1rem}
+.wt-forecast .day .hi{font-size:.52rem;font-weight:500}
+.wt-forecast .day .lo{font-size:.46rem;color:var(--ink-3)}
+.wt-detail{padding:var(--pad)}
+.wt-detail h4{font-size:.62rem;font-weight:600;margin:0 0 .3rem}
+.wt-detail .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.3rem}
+.wt-detail .grid .cell{padding:.4rem;border-radius:var(--r-sm);background:var(--fill)}
+.wt-detail .grid .cell .lab{font-size:.46rem;color:var(--ink-3);margin-bottom:.1rem}
+.wt-detail .grid .cell .val{font-size:.62rem;font-weight:500}

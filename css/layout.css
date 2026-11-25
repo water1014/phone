@@ -1,343 +1,42 @@
-/* layout.css · 首页四列网格 + dock 拖动 + 编辑态 */
-
-#home .gpage{
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px 10px;
-  align-content: start;
-  align-items: start;
-}
-
-#home .gi{
-  min-width: 0;
-  position: relative;
-  overflow: visible;
-}
-
-#home .gi1{
-  grid-column: span 1;
-  justify-self: center;
-}
-
-#home .gi2{ grid-column: span 2; }
-#home .gi4{ grid-column: span 4; }
-
-/* 不能写成 #home .gi > *，否则 × 按钮会被撑成满宽 */
-#home .gi > *:not(.gi-del){
-  width: 100%;
-  margin-bottom: 0;
-  margin-top: 0;
-}
-
-/* App 格子 */
-#home .gi .appcell{
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 68px;
-  height: 68px;
-  padding: 0;
-  border: 1px solid rgba(0, 0, 0, .035);
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, .035);
-  font: inherit;
-}
-
-#home .gi .appcell:active{ background: rgba(141, 154, 168, .06); }
-
-#home .gi .appcell svg{
-  width: 21px;
-  height: 21px;
-  fill: none;
-  stroke: #5c6a79;
-  stroke-width: 1.25;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-#home .gi .appcell span{
-  font-size: 10.5px;
-  letter-spacing: .2px;
-  color: #8b95a1;
-}
-
-#home .gi2 > .wdg{ min-height: 100%; }
-
-/* ============ 顶部两个按钮 ============ */
-
-#gi-edit{
-  position: fixed;
-  top: calc(10px + env(safe-area-inset-top, 0px));
-  right: 10px;
-  z-index: 88;
-  padding: 7px 14px;
-  border: 0;
-  border-radius: 15px;
-  background: rgba(255, 255, 255, .82);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  color: #7b7568;
-  font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
-  font-size: 11.5px;
-  letter-spacing: 1.2px;
-  box-shadow: 0 1px 10px rgba(0, 0, 0, .08);
-}
-
-#gi-edit.on{
-  background: rgba(33, 31, 28, .92);
-  color: #f6f2ea;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, .22);
-}
-
-#gi-plus{
-  position: fixed;
-  top: calc(10px + env(safe-area-inset-top, 0px));
-  left: 10px;
-  z-index: 88;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(33, 31, 28, .92);
-  color: #f6f2ea;
-  font-family: -apple-system, sans-serif;
-  font-size: 19px;
-  line-height: 1;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, .22);
-}
-
-#gi-plus:active{ transform: scale(.94); }
-
-/* ============ 编辑态：整桌轻抖 ============ */
-
-@keyframes gi-wobble{
-  0%   { transform: rotate(-.5deg); }
-  50%  { transform: rotate(.5deg); }
-  100% { transform: rotate(-.5deg); }
-}
-
-#home.editing .page{ padding-top: calc(48px + env(safe-area-inset-top, 0px)); }
-
-#home.editing .gi{ animation: gi-wobble .36s ease-in-out infinite; }
-
-#home.editing .gi:nth-child(2n){
-  animation-duration: .31s;
-  animation-direction: reverse;
-}
-
-#home.editing .gi.lift{ animation: none; }
-
-/* 代码卡里面是 iframe，它会吞掉触摸事件；
-   编辑态和拖动中让它不吃，否则整块拖不动 */
-#home.editing .gi .mod-fr,
-#home.dragging .gi .mod-fr{ pointer-events: none; }
-
-/* 删除点 */
-.gi-del{
-  position: absolute;
-  top: -7px;
-  right: -7px;
-  width: 19px;
-  height: 19px;
-  padding: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, .95);
-  color: #4a453c;
-  font-family: -apple-system, sans-serif;
-  font-size: 12px;
-  line-height: 1;
-  z-index: 16;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, .2), inset 0 0 0 .5px rgba(0, 0, 0, .05);
-}
-
-#home.editing .gi .gi-del{ display: flex; }
-#home .gi.lift .gi-del{ display: none; }
-
-/* ============ 拖动 ============ */
-
-#home .gi.lift{
-  position: relative;
-  z-index: 12;
-  pointer-events: none;
-  opacity: .88;
-  border-radius: 16px;
-}
-
-#home .gi.dc-drop{
-  outline: 2px dashed rgba(52, 46, 38, .75);
-  outline-offset: 3px;
-  border-radius: 16px;
-  background-color: rgba(255, 255, 255, .34);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, .55);
-}
-
-#home .gi.lift::after{
-  content: '';
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  bottom: -8px;
-  left: -8px;
-  border-radius: 20px;
-  box-shadow: 0 8px 26px rgba(0, 0, 0, .22);
-  pointer-events: none;
-}
-
-#home.dragging{
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-/* ============ dock 拖动 ============ */
-
-#dock{ overflow: visible; }
-
-#dock.dock-drop{
-  outline: 2px dashed rgba(52, 46, 38, .75);
-  outline-offset: 4px;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, .5);
-}
-
-.dock-item.drop-target{
-  background: rgba(255, 255, 255, .5);
-  border-radius: 14px;
-  box-shadow: inset 0 0 0 1.5px rgba(52, 46, 38, .5);
-}
-
-.dock-item.dk-lift{
-  position: relative;
-  z-index: 60;
-  pointer-events: none;
-  opacity: .9;
-  border-radius: 14px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, .2);
-}
-
-/* ============ 底部提示 ============ */
-#edit-hint{
-  position: fixed;
-  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 80;
-  padding: 7px 15px;
-  border-radius: 15px;
-  background: rgba(33, 31, 28, .86);
-  color: #f3efe7;
-  font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
-  font-size: 11.5px;
-  letter-spacing: .8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, .18);
-  pointer-events: none;
-  white-space: nowrap;
-}
-
-/* ============ 加块面板 ============ */
-.gip{
-  position: fixed;
-  left: 10px;
-  right: 10px;
-  bottom: calc(8px + env(safe-area-inset-bottom));
-  z-index: 92;
-  max-height: 62vh;
-  overflow-y: auto;
-  padding: 16px 16px 20px;
-  border-radius: 22px;
-  background: #ffffff;
-  box-shadow: 0 -6px 40px rgba(0, 0, 0, .18);
-  scrollbar-width: none;
-}
-
-.gip::-webkit-scrollbar{ display: none; }
-
-.gip-head{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.gip-head span{
-  font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", serif;
-  font-size: 13px;
-  letter-spacing: .8px;
-  color: #3a3733;
-}
-
-.gip-x{
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: #f2efe9;
-  color: #8a8578;
-  font-size: 15px;
-  line-height: 1;
-}
-
-.gip-sec{
-  margin-top: 12px;
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-style: italic;
-  font-size: 10px;
-  letter-spacing: 1.6px;
-  color: #c9c3b9;
-}
-
-.gip-grid{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
-
-.gip-item{
-  padding: 9px 14px;
-  border: 1px solid rgba(0, 0, 0, .07);
-  border-radius: 12px;
-  background: #fdfcfa;
-  font: inherit;
-  font-size: 12px;
-  letter-spacing: .4px;
-  color: #6a6660;
-}
-
-.gip-item.on{
-  background: #eeebe4;
-  border-color: #eeebe4;
-  color: #b5afa4;
-}
-
-.gip-empty{
-  margin-top: 10px;
-  font-size: 11.5px;
-  letter-spacing: .3px;
-  color: #b8b2a7;
-}
-
-/* ============ 夜 / 纸 ============ */
-html[data-skin="night"] .gip{ background: #1e1c1a; }
-html[data-skin="night"] .gip-head span{ color: #ece6da; }
-html[data-skin="night"] .gip-x{ background: #2a2724; color: #a49d90; }
-html[data-skin="night"] .gip-item{ background: #252220; border-color: rgba(255,255,255,.07); color: #a49d90; }
-html[data-skin="night"] .gip-item.on{ background: #2f2c28; border-color: #2f2c28; color: #6f6a61; }
-
-html[data-skin="night"] .gi-del{ background: rgba(38, 35, 32, .95); color: #e8e2d6; }
-html[data-skin="night"] #gi-edit{ background: rgba(38, 35, 32, .85); color: #b8b1a4; }
-html[data-skin="night"] #gi-edit.on{ background: rgba(236, 230, 218, .92); color: #1a1917; }
-html[data-skin="night"] #gi-plus{ background: rgba(236, 230, 218, .92); color: #1a1917; }
-
-html[data-skin="night"] #home .gi.dc-drop{
-  outline-color: rgba(255, 255, 255, .74);
-  background-color: rgba(255, 255, 255, .10);
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, .3);
-}
-
-html[data-skin="night"] #dock.dock-drop{ outline-color: rgba(255, 255, 255, .74); }
-
-html[data-skin="paper"] .gip{ background: #fbf7ef; }
-html[data-skin="paper"] #gi-edit{ background: rgba(249, 244, 234, .88); }
+/* layout.css */
+#app-body{position:relative;flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.page{min-height:100%;padding-bottom:calc(var(--dock-h) + 1rem)}
+.page-pad{padding:var(--pad)}
+.full{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden}
+.full > .scroll{flex:1;overflow-y:auto}
+.center{display:flex;align-items:center;justify-content:center}
+.flex{display:flex}
+.flex-col{display:flex;flex-direction:column}
+.gap-1{gap:.25rem}
+.gap-2{gap:.5rem}
+.gap-3{gap:.75rem}
+.gap-4{gap:1rem}
+.mt-1{margin-top:.25rem}
+.mt-2{margin-top:.5rem}
+.mt-3{margin-top:.75rem}
+.mb-1{margin-bottom:.25rem}
+.mb-2{margin-bottom:.5rem}
+.mb-3{margin-bottom:.75rem}
+.p-1{padding:.25rem}
+.p-2{padding:.5rem}
+.p-3{padding:.75rem}
+.text-sm{font-size:.52rem}
+.text-base{font-size:.58rem}
+.text-lg{font-size:.72rem}
+.text-xl{font-size:.9rem}
+.font-medium{font-weight:500}
+.font-semibold{font-weight:600}
+.text-ink{color:var(--ink)}
+.text-ink2{color:var(--ink-2)}
+.text-ink3{color:var(--ink-3)}
+.bg-fill{background:var(--fill)}
+.rounded-sm{border-radius:var(--r-sm)}
+.rounded-md{border-radius:var(--r-md)}
+.rounded-lg{border-radius:var(--r-lg)}
+.border-line{border:1px solid var(--line)}
+.w-full{width:100%}
+.h-full{height:100%}
+.overflow-hidden{overflow:hidden}
+.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.line-clamp-2{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.line-clamp-3{overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}

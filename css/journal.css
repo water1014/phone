@@ -1,161 +1,29 @@
-/* journal.css · 手账层：纸、胶带、印章、便签折角
-   不改结构，只往现有元素上叠质感。最后加载。 */
-
-/* 纸张点阵：只在卡片之间的缝隙里看得见 */
-.app-body {
-  background-image: radial-gradient(rgba(0, 0, 0, .045) 1px, transparent 1px);
-  background-size: 18px 18px;
-  background-position: 0 0;
-}
-html.dark .app-body {
-  background-image: radial-gradient(rgba(255, 255, 255, .055) 1px, transparent 1px);
-}
-
-.sheet,
-.dcard,
-.wdg { position: relative; }
-
-/* 胶带：钉在卡片上沿，交替歪一点 */
-.dcard::before {
-  content: '';
-  position: absolute;
-  top: -.42rem;
-  left: 50%;
-  width: 3.1rem;
-  height: .82rem;
-  margin-left: -1.55rem;
-  border-radius: 1px;
-  background: rgba(141, 154, 168, .17);
-  box-shadow: inset 0 0 0 1px rgba(141, 154, 168, .09);
-  transform: rotate(-1.3deg);
-  pointer-events: none;
-}
-.dcard:nth-of-type(2n)::before { transform: rotate(1.2deg); }
-.dcard:nth-of-type(3n)::before { margin-left: -1.9rem; }
-
-.dcard { overflow: visible; }
-
-/* 活页边：一道虚线，像从本子上撕下来的 */
-.dcard-text {
-  padding-left: .9rem;
-  border-left: 1px dashed rgba(0, 0, 0, .085);
-}
-
-/* 日期做成印章 */
-.dcard-date {
-  display: inline-block;
-  padding: .1rem .36rem .08rem;
-  border: 1px dashed rgba(141, 154, 168, .55);
-  border-radius: 3px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: .42rem;
-  letter-spacing: .04em;
-  color: #8d9aa8;
-}
-
-/* 字数像盖在右下角的小章 */
-.dcard-meta {
-  display: inline-block;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: .4rem;
-  color: #b8b8b8;
-}
-
-/* 标题下一条手账式点线 */
-.hero-title {
-  display: inline-block;
-  padding-bottom: .16rem;
-  border-bottom: 2px dotted rgba(141, 154, 168, .40);
-}
-
-/* 分隔小标：像写在页边的批注 */
-.album-date-band {
-  color: #a3aeb9;
-  letter-spacing: .08em;
-}
-
-/* ══ 聊天：一张手账页 ══ */
-.chat-status {
-  padding-bottom: .5rem;
-  border-bottom: 1px dashed rgba(0, 0, 0, .07);
-}
-
-/* 气泡做成便签：右下折角 */
-.bub { position: relative; }
-
-.msg-row.ta .bub:not(.me)::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: .5rem;
-  height: .5rem;
-  background: linear-gradient(135deg, transparent 50%, rgba(0, 0, 0, .045) 50%);
-  border-bottom-right-radius: 15px;
-  pointer-events: none;
-}
-
-.msg-row.me .bub.me::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: .5rem;
-  height: .5rem;
-  background: linear-gradient(45deg, rgba(255, 255, 255, .16) 50%, transparent 50%);
-  border-bottom-left-radius: 15px;
-  pointer-events: none;
-}
-
-/* 旁白：虚线竖边，像在页边写的话 */
-.narr {
-  border-left-style: dashed;
-  border-left-width: 1px;
-  padding-left: .7rem;
-}
-
-/* 思考：虚线框 */
-.think-body {
-  border-style: dashed;
-  border-width: 1px;
-}
-
-/* 快捷胶囊、时间章：都用虚线，像贴纸 */
-.quick-chip {
-  border-style: dashed;
-  border-color: rgba(141, 154, 168, .50);
-  background: #ffffff;
-  color: #7d8b99;
-}
-
-.msg-tag,
-.chat-time .kicker {
-  border-style: dashed;
-  border-color: rgba(0, 0, 0, .09);
-}
-
-/* 事件卡：便条纸，略歪 */
-.chat-event span {
-  border-style: dashed;
-  border-color: rgba(141, 154, 168, .45);
-  transform: rotate(-.35deg);
-}
-
-/* 输入框：像手账本上的线格 */
-.composer input {
-  border-radius: 12px;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .05);
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent calc(50% - 1px),
-    rgba(0, 0, 0, .03) calc(50% - 1px),
-    rgba(0, 0, 0, .03) 50%
-  );
-}
-
-/* 日历：虚线外框，像贴上去的月历页 */
-.cal-sheet {
-  border: 1px dashed rgba(141, 154, 168, .28);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .03);
-}
+/* journal.css */
+.jr-wrap{padding:var(--pad) var(--pad) calc(var(--dock-h) + var(--pad))}
+.jr-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.jr-hd h2{font-size:.9rem;font-weight:600;margin:0}
+.jr-hd .date{font-size:.52rem;color:var(--ink-3)}
+.jr-editor{padding:var(--pad);border-radius:var(--r-md);background:var(--card);border:1px solid var(--line);margin-bottom:.5rem}
+.jr-editor .title{width:100%;padding:.4rem 0;border:none;border-bottom:1px solid var(--line);background:transparent;font:inherit;font-size:.72rem;font-weight:600;outline:none;margin-bottom:.3rem}
+.jr-editor .body{width:100%;padding:.4rem 0;border:none;background:transparent;font:inherit;font-size:.62rem;line-height:1.8;resize:vertical;min-height:8rem;outline:none}
+.jr-editor .meta{display:flex;gap:.3rem;margin-top:.3rem;flex-wrap:wrap}
+.jr-editor .meta .tag{padding:.15rem .4rem;border-radius:999px;background:var(--fill);font-size:.46rem;color:var(--ink-3);cursor:pointer}
+.jr-editor .meta .tag.on{background:var(--accent-mist);color:var(--accent)}
+.jr-actions{display:flex;gap:.4rem;margin-top:.4rem}
+.jr-actions button{flex:1;padding:.5rem;border-radius:var(--r-sm);font-size:.6rem;border:none;cursor:pointer}
+.jr-actions .save{background:var(--dark);color:var(--on-dark)}
+.jr-actions .cancel{background:var(--fill);color:var(--ink-2)}
+.jr-list{display:flex;flex-direction:column;gap:.3rem}
+.jr-item{padding:.6rem;border-radius:var(--r-md);background:var(--card);border:1px solid var(--line);cursor:pointer;transition:transform .15s}
+.jr-item:active{transform:scale(.98)}
+.jr-item .hd{display:flex;align-items:center;gap:.3rem;margin-bottom:.2rem}
+.jr-item .hd .title{flex:1;font-size:.62rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jr-item .hd .date{font-size:.46rem;color:var(--ink-3);flex-shrink:0}
+.jr-item .preview{font-size:.52rem;color:var(--ink-3);line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.jr-item .tags{display:flex;gap:.2rem;margin-top:.2rem;flex-wrap:wrap}
+.jr-item .tags span{padding:.08rem .25rem;border-radius:999px;background:var(--fill);font-size:.42rem;color:var(--ink-3)}
+.jr-detail{padding:var(--pad)}
+.jr-detail h2{font-size:.9rem;font-weight:600;margin:0 0 .4rem}
+.jr-detail .meta{display:flex;gap:.3rem;margin-bottom:.5rem;flex-wrap:wrap}
+.jr-detail .meta span{font-size:.46rem;color:var(--ink-3)}
+.jr-detail .content{font-size:.62rem;line-height:1.8;white-space:pre-wrap;word-break:break-word}

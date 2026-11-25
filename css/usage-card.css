@@ -1,83 +1,14 @@
-/* usage-card.css · 用量块 */
-.uc-card{
-  margin-top:14px;
-  padding-top:14px;
-  border-top:1px solid rgba(0,0,0,.06);
-}
-.uc-head{
-  font-size:11px;
-  letter-spacing:.14em;
-  color:#b3ac9f;
-  margin-bottom:8px;
-}
-.uc-row{
-  display:flex;
-  gap:10px;
-  align-items:baseline;
-  font-size:12px;
-  line-height:1.9;
-}
-.uc-k{
-  flex:0 0 auto;
-  color:#b3ac9f;
-  min-width:2.6em;
-}
-.uc-v{
-  flex:1;
-  min-width:0;
-  color:#4a453d;
-  word-break:break-all;
-}
-.uc-chart{
-  display:flex;
-  align-items:flex-end;
-  gap:7px;
-  margin:12px 0 4px;
-  height:64px;
-}
-.uc-col{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-end;
-  align-items:center;
-  height:100%;
-}
-.uc-bar{
-  width:100%;
-  max-width:14px;
-  border-radius:3px 3px 0 0;
-  background:rgba(0,0,0,.2);
-}
-.uc-tip{
-  margin-top:5px;
-  font-size:9.5px;
-  font-style:normal;
-  color:#c6c0b4;
-  white-space:nowrap;
-}
-.uc-note{
-  margin-top:8px;
-  font-size:11.5px;
-  line-height:1.7;
-  color:#b3ac9f;
-}
-
-/* 聊天设置 → 记录：这块自己就是一段，不要再加顶线 */
-#cset .uc-slot .uc-card{
-  margin-top:0;
-  padding-top:0;
-  border-top:0;
-}
-#cset .uc-slot{
-  margin-bottom:1.1rem;
-}
-#cset .uc-slot .uc-head{
-  font-size:11px;
-  letter-spacing:.14em;
-}
-
-/* 聊天页不再显示用量，那个开关就别留了 */
-#cset .cset-opt[data-t="usage"]{
-  display:none !important;
-}
+/* usage-card.css */
+.uc-wrap{padding:var(--pad)}
+.uc-card{padding:var(--pad);border-radius:var(--r-md);background:var(--card);border:1px solid var(--line);margin-bottom:.4rem}
+.uc-card h4{font-size:.62rem;font-weight:600;margin:0 0 .3rem}
+.uc-card .bar{height:6px;background:var(--fill);border-radius:999px;margin:.3rem 0;overflow:hidden}
+.uc-card .bar i{display:block;height:100%;border-radius:999px;background:var(--accent);transition:width .5s var(--mo-out)}
+.uc-card .meta{display:flex;justify-content:space-between;font-size:.46rem;color:var(--ink-3)}
+.uc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.3rem}
+.uc-mini{padding:.5rem;border-radius:var(--r-md);background:var(--card);border:1px solid var(--line)}
+.uc-mini .lab{font-size:.46rem;color:var(--ink-3);margin-bottom:.15rem}
+.uc-mini .num{font-size:.9rem;font-weight:600;font-family:var(--serif)}
+.uc-mini .delta{font-size:.44rem;margin-top:.05rem}
+.uc-mini .delta.up{color:var(--accent)}
+.uc-mini .delta.down{color:var(--ink-3)}
