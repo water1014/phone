@@ -142,3 +142,77 @@ body {
 @media (prefers-reduced-motion: reduce) {
   #home .xd-card, #xd-dock, #xd-rail, #app * { transition-duration: .01ms !important; }
 }
+
+
+/* Extend the same material to legacy surfaces used by individual phone apps. */
+#app .app-ico i,
+#app .album-cell,
+#app .msg-ava,
+#app #cset,
+#app .cc-card,
+#app .ap-seg,
+#app .ap-add,
+#app .ap-selbar,
+#app .msg-tag,
+#app .chat-event span,
+#app .think-body {
+  border: 1px solid var(--mio-line) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 6px 20px rgba(89,128,139,.07), inset 0 1px 0 rgba(255,255,255,.78) !important;
+  -webkit-backdrop-filter: var(--mio-glass) !important;
+  backdrop-filter: var(--mio-glass) !important;
+}
+#app .app-ico i,
+#app .album-cell,
+#app .ap-add,
+#app .ap-selbar,
+#app #cset,
+#app .cc-card {
+  background: rgba(255,255,255,.78) !important;
+}
+#app .ap-seg { background: rgba(231,242,243,.72) !important; }
+#app .ap-sg.on { background: rgba(255,255,255,.94) !important; }
+#app .msg-ava { color: var(--mio-ink) !important; }
+#app .album-cell, #app .app-ico i, #app .ap-add,
+#app .btn-glass, #app .quick-chip, #app .app-back {
+  transition: background-color .18s ease, border-color .18s ease,
+              box-shadow .18s ease, transform .18s ease !important;
+}
+#app .album-cell:active, #app .app-ico i:active,
+#app .ap-add:active, #app .btn-glass:active,
+#app .quick-chip:active, #app .app-back:active {
+  transform: scale(.975);
+}
+#app .field input:focus, #app .field textarea:focus,
+#app .field select:focus, #app .composer input:focus {
+  outline: none !important;
+  border-color: rgba(130,174,183,.72) !important;
+  box-shadow: 0 0 0 3px rgba(130,174,183,.13) !important;
+}
+
+/* Keep the watery palette readable when the existing dark theme is selected. */
+html.dark, html.dark body { background: #172326 !important; color: #e7f0f1 !important; }
+html.dark body {
+  background-image: radial-gradient(ellipse at 12% 4%, rgba(65,105,111,.22), transparent 42%),
+                    radial-gradient(ellipse at 92% 18%, rgba(58,78,99,.24), transparent 38%);
+}
+html.dark #app, html.dark #home.xd-home { background: rgba(23,35,38,.96) !important; color: #e7f0f1 !important; }
+html.dark #app .app-head, html.dark #xd-dock, html.dark #xd-rail {
+  background: rgba(27,42,45,.88) !important;
+  border-color: rgba(139,174,180,.20) !important;
+}
+html.dark #app .sheet, html.dark #app .dcard, html.dark #app .fold,
+html.dark #app .wdg, html.dark #app .bf-card, html.dark #app .app-shell-box,
+html.dark #app .set-group, html.dark #app .app-ico i,
+html.dark #app .album-cell, html.dark #app #cset, html.dark #app .cc-card {
+  background: rgba(39,57,61,.84) !important;
+  color: #e7f0f1 !important;
+  border-color: rgba(139,174,180,.22) !important;
+}
+html.dark #app .bub { background: rgba(39,57,61,.9) !important; color: #e7f0f1 !important; }
+html.dark #app .bub.me { background: #385e65 !important; color: #f5fbfb !important; }
+html.dark #app .field input, html.dark #app .field textarea,
+html.dark #app .field select, html.dark #app .composer input {
+  background: rgba(25,40,43,.9) !important; color: #e7f0f1 !important;
+  border-color: rgba(139,174,180,.25) !important;
+}
