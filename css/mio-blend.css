@@ -1,0 +1,144 @@
+/* mio-blend.css
+   MioWatery-inspired visual layer for phone.
+   Keeps phone DOM, navigation and application behavior intact.
+*/
+:root {
+  --mio-ink: #35434a;
+  --mio-muted: #82939a;
+  --mio-line: rgba(159, 190, 199, .34);
+  --mio-tint: #eaf5f6;
+  --mio-card: rgba(255, 255, 255, .76);
+  --mio-glass: saturate(145%) blur(18px);
+  --mio-shadow: 0 10px 30px rgba(89, 128, 139, .10);
+  --mio-radius: 22px;
+  --ink: var(--mio-ink);
+  --ink-2: #52636a;
+  --ink-3: var(--mio-muted);
+  --ink-4: #a9b8bc;
+  --line: var(--mio-line);
+  --fill: #f0f7f7;
+  --card: rgba(255,255,255,.82);
+  --glass: rgba(255,255,255,.72);
+  --glass-strong: rgba(255,255,255,.88);
+  --glass-brd: rgba(172, 201, 207, .38);
+  --glass-hi: inset 0 1px 0 rgba(255,255,255,.86);
+  --blur: blur(18px) saturate(145%);
+  --accent: #82aeb7;
+  --accent-deep: #628e98;
+  --bg: #f3f8f8;
+  --r-sm: 12px;
+  --r-md: 17px;
+  --r-lg: 23px;
+}
+html, body { background: #f3f8f8; color: var(--mio-ink); }
+body {
+  background-image:
+    radial-gradient(ellipse at 12% 4%, rgba(205,232,234,.52), transparent 42%),
+    radial-gradient(ellipse at 92% 18%, rgba(224,237,245,.56), transparent 38%);
+  background-attachment: fixed;
+}
+
+/* Phone's existing home layout, with a softer watery material. */
+#home.xd-home {
+  background: transparent !important;
+}
+#home .xd-card {
+  background: var(--mio-card) !important;
+  border: 1px solid var(--mio-line) !important;
+  border-radius: var(--mio-radius) !important;
+  box-shadow: var(--mio-shadow), inset 0 1px 0 rgba(255,255,255,.82) !important;
+  -webkit-backdrop-filter: var(--mio-glass) !important;
+  backdrop-filter: var(--mio-glass) !important;
+}
+#home .xd-clock, #home .xd-big, #home .xd-name,
+#home .xd-hero .xd-quote { color: var(--mio-ink) !important; }
+#home .xd-date, #home .xd-handle, #home .xd-sub,
+#home .xd-see, #home .xd-k { color: var(--mio-muted) !important; }
+#home .xd-burger {
+  background: rgba(255,255,255,.68) !important;
+  border: 1px solid var(--mio-line) !important;
+  border-radius: 13px !important;
+  box-shadow: 0 4px 14px rgba(89,128,139,.08) !important;
+}
+#home .xd-ava, #home .xd-thumbs i, #home .xd-li i {
+  border-color: var(--mio-line) !important;
+  background-color: #edf5f5 !important;
+}
+
+/* Existing dock and drawer become translucent, without changing their actions. */
+#xd-dock {
+  background: rgba(248,252,252,.78) !important;
+  border-top: 1px solid var(--mio-line) !important;
+  -webkit-backdrop-filter: var(--mio-glass) !important;
+  backdrop-filter: var(--mio-glass) !important;
+}
+#xd-dock button.on svg { stroke: var(--accent-deep) !important; }
+#xd-dock button.on span { color: var(--accent-deep) !important; }
+#xd-rail {
+  background: rgba(250,253,253,.88) !important;
+  border-right: 1px solid var(--mio-line) !important;
+  -webkit-backdrop-filter: var(--mio-glass) !important;
+  backdrop-filter: var(--mio-glass) !important;
+}
+.xd-rail-hd { border-bottom-color: var(--mio-line) !important; }
+.xd-rail-hd b, .xd-rail-list button svg { color: var(--mio-ink) !important; }
+.xd-rail-list button:active { background: rgba(214,235,237,.45) !important; }
+
+/* Shared app shell and existing app components. */
+#app {
+  background: rgba(246,250,250,.94) !important;
+  color: var(--mio-ink) !important;
+}
+#app .app-head {
+  background: rgba(248,252,252,.82) !important;
+  border-bottom: 1px solid var(--mio-line) !important;
+  -webkit-backdrop-filter: var(--mio-glass) !important;
+  backdrop-filter: var(--mio-glass) !important;
+}
+#app .sheet, #app .dcard, #app .fold, #app .wdg,
+#app .bf-card, #app .app-shell-box, #app .set-group {
+  border-color: var(--mio-line) !important;
+  border-radius: var(--mio-radius) !important;
+  box-shadow: var(--mio-shadow), inset 0 1px 0 rgba(255,255,255,.8) !important;
+}
+#app .sheet, #app .dcard, #app .fold, #app .wdg {
+  background: rgba(255,255,255,.78) !important;
+  -webkit-backdrop-filter: var(--mio-glass) !important;
+  backdrop-filter: var(--mio-glass) !important;
+}
+#app .app-back, #app .btn-glass, #app .quick-chip,
+#app .field input, #app .field textarea, #app .field select,
+#app .composer input {
+  background: rgba(255,255,255,.76) !important;
+  border-color: var(--mio-line) !important;
+  border-radius: 15px !important;
+  -webkit-backdrop-filter: var(--mio-glass) !important;
+  backdrop-filter: var(--mio-glass) !important;
+}
+#app .btn-solid, #app .composer .btn-solid {
+  background: #82aeb7 !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  box-shadow: 0 5px 14px rgba(98,142,152,.20) !important;
+}
+#app .bub {
+  background: rgba(255,255,255,.82) !important;
+  border-color: var(--mio-line) !important;
+  border-radius: 18px 18px 18px 7px !important;
+}
+#app .bub.me {
+  background: #dceef0 !important;
+  color: #405b62 !important;
+  border-color: rgba(130,174,183,.30) !important;
+  border-radius: 18px 18px 7px 18px !important;
+}
+#app .think-body, #app .chat-event span {
+  background: rgba(255,255,255,.72) !important;
+  border-color: var(--mio-line) !important;
+}
+#app .hero-title, #app .sheet-title, #app .set-hd h2 { color: var(--mio-ink) !important; }
+
+/* Respect reduced-motion preferences and avoid changing scroll behavior. */
+@media (prefers-reduced-motion: reduce) {
+  #home .xd-card, #xd-dock, #xd-rail, #app * { transition-duration: .01ms !important; }
+}
