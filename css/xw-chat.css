@@ -427,7 +427,7 @@ html.dark body.xw-chat-on #chat-scroll .msg-row .bub {
 body.xw-chat-on .chat-wrap > .chat-toolbar{display:none!important}
 body.xw-chat-on .chat-wrap > .cs-top{
   display:grid!important;
-  grid-template-columns:42px minmax(0,1fr) 42px!important;
+  grid-template-columns:42px minmax(0,1fr) 82px!important;
   align-items:center!important;
   width:100%!important;
   min-height:68px!important;
