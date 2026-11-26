@@ -394,3 +394,20 @@ html.dark #app-body .bf-wallpaper { background:rgba(48,66,73,.78); border-color:
 html.dark #app-body .bf-wallpaper-head b { color:#e4eef0; }
 html.dark #app-body .bf-wallpaper-preview { background-color:#29383e; color:#b5cbd0; }
 html.dark #app-body .bf-wallpaper-actions button { background:rgba(34,49,55,.9); color:#c2d9dd; border-color:rgba(183,211,216,.2); }
+
+/* Desktop layout controls: keep the original phone structure, expose only sizing. */
+#home.xd-home {
+  padding-left: var(--xd-side-gap, 18px) !important;
+  padding-right: var(--xd-side-gap, 18px) !important;
+}
+#home .xd-page { max-width: var(--xd-layout-width, 620px) !important; }
+#home .xd-card { margin-bottom: var(--xd-card-gap, 12px) !important; }
+#home .xd-2 { gap: var(--xd-card-gap, 12px) !important; margin-bottom: var(--xd-card-gap, 12px) !important; }
+#home .xd-stats { margin-bottom: calc(var(--xd-card-gap, 12px) + 8px) !important; }
+#app-body .bf-layout-title {
+  margin: 15px 0 2px; padding-top: 12px;
+  border-top: 1px solid var(--mio-line);
+  color: var(--mio-ink); font-size: 12px; font-weight: 600;
+}
+#app-body .bf-detail .row input[type=range] { width: 100%; min-width: 0; }
+#app-body .bf-detail .row .num { flex: 0 0 42px; }
