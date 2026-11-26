@@ -381,3 +381,43 @@ body.xw-chat-on #chat-scroll .msg-img img {
 @media (prefers-reduced-motion:reduce) {
   body.xw-chat-on #chat-scroll .msg-row { animation:none !important; }
 }
+
+
+/* MioWatery visual tokens for the chat surface. Keep these scoped to chat only. */
+body.xw-chat-on #app-body {
+  --c-paper:#F5F4F1; --c-card:#FFFFFF; --c-line:#E7E3DC; --c-fill:#EFEAE3;
+  --c-ink1:#26221E; --c-ink2:#4A443D; --c-ink3:#9B948A; --c-ink4:#C9C3B9;
+  --c-accent:#9E6A71; --c-accent-deep:#7E5259; --c-accent-soft:#F0E2E3;
+  --c-bub-me:rgba(228,218,242,.92); --c-bub-him:#FFFFFF;
+  --c-aura:radial-gradient(ellipse at 12% 0%,rgba(211,231,231,.42),transparent 58%),radial-gradient(ellipse at 92% 18%,rgba(232,222,239,.32),transparent 52%),#F5F4F1;
+  --glass-bg:rgba(255,255,255,.66); --glass-brd:rgba(186,205,204,.42);
+  --glass-blur:blur(18px) saturate(145%); --glass-blur-sm:blur(12px) saturate(135%);
+  --rd-1:6px; --rd-2:9px; --rd-3:13px; --rd-4:16px; --rd-card:22px; --rd-hero:26px;
+  --sh-1:0 4px 16px rgba(89,111,111,.07); --sh-2:0 12px 34px rgba(89,111,111,.12);
+  --bub-max:86%;
+}
+html.dark body.xw-chat-on #app-body {
+  --c-paper:#182226; --c-card:#26343A; --c-line:rgba(190,211,213,.16); --c-fill:#304047;
+  --c-ink1:#E8F0EF; --c-ink2:#CAD8D7; --c-ink3:#9CB0B1; --c-ink4:#718889;
+  --c-accent:#D3AEB9; --c-accent-deep:#E0C0C9; --c-accent-soft:rgba(211,174,185,.14);
+  --c-bub-me:rgba(112,91,132,.48); --c-bub-him:rgba(48,65,71,.94);
+  --c-aura:radial-gradient(ellipse at 12% 0%,rgba(67,103,105,.26),transparent 58%),radial-gradient(ellipse at 92% 18%,rgba(91,75,111,.2),transparent 52%),#182226;
+  --glass-bg:rgba(39,55,61,.76); --glass-brd:rgba(183,211,216,.18);
+  --sh-1:0 4px 18px rgba(0,0,0,.12); --sh-2:0 12px 34px rgba(0,0,0,.2);
+}
+body.xw-chat-on .chat-wrap,
+body.xw-chat-on #chat-scroll { background:transparent !important; }
+body.xw-chat-on .chat-wrap > .composer {
+  border:1px solid var(--glass-brd) !important; border-radius:var(--rd-hero) !important;
+  background:var(--glass-bg) !important; -webkit-backdrop-filter:var(--glass-blur) !important;
+  backdrop-filter:var(--glass-blur) !important;
+  box-shadow:var(--sh-2),inset 0 0 0 1px rgba(255,255,255,.28) !important;
+}
+body.xw-chat-on #chat-scroll .msg-row .bub {
+  border:1px solid rgba(186,205,204,.24) !important;
+  box-shadow:0 3px 12px rgba(89,111,111,.055) !important;
+}
+body.xw-chat-on #chat-scroll .msg-row.me .bub { border-color:rgba(194,178,211,.34) !important; }
+html.dark body.xw-chat-on #chat-scroll .msg-row .bub {
+  border-color:rgba(183,211,216,.14) !important; box-shadow:0 3px 14px rgba(0,0,0,.12) !important;
+}
