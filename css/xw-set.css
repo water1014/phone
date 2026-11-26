@@ -283,3 +283,87 @@
   line-height: var(--lh-body);
   color: var(--c-ink4);
 }
+
+
+/* MioWatery settings navigation: home list and detail panes are mutually exclusive. */
+#app-body[data-st-view="home"] #st-home { display:block !important; }
+#app-body[data-st-view="pane"] #st-home { display:none !important; }
+#app-body[data-st-view="home"] #st-crumb { display:none !important; }
+#app-body[data-st-view="pane"] #st-crumb { display:flex !important; }
+#app-body[data-st-view="home"] .st-tabs,
+#app-body[data-st-view="home"] .st-body { display:none !important; }
+#app-body[data-st-view="pane"] .st-tabs { display:flex !important; }
+#app-body[data-st-view="pane"] .st-body { display:block !important; }
+#app-body .st-pane { display:none !important; min-width:0; }
+#app-body .st-pane.on { display:block !important; }
+#app-body .st-tabs {
+  gap:7px !important; padding:4px !important; margin:0 0 16px !important;
+  overflow-x:auto !important; overflow-y:hidden !important; scrollbar-width:none;
+  border:1px solid var(--mio-line) !important; border-radius:16px !important;
+  background:rgba(235,245,246,.72) !important;
+  -webkit-backdrop-filter:blur(16px) saturate(140%) !important;
+  backdrop-filter:blur(16px) saturate(140%) !important;
+}
+#app-body .st-tabs::-webkit-scrollbar { display:none; }
+#app-body .st-tab {
+  flex:1 0 auto !important; min-width:64px !important; min-height:38px !important;
+  padding:8px 13px !important; border:0 !important; border-radius:12px !important;
+  background:transparent !important; color:var(--mio-muted) !important;
+  font:inherit !important; font-size:12px !important; white-space:nowrap !important;
+}
+#app-body .st-tab.on {
+  color:var(--mio-ink) !important; font-weight:600 !important;
+  background:rgba(255,255,255,.92) !important;
+  box-shadow:0 3px 12px rgba(89,128,139,.10), inset 0 0 0 1px rgba(159,190,199,.18) !important;
+}
+#app-body .sh-row {
+  display:flex !important; align-items:center !important; min-height:68px;
+  border:1px solid var(--mio-line) !important;
+  background:rgba(255,255,255,.70) !important;
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  backdrop-filter:blur(16px) saturate(140%);
+  box-shadow:0 5px 18px rgba(89,128,139,.055) !important;
+  transition:transform .18s ease, background .18s ease, box-shadow .18s ease;
+}
+#app-body .sh-row:active { transform:scale(.99); background:rgba(235,245,246,.9) !important; }
+#app-body .sh-crumb { align-items:center; min-height:40px; }
+#app-body .st-pane > .sheet {
+  margin:0 0 14px !important; padding:16px !important;
+  border:1px solid var(--mio-line) !important; border-radius:20px !important;
+  background:rgba(255,255,255,.70) !important;
+  box-shadow:0 7px 22px rgba(89,128,139,.055) !important;
+}
+#app-body .st-pane .sheet-head { margin-bottom:14px; }
+#app-body .st-pane .sheet-title { color:var(--mio-ink) !important; }
+#app-body .st-pane .field { display:block; margin:0 0 14px !important; }
+#app-body .st-pane .field > span {
+  display:block; margin-bottom:7px; color:var(--mio-muted) !important;
+  font-size:12px !important; font-weight:500;
+}
+#app-body .st-pane .field input,
+#app-body .st-pane .field textarea,
+#app-body .st-pane .field select {
+  width:100%; min-height:42px; box-sizing:border-box;
+  padding:10px 12px !important; border:1px solid var(--mio-line) !important;
+  border-radius:13px !important; background:rgba(255,255,255,.82) !important;
+  color:var(--mio-ink) !important; font:inherit; font-size:13px !important;
+  outline:none; box-shadow:none !important;
+}
+#app-body .st-pane .field textarea { min-height:82px; resize:vertical; }
+#app-body .st-pane .field input:focus,
+#app-body .st-pane .field textarea:focus,
+#app-body .st-pane .field select:focus {
+  border-color:rgba(110,165,176,.72) !important;
+  box-shadow:0 0 0 3px rgba(130,174,183,.12) !important;
+}
+#app-body .st-pane .btn-solid,
+#app-body .st-pane .btn-glass {
+  min-height:42px; border-radius:13px !important; font-size:12px !important;
+}
+html.dark #app-body .st-tabs { background:rgba(32,49,55,.82) !important; border-color:rgba(183,211,216,.18) !important; }
+html.dark #app-body .st-tab.on { color:#e4eef0 !important; background:rgba(65,86,93,.82) !important; }
+html.dark #app-body .sh-row,
+html.dark #app-body .st-pane > .sheet { background:rgba(48,66,73,.72) !important; border-color:rgba(183,211,216,.18) !important; }
+html.dark #app-body .st-pane .field input,
+html.dark #app-body .st-pane .field textarea,
+html.dark #app-body .st-pane .field select { color:#e4eef0 !important; background:rgba(34,49,55,.9) !important; }
