@@ -4,9 +4,14 @@
 
 /* ---------------- 素 ---------------- */
 html #home .clg.m-flat,
+html #home .xd-hero.m-flat,
 html #home .dc-face.m-flat,
+html #home .xd-stats.m-flat,
+html #home .xd-stats.m-flat,
 html .pf-front.m-flat,
-html #home .mod.m-flat {
+html #home .xd-id.m-flat,
+html #home .mod.m-flat,
+html #home .xd-2 > .xd-card.m-flat {
   background: rgba(255, 255, 255, var(--xw-alpha)) !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
@@ -16,9 +21,14 @@ html #home .mod.m-flat {
 
 /* ---------------- 砂 ---------------- */
 html #home .clg.m-frost,
+html #home .xd-hero.m-frost,
 html #home .dc-face.m-frost,
+html #home .xd-stats.m-frost,
+html #home .xd-stats.m-frost,
 html .pf-front.m-frost,
-html #home .mod.m-frost {
+html #home .xd-id.m-frost,
+html #home .mod.m-frost,
+html #home .xd-2 > .xd-card.m-frost {
   background: rgba(255, 255, 255, var(--xw-alpha)) !important;
   -webkit-backdrop-filter: blur(var(--xw-blur)) saturate(var(--xw-sat));
   backdrop-filter: blur(var(--xw-blur)) saturate(var(--xw-sat));
@@ -30,9 +40,14 @@ html #home .mod.m-frost {
 
 /* ---------------- 玻 ---------------- */
 html #home .clg.m-glass,
+html #home .xd-hero.m-glass,
 html #home .dc-face.m-glass,
+html #home .xd-stats.m-glass,
+html #home .xd-stats.m-glass,
 html .pf-front.m-glass,
-html #home .mod.m-glass {
+html #home .xd-id.m-glass,
+html #home .mod.m-glass,
+html #home .xd-2 > .xd-card.m-glass {
   background: linear-gradient(150deg,
     rgba(255, 255, 255, var(--xw-alpha)),
     rgba(255, 255, 255, calc(var(--xw-alpha) * .38))) !important;
@@ -46,9 +61,13 @@ html #home .mod.m-glass {
 
 /* ---------------- 液 ---------------- */
 html #home .clg.m-liquid,
+html #home .xd-hero.m-liquid,
 html #home .dc-face.m-liquid,
+html #home .xd-stats.m-liquid,
 html .pf-front.m-liquid,
-html #home .mod.m-liquid {
+html #home .xd-id.m-liquid,
+html #home .mod.m-liquid,
+html #home .xd-2 > .xd-card.m-liquid {
   background: radial-gradient(125% 100% at var(--xw-light) 0%,
     rgba(255, 255, 255, 1) 0%,
     rgba(255, 255, 255, var(--xw-alpha)) 42%,
@@ -74,6 +93,7 @@ html #home .mod.m-liquid .mod-code {
 html #home .dc-face.m-flat,
 html #home .dc-face.m-frost,
 html #home .dc-face.m-glass,
-html #home .dc-face.m-liquid {
+html #home .dc-face.m-liquid,
+html #home .xd-stats.m-liquid {
   border-radius: calc(var(--xw-radius) + 4px) !important;
 }
