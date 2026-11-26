@@ -1,15 +1,58 @@
-/* xw-fix.css · 层级修复（最后加载，优先于所有样式） */
+/* xw-fix.css v2 · 层级修复 + 锁死横向滚动 */
 
-/* 首页降到最低，不再盖住任何东西 */
-#home.xd-home{ z-index: 1 !important; }
+/* ── 页面级：不允许横向滑动 ── */
+html, body{
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+  overscroll-behavior-x: none !important;
+}
 
-/* App 打开层顶到最上面 */
+#screen{
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+}
+
+/* ── 首页 ── */
+#home.xd-home{
+  z-index: 1 !important;
+  overflow-x: hidden !important;
+  touch-action: pan-y !important;      /* 只接纵向手势 */
+  overscroll-behavior: contain !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  box-sizing: border-box !important;
+}
+
+#home.xd-home .xd-page,
+#home.xd-home .xd-card,
+#home.xd-home .xd-2,
+#home.xd-home .xd-stats{
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 长文本不撑宽 */
+#home.xd-home p,
+#home.xd-home span,
+#home.xd-home b,
+#home.xd-home em,
+#home.xd-home div{
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  min-width: 0;
+}
+
+/* ── App 打开层 ── */
 #app{
   position: fixed !important;
   inset: 0 !important;
   z-index: 30 !important;
   display: flex !important;
   flex-direction: column !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+  touch-action: pan-y !important;
   background: #FFFFFF !important;
   box-shadow: none !important;
 }
@@ -29,18 +72,18 @@
   flex: 1 1 auto !important;
   min-height: 0 !important;
   overflow-y: auto !important;
+  overflow-x: hidden !important;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y !important;
 }
 
-/* 聊天页要撑满，自己管滚动 */
 #app .app-body:has(.chat-wrap){ overflow: hidden !important; }
 
-/* 底栏与侧栏保持在 App 之上 */
+/* ── 底栏与侧栏 ── */
 #xd-dock{ z-index: 24 !important; }
 #xd-mask{ z-index: 40 !important; }
 #xd-rail{ z-index: 41 !important; }
 
-/* App 开着时把底栏收起来，两套导航不打架 */
 body:has(#app.show) #xd-dock{
   transform: translateY(110%) !important;
   pointer-events: none !important;
