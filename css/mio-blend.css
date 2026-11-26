@@ -216,3 +216,42 @@ html.dark #app .field select, html.dark #app .composer input {
   background: rgba(25,40,43,.9) !important; color: #e7f0f1 !important;
   border-color: rgba(139,174,180,.25) !important;
 }
+
+
+/* Refine the phone desktop widgets while keeping their original order and content. */
+#home .xd-stats { border-bottom-color: var(--mio-line) !important; }
+#home .xd-stats b { color: var(--mio-ink) !important; }
+#home .xd-stats span, #home .xd-li em, #home .xd-rdate { color: var(--mio-muted) !important; }
+#home .xd-li { border-bottom-color: rgba(159,190,199,.22) !important; }
+#home .xd-li span, #home .xd-bio, #home .xd-rtext { color: #52636a !important; }
+#home .xd-add {
+  border-color: rgba(130,174,183,.55) !important; color: #628e98 !important;
+  background: rgba(255,255,255,.48) !important; border-radius: 999px !important;
+}
+#home .xd-thumbs i { border-radius: 13px !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.55) !important; }
+#xd-mask { background: rgba(61,83,89,.20) !important; }
+#xd-rail { box-shadow: 16px 0 40px rgba(70,105,114,.12) !important; }
+#xd-rail .xd-rail-list button { border-radius: 0 16px 16px 0 !important; color: var(--mio-ink) !important; }
+#xd-rail .xd-rail-list button:active { background: rgba(214,235,237,.55) !important; }
+
+/* Settings and app subpages share the same material without altering controls. */
+#app-body .sh-row, #app-body .api-live, #app-body .api-field input,
+#app-body .api-field textarea, #app-body .api-seg, #app-body .api-btn,
+#app-body .api-chip, #app-body .set-group {
+  border-color: var(--mio-line) !important; border-radius: 17px !important;
+}
+#app-body .sh-row, #app-body .api-field input, #app-body .api-field textarea, #app-body .api-btn {
+  background: rgba(255,255,255,.76) !important; box-shadow: 0 5px 18px rgba(89,128,139,.06) !important;
+}
+#app-body .sh-ico { background: #eaf4f5 !important; }
+#app-body .sh-ico svg { stroke: #729ca5 !important; }
+#app-body .sh-txt b, #app-body .api-title, #app-body .sh-title { color: var(--mio-ink) !important; }
+#app-body .api-btn.solid { background: #82aeb7 !important; border-color: #82aeb7 !important; color: #fff !important; }
+#app-body .api-seg { background: rgba(222,239,241,.62) !important; }
+#app-body .api-seg-b.on { background: rgba(255,255,255,.9) !important; color: #557f88 !important; }
+
+/* Keep keyboard focus visible on touch and desktop. */
+#app :is(button, input, textarea, select):focus-visible,
+#app-body :is(button, input, textarea, select):focus-visible {
+  outline: 2px solid rgba(98,142,152,.48) !important; outline-offset: 2px !important;
+}
