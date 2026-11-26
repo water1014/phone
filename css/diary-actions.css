@@ -1,0 +1,4 @@
+/* diary-actions.css · 与现有日记卡片保持同一套轻柔样式 */
+.dcard-head{display:flex;align-items:center;justify-content:space-between;gap:.65rem}
+.dcard-remove{display:grid;place-items:center;flex:0 0 1.45rem;width:1.45rem;height:1.45rem;padding:0;border:1px solid var(--glass-brd);border-radius:50%;background:var(--glass);color:var(--ink-3);font:inherit;font-size:.95rem;line-height:1;cursor:pointer;transition:background .15s,color .15s}
+.dcard-remove:active{background:var(--fill);color:var(--ink)}
