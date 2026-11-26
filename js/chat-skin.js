@@ -32,10 +32,9 @@
 
   function topHtml() {
     return '<div class=cs-top>' +
-        '<button type=button class=cs-back id=cs-back>‹</button>' +
-        '<div class=cs-pair>' + one('his') +
-          '<span class=cs-heart>♥</span>' + one('her') + '</div>' +
-        '<button type=button class=cs-more id=cs-more>···</button>' +
+        '<button type=button class=cs-back id=cs-back aria-label=返回>‹</button>' +
+        '<div class=cs-pair>' + one('his') + '</div>' +
+        '<button type=button class=cs-more id=cs-more aria-label=聊天设置>···</button>' +
       '</div>';
   }
 
