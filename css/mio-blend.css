@@ -362,3 +362,35 @@ html.dark #app-body input, html.dark #app-body textarea,
 html.dark #app-body select { color:#e4eef0 !important; background:rgba(34,49,55,.9) !important; }
 html.dark #app-body .bf-card { color:#e4eef0 !important; background:rgba(48,66,73,.88) !important; }
 html.dark #app-body .bf-card .name { color:#e4eef0 !important; }
+
+/* Desktop wallpaper controls */
+#app-body .bf-wallpaper {
+  margin: 14px 0 4px;
+  padding: 14px;
+  border: 1px solid rgba(151,184,191,.24);
+  border-radius: 20px;
+  background: rgba(255,255,255,.62);
+}
+#app-body .bf-wallpaper-head { display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
+#app-body .bf-wallpaper-head b { color:var(--mio-ink); font-size:13px; font-weight:600; }
+#app-body .bf-wallpaper-head span,
+#app-body .bf-wallpaper-note { color:var(--mio-muted); font-size:10px; line-height:1.6; }
+#app-body .bf-wallpaper-preview {
+  min-height:104px; display:flex; align-items:center; justify-content:center;
+  padding:10px; overflow:hidden; border-radius:15px;
+  border:1px dashed rgba(130,174,183,.48);
+  background-color:#edf5f5; background-position:center; background-size:cover;
+  color:#78949a; font-size:11px; text-align:center;
+}
+#app-body .bf-wallpaper-actions { display:flex; gap:8px; margin-top:10px; }
+#app-body .bf-wallpaper-actions button {
+  flex:1; min-height:38px; border:1px solid rgba(130,174,183,.28);
+  border-radius:12px; background:rgba(255,255,255,.84); color:#62858d;
+  font:inherit; font-size:11px;
+}
+#app-body .bf-wallpaper-actions button:disabled { opacity:.38; }
+#app-body .bf-wallpaper-note { margin:8px 0 0; }
+html.dark #app-body .bf-wallpaper { background:rgba(48,66,73,.78); border-color:rgba(183,211,216,.18); }
+html.dark #app-body .bf-wallpaper-head b { color:#e4eef0; }
+html.dark #app-body .bf-wallpaper-preview { background-color:#29383e; color:#b5cbd0; }
+html.dark #app-body .bf-wallpaper-actions button { background:rgba(34,49,55,.9); color:#c2d9dd; border-color:rgba(183,211,216,.2); }
