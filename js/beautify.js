@@ -6,7 +6,7 @@ const THEMES = [
   { id: 'dark', name: '深海', accent: '#A8C9CE', bg: '#202D32', card: 'rgba(39,55,61,.86)' }
 ];
 const WALLS = ['#F3F8F8','#EAF3F4','#F8F4F1','#F1F4F8','#FFFFFF','#E8EFF0','#202D32','#29383E'];
-const DEFAULT_BEAUTIFY = { theme: 'minimal', wall: '#F3F8F8', blur: 18, radius: 22, wallpaper: '' };
+const DEFAULT_BEAUTIFY = { theme: 'minimal', wall: '#F3F8F8', blur: 18, radius: 22, wallpaper: '', layoutWidth: 620, sideGap: 18, cardGap: 12 };
 let current = { ...DEFAULT_BEAUTIFY };
 
 function initBeautify() {
@@ -22,6 +22,9 @@ function loadSettings() {
   if (!THEMES.some(t => t.id === current.theme)) current.theme = 'minimal';
   current.blur = Math.max(0, Math.min(30, Number(current.blur) || 0));
   current.radius = Math.max(8, Math.min(32, Number(current.radius) || 22));
+  current.layoutWidth = Math.max(480, Math.min(760, Number(current.layoutWidth) || 620));
+  current.sideGap = Math.max(10, Math.min(28, Number(current.sideGap) || 18));
+  current.cardGap = Math.max(6, Math.min(24, Number(current.cardGap) || 12));
 }
 function saveSettings() {
   try { localStorage.setItem('xw_beautify', JSON.stringify(current)); return true; }
@@ -57,6 +60,10 @@ function renderDetail() {
     </div>
     <div class="row"><label class="lab" for="bf-radius">卡片圆角</label><input type="range" min="8" max="32" value="${current.radius}" id="bf-radius"><span class="num" id="bf-radius-num">${current.radius}px</span></div>
     <div class="row"><label class="lab" for="bf-blur">玻璃模糊</label><input type="range" min="0" max="30" value="${current.blur}" id="bf-blur"><span class="num" id="bf-blur-num">${current.blur}px</span></div>
+    <div class="bf-layout-title">桌面布局</div>
+    <div class="row"><label class="lab" for="bf-width">内容宽度</label><input type="range" min="480" max="760" step="10" value="${current.layoutWidth}" id="bf-width"><span class="num" id="bf-width-num">${current.layoutWidth}px</span></div>
+    <div class="row"><label class="lab" for="bf-side">左右留白</label><input type="range" min="10" max="28" value="${current.sideGap}" id="bf-side"><span class="num" id="bf-side-num">${current.sideGap}px</span></div>
+    <div class="row"><label class="lab" for="bf-gap">卡片间距</label><input type="range" min="6" max="24" value="${current.cardGap}" id="bf-gap"><span class="num" id="bf-gap-num">${current.cardGap}px</span></div>
     <div class="row bf-wall-row"><span class="lab">页面底色</span><div class="swatches">${WALLS.map(w => `<button type="button" aria-label="背景色 ${w}" class="swatch ${w === current.wall ? 'on' : ''}" style="background:${w}" data-w="${w}"></button>`).join('')}</div></div>
     <section class="bf-wallpaper"><div class="bf-wallpaper-head"><b>桌面壁纸</b><span>仅影响桌面背景，不改动卡片内容</span></div><div class="bf-wallpaper-preview" id="bf-wallpaper-preview" style="background-image:${current.wallpaper ? `url("${current.wallpaper}")` : 'none'}">${current.wallpaper ? '' : '<span>选择一张图片作为桌面背景</span>'}</div><div class="bf-wallpaper-actions"><button type="button" id="bf-wallpaper-pick">上传壁纸</button><button type="button" id="bf-wallpaper-clear" ${current.wallpaper ? '' : 'disabled'}>移除壁纸</button><input type="file" id="bf-wallpaper-file" accept="image/*" hidden></div><p class="bf-wallpaper-note">图片会压缩后保存在本机浏览器，不会上传到服务器。</p></section>
     <div class="bf-actions"><button type="button" class="reset">恢复默认</button><button type="button" class="save">保存设置</button></div>`;
@@ -74,6 +81,14 @@ function renderDetail() {
     applyTheme();
     updatePreview();
   };
+  [['width','layoutWidth'],['side','sideGap'],['gap','cardGap']].forEach(([id,key]) => {
+    const input = d.querySelector('#bf-' + id);
+    input.oninput = () => {
+      current[key] = Number(input.value);
+      d.querySelector('#bf-' + id + '-num').textContent = current[key] + 'px';
+      applyTheme();
+    };
+  });
   d.querySelectorAll('.swatch').forEach(sw => sw.addEventListener('click', () => {
     current.wall = sw.dataset.w;
     applyTheme();
@@ -159,6 +174,9 @@ function applyTheme() {
   root.style.setProperty('--mio-user-bg', current.wall || theme.bg);
   root.style.setProperty('--mio-user-blur', current.blur + 'px');
   root.style.setProperty('--mio-radius', current.radius + 'px');
+  root.style.setProperty('--xd-layout-width', current.layoutWidth + 'px');
+  root.style.setProperty('--xd-side-gap', current.sideGap + 'px');
+  root.style.setProperty('--xd-card-gap', current.cardGap + 'px');
   root.classList.toggle('dark', theme.id === 'dark');
   document.body.style.backgroundColor = current.wall || theme.bg;
   const home = document.getElementById('home');
