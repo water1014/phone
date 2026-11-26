@@ -13,10 +13,10 @@
   ];
 
   const SEL = {
-    clg: '#home .clg',
-    days: '#home .dc-face',
-    pf: '.pf-front',
-    mod: '#home .mod'
+    clg: '#home .clg, #home .xd-hero',
+    days: '#home .dc-face, #home .xd-stats',
+    pf: '.pf-front, #home .xd-id',
+    mod: '#home .mod, #home .xd-2 > .xd-card'
   };
 
   const MATS = ['m-flat', 'm-frost', 'm-glass', 'm-liquid'];
