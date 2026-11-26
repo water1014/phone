@@ -411,3 +411,27 @@ html.dark #app-body .bf-wallpaper-actions button { background:rgba(34,49,55,.9);
 }
 #app-body .bf-detail .row input[type=range] { width: 100%; min-width: 0; }
 #app-body .bf-detail .row .num { flex: 0 0 42px; }
+
+/* User-controlled wallpaper framing and desktop card finish. */
+#home.xd-home {
+  background-repeat: no-repeat !important;
+  background-size: var(--mio-wallpaper-fit, cover) !important;
+}
+#home .xd-card {
+  background-color: rgba(255,255,255,var(--mio-card-opacity,.76)) !important;
+  box-shadow: var(--mio-card-shadow, 0 10px 30px rgba(89,128,139,.01)), inset 0 1px 0 rgba(255,255,255,.82) !important;
+}
+html.dark #home .xd-card {
+  background-color: rgba(39,55,61,var(--mio-card-opacity,.76)) !important;
+  box-shadow: var(--mio-card-shadow, 0 10px 30px rgba(0,0,0,.01)), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+#app-body .bf-select {
+  min-height: 36px; max-width: 150px; padding: 6px 10px;
+  border: 1px solid var(--mio-line); border-radius: 11px;
+  color: var(--mio-ink); background: rgba(255,255,255,.82);
+  font: inherit; font-size: 11px;
+}
+html.dark #app-body .bf-select {
+  color: #e4eef0; background: rgba(34,49,55,.9);
+  border-color: rgba(183,211,216,.2);
+}
