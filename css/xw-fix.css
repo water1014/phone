@@ -1,0 +1,47 @@
+/* xw-fix.css · 层级修复（最后加载，优先于所有样式） */
+
+/* 首页降到最低，不再盖住任何东西 */
+#home.xd-home{ z-index: 1 !important; }
+
+/* App 打开层顶到最上面 */
+#app{
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 30 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #FFFFFF !important;
+  box-shadow: none !important;
+}
+
+#app:not(.show){
+  z-index: -1 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+#app.show{
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+#app .app-body{
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 聊天页要撑满，自己管滚动 */
+#app .app-body:has(.chat-wrap){ overflow: hidden !important; }
+
+/* 底栏与侧栏保持在 App 之上 */
+#xd-dock{ z-index: 24 !important; }
+#xd-mask{ z-index: 40 !important; }
+#xd-rail{ z-index: 41 !important; }
+
+/* App 开着时把底栏收起来，两套导航不打架 */
+body:has(#app.show) #xd-dock{
+  transform: translateY(110%) !important;
+  pointer-events: none !important;
+}
