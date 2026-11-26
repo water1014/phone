@@ -367,3 +367,98 @@ html.dark #app-body .st-pane > .sheet { background:rgba(48,66,73,.72) !important
 html.dark #app-body .st-pane .field input,
 html.dark #app-body .st-pane .field textarea,
 html.dark #app-body .st-pane .field select { color:#e4eef0 !important; background:rgba(34,49,55,.9) !important; }
+
+
+/* MioWatery settings palette and component rhythm, scoped to settings only. */
+#app-body[data-st-view] {
+  --c-paper:#F5F4F1; --c-card:#FFFFFF; --c-line:#E7E3DC; --c-fill:#EFEAE3;
+  --c-ink1:#26221E; --c-ink2:#4A443D; --c-ink3:#9B948A; --c-ink4:#C9C3B9;
+  --c-accent:#9E6A71; --c-accent-deep:#7E5259; --c-accent-soft:#F0E2E3;
+  --glass-bg:rgba(255,255,255,.68); --glass-brd:rgba(186,205,204,.42);
+  --glass-blur:blur(18px) saturate(145%);
+  background:radial-gradient(ellipse at 12% 0%,rgba(211,231,231,.38),transparent 58%),radial-gradient(ellipse at 92% 18%,rgba(232,222,239,.26),transparent 52%),var(--c-paper) !important;
+  color:var(--c-ink1) !important;
+}
+html.dark #app-body[data-st-view] {
+  --c-paper:#182226; --c-card:#26343A; --c-line:rgba(190,211,213,.16); --c-fill:#304047;
+  --c-ink1:#E8F0EF; --c-ink2:#CAD8D7; --c-ink3:#9CB0B1; --c-ink4:#718889;
+  --c-accent:#D3AEB9; --c-accent-deep:#E0C0C9; --c-accent-soft:rgba(211,174,185,.14);
+  --glass-bg:rgba(39,55,61,.76); --glass-brd:rgba(183,211,216,.18);
+  background:radial-gradient(ellipse at 12% 0%,rgba(67,103,105,.24),transparent 58%),radial-gradient(ellipse at 92% 18%,rgba(91,75,111,.18),transparent 52%),var(--c-paper) !important;
+}
+#app-body[data-st-view] .sh { max-width:680px; margin:0 auto; padding:22px 18px 36px; }
+#app-body[data-st-view] .sh-hero { padding:8px 2px 18px; }
+#app-body[data-st-view] .sh-kicker { letter-spacing:.18em; color:var(--c-ink4); }
+#app-body[data-st-view] .sh-title { color:var(--c-ink1); font-size:26px; letter-spacing:.01em; }
+#app-body[data-st-view] .sh-sub { color:var(--c-ink3); font-size:13px; }
+#app-body[data-st-view] .sh-label { margin:18px 4px 10px; color:var(--c-ink4); letter-spacing:.12em; }
+#app-body[data-st-view] .sh-row {
+  min-height:72px; padding:13px 15px; margin-bottom:9px;
+  border:1px solid var(--glass-brd) !important; border-radius:20px !important;
+  background:var(--glass-bg) !important; -webkit-backdrop-filter:var(--glass-blur);
+  backdrop-filter:var(--glass-blur); box-shadow:0 6px 20px rgba(89,111,111,.055) !important;
+}
+#app-body[data-st-view] .sh-ico { border-radius:13px; background:var(--c-fill); }
+#app-body[data-st-view] .sh-ico svg { stroke:var(--c-ink3); }
+#app-body[data-st-view] .sh-txt b { color:var(--c-ink1); font-size:14px; }
+#app-body[data-st-view] .sh-txt i { color:var(--c-ink3); font-size:12px; font-style:normal; }
+#app-body[data-st-view] .sh-arr { color:var(--c-ink4); font-size:21px; }
+#app-body[data-st-view] .sh-crumb { max-width:680px; margin:8px auto 16px; padding:0 18px; }
+#app-body[data-st-view] .sh-back {
+  width:36px; height:36px; border-radius:50%;
+  background:var(--glass-bg); border:1px solid var(--glass-brd);
+}
+#app-body[data-st-view] .sh-crumb b { color:var(--c-ink1); font-size:15px; }
+#app-body[data-st-view] .st-wrap,
+#app-body[data-st-view] .st-body { max-width:680px; margin:0 auto; padding:0 18px 32px; }
+#app-body[data-st-view] .st-tabs {
+  border-radius:18px !important; border-color:var(--glass-brd) !important;
+  background:var(--glass-bg) !important;
+}
+#app-body[data-st-view] .st-tab.on {
+  background:var(--c-card) !important; color:var(--c-ink1) !important;
+}
+#app-body[data-st-view] .st-pane > .sheet,
+#app-body[data-st-view] .st-pane > .api-sheet {
+  border:1px solid var(--glass-brd) !important; border-radius:22px !important;
+  background:var(--glass-bg) !important; -webkit-backdrop-filter:var(--glass-blur);
+  backdrop-filter:var(--glass-blur); box-shadow:0 7px 22px rgba(89,111,111,.06) !important;
+}
+#app-body[data-st-view] .api-title,
+#app-body[data-st-view] .sheet-title { color:var(--c-ink1) !important; }
+#app-body[data-st-view] .api-sub,
+#app-body[data-st-view] .api-cap,
+#app-body[data-st-view] .field > span { color:var(--c-ink2) !important; }
+#app-body[data-st-view] .api-field input,
+#app-body[data-st-view] .api-field textarea,
+#app-body[data-st-view] .api-field select,
+#app-body[data-st-view] .st-pane .field input,
+#app-body[data-st-view] .st-pane .field textarea,
+#app-body[data-st-view] .st-pane .field select {
+  border:1px solid var(--c-line) !important; border-radius:13px !important;
+  background:rgba(255,255,255,.76) !important; color:var(--c-ink1) !important;
+  font-size:14px !important; min-height:44px;
+}
+#app-body[data-st-view] .api-btn,
+#app-body[data-st-view] .st-pane .btn-solid,
+#app-body[data-st-view] .st-pane .btn-glass {
+  min-height:42px; border-radius:14px !important;
+}
+html.dark #app-body[data-st-view] .sh-row,
+html.dark #app-body[data-st-view] .st-pane > .sheet,
+html.dark #app-body[data-st-view] .st-pane > .api-sheet {
+  background:var(--glass-bg) !important; box-shadow:0 7px 22px rgba(0,0,0,.12) !important;
+}
+html.dark #app-body[data-st-view] .api-field input,
+html.dark #app-body[data-st-view] .api-field textarea,
+html.dark #app-body[data-st-view] .api-field select,
+html.dark #app-body[data-st-view] .st-pane .field input,
+html.dark #app-body[data-st-view] .st-pane .field textarea,
+html.dark #app-body[data-st-view] .st-pane .field select {
+  background:rgba(34,49,55,.86) !important; color:var(--c-ink1) !important; border-color:var(--c-line) !important;
+}
+@media (max-width:380px) {
+  #app-body[data-st-view] .sh { padding-left:14px; padding-right:14px; }
+  #app-body[data-st-view] .st-wrap,
+  #app-body[data-st-view] .st-body { padding-left:14px; padding-right:14px; }
+}
