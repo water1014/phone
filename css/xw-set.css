@@ -462,3 +462,38 @@ html.dark #app-body[data-st-view] .st-pane .field select {
   #app-body[data-st-view] .st-wrap,
   #app-body[data-st-view] .st-body { padding-left:14px; padding-right:14px; }
 }
+
+
+/* MioWatery-inspired settings home: account card + grouped iOS-style rows. */
+#app-body .sh-account{
+  display:flex;align-items:center;gap:14px;width:100%;min-height:82px;
+  padding:14px 16px;margin:2px 0 26px;border:1px solid var(--mio-line);
+  border-radius:20px;text-align:left;color:var(--mio-ink);
+  background:rgba(255,255,255,.82);
+  box-shadow:0 6px 20px rgba(89,128,139,.06);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  backdrop-filter:blur(16px) saturate(140%);
+}
+#app-body .sh-account:active{transform:scale(.99)}
+#app-body .sh-account-avatar{
+  display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;
+  border-radius:16px;background:linear-gradient(145deg,#e6f0ef,#f1e9ed);
+  color:#526b6e;font-size:19px;font-weight:600;
+}
+#app-body .sh-account-info{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+#app-body .sh-account-info b{font-size:15px;font-weight:600;color:var(--mio-ink)}
+#app-body .sh-account-info i{font-size:12px;font-style:normal;color:var(--mio-muted)}
+#app-body .sh-row{
+  width:100%;text-align:left;color:var(--mio-ink);cursor:pointer;
+}
+#app-body .sh-label{
+  margin-top:22px;margin-bottom:9px;letter-spacing:.08em;
+}
+#app-body .sh-label:first-of-type{margin-top:0}
+html.dark #app-body .sh-account{
+  color:#e4eef0;background:rgba(48,66,73,.78);
+  border-color:rgba(183,211,216,.18);
+}
+html.dark #app-body .sh-account-avatar{
+  color:#d5e5e5;background:linear-gradient(145deg,#344b50,#51434e);
+}
