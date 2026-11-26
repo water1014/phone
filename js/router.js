@@ -286,10 +286,23 @@
     const percent = Math.min(999, Math.round(used / limit * 100));
     const provider = (PRESETS[XW.S.aiProvider] || PRESETS.deepseek).label;
 
-    const head = '<div class="chat-status">' +
-        '<span class="chat-who">' + UI.esc(XW.S.hisName || '他') + '</span>' +
-        '<span class="chat-flag">' + (keyed ? '<i class="dot"></i>ONLINE' : '本地') + '</span>' +
-      '</div>';
+    const head = '<div class="chat-toolbar">' +
+        '<div class="chat-toolbar-main"><span class="chat-who">' + UI.esc(XW.S.hisName || '他') + '</span>' +
+        '<span class="chat-flag">' + (keyed ? '<i class="dot"></i>ONLINE' : '本地') + '</span></div>' +
+        '<div class="chat-toolbar-actions">' +
+          '<button type="button" id="chat-search-toggle" aria-label="搜索聊天记录">⌕</button>' +
+          '<button type="button" id="chat-more-toggle" aria-label="更多聊天操作">···</button>' +
+        '</div></div>' +
+        '<div class="chat-searchbar" id="chat-searchbar" hidden>' +
+          '<input id="chat-search-input" type="search" placeholder="搜索聊天记录…" autocomplete="off">' +
+          '<span id="chat-search-count"></span>' +
+          '<button type="button" id="chat-search-close">取消</button>' +
+        '</div>' +
+        '<div class="chat-more-menu" id="chat-more-menu" hidden>' +
+          '<button type="button" data-chat-action="search">搜索聊天记录</button>' +
+          '<button type="button" data-chat-action="latest">回到最新消息</button>' +
+          '<button type="button" data-chat-action="clear">清空当前对话</button>' +
+        '</div>';
 
     const top = keyed
       ? '<div class="chat-top">' +
@@ -698,6 +711,65 @@
       const plus = D.getElementById('chat-plus');
       const picker = D.getElementById('chat-file');
       const quoteX = D.getElementById('quote-x');
+      const searchToggle = D.getElementById('chat-search-toggle');
+      const searchBar = D.getElementById('chat-searchbar');
+      const searchInput = D.getElementById('chat-search-input');
+      const searchCount = D.getElementById('chat-search-count');
+      const moreToggle = D.getElementById('chat-more-toggle');
+      const moreMenu = D.getElementById('chat-more-menu');
+
+      function closeChatMenus() {
+        if (moreMenu) moreMenu.hidden = true;
+      }
+      function runChatSearch(value) {
+        const q = String(value || '').trim().toLowerCase();
+        const rows = Array.prototype.slice.call(bodyEl.querySelectorAll('#chat-scroll .msg-row'));
+        let hits = 0;
+        rows.forEach(function (row) {
+          const match = !q || row.textContent.toLowerCase().indexOf(q) >= 0;
+          row.hidden = !match;
+          if (match && q) hits++;
+        });
+        if (searchCount) searchCount.textContent = q ? hits + ' 条' : '';
+        const sc = D.getElementById('chat-scroll');
+        if (sc) sc.scrollTop = 0;
+      }
+      if (searchToggle && searchBar) {
+        searchToggle.addEventListener('click', function () {
+          closeChatMenus();
+          searchBar.hidden = false;
+          if (searchInput) searchInput.focus();
+        });
+      }
+      const searchClose = D.getElementById('chat-search-close');
+      if (searchClose && searchBar) {
+        searchClose.addEventListener('click', function () {
+          searchBar.hidden = true;
+          if (searchInput) searchInput.value = '';
+          runChatSearch('');
+        });
+      }
+      if (searchInput) searchInput.addEventListener('input', function () { runChatSearch(searchInput.value); });
+      if (moreToggle && moreMenu) {
+        moreToggle.addEventListener('click', function () { moreMenu.hidden = !moreMenu.hidden; });
+      }
+      if (moreMenu) {
+        moreMenu.addEventListener('click', function (e) {
+          const action = e.target && e.target.closest ? e.target.closest('[data-chat-action]') : null;
+          if (!action) return;
+          closeChatMenus();
+          if (action.dataset.chatAction === 'search' && searchToggle) searchToggle.click();
+          if (action.dataset.chatAction === 'latest') scrollChat();
+          if (action.dataset.chatAction === 'clear') {
+            if (!window.confirm('确定清空当前聊天记录吗？此操作无法撤销。')) return;
+            XW.S.chat = [];
+            XW.save('chat');
+            paint('chat');
+            scrollChat();
+            UI.toast('聊天记录已清空');
+          }
+        });
+      }
 
       if (btn) btn.addEventListener('click', sendChat);
       if (input) {
