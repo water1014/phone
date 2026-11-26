@@ -1,14 +1,5 @@
-/* xw-set.css · 设置页 v2（加了水印）
-
-   不用 !important。用 #app-body 前缀把特异性抬到原文件之上。 */
-
-#app-body .sh::after,
-#app-body .api-sheet::after{
-  content: 'set v2';
-  position: fixed; left: 5px; top: 1px; z-index: 99999;
-  font-size: var(--fs-1); line-height: 1; letter-spacing: .04em;
-  color: var(--c-ink4); pointer-events: none;
-}
+/* xw-set.css · 设置页样式
+   用 #app-body 前缀覆盖原有页面样式，不改动交互逻辑。 */
 
 /* ══ 设置首页 ══ */
 #app-body .sh{
