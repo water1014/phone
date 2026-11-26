@@ -5,13 +5,6 @@
    过渡状态：旧的那批 chat-*.css 仍挂在 index 里，靠 !important 压着。
    把旧文件从 index 摘掉之后，这些 !important 就可以全部去掉。 */
 
-body.xw-chat-on::after{
-  content:'xw v14';
-  position:fixed;left:5px;top:1px;z-index:99999;
-  font-size:var(--fs-1);line-height:1;letter-spacing:.04em;
-  color:var(--c-ink4);pointer-events:none;
-}
-
 /* ── 外壳：先铺氛围光，玻璃才有东西可糊 ── */
 body.xw-chat-on #app-body{
   background-image:var(--c-aura) !important;
