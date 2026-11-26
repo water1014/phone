@@ -160,11 +160,11 @@ function applyTheme() {
   document.body.style.backgroundColor = current.wall || theme.bg;
   const home = document.getElementById('home');
   if (home) {
-    home.style.backgroundColor = current.wallpaper ? 'transparent' : (current.wall || theme.bg);
-    home.style.backgroundImage = current.wallpaper ? 'linear-gradient(rgba(242,248,248,.10),rgba(242,248,248,.10)), url("' + current.wallpaper + '")' : '';
-    home.style.backgroundSize = current.wallpaper ? 'cover' : '';
-    home.style.backgroundPosition = current.wallpaper ? 'center center' : '';
-    home.style.backgroundAttachment = current.wallpaper ? 'fixed' : '';
+    home.style.setProperty('background-color', current.wallpaper ? 'transparent' : (current.wall || theme.bg), 'important');
+    home.style.setProperty('background-image', current.wallpaper ? 'linear-gradient(rgba(242,248,248,.10),rgba(242,248,248,.10)), url("' + current.wallpaper + '")' : 'none', 'important');
+    home.style.setProperty('background-size', current.wallpaper ? 'cover' : 'auto', 'important');
+    home.style.setProperty('background-position', current.wallpaper ? 'center center' : 'initial', 'important');
+    home.style.setProperty('background-attachment', current.wallpaper ? 'fixed' : 'scroll', 'important');
   }
 }
 function showToast(message) {
@@ -177,3 +177,14 @@ function showToast(message) {
 window.Beautify = window.Beautify || {};
 window.Beautify.theme = { state: () => ({ ...current }), apply: applyTheme };
 initBeautify();
+if (window.MutationObserver && document.body) {
+  let wallpaperObserverTimer = null;
+  new MutationObserver(() => {
+    if (wallpaperObserverTimer) return;
+    wallpaperObserverTimer = setTimeout(() => {
+      wallpaperObserverTimer = null;
+      const home = document.getElementById('home');
+      if (home) applyTheme();
+    }, 60);
+  }).observe(document.body, { childList: true, subtree: true });
+}
