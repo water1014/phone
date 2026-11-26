@@ -343,3 +343,22 @@ body.xw-chat-on .composer, body.xw-chat-on .composer-wrap {
 #app-body .bf-actions button { min-height:42px; border-radius:14px !important; }
 #app-body .bf-actions .reset { background:#edf4f4 !important; color:#60777e !important; }
 #app-body .bf-actions .save { background:#82aeb7 !important; color:#fff !important; }
+
+
+/* Night-water preset remains readable while preserving the same component layout. */
+html.dark, html.dark body { color:#e4eef0 !important; background-color:#202d32 !important; }
+html.dark #app { color:#e4eef0 !important; background:rgba(31,45,51,.96) !important; }
+html.dark #app .app-head, html.dark #xd-dock, html.dark #xd-rail { background:rgba(34,49,55,.92) !important; }
+html.dark #app .sheet, html.dark #app .dcard, html.dark #app .fold,
+html.dark #app .wdg, html.dark #app-body .sheet, html.dark #app-body .dcard,
+html.dark #app-body .mcard, html.dark #app-body .bf-detail {
+  color:#e4eef0 !important; background:rgba(48,66,73,.88) !important;
+  border-color:rgba(183,211,216,.18) !important;
+}
+html.dark #app-body .hero .hero-title, html.dark #app-body .sheet-title,
+html.dark #app-body .dcard-text, html.dark #app-body .mcard,
+html.dark #app-body .bf-detail h3 { color:#e4eef0 !important; }
+html.dark #app-body input, html.dark #app-body textarea,
+html.dark #app-body select { color:#e4eef0 !important; background:rgba(34,49,55,.9) !important; }
+html.dark #app-body .bf-card { color:#e4eef0 !important; background:rgba(48,66,73,.88) !important; }
+html.dark #app-body .bf-card .name { color:#e4eef0 !important; }
