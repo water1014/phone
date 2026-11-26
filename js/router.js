@@ -286,7 +286,7 @@
     const percent = Math.min(999, Math.round(used / limit * 100));
     const provider = (PRESETS[XW.S.aiProvider] || PRESETS.deepseek).label;
 
-    const head = '<div class="bar chat-mio-bar">' +
+    const head = '<div class="bar mio-chat-bar">' +
         '<button type="button" class="bk" id="chat-back" aria-label="返回">‹</button>' +
         '<h2 id="ctitle">' + UI.esc(XW.S.hisName || '他') + '</h2>' +
         '<button type="button" class="ib2" id="chat-search-toggle" aria-label="搜索聊天记录">⌕</button>' +
