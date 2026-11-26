@@ -6,13 +6,6 @@
    例外登记 #4：相册页底保留淡粉淡紫氛围光（album-pro.css 里的三层径向渐变）。
    边界：只给相册页。 */
 
-#app-body .ap-head::after{
-  content: 'album v2';
-  position: fixed; left: 5px; top: 1px; z-index: 99999;
-  font-size: var(--fs-1); line-height: 1; letter-spacing: .04em;
-  color: var(--c-ink4); pointer-events: none;
-}
-
 #app-body .ap-n{
   font-family: "Cormorant Garamond", "Songti SC", Georgia, serif;
   font-size: var(--fs-7);
