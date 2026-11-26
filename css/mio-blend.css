@@ -255,3 +255,47 @@ html.dark #app .field select, html.dark #app .composer input {
 #app-body :is(button, input, textarea, select):focus-visible {
   outline: 2px solid rgba(98,142,152,.48) !important; outline-offset: 2px !important;
 }
+
+
+/* Second-pass page finish: journal, memory, album and chat surfaces. */
+#app-body .hero { border-bottom-color: var(--mio-line) !important; }
+#app-body .hero .kicker, #app-body .hero .hero-sub { color: var(--mio-muted) !important; }
+#app-body .hero .hero-title { color: var(--mio-ink) !important; }
+#app-body .sheet, #app-body .dcard, #app-body .empty-state,
+#app-body .mcard, #app-body .xw-cloud, #app-body .ap-selbar {
+  background: rgba(255,255,255,.78) !important;
+  border: 1px solid var(--mio-line) !important;
+  border-radius: var(--mio-radius) !important;
+  box-shadow: var(--mio-shadow), inset 0 1px 0 rgba(255,255,255,.82) !important;
+  -webkit-backdrop-filter: var(--mio-glass) !important;
+  backdrop-filter: var(--mio-glass) !important;
+}
+#app-body .dcard-text, #app-body .mcard,
+#app-body .sheet-title, #app-body .ap-sec-t { color: #52636a !important; }
+#app-body #diary-input, #app-body .field textarea,
+#app-body .xw-mem-search input, #app-body .xw-cloud input {
+  color: var(--mio-ink) !important;
+  background: rgba(255,255,255,.72) !important;
+  border-color: var(--mio-line) !important;
+  border-radius: 14px !important;
+}
+#app-body .album-date-band { border-color: var(--mio-line) !important; color: var(--mio-muted) !important; }
+#app-body .album-grid img, #app-body .ap-cell img { border-radius: 13px !important; }
+#app-body .empty-state { color: var(--mio-muted) !important; border-style: dashed !important; }
+
+/* Chat page: keep the original message alignment and controls, soften only surfaces. */
+body.xw-chat-on #app-body { background-color: #f3f8f8 !important; background-image: radial-gradient(ellipse at 12% 4%, rgba(205,232,234,.42), transparent 42%), radial-gradient(ellipse at 92% 18%, rgba(224,237,245,.46), transparent 38%) !important; }
+body.xw-chat-on .chat-wrap > .cs-top,
+body.xw-chat-on #chat-scroll .msg-bub,
+body.xw-chat-on #chat-scroll .bubble,
+body.xw-chat-on #chat-scroll .msg-content,
+body.xw-chat-on .composer,
+body.xw-chat-on .composer-wrap {
+  border-color: var(--mio-line) !important;
+  box-shadow: 0 6px 20px rgba(89,128,139,.07), inset 0 1px 0 rgba(255,255,255,.78) !important;
+}
+body.xw-chat-on #chat-scroll .msg-row.ta .msg-bub,
+body.xw-chat-on #chat-scroll .msg-row.ta .bubble { background: rgba(255,255,255,.84) !important; border-radius: 18px 18px 18px 7px !important; }
+body.xw-chat-on #chat-scroll .msg-row.me .msg-bub,
+body.xw-chat-on #chat-scroll .msg-row.me .bubble { background: #dceef0 !important; border-radius: 18px 18px 7px 18px !important; }
+body.xw-chat-on .composer, body.xw-chat-on .composer-wrap { background: rgba(248,252,252,.86) !important; -webkit-backdrop-filter: var(--mio-glass) !important; backdrop-filter: var(--mio-glass) !important; }
