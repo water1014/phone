@@ -1,0 +1,280 @@
+/* xw-diary.css · 日记 / 相册 / 通用页头（韩系黑白极简） */
+
+/* ── 页头 ── */
+.hero{
+  padding: 4px 2px 18px;
+  border-bottom: 1px solid #E0E0E0;
+  margin-bottom: 18px;
+}
+
+.hero .kicker{
+  display: block;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  color: #999999;
+  text-transform: uppercase;
+}
+
+.hero .hero-title{
+  margin: 8px 0 0;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: .01em;
+  color: #000000;
+}
+
+.hero .hero-sub{
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.7;
+  letter-spacing: .04em;
+  color: #999999;
+}
+
+/* ── 白卡 ── */
+.sheet{
+  background: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: none;
+}
+
+.sheet-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sheet-title{
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  color: #000000;
+}
+
+.sheet-note{
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #F0F0F0;
+  font-size: 10.5px;
+  line-height: 1.7;
+  letter-spacing: .02em;
+  color: #C0C0C0;
+}
+
+/* ── 输入 ── */
+.field{ display: block; }
+
+.field > span{
+  display: block;
+  margin-bottom: 8px;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  color: #999999;
+}
+
+#diary-input,
+.field textarea{
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 104px;
+  padding: 12px 13px;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  background: #FFFFFF;
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.9;
+  letter-spacing: .01em;
+  color: #333333;
+  resize: vertical;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+#diary-input::placeholder,
+.field textarea::placeholder{ color: #C0C0C0; }
+
+#diary-input:focus,
+.field textarea:focus{ border-color: #000000; }
+
+/* ── 按钮 ── */
+.row-actions{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn-solid{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 20px;
+  background: #000000;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  color: #FFFFFF;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.btn-solid:active{ background: #333333; }
+
+.btn-glass{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 16px;
+  border: 1px solid #E0E0E0;
+  border-radius: 20px;
+  background: #FFFFFF;
+  font-family: inherit;
+  font-size: 11.5px;
+  letter-spacing: .04em;
+  color: #333333;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.btn-glass:active{ background: #F5F5F5; }
+
+/* ── 分组条 ── */
+.album-date-band{
+  margin: 20px 0 12px;
+  padding: 10px 2px 10px;
+  border-top: 1px solid #E0E0E0;
+  border-bottom: 1px solid #E0E0E0;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  color: #999999;
+  text-transform: uppercase;
+}
+
+/* ── 日记卡 ── */
+.cards{ display: block; }
+
+.dcard{
+  background: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: none;
+}
+
+.dcard-date{
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: .14em;
+  color: #999999;
+  font-variant-numeric: tabular-nums;
+}
+
+.dcard-text{
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  line-height: 1.9;
+  letter-spacing: .01em;
+  color: #333333;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.dcard-meta{
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #F0F0F0;
+  font-size: 9.5px;
+  letter-spacing: .1em;
+  color: #C0C0C0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 空态 ── */
+.empty-state{
+  padding: 40px 16px;
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 2;
+  letter-spacing: .02em;
+  color: #999999;
+  border: 1px dashed #E0E0E0;
+  border-radius: 12px;
+  background: #FFFFFF;
+}
+
+/* ── 相册格 ── */
+.album-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+@media (min-width: 640px){
+  .album-grid{ grid-template-columns: repeat(4, 1fr); }
+}
+
+.album-cell{
+  position: relative;
+  margin: 0;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #F5F5F5;
+  border: 1px solid #E0E0E0;
+}
+
+.album-cell img{
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.album-del{
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0,0,0,.55);
+  color: #FFFFFF;
+  font-size: 13px;
+  line-height: 22px;
+  text-align: center;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* ── 通用：干掉彩色的残留 ── */
+.hero .hero-sub,
+.dcard-meta{
+  color: #999999;
+}
