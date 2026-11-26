@@ -65,7 +65,7 @@
     info.appendChild(el('i', '', (XW.S.hisName || '他') + ' · ' + (XW.S.loveDate || '设置相识日期')));
     profile.appendChild(avatar);
     profile.appendChild(info);
-    profile.appendChild(el('span', 'sh-arr', '\\u203a'));
+    profile.appendChild(el('span', 'sh-arr', '›'));
     box.appendChild(profile);
 
     let last = '';
@@ -86,7 +86,7 @@
       txt.appendChild(el('b', '', r.t));
       txt.appendChild(el('i', '', r.s));
       row.appendChild(txt);
-      row.appendChild(el('span', 'sh-arr', '\\u203a'));
+      row.appendChild(el('span', 'sh-arr', '›'));
       box.appendChild(row);
     });
 
