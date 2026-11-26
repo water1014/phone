@@ -24,10 +24,6 @@
   --accent-mist: rgba(0, 0, 0, .04);
 }
 
-* {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
 
 .app { background: #FFFFFF; }
 html.dark .app { background: #000000; }
