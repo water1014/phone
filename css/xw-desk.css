@@ -237,3 +237,18 @@
   border-top: 1px solid #F0F0F0;
   font-size: 9.5px; letter-spacing: .14em; color: #C0C0C0;
 }
+
+
+/* Sidebar taxonomy and direct settings shortcuts */
+#rail .rail-list{overflow-y:auto;overscroll-behavior:contain}
+#rail .rail-grp{margin:18px 0 7px!important;font-size:11px!important;font-weight:700!important;letter-spacing:.08em!important;color:var(--c-ink3,#87999c)!important}
+#rail .rail-grp:first-child{margin-top:8px!important}
+#rail .rail-row{min-height:42px!important}
+#rail .rail-subhead{margin:20px 0 8px;padding-top:16px;border-top:1px solid rgba(125,155,162,.18);font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--c-ink3,#87999c)}
+#rail .rail-settings{display:flex;flex-direction:column;gap:5px}
+#rail .rail-setting{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;min-height:54px;padding:9px 30px 9px 11px;border:1px solid rgba(125,155,162,.14);border-radius:13px;background:rgba(255,255,255,.48);text-align:left;color:var(--c-ink1,#35454a)}
+#rail .rail-setting b{font-size:13px;font-weight:650}
+#rail .rail-setting small{font-size:10px;color:var(--c-ink3,#87999c)}
+#rail .rail-setting i{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-style:normal;font-size:20px;color:var(--c-ink3,#87999c)}
+#rail .rail-setting:active{transform:scale(.985);background:rgba(225,239,240,.72)}
+html.dark #rail .rail-setting{background:rgba(43,61,65,.58);border-color:rgba(170,200,204,.12);color:#e4eeee}
