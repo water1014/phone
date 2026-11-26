@@ -325,3 +325,59 @@ body.xw-chat-on #chat-scroll .bub.typing{
   padding:var(--sp-4) var(--sp-4) !important;
   background:var(--c-bub-him) !important;
 }
+
+
+/* Mobile chat ergonomics: keep the timeline scrollable above the composer. */
+body.xw-chat-on #app {
+  height:100vh !important; height:100dvh !important;
+  min-height:0 !important; overflow:hidden !important;
+  display:flex !important; flex-direction:column !important;
+}
+body.xw-chat-on #app-body {
+  display:flex !important; flex:1 1 auto !important;
+  flex-direction:column !important; min-height:0 !important;
+  overflow:hidden !important; padding-bottom:env(safe-area-inset-bottom, 0px) !important;
+}
+body.xw-chat-on .chat-wrap {
+  display:flex !important; flex:1 1 auto !important;
+  flex-direction:column !important; width:100% !important;
+  height:100% !important; min-height:0 !important;
+  overflow:hidden !important; box-sizing:border-box !important;
+}
+body.xw-chat-on #chat-scroll {
+  display:block !important; flex:1 1 auto !important;
+  min-height:0 !important; height:auto !important;
+  overflow-x:hidden !important; overflow-y:auto !important;
+  overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch;
+  scroll-padding-bottom:18px; padding-bottom:18px !important;
+}
+body.xw-chat-on .chat-wrap > .quick {
+  flex:0 0 auto !important; min-height:0 !important;
+  overflow-x:auto !important; overflow-y:hidden !important;
+  scrollbar-width:none; -webkit-overflow-scrolling:touch;
+}
+body.xw-chat-on .chat-wrap > .quick::-webkit-scrollbar { display:none; }
+body.xw-chat-on .chat-wrap > .composer {
+  position:relative !important; flex:0 0 auto !important;
+  margin:0 !important; padding-bottom:calc(var(--sp-3) + env(safe-area-inset-bottom, 0px)) !important;
+  width:100% !important; box-sizing:border-box !important;
+}
+body.xw-chat-on .composer input#chat-input {
+  min-height:28px !important; font-size:16px !important;
+  line-height:1.45 !important; touch-action:manipulation;
+}
+body.xw-chat-on .composer button {
+  touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+}
+body.xw-chat-on #chat-scroll .msg-img img {
+  display:block; max-width:100%; height:auto; border-radius:16px;
+}
+@media (max-width:380px) {
+  body.xw-chat-on #chat-scroll { padding-left:var(--sp-2) !important; padding-right:var(--sp-2) !important; }
+  body.xw-chat-on #chat-scroll .msg-row.ta { grid-template-columns:34px minmax(0,1fr) !important; }
+  body.xw-chat-on #chat-scroll .msg-row.me { grid-template-columns:minmax(0,1fr) 34px !important; }
+  body.xw-chat-on #chat-scroll .msg-row .msg-ava { width:34px !important; height:34px !important; }
+}
+@media (prefers-reduced-motion:reduce) {
+  body.xw-chat-on #chat-scroll .msg-row { animation:none !important; }
+}
