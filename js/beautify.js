@@ -186,6 +186,7 @@ function applyTheme() {
   root.style.setProperty('--mio-user-bg', current.wall || theme.bg);
   root.style.setProperty('--mio-user-blur', current.blur + 'px');
   root.style.setProperty('--mio-card-opacity', (current.cardOpacity / 100).toFixed(2));
+  root.style.setProperty('--mio-wallpaper-fit', current.wallpaperFit);
   root.style.setProperty('--mio-card-shadow', '0 10px 30px rgba(89,128,139,' + (current.cardShadow / 1000).toFixed(3) + ')');
   root.style.setProperty('--mio-radius', current.radius + 'px');
   root.style.setProperty('--xd-layout-width', current.layoutWidth + 'px');
@@ -200,6 +201,12 @@ function applyTheme() {
     home.style.setProperty('background-size', current.wallpaper ? current.wallpaperFit : 'auto', 'important');
     home.style.setProperty('background-position', current.wallpaper ? 'center center' : 'initial', 'important');
     home.style.setProperty('background-attachment', current.wallpaper ? 'fixed' : 'scroll', 'important');
+    const wallpaperPreview = document.getElementById('bf-wallpaper-preview');
+    if (wallpaperPreview) {
+      const shade = current.wallpaperShade / 100;
+      wallpaperPreview.style.backgroundImage = current.wallpaper ? 'linear-gradient(rgba(242,248,248,' + shade + '),rgba(242,248,248,' + shade + ')), url("' + current.wallpaper + '")' : 'none';
+      wallpaperPreview.style.backgroundSize = current.wallpaperFit;
+    }
   }
 }
 function showToast(message) {
