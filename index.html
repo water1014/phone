@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-ver="2026-11-25-14">
+<html lang="zh-CN" data-ver="2026-11-27-1">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -74,7 +74,7 @@
 <link rel="stylesheet" href="css/xw-mcp.css?v=5">
 <link rel="stylesheet" id="xw-chat-css" href="css/xw-chat.css?v=8">
 <link rel="stylesheet" href="css/xw-flat.css?v=3">
-<link rel="stylesheet" href="css/xw-desk.css?v=3">
+<link rel="stylesheet" href="css/xw-desk.css?v=4">
 </head>
 <body>
 <div id="screen"></div>
@@ -123,7 +123,7 @@
 <script src="js/xw-cloud.js?v=2"></script>
 <script src="js/xw-mem.js?v=7"></script>
 <script src="js/xw-mcp.js?v=5"></script>
-<script src="js/xw-desk.js?v=2"></script>
+<script src="js/xw-desk.js?v=3"></script>
 <script>
 (function () {
   var KEY = 'xw_page_ver';
@@ -137,7 +137,7 @@
     fetch('index.html?t=' + Date.now(), { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.text() : ''; })
       .then(function (html) {
-        var m = html && html.match(/<html[^>]*\sdata-ver="([^"]+)"/);
+        var m = html && html.match(/<html[^>]*data-ver="([^"]+)"/);
         var live = m ? m[1] : '';
         if (live && live !== mine) {
           try { localStorage.setItem(KEY, live); } catch (e) {}
