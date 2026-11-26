@@ -736,6 +736,20 @@
         const sc = D.getElementById('chat-scroll');
         if (sc) sc.scrollTop = 0;
       }
+      const chatBack = D.getElementById('chat-back');
+      if (chatBack) chatBack.addEventListener('click', back);
+      const smile = D.getElementById('chat-smile');
+      if (smile) smile.addEventListener('click', function () {
+        if (!input) return;
+        input.value = (input.value || '') + '♡';
+        input.focus();
+      });
+      if (input) {
+        input.addEventListener('input', function () {
+          input.style.height = 'auto';
+          input.style.height = Math.min(input.scrollHeight, 110) + 'px';
+        });
+      }
       if (searchToggle && searchBar) {
         searchToggle.addEventListener('click', function () {
           closeChatMenus();
