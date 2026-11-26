@@ -10,10 +10,10 @@
   };
 
   const ROWS = [
-    { g: '我们', k: 'name', t: '我们是谁', s: '他、我、在一起从哪天' },
-    { g: '我们', k: 'house', t: '这个小窝', s: '装到桌面、备份、清空' },
-    { g: '接线', k: 'api', t: '接线的地方', s: '服务商、地址、模型、Key、用量' },
-    { g: '接线', k: 'other', t: '其它接口', s: '生图、语音、识图各一套' }
+    { g: '个性化', k: 'name', t: '我的资料与关系', s: '头像称呼、彼此名字、相识日期' },
+    { g: '连接与能力', k: 'api', t: '模型与 API', s: '服务商、模型、密钥、请求头与用量' },
+    { g: '连接与能力', k: 'other', t: '其它接口', s: '图片生成、语音与其它服务' },
+    { g: '系统', k: 'house', t: '数据与小窝', s: '安装到桌面、备份、清理与重置' }
   ];
 
   const LABELS = {
@@ -51,10 +51,22 @@
     box.id = 'st-home';
 
     const hero = el('div', 'sh-hero');
-    hero.appendChild(el('span', 'sh-kicker', 'SYSTEM PREFERENCES'));
+    hero.appendChild(el('span', 'sh-kicker', 'PREFERENCES'));
     hero.appendChild(el('h1', 'sh-title', '设置'));
-    hero.appendChild(el('p', 'sh-sub', '这个家里所有能拧的螺丝。'));
+    hero.appendChild(el('p', 'sh-sub', '把这个小窝，慢慢调成喜欢的样子。'));
     box.appendChild(hero);
+
+    const profile = el('button', 'sh-account');
+    profile.type = 'button';
+    profile.setAttribute('data-go', 'name');
+    const avatar = el('span', 'sh-account-avatar', String(XW.S.herName || '我').trim().charAt(0) || '我');
+    const info = el('span', 'sh-account-info');
+    info.appendChild(el('b', '', XW.S.herName || '我的资料'));
+    info.appendChild(el('i', '', (XW.S.hisName || '他') + ' · ' + (XW.S.loveDate || '设置相识日期')));
+    profile.appendChild(avatar);
+    profile.appendChild(info);
+    profile.appendChild(el('span', 'sh-arr', '\\u203a'));
+    box.appendChild(profile);
 
     let last = '';
     ROWS.forEach(function (r) {
@@ -62,8 +74,8 @@
         last = r.g;
         box.appendChild(el('div', 'sh-label', r.g));
       }
-
-      const row = el('div', 'sh-row');
+      const row = el('button', 'sh-row');
+      row.type = 'button';
       row.setAttribute('data-go', r.k);
 
       const ico = el('span', 'sh-ico');
@@ -74,8 +86,7 @@
       txt.appendChild(el('b', '', r.t));
       txt.appendChild(el('i', '', r.s));
       row.appendChild(txt);
-
-      row.appendChild(el('span', 'sh-arr', '\u203a'));
+      row.appendChild(el('span', 'sh-arr', '\\u203a'));
       box.appendChild(row);
     });
 
