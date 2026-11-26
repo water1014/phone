@@ -12,13 +12,6 @@
   --orn-dots: radial-gradient(circle at 50% 50%, currentColor 38%, transparent 44%);
 }
 
-#app-body:has(#mem-input)::after{
-  content: 'mem v6';
-  position: fixed; left: 5px; top: 1px; z-index: 99999;
-  font-size: var(--fs-1); line-height: 1; letter-spacing: .04em;
-  color: var(--c-ink4); pointer-events: none;
-}
-
 /* ══ 页面底：铺氛围光，卡片才有东西可衬 ══ */
 #app-body:has(#mem-input){
   background-color: var(--c-paper);
