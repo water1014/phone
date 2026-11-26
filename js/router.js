@@ -286,24 +286,23 @@
     const percent = Math.min(999, Math.round(used / limit * 100));
     const provider = (PRESETS[XW.S.aiProvider] || PRESETS.deepseek).label;
 
-    const head = '<div class="chat-toolbar">' +
-        '<div class="chat-toolbar-main"><span class="chat-who">' + UI.esc(XW.S.hisName || '他') + '</span>' +
-        '<span class="chat-flag">' + (keyed ? '<i class="dot"></i>ONLINE' : '本地') + '</span></div>' +
-        '<div class="chat-toolbar-actions">' +
-          '<button type="button" id="chat-search-toggle" aria-label="搜索聊天记录">⌕</button>' +
-          '<button type="button" id="chat-more-toggle" aria-label="更多聊天操作">···</button>' +
-        '</div></div>' +
-        '<div class="chat-searchbar" id="chat-searchbar" hidden>' +
-          '<input id="chat-search-input" type="search" placeholder="搜索聊天记录…" autocomplete="off">' +
-          '<span id="chat-search-count"></span>' +
-          '<button type="button" id="chat-search-close">取消</button>' +
-        '</div>' +
-        '<div class="chat-more-menu" id="chat-more-menu" hidden>' +
-          '<button type="button" data-chat-action="search">搜索聊天记录</button>' +
-          '<button type="button" data-chat-action="latest">回到最新消息</button>' +
-          '<button type="button" data-chat-action="clear">清空当前对话</button>' +
-        '</div>';
-
+    const head = '<div class="bar chat-mio-bar">' +
+        '<button type="button" class="bk" id="chat-back" aria-label="返回">‹</button>' +
+        '<h2 id="ctitle">' + UI.esc(XW.S.hisName || '他') + '</h2>' +
+        '<button type="button" class="ib2" id="chat-search-toggle" aria-label="搜索聊天记录">⌕</button>' +
+        '<button type="button" class="ib2" id="chat-more-toggle" aria-label="更多聊天操作">···</button>' +
+      '</div>' +
+      '<div id="chat-role-note"></div>' +
+      '<div id="chat-searchbar" class="mio-chat-search" hidden>' +
+        '<input id="chat-search-input" type="search" placeholder="搜索聊天记录…" autocomplete="off">' +
+        '<span id="chat-search-count"></span>' +
+        '<button type="button" id="chat-search-close">取消</button>' +
+      '</div>' +
+      '<div class="chat-more-menu" id="chat-more-menu" hidden>' +
+        '<button type="button" data-chat-action="search">搜索聊天记录</button>' +
+        '<button type="button" data-chat-action="latest">回到最新消息</button>' +
+        '<button type="button" data-chat-action="clear">清空对话</button>' +
+      '</div>';
     const top = keyed
       ? '<div class="chat-top">' +
           '<span class="num"><b>' + percent + '%</b></span>' +
@@ -314,24 +313,27 @@
           '<span class="num model">' + UI.esc(provider) + '</span>' +
         '</div><div class="usage-bar"><i style="width:' + Math.min(100, percent) + '%"></i></div>'
       : '';
-
     const chips = QUICK.map(function (w) {
       return '<button type="button" class="quick-chip" data-quick="' + UI.esc(w) + '">' + UI.esc(w) + '</button>';
     }).join('');
 
-    return '<div class="chat-wrap">' + head + top +
+    return '<div class="chat-wrap mio-chat-wrap">' + head + top +
         '<div class="chat-scroll" id="chat-scroll">' + rows + empty + '</div>' +
-        '<div class="quick">' + chips + '</div>' +
+        '<div class="quick" id="qbar">' + chips + '</div>' +
         (quote ? '<div class="quote-bar"><span class="qb-name">' + UI.esc(quote.name) + '</span>' +
           '<span class="qb-text">' + UI.esc(quote.text) + '</span>' +
           '<button type="button" id="quote-x" class="qb-x" aria-label="取消引用">×</button></div>' : '') +
-        '<div class="composer">' +
-          '<input id="chat-input" placeholder="写点什么…">' +
+        '<div class="composer" id="inp">' +
           '<input id="chat-file" type="file" accept="image/*" hidden>' +
-          '<button type="button" id="chat-plus" class="plus-btn" aria-label="放一张图">+</button>' +
-          '<button type="button" id="chat-send" class="btn-solid">发</button>' +
+          '<button type="button" id="chat-plus" class="plus-btn" aria-label="菜单">+</button>' +
+          '<div class="ib">' +
+            '<textarea id="chat-input" rows="1" placeholder="输入一条信息"></textarea>' +
+            '<button type="button" id="chat-smile" aria-label="表情">♡</button>' +
+            '<button type="button" id="chat-send" class="btn-solid" aria-label="发送">↑</button>' +
+          '</div>' +
         '</div>' +
       '</div>';
+
   }
 
   function scrollChat() {
