@@ -127,7 +127,7 @@
     const t = e.target;
     if (!t || !t.closest) return;
 
-    const row = t.closest('.sh-row');
+    const row = t.closest('.sh-row, .sh-account');
     if (row) {
       openPane(row.getAttribute('data-go'));
       return;
