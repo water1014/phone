@@ -24,7 +24,8 @@ function loadSettings() {
   current.radius = Math.max(8, Math.min(32, Number(current.radius) || 22));
 }
 function saveSettings() {
-  try { localStorage.setItem('xw_beautify', JSON.stringify(current)); } catch (e) {}
+  try { localStorage.setItem('xw_beautify', JSON.stringify(current)); return true; }
+  catch (e) { return false; }
 }
 function render() {
   const el = document.getElementById('app-body');
@@ -93,8 +94,10 @@ function renderDetail() {
     reader.onerror = () => showToast('图片读取失败，请重试');
     reader.onload = () => compressWallpaper(reader.result, result => {
       if (!result) { showToast('图片处理失败，请换一张图片'); return; }
+      if (result.length > 1800000) { showToast('图片仍然较大，请换一张图片'); return; }
+      const previousWallpaper = current.wallpaper;
       current.wallpaper = result;
-      saveSettings();
+      if (!saveSettings()) { current.wallpaper = previousWallpaper; showToast('本机存储空间不足，壁纸未保存'); return; }
       applyTheme();
       renderDetail();
       showToast('桌面壁纸已应用');
