@@ -19,10 +19,10 @@
   };
 
   const GROUPS = [
-    { title: '日常', ids: ['chat', 'memory', 'diary', 'album'] },
-    { title: '记录', ids: ['calendar', 'plans', 'accounting', 'weather', 'mood', 'health', 'cycle', 'study', 'quotes'] },
-    { title: '我们', ids: ['letter', 'music', 'moments', 'favorites', 'games', 'studio'] },
-    { title: '其他', ids: ['worldbook', 'windows', 'mcp', 'beautify', 'settings'] }
+    { title: '聊天与关系', ids: ['chat', 'memory', 'worldbook', 'letter', 'moments'] },
+    { title: '生活与记录', ids: ['diary', 'calendar', 'plans', 'accounting', 'mood', 'health', 'cycle', 'study', 'weather'] },
+    { title: '内容与收藏', ids: ['album', 'music', 'quotes', 'favorites', 'games', 'studio', 'windows'] },
+    { title: '系统与扩展', ids: ['mcp', 'beautify', 'settings'] }
   ];
 
   function pagesHtml() {
@@ -43,8 +43,20 @@
       return '<div class="rail-grp">' + g.title + '</div>' + rows;
     }).join('');
 
+    const settingLinks = [
+      ['name', '资料与关系', '头像、称呼与相识日期'],
+      ['api', '模型与 API', '模型服务、密钥与请求头'],
+      ['other', '生图与语音接口', '图片生成及其它服务'],
+      ['house', '数据与备份', '导入、导出与小窝设置']
+    ].map(function (item) {
+      return '<button type="button" class="rail-setting" data-setting-nav="' + item[0] + '">' +
+        '<b>' + item[1] + '</b><small>' + item[2] + '</small><i>›</i></button>';
+    }).join('');
+
     return '<div class="rail-profile">' + card + '</div>' +
       '<div class="rail-list">' + list + '</div>' +
+      '<div class="rail-subhead">设置快捷入口</div>' +
+      '<div class="rail-settings">' + settingLinks + '</div>' +
       '<div class="rail-rule"></div>' +
       '<button type="button" class="rail-act" data-act="reset">重排首页</button>' +
       '<div class="rail-foot">XIAOWO · OUR SPACE</div>';
@@ -170,6 +182,19 @@
           renderAll();
           UI.toast('首页摆回原样');
         }
+        return;
+      }
+
+      const settingNav = event.target.closest('[data-setting-nav]');
+      if (settingNav) {
+        event.preventDefault();
+        const section = settingNav.getAttribute('data-setting-nav');
+        closeRail();
+        window.Router.open('settings');
+        setTimeout(function () {
+          const row = D.querySelector('#st-home [data-go="' + section + '"]');
+          if (row) row.click();
+        }, 180);
         return;
       }
 
