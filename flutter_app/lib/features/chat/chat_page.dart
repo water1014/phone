@@ -629,7 +629,9 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> _showMessageActions(_ChatMessage message) async {
     if (message.isTyping || message.isSystem ||
-        (message.text.isEmpty && message.imagePath == null)) return;
+        (message.text.isEmpty && message.imagePath == null)) {
+      return;
+    }
     final action = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.white,
@@ -859,9 +861,11 @@ class _ChatPageState extends State<ChatPage> {
       if (!mounted) return;
       setState(() => _pendingImagePath = target.path);
     } catch (error) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('选择图片失败：$error')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('选择图片失败：$error')),
+        );
+      }
     }
   }
 
