@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'chat_preferences.dart';
 
-const _ink = Color(0xFF29362F);
-const _muted = Color(0xFF9AA79F);
-const _line = Color(0xFFE5ECE7);
-const _soft = Color(0xFFEEF3EF);
-const _accent = Color(0xFF789A88);
+const _ink = Color(0xFF202020);
+const _muted = Color(0xFF888888);
+const _line = Color(0xFFE7E7E7);
+const _soft = Color(0xFFF3F3F3);
+const _accent = Color(0xFF333333);
 
 class ChatSettingsPage extends StatelessWidget {
   const ChatSettingsPage({super.key});
@@ -15,7 +15,7 @@ class ChatSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) => ValueListenableBuilder<ChatPreferences>(
     valueListenable: ChatPreferenceStore.value,
     builder: (context, prefs, _) => Scaffold(
-      backgroundColor: const Color(0xFFF7FAF8),
+      backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
         child: Column(children: [
           Padding(
@@ -258,57 +258,75 @@ class _BubbleStylePicker extends StatelessWidget {
   final int selected;
   final ValueChanged<int> onChanged;
 
-  static const styles = [
-    ('Mio 黑白', Color(0xFF111111), Color(0xFFECEEF0)),
-    ('雾林绿', Color(0xFF6F927F), Color(0xFFE6F0E8)),
-    ('薄雾蓝', Color(0xFF526A7C), Color(0xFFEAF0F5)),
-    ('柔雾粉', Color(0xFF9A6D78), Color(0xFFF5ECEF)),
-  ];
-
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Padding(
-        padding: EdgeInsets.only(top: 8, bottom: 9),
-        child: Text('聊天气泡样式', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _ink)),
-      ),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: List.generate(styles.length, (index) {
-          final style = styles[index];
-          final active = selected == index;
-          return InkWell(
-            onTap: () => onChanged(index),
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              width: 137,
-              padding: const EdgeInsets.fromLTRB(9, 9, 9, 8),
-              decoration: BoxDecoration(
-                color: active ? const Color(0xFFF4F7F4) : Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: active ? _accent : _line, width: active ? 1.4 : 1),
+  Widget build(BuildContext context) {
+    final options = [
+      (title: 'HelloTalk', subtitle: '头像在消息旁 · 圆润气泡', value: 0),
+      (title: 'iMessage', subtitle: '经典左右对话 · 简洁气泡', value: 1),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(top: 8, bottom: 9),
+          child: Text('聊天气泡样式', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _ink)),
+        ),
+        ...options.map((option) {
+          final active = selected == option.value;
+          final hello = option.value == 0;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 9),
+            child: InkWell(
+              onTap: () => onChanged(option.value),
+              borderRadius: BorderRadius.circular(15),
+              child: Container(
+                padding: const EdgeInsets.all(11),
+                decoration: BoxDecoration(
+                  color: active ? const Color(0xFFF2F2F2) : Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(color: active ? _accent : _line, width: active ? 1.4 : 1),
+                ),
+                child: Row(children: [
+                  SizedBox(
+                    width: 116,
+                    child: Column(children: [
+                      Row(
+                        children: [
+                          Container(width: 20, height: 20, decoration: const BoxDecoration(color: Color(0xFFE6E6E6), shape: BoxShape.circle), child: const Center(child: Text('祁', style: TextStyle(fontSize: 9, color: _ink)))),
+                          const SizedBox(width: 5),
+                          Container(width: 62, height: 24, decoration: BoxDecoration(color: const Color(0xFFF0F0F0), border: Border.all(color: const Color(0xFFE6E6E6)), borderRadius: BorderRadius.only(topLeft: Radius.circular(hello ? 5 : 14), topRight: const Radius.circular(14), bottomLeft: const Radius.circular(14), bottomRight: const Radius.circular(14)))),
+                        ],
+                      ),
+                      const SizedBox(height: 7),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Container(width: 57, height: 24, decoration: BoxDecoration(color: const Color(0xFF222222), borderRadius: BorderRadius.only(topLeft: const Radius.circular(14), topRight: Radius.circular(hello ? 5 : 14), bottomLeft: const Radius.circular(14), bottomRight: const Radius.circular(14)))),
+                          const SizedBox(width: 5),
+                          Container(width: 20, height: 20, decoration: const BoxDecoration(color: Color(0xFFE6E6E6), shape: BoxShape.circle), child: const Center(child: Text('我', style: TextStyle(fontSize: 9, color: _ink)))),
+                        ],
+                      ),
+                    ]),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(option.title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _ink)),
+                    const SizedBox(height: 4),
+                    Text(option.subtitle, style: const TextStyle(fontSize: 10, color: _muted)),
+                  ])),
+                  Icon(active ? Icons.check_circle_rounded : Icons.circle_outlined, size: 18, color: active ? _accent : const Color(0xFFD0D0D0)),
+                ]),
               ),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  Container(width: 47, height: 17, decoration: BoxDecoration(color: style.$3, borderRadius: BorderRadius.circular(8))),
-                  const Spacer(),
-                  Container(width: 42, height: 17, decoration: BoxDecoration(color: style.$2, borderRadius: BorderRadius.circular(8))),
-                ]),
-                const SizedBox(height: 7),
-                Row(children: [
-                  Expanded(child: Text(style.$1, style: const TextStyle(fontSize: 10, color: _ink))),
-                  Icon(active ? Icons.check_circle_rounded : Icons.circle_outlined, size: 15, color: active ? _accent : const Color(0xFFD8DEDA)),
-                ]),
-              ]),
             ),
           );
         }),
-      ),
-      const SizedBox(height: 5),
-    ],
-  );
+        const Padding(
+          padding: EdgeInsets.only(bottom: 4),
+          child: Text('两种样式都会显示双方头像，照片和文件仍以独立附件展示。', style: TextStyle(fontSize: 10, height: 1.5, color: _muted)),
+        ),
+      ],
+    );
+  }
 }
 
 class _SettingsSection extends StatelessWidget {
