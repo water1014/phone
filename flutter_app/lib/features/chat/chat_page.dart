@@ -164,6 +164,7 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void dispose() {
+    _activeCancelToken?.cancel('聊天页面已关闭');
     _messagesScroll.removeListener(_handleScroll);
     _input.dispose();
     _search.dispose();
@@ -291,6 +292,7 @@ class _ChatPageState extends State<ChatPage> {
               outputTokens: event.outputTokens ?? current.outputTokens,
             );
           });
+          _followStreamingReply();
         }
         if (event.finished) {
           setState(() {
@@ -395,7 +397,7 @@ class _ChatPageState extends State<ChatPage> {
           bottom: false,
           child: Column(
             children: [
-              _buildHeader(),
+              _buildHeader(prefs),
               if (_searching) _buildSearchBar(),
               Expanded(child: _buildMessages(prefs)),
               _buildComposer(prefs),
@@ -406,7 +408,7 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  Widget _buildHeader() => Builder(builder: (scaffoldContext) => Container(
+  Widget _buildHeader(ChatPreferences prefs) => Builder(builder: (scaffoldContext) => Container(
     height: 66,
     padding: const EdgeInsets.symmetric(horizontal: 12),
     decoration: const BoxDecoration(
@@ -427,20 +429,28 @@ class _ChatPageState extends State<ChatPage> {
         ),
       ),
       const Spacer(),
-      const Row(mainAxisSize: MainAxisSize.min, children: [
+      Row(mainAxisSize: MainAxisSize.min, children: [
         CircleAvatar(
           radius: 19,
-          backgroundColor: Color(0xFFEAEAEA),
-          child: Text('祁', style: TextStyle(color: Color(0xFF444444), fontSize: 15, fontWeight: FontWeight.w600)),
+          backgroundColor: const Color(0xFFEAEAEA),
+          backgroundImage: prefs.partnerAvatarPath != null && File(prefs.partnerAvatarPath!).existsSync()
+              ? FileImage(File(prefs.partnerAvatarPath!))
+              : null,
+          child: prefs.partnerAvatarPath != null && File(prefs.partnerAvatarPath!).existsSync()
+              ? null
+              : Text(
+                  prefs.partnerName.trim().isEmpty ? '祁' : prefs.partnerName.trim().substring(0, 1),
+                  style: const TextStyle(color: Color(0xFF444444), fontSize: 15, fontWeight: FontWeight.w600),
+                ),
         ),
-        SizedBox(width: 9),
+        const SizedBox(width: 9),
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('宋祁', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF202020))),
-            SizedBox(height: 3),
-            Row(children: [
+            Text(prefs.partnerName, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF202020))),
+            const SizedBox(height: 3),
+            const Row(children: [
               Icon(Icons.circle, size: 6, color: Color(0xFF555555)),
               SizedBox(width: 5),
               Text('在这里陪你', style: TextStyle(fontSize: 10, color: Color(0xFF888888))),
@@ -466,7 +476,10 @@ class _ChatPageState extends State<ChatPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         onSelected: (value) {
           if (value == 'settings') context.push('/chat/settings');
-          if (value == 'latest') FocusScope.of(context).unfocus();
+          if (value == 'latest') {
+            FocusScope.of(context).unfocus();
+            _scrollToLatest();
+          }
           if (value == 'clear') _confirmClear();
           if (value == 'search') setState(() => _searching = true);
         },
@@ -498,12 +511,21 @@ class _ChatPageState extends State<ChatPage> {
     ),
   );
 
+  String _searchableText(_ChatMessage message) => [
+    message.text,
+    message.reasoning ?? '',
+    message.attachmentName ?? '',
+    message.isSystem ? '系统消息' : '',
+    message.imagePath != null ? '图片 image' : '',
+    message.attachmentPath != null ? '文件 附件 file' : '',
+  ].join(' ').toLowerCase();
+
   Widget _buildMessages(ChatPreferences prefs) {
     if (_loadingHistory) {
       return const Center(child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)));
     }
     final visible = _messages.asMap().entries.where((entry) =>
-      _query.isEmpty || entry.value.text.toLowerCase().contains(_query)).toList();
+      _query.isEmpty || _searchableText(entry.value).contains(_query)).toList();
     if (visible.isEmpty) {
       return Center(child: Text(_query.isEmpty ? '还没有消息，在下面写一句吧。' : '没有找到相关消息', style: const TextStyle(color: AppColors.muted, fontSize: 13)));
     }
@@ -855,6 +877,43 @@ class _ChatPageState extends State<ChatPage> {
             }), icon: const Icon(Icons.close_rounded, size: 18)),
           ]),
         ),
+      if (prefs.quickReplies.isNotEmpty)
+        SizedBox(
+          height: 38,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: prefs.quickReplies.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 7),
+            itemBuilder: (context, index) {
+              final phrase = prefs.quickReplies[index];
+              return Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(18),
+                  onTap: () {
+                    _input.value = TextEditingValue(
+                      text: phrase,
+                      selection: TextSelection.collapsed(offset: phrase.length),
+                    );
+                    unawaited(_saveDraft(phrase));
+                    FocusScope.of(context).requestFocus(FocusNode());
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0xFFE7E7E7)),
+                    ),
+                    child: Text(phrase, style: const TextStyle(fontSize: 11, color: Color(0xFF666666))),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      if (prefs.quickReplies.isNotEmpty) const SizedBox(height: 8),
       Container(
         padding: const EdgeInsets.fromLTRB(7, 7, 7, 7),
         decoration: BoxDecoration(
@@ -920,7 +979,17 @@ class _ChatPageState extends State<ChatPage> {
       _messagesScroll.position.maxScrollExtent,
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOut,
-    );
+    ).then((_) {
+      if (mounted && _showJumpLatest) setState(() => _showJumpLatest = false);
+    });
+  }
+
+  void _followStreamingReply() {
+    if (_showJumpLatest) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _showJumpLatest || !_messagesScroll.hasClients) return;
+      _messagesScroll.jumpTo(_messagesScroll.position.maxScrollExtent);
+    });
   }
 
   Future<void> _confirmClear() async {
