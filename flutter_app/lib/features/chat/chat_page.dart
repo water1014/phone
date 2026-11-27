@@ -955,7 +955,7 @@ class _ChatPageState extends State<ChatPage> {
                 title: const Text('保存照片到相册'),
                 onTap: () => Navigator.pop(sheetContext, 'save_image'),
               ),
-            if (!message.mine && RegExp(r'```[a-zA-Z0-9_+-]*\\s*\\n[\\s\\S]*?```').hasMatch(message.text))
+            if (!message.mine && RegExp(r'```[a-zA-Z0-9_+-]*\s*\n[\s\S]*?```').hasMatch(message.text))
               ListTile(
                 leading: const Icon(Icons.file_download_outlined),
                 title: const Text('把代码保存为文件'),
