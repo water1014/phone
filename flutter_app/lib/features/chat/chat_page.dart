@@ -92,6 +92,7 @@ class _ChatPageState extends State<ChatPage> {
   bool _showJumpLatest = false;
   CancelToken? _activeCancelToken;
   String _query = '';
+  DateTime? _selectedDay;
 
   @override
   void initState() {
@@ -401,6 +402,7 @@ class _ChatPageState extends State<ChatPage> {
             children: [
               _buildHeader(prefs),
               if (_searching) _buildSearchBar(),
+              if (_selectedDay != null) _buildDayFilterBar(),
               Expanded(child: _buildMessages(prefs)),
               _buildComposer(prefs),
             ],
@@ -484,9 +486,13 @@ class _ChatPageState extends State<ChatPage> {
           }
           if (value == 'clear') _confirmClear();
           if (value == 'search') setState(() => _searching = true);
+          if (value == 'date') _chooseChatDate();
+          if (value == 'all') setState(() => _selectedDay = null);
         },
         itemBuilder: (context) => const [
           PopupMenuItem(value: 'search', child: Text('搜索聊天记录')),
+          PopupMenuItem(value: 'date', child: Text('按日期查看')),
+          PopupMenuItem(value: 'all', child: Text('显示全部消息')),
           PopupMenuItem(value: 'settings', child: Text('聊天设置')),
           PopupMenuItem(value: 'latest', child: Text('回到最新消息')),
           PopupMenuItem(value: 'clear', child: Text('清空对话')),
@@ -513,6 +519,75 @@ class _ChatPageState extends State<ChatPage> {
     ),
   );
 
+  Widget _buildDayFilterBar() {
+    final day = _selectedDay!;
+    final count = _messages.where((message) =>
+      message.time.year == day.year &&
+      message.time.month == day.month &&
+      message.time.day == day.day).length;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: const Color(0xFFE7E7E7)),
+      ),
+      child: Row(children: [
+        const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF777777)),
+        const SizedBox(width: 8),
+        Expanded(child: Text(
+          '${day.year}年${day.month}月${day.day}日 · $count 条消息',
+          style: const TextStyle(fontSize: 11, color: Color(0xFF666666)),
+        )),
+        InkWell(
+          onTap: () => setState(() => _selectedDay = null),
+          borderRadius: BorderRadius.circular(12),
+          child: const Padding(
+            padding: EdgeInsets.all(4),
+            child: Icon(Icons.close_rounded, size: 16, color: Color(0xFF888888)),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  Future<void> _chooseChatDate() async {
+    final dates = _messages.map((message) => message.time).toList();
+    dates.sort();
+    final earliest = dates.isEmpty
+        ? DateTime(2000)
+        : DateTime(dates.first.year, dates.first.month, dates.first.day);
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDay ?? (dates.isEmpty ? now : dates.last),
+      firstDate: earliest.isAfter(now) ? now : earliest,
+      lastDate: now,
+      helpText: '选择要查看的聊天日期',
+      cancelText: '取消',
+      confirmText: '查看',
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Color(0xFF222222),
+            onPrimary: Colors.white,
+            surface: Colors.white,
+            onSurface: Color(0xFF222222),
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _selectedDay = DateTime(picked.year, picked.month, picked.day);
+      _searching = false;
+      _query = '';
+      _search.clear();
+    });
+  }
+
   String _searchableText(_ChatMessage message) => [
     message.text,
     message.reasoning ?? '',
@@ -526,10 +601,15 @@ class _ChatPageState extends State<ChatPage> {
     if (_loadingHistory) {
       return const Center(child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)));
     }
-    final visible = _messages.asMap().entries.where((entry) =>
-      _query.isEmpty || _searchableText(entry.value).contains(_query)).toList();
+    final visible = _messages.asMap().entries.where((entry) {
+      final dayMatches = _selectedDay == null ||
+          (entry.value.time.year == _selectedDay!.year &&
+           entry.value.time.month == _selectedDay!.month &&
+           entry.value.time.day == _selectedDay!.day);
+      return dayMatches && (_query.isEmpty || _searchableText(entry.value).contains(_query));
+    }).toList();
     if (visible.isEmpty) {
-      return Center(child: Text(_query.isEmpty ? '还没有消息，在下面写一句吧。' : '没有找到相关消息', style: const TextStyle(color: AppColors.muted, fontSize: 13)));
+      return Center(child: Text(_selectedDay != null ? '这一天还没有聊天记录' : (_query.isEmpty ? '还没有消息，在下面写一句吧。' : '没有找到相关消息'), style: const TextStyle(color: AppColors.muted, fontSize: 13)));
     }
     return Stack(
       children: [
