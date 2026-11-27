@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -309,7 +308,7 @@ class _MusicPageState extends State<MusicPage> {
                   padding: const EdgeInsets.fromLTRB(18, 18, 18, 10),
                   child: Row(children: [
                     Expanded(child: Text(playlist.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _ink))),
-                    Text('\${songs.length} 首', style: const TextStyle(fontSize: 11, color: _muted)),
+                    Text('${songs.length} 首', style: const TextStyle(fontSize: 11, color: _muted)),
                   ]),
                 ),
                 Expanded(
@@ -362,7 +361,7 @@ class _MusicPageState extends State<MusicPage> {
                   : Image.network(p.cover, width: 48, height: 48, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(width: 48, height: 48, color: const Color(0xFFEDEDED), child: const Icon(Icons.music_note_rounded, color: _muted))),
             ),
             title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: _ink, fontWeight: FontWeight.w500)),
-            subtitle: Text('\${p.trackCount} 首', style: const TextStyle(fontSize: 10, color: _muted)),
+            subtitle: Text('${p.trackCount} 首', style: const TextStyle(fontSize: 10, color: _muted)),
             trailing: const Icon(Icons.chevron_right_rounded, color: _muted),
             onTap: () => _openPlaylist(p),
           );
@@ -484,10 +483,10 @@ class _MusicPageState extends State<MusicPage> {
                 builder: (_, snap) {
                   final position = snap.data ?? Duration.zero;
                   final duration = _audio.duration ?? Duration.zero;
-                  final max = duration.inMilliseconds.toDouble().clamp(1, double.infinity);
+                  final max = duration.inMilliseconds.toDouble().clamp(1.0, double.infinity).toDouble();
                   return Column(children: [
                     Slider(
-                      value: position.inMilliseconds.toDouble().clamp(0, max),
+                      value: position.inMilliseconds.toDouble().clamp(0.0, max).toDouble(),
                       max: max,
                       activeColor: _ink,
                       inactiveColor: _line,
