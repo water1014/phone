@@ -314,7 +314,9 @@ class _MusicPageState extends State<MusicPage> {
         preload: false,
       );
       if (!mounted || request != _playRequest) return;
-      unawaited(_audio.play());
+      unawaited(_audio.play().catchError((Object error) {
+        if (mounted && request == _playRequest) _toast(MusicApiClient.prettyError(error));
+      }));
       if (mounted) setState(() => _busy = false);
 
       // Lyrics load independently and only update the lyric panel if this is
@@ -943,7 +945,7 @@ class _MusicPageState extends State<MusicPage> {
                 ]),
                 const SizedBox(height: 4),
                 Text(
-                  'QUEUE  ·  ' + _queue.length.toString().padLeft(2, '0') + ' TRACKS',
+                  'QUEUE  ·  ${_queue.length.toString().padLeft(2, '0')} TRACKS',
                   style: const TextStyle(fontSize: 8, letterSpacing: 1.8, color: Color(0xFFAAAAAA)),
                 ),
               ]),
