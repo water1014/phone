@@ -14,6 +14,8 @@ class ChatMessageRecord {
     this.attachmentPath,
     this.attachmentName,
     this.attachmentSize,
+    this.alternateReplies = const [],
+    this.selectedAlternative = 0,
   });
 
   final String text;
@@ -28,6 +30,8 @@ class ChatMessageRecord {
   final String? attachmentPath;
   final String? attachmentName;
   final int? attachmentSize;
+  final List<String> alternateReplies;
+  final int selectedAlternative;
 
   Map<String, dynamic> toJson() => {
     'text': text,
@@ -41,6 +45,8 @@ class ChatMessageRecord {
     'attachmentPath': attachmentPath,
     'attachmentName': attachmentName,
     'attachmentSize': attachmentSize,
+    'alternateReplies': alternateReplies,
+    'selectedAlternative': selectedAlternative,
   };
 
   factory ChatMessageRecord.fromJson(Map<String, dynamic> json) =>
@@ -56,6 +62,8 @@ class ChatMessageRecord {
         attachmentPath: json['attachmentPath'] as String?,
         attachmentName: json['attachmentName'] as String?,
         attachmentSize: json['attachmentSize'] as int?,
+        alternateReplies: (json['alternateReplies'] as List<dynamic>?)?.whereType<String>().toList() ?? const [],
+        selectedAlternative: json['selectedAlternative'] as int? ?? 0,
       );
 
   static String encodeList(List<ChatMessageRecord> messages) =>
