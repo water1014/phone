@@ -47,16 +47,16 @@ class _ChatMessage {
 }
 
 Color _mineBubbleColor(int style) => switch (style) {
-  1 => const Color(0xFF6F927F),
-  2 => const Color(0xFF526A7C),
-  3 => const Color(0xFF9A6D78),
+  1 => const Color(0xFF333333),
+  2 => const Color(0xFF666666),
+  3 => const Color(0xFF777777),
   _ => const Color(0xFF111111),
 };
 
 Color _partnerBubbleColor(int style) => switch (style) {
-  1 => const Color(0xFFE6F0E8),
-  2 => const Color(0xFFEAF0F5),
-  3 => const Color(0xFFF5ECEF),
+  1 => const Color(0xFFEDEDED),
+  2 => const Color(0xFFF1F1F1),
+  3 => const Color(0xFFF3F3F3),
   _ => const Color(0xFFECEEF0),
 };
 
@@ -73,7 +73,7 @@ class _HeaderAction extends StatelessWidget {
     child: InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: onTap,
-      child: SizedBox(width: 42, height: 42, child: Icon(icon, size: 20, color: const Color(0xFF526159))),
+      child: SizedBox(width: 42, height: 42, child: Icon(icon, size: 20, color: const Color(0xFF666666))),
     ),
   );
 }
@@ -400,7 +400,7 @@ class _ChatPageState extends State<ChatPage> {
       builder: (context, prefs, _) => Scaffold(
         drawer: const AppSideDrawer(active: 'chat'),
         drawerEnableOpenDragGesture: false,
-        backgroundColor: const Color(0xFFF8FAF8),
+        backgroundColor: const Color(0xFFFAFAFA),
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -420,8 +420,8 @@ class _ChatPageState extends State<ChatPage> {
     height: 66,
     padding: const EdgeInsets.symmetric(horizontal: 12),
     decoration: const BoxDecoration(
-      color: Color(0xFFF8FAF8),
-      border: Border(bottom: BorderSide(color: Color(0xFFE9EEEA))),
+      color: Color(0xFFFAFAFA),
+      border: Border(bottom: BorderSide(color: Color(0xFFE7E7E7))),
     ),
     child: Row(children: [
       Material(
@@ -432,7 +432,7 @@ class _ChatPageState extends State<ChatPage> {
           onTap: () => Scaffold.of(scaffoldContext).openDrawer(),
           child: const SizedBox(
             width: 42, height: 42,
-            child: Icon(Icons.menu_rounded, size: 22, color: Color(0xFF34433B)),
+            child: Icon(Icons.menu_rounded, size: 22, color: Color(0xFF333333)),
           ),
         ),
       ),
@@ -440,20 +440,20 @@ class _ChatPageState extends State<ChatPage> {
       const Row(mainAxisSize: MainAxisSize.min, children: [
         CircleAvatar(
           radius: 19,
-          backgroundColor: Color(0xFFE5EEE8),
-          child: Text('祁', style: TextStyle(color: Color(0xFF52776B), fontSize: 15, fontWeight: FontWeight.w600)),
+          backgroundColor: Color(0xFFEAEAEA),
+          child: Text('祁', style: TextStyle(color: Color(0xFF444444), fontSize: 15, fontWeight: FontWeight.w600)),
         ),
         SizedBox(width: 9),
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('宋祁', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF26332C))),
+            Text('宋祁', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF202020))),
             SizedBox(height: 3),
             Row(children: [
-              Icon(Icons.circle, size: 6, color: Color(0xFF7EAA91)),
+              Icon(Icons.circle, size: 6, color: Color(0xFF555555)),
               SizedBox(width: 5),
-              Text('在这里陪你', style: TextStyle(fontSize: 10, color: Color(0xFF8A9690))),
+              Text('在这里陪你', style: TextStyle(fontSize: 10, color: Color(0xFF888888))),
             ]),
           ],
         ),
@@ -472,7 +472,7 @@ class _ChatPageState extends State<ChatPage> {
       PopupMenuButton<String>(
         tooltip: '更多',
         padding: EdgeInsets.zero,
-        icon: const Icon(Icons.more_horiz_rounded, color: Color(0xFF526159), size: 23),
+        icon: const Icon(Icons.more_horiz_rounded, color: Color(0xFF666666), size: 23),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         onSelected: (value) {
           if (value == 'settings') context.push('/chat/settings');
@@ -502,8 +502,8 @@ class _ChatPageState extends State<ChatPage> {
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(vertical: 10),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(17), borderSide: const BorderSide(color: Color(0xFFE9E9E8))),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(17), borderSide: const BorderSide(color: Color(0xFFE9E9E8))),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(17), borderSide: const BorderSide(color: Color(0xFFE7E7E7))),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(17), borderSide: const BorderSide(color: Color(0xFFE7E7E7))),
       ),
     ),
   );
@@ -538,7 +538,7 @@ class _ChatPageState extends State<ChatPage> {
             padding: const EdgeInsets.only(top: 5, bottom: 17),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: .8), borderRadius: BorderRadius.circular(30), border: Border.all(color: const Color(0xFFEAE9E8))),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: .8), borderRadius: BorderRadius.circular(30), border: Border.all(color: const Color(0xFFE7E7E7))),
               child: Text(dayChanged ? _dayLabel(message.time) : _clock(message.time), style: const TextStyle(fontSize: 10, letterSpacing: .3, color: AppColors.muted)),
             ),
           ),
@@ -596,12 +596,12 @@ class _ChatPageState extends State<ChatPage> {
       height: 34,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: const Color(0xFFE3ECE5),
+        color: const Color(0xFFEDEDED),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         avatarLabel,
-        style: const TextStyle(fontSize: 15, color: Color(0xFF6B7480)),
+        style: const TextStyle(fontSize: 15, color: Color(0xFF777777)),
       ),
     );
     final bubbleTextColor = mine ? Colors.white : const Color(0xFF0F1419);
@@ -642,7 +642,7 @@ class _ChatPageState extends State<ChatPage> {
                             fit: BoxFit.contain,
                             errorBuilder: (_, __, ___) => const SizedBox(
                               width: 180, height: 90,
-                              child: Center(child: Text('图片暂时无法显示', style: TextStyle(fontSize: 11, color: Color(0xFF6B7480)))),
+                              child: Center(child: Text('图片暂时无法显示', style: TextStyle(fontSize: 11, color: Color(0xFF777777)))),
                             ),
                           ),
                         ),
@@ -677,7 +677,7 @@ class _ChatPageState extends State<ChatPage> {
                               width: 34,
                               height: 17,
                               child: Center(
-                                child: Text('···', style: TextStyle(fontSize: 20, letterSpacing: 2, color: Color(0xFF6B7480))),
+                                child: Text('···', style: TextStyle(fontSize: 20, letterSpacing: 2, color: Color(0xFF777777))),
                               ),
                             )
                           : Column(
@@ -700,16 +700,16 @@ class _ChatPageState extends State<ChatPage> {
                   if (prefs.showReasoning && message.isTyping && (message.reasoning ?? '').trim().isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 5, left: 3),
-                      child: Text('正在思考…', style: TextStyle(fontSize: 10, color: Color(0xFF6B7480))),
+                      child: Text('正在思考…', style: TextStyle(fontSize: 10, color: Color(0xFF777777))),
                     ),
                   if (prefs.showReasoning && (message.reasoning ?? '').trim().isNotEmpty)
                     Container(
                       margin: const EdgeInsets.only(top: 7),
                       constraints: const BoxConstraints(maxWidth: 300),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF5F7F5),
+                        color: const Color(0xFFF4F4F4),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFE9EEEA)),
+                        border: Border.all(color: const Color(0xFFE7E7E7)),
                       ),
                       child: Theme(
                         data: Theme.of(context).copyWith(
@@ -724,26 +724,26 @@ class _ChatPageState extends State<ChatPage> {
                           childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          iconColor: const Color(0xFF71877C),
-                          collapsedIconColor: const Color(0xFF89918F),
+                          iconColor: const Color(0xFF666666),
+                          collapsedIconColor: const Color(0xFF999999),
                           leading: Container(
                             width: 27,
                             height: 27,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE8EFEA),
+                              color: const Color(0xFFEBEBEB),
                               borderRadius: BorderRadius.circular(9),
                             ),
-                            child: const Icon(Icons.psychology_alt_rounded, size: 16, color: Color(0xFF52776B)),
+                            child: const Icon(Icons.psychology_alt_rounded, size: 16, color: Color(0xFF444444)),
                           ),
-                          title: const Text('思考过程', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF3E4A44))),
-                          subtitle: const Text('模型通过接口返回', style: TextStyle(fontSize: 9, color: Color(0xFF89918F))),
+                          title: const Text('思考过程', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF444444))),
+                          subtitle: const Text('模型通过接口返回', style: TextStyle(fontSize: 9, color: Color(0xFF999999))),
                           children: [
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.fromLTRB(11, 9, 10, 9),
                               decoration: const BoxDecoration(
-                                color: Color(0xFFEFF3EF),
-                                border: Border(left: BorderSide(color: Color(0xFF9AB4A5), width: 2)),
+                                color: Color(0xFFF2F2F2),
+                                border: Border(left: BorderSide(color: Color(0xFF888888), width: 2)),
                                 borderRadius: BorderRadius.only(
                                   topRight: Radius.circular(9),
                                   bottomRight: Radius.circular(9),
@@ -751,7 +751,7 @@ class _ChatPageState extends State<ChatPage> {
                               ),
                               child: Text(
                                 message.reasoning!,
-                                style: const TextStyle(fontSize: 11, height: 1.65, color: Color(0xFF59635D)),
+                                style: const TextStyle(fontSize: 11, height: 1.65, color: Color(0xFF666666)),
                               ),
                             ),
                           ],
@@ -798,8 +798,8 @@ class _ChatPageState extends State<ChatPage> {
                 onTap: () => Navigator.pop(sheetContext, 'edit'),
               ),
             ListTile(
-              leading: const Icon(Icons.delete_outline_rounded, color: Color(0xFFB65B5B)),
-              title: const Text('删除消息', style: TextStyle(color: Color(0xFFB65B5B))),
+              leading: const Icon(Icons.delete_outline_rounded, color: Color(0xFF666666)),
+              title: const Text('删除消息', style: TextStyle(color: Color(0xFF666666))),
               onTap: () => Navigator.pop(sheetContext, 'delete'),
             ),
           ]),
@@ -841,19 +841,19 @@ class _ChatPageState extends State<ChatPage> {
   Widget _buildComposer(ChatPreferences prefs) => Container(
     padding: EdgeInsets.fromLTRB(14, 11, 14, 10 + MediaQuery.paddingOf(context).bottom),
     decoration: const BoxDecoration(
-      color: Color(0xFFF8FAF8),
-      border: Border(top: BorderSide(color: Color(0xFFE9EEEA))),
+      color: Color(0xFFFAFAFA),
+      border: Border(top: BorderSide(color: Color(0xFFE7E7E7))),
     ),
     child: Column(mainAxisSize: MainAxisSize.min, children: [
       if (_pendingImagePath != null)
         Container(
           margin: const EdgeInsets.only(bottom: 9),
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFFE8EDE9))),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFFE7E7E7))),
           child: Row(children: [
             ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.file(File(_pendingImagePath!), width: 58, height: 58, fit: BoxFit.cover)),
             const SizedBox(width: 10),
-            const Expanded(child: Text('图片已准备好', style: TextStyle(fontSize: 12, color: Color(0xFF526159)))),
+            const Expanded(child: Text('图片已准备好', style: TextStyle(fontSize: 12, color: Color(0xFF666666)))),
             IconButton(visualDensity: VisualDensity.compact, tooltip: '移除图片', onPressed: () => setState(() => _pendingImagePath = null), icon: const Icon(Icons.close_rounded, size: 18)),
           ]),
         ),
@@ -861,13 +861,13 @@ class _ChatPageState extends State<ChatPage> {
         Container(
           margin: const EdgeInsets.only(bottom: 9),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), border: Border.all(color: const Color(0xFFE8EDE9))),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), border: Border.all(color: const Color(0xFFE7E7E7))),
           child: Row(children: [
-            Container(width: 35, height: 38, decoration: BoxDecoration(color: const Color(0xFFEAF1EC), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.insert_drive_file_outlined, size: 19, color: Color(0xFF52776B))),
+            Container(width: 35, height: 38, decoration: BoxDecoration(color: const Color(0xFFEEEEEE), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.insert_drive_file_outlined, size: 19, color: Color(0xFF444444))),
             const SizedBox(width: 9),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(_pendingFileName ?? '附件', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Color(0xFF34433B))),
-              Text(_formatFileSize(_pendingFileSize ?? 0), style: const TextStyle(fontSize: 10, color: Color(0xFF89918F))),
+              Text(_pendingFileName ?? '附件', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Color(0xFF333333))),
+              Text(_formatFileSize(_pendingFileSize ?? 0), style: const TextStyle(fontSize: 10, color: Color(0xFF999999))),
             ])),
             IconButton(visualDensity: VisualDensity.compact, tooltip: '移除文件', onPressed: () => setState(() {
               _pendingFilePath = null; _pendingFileName = null; _pendingFileSize = null;
@@ -879,17 +879,17 @@ class _ChatPageState extends State<ChatPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(23),
-          border: Border.all(color: const Color(0xFFE4EAE5)),
-          boxShadow: [BoxShadow(color: const Color(0xFF526159).withValues(alpha: .045), blurRadius: 18, offset: const Offset(0, 5))],
+          border: Border.all(color: const Color(0xFFE7E7E7)),
+          boxShadow: [BoxShadow(color: const Color(0xFF666666).withValues(alpha: .045), blurRadius: 18, offset: const Offset(0, 5))],
         ),
         child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
           Material(
-            color: const Color(0xFFF0F4F0),
+            color: const Color(0xFFF3F3F3),
             borderRadius: BorderRadius.circular(15),
             child: InkWell(
               borderRadius: BorderRadius.circular(15),
               onTap: _showAttachmentHint,
-              child: const SizedBox(width: 42, height: 42, child: Icon(Icons.add_rounded, color: Color(0xFF526B5E), size: 23)),
+              child: const SizedBox(width: 42, height: 42, child: Icon(Icons.add_rounded, color: Color(0xFF444444), size: 23)),
             ),
           ),
           const SizedBox(width: 8),
@@ -905,7 +905,7 @@ class _ChatPageState extends State<ChatPage> {
                 onSubmitted: prefs.enterSend ? (_) => _send() : null,
                 decoration: const InputDecoration(
                   hintText: '说点什么吧…',
-                  hintStyle: TextStyle(color: Color(0xFFA0AAA4), fontSize: 14),
+                  hintStyle: TextStyle(color: Color(0xFF999999), fontSize: 14),
                   isDense: true,
                   contentPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 11),
                   border: InputBorder.none,
@@ -917,7 +917,7 @@ class _ChatPageState extends State<ChatPage> {
           ),
           const SizedBox(width: 7),
           Material(
-            color: const Color(0xFF34483D),
+            color: const Color(0xFF333333),
             borderRadius: BorderRadius.circular(15),
             child: InkWell(
               borderRadius: BorderRadius.circular(15),
@@ -1037,23 +1037,23 @@ class _ChatPageState extends State<ChatPage> {
       margin: const EdgeInsets.only(bottom: 7),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F7F5),
+        color: const Color(0xFFF4F4F4),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE7ECE8)),
+        border: Border.all(color: const Color(0xFFE7E7E7)),
       ),
       child: Row(children: [
         Container(
           width: 39, height: 43,
-          decoration: BoxDecoration(color: const Color(0xFFE5EEE8), borderRadius: BorderRadius.circular(10)),
-          child: const Icon(Icons.insert_drive_file_outlined, color: Color(0xFF52776B), size: 21),
+          decoration: BoxDecoration(color: const Color(0xFFEAEAEA), borderRadius: BorderRadius.circular(10)),
+          child: const Icon(Icons.insert_drive_file_outlined, color: Color(0xFF444444), size: 21),
         ),
         const SizedBox(width: 10),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(name, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, height: 1.35, fontWeight: FontWeight.w600, color: Color(0xFF26312B))),
+          Text(name, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, height: 1.35, fontWeight: FontWeight.w600, color: Color(0xFF222222))),
           const SizedBox(height: 4),
-          Text('$ext · ${_formatFileSize(message.attachmentSize ?? 0)}', style: const TextStyle(fontSize: 9, color: Color(0xFF89918F))),
+          Text('$ext · ${_formatFileSize(message.attachmentSize ?? 0)}', style: const TextStyle(fontSize: 9, color: Color(0xFF999999))),
         ])),
-        const Icon(Icons.open_in_new_rounded, size: 15, color: Color(0xFF89918F)),
+        const Icon(Icons.open_in_new_rounded, size: 15, color: Color(0xFF999999)),
       ]),
     );
   }
