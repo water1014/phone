@@ -87,13 +87,14 @@
 
   function paint(id) {
     D.body.classList.toggle('xw-chat-on', id === 'chat');
+    D.body.classList.toggle('xw-settings-on', id === 'settings');
     bodyEl.innerHTML = render(id);
     bind(id);
   }
 
   function back() {
     if (!host) return;
-    D.body.classList.remove('xw-chat-on');
+    D.body.classList.remove('xw-chat-on', 'xw-settings-on');
     host.classList.remove('show');
     bodyEl.innerHTML = '';
     currentId = null;
