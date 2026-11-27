@@ -283,6 +283,7 @@ class _MusicPageState extends State<MusicPage> {
   }
 
   int _playRequest = 0;
+  VoidCallback? _playerRefresh;
 
   Future<void> _play(MusicSong song, {List<MusicSong>? source}) async {
     if (!mounted) return;
@@ -294,6 +295,7 @@ class _MusicPageState extends State<MusicPage> {
       if (source != null) _queue = source;
       if (!_queue.any((item) => item.id == song.id)) _queue = [..._queue, song];
     });
+    _playerRefresh?.call();
     try {
       // Fetch the playable URL first. Lyrics are deliberately loaded after
       // playback starts so a slow lyric endpoint cannot hold up the music.
@@ -321,6 +323,7 @@ class _MusicPageState extends State<MusicPage> {
         if (!mounted || request != _playRequest) return;
         final raw = MusicApiClient.lyricText(response) ?? '';
         setState(() => _lyrics = _parseLyrics(raw));
+        _playerRefresh?.call();
       }).catchError((_) {}));
     } catch (e) {
       if (request == _playRequest) _toast(MusicApiClient.prettyError(e));
@@ -761,131 +764,198 @@ class _MusicPageState extends State<MusicPage> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      backgroundColor: const Color(0xFF101116),
-      barrierColor: Colors.black54,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black26,
       builder: (sheetContext) => StatefulBuilder(builder: (context, refresh) {
+        _playerRefresh = () {
+          if (sheetContext.mounted) refresh(() {});
+        };
         final song = _current!;
         final size = MediaQuery.of(context).size;
-        return SizedBox(
-          height: size.height,
-          child: Stack(children: [
-            Positioned.fill(
-              child: song.cover.isEmpty
-                  ? Container(color: const Color(0xFF191A20))
-                  : Image.network(song.cover, fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(color: const Color(0xFF191A20))),
-            ),
-            Positioned.fill(child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [
-                  const Color(0xFF101116).withValues(alpha: .68),
-                  const Color(0xFF101116).withValues(alpha: .78),
-                  const Color(0xFF101116),
-                ], stops: const [0, .42, 1]),
-              ),
-            )),
-            SafeArea(child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 10, 24, 18),
+        return Container(
+          height: size.height * .96,
+          decoration: const BoxDecoration(
+            color: _paper,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(22, 8, 22, 16),
               child: Column(children: [
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  IconButton(onPressed: () => Navigator.pop(sheetContext), icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 30)),
-                  const Text('正在播放', style: TextStyle(fontSize: 9, letterSpacing: 2.2, color: Color(0xFFB9B7BC))),
-                  IconButton(onPressed: () { Navigator.pop(sheetContext); _showSettings(); }, icon: const Icon(Icons.more_horiz_rounded, color: Colors.white, size: 25)),
-                ]),
-                const SizedBox(height: 22),
+                Container(
+                  width: 38,
+                  height: 4,
+                  decoration: BoxDecoration(color: const Color(0xFFD8D8D8), borderRadius: BorderRadius.circular(4)),
+                ),
+                const SizedBox(height: 8),
                 Row(children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(13),
-                    child: song.cover.isEmpty
-                        ? Container(width: 58, height: 58, color: const Color(0xFF30313A), child: const Icon(Icons.music_note_rounded, color: Colors.white70))
-                        : Image.network(song.cover, width: 58, height: 58, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(width: 58, height: 58, color: const Color(0xFF30313A), child: const Icon(Icons.music_note_rounded, color: Colors.white70))),
+                  IconButton(
+                    onPressed: () => Navigator.pop(sheetContext),
+                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: _ink, size: 28),
                   ),
-                  const SizedBox(width: 13),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(song.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 4),
-                    Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Color(0xFFB9B7BC))),
-                  ])),
+                  const Expanded(
+                    child: Column(children: [
+                      Text('NOW PLAYING', style: TextStyle(fontSize: 8, letterSpacing: 2.4, color: _muted, fontWeight: FontWeight.w700)),
+                      SizedBox(height: 3),
+                      Text('正在播放', style: TextStyle(fontSize: 12, color: _ink, fontWeight: FontWeight.w600)),
+                    ]),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      _showSettings();
+                    },
+                    icon: const Icon(Icons.tune_rounded, color: _ink, size: 21),
+                  ),
                 ]),
-                const SizedBox(height: 26),
-                Expanded(child: StreamBuilder<int>(
-                  // 只在歌词行变化时重建，避免 positionStream 高频刷新整份歌词列表。
-                  stream: _audio.positionStream.map((position) {
-                    final seconds = position.inMilliseconds / 1000;
-                    return _lyricIndexAt(seconds);
-                  }).distinct(),
-                  builder: (_, snapshot) {
-                    var active = snapshot.data ?? 0;
-                    if (active < 0) active = 0;
-                    if (_lyrics.isEmpty) {
-                      return const Center(child: Text('让音乐慢慢流淌', style: TextStyle(fontSize: 13, color: Color(0xFF777982))));
-                    }
-                    return ListView.builder(
-                      padding: const EdgeInsets.symmetric(vertical: 26),
-                      itemCount: _lyrics.length,
-                      itemBuilder: (_, index) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: Text(
-                          _lyrics[index]['text'] as String,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: index == active ? 21 : 15,
-                            height: 1.4,
-                            color: index == active ? Colors.white : const Color(0xFF777982),
-                            fontWeight: index == active ? FontWeight.w700 : FontWeight.w400,
-                          ),
+                const SizedBox(height: 12),
+                Flexible(
+                  flex: 5,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 270, maxHeight: size.height * .34),
+                      child: AspectRatio(
+                        aspectRatio: 1,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(22),
+                          child: song.cover.isEmpty
+                              ? Container(
+                                  color: const Color(0xFFECECEC),
+                                  child: const Icon(Icons.music_note_rounded, size: 76, color: Color(0xFF777777)),
+                                )
+                              : Image.network(
+                                  song.cover,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    color: const Color(0xFFECECEC),
+                                    child: const Icon(Icons.music_note_rounded, size: 76, color: Color(0xFF777777)),
+                                  ),
+                                ),
                         ),
                       ),
-                    );
-                  },
-                )),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(children: [
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(song.name, maxLines: 1, overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 18, color: _ink, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 5),
+                    Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12, color: _muted)),
+                  ])),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.favorite_border_rounded, color: _muted, size: 22),
+                  ),
+                ]),
                 const SizedBox(height: 10),
+                Expanded(
+                  flex: 3,
+                  child: _lyrics.isEmpty
+                      ? const Center(
+                          child: Text('让音乐慢慢流淌', style: TextStyle(fontSize: 12, color: _muted)),
+                        )
+                      : StreamBuilder<int>(
+                          stream: _audio.positionStream.map((position) =>
+                              _lyricIndexAt(position.inMilliseconds / 1000)).distinct(),
+                          builder: (_, snapshot) {
+                            final active = (snapshot.data ?? 0).clamp(0, _lyrics.length - 1);
+                            return ListView.builder(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              itemCount: _lyrics.length,
+                              itemBuilder: (_, index) => Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 9),
+                                child: Text(
+                                  _lyrics[index]['text'] as String,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: index == active ? 17 : 13,
+                                    height: 1.45,
+                                    color: index == active ? _ink : const Color(0xFFAAAAAA),
+                                    fontWeight: index == active ? FontWeight.w700 : FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+                const SizedBox(height: 8),
                 StreamBuilder<Duration>(
                   stream: _audio.positionStream,
-                  builder: (_, snap) {
-                    final position = snap.data ?? Duration.zero;
+                  builder: (_, snapshot) {
+                    final position = snapshot.data ?? Duration.zero;
                     final duration = _audio.duration ?? Duration.zero;
                     final max = duration.inMilliseconds.toDouble().clamp(1.0, double.infinity).toDouble();
                     return Column(children: [
-                      Slider(
-                        value: position.inMilliseconds.toDouble().clamp(0.0, max).toDouble(),
-                        max: max,
-                        activeColor: Colors.white,
-                        inactiveColor: const Color(0xFF4A4B52),
-                        onChanged: (v) => _audio.seek(Duration(milliseconds: v.toInt())),
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 3,
+                          activeTrackColor: _ink,
+                          inactiveTrackColor: const Color(0xFFE2E2E2),
+                          thumbColor: _ink,
+                          overlayColor: _ink.withValues(alpha: .08),
+                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
+                        ),
+                        child: Slider(
+                          value: position.inMilliseconds.toDouble().clamp(0.0, max).toDouble(),
+                          max: max,
+                          onChanged: (value) => _audio.seek(Duration(milliseconds: value.toInt())),
+                        ),
                       ),
                       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                        Text(_time(position), style: const TextStyle(fontSize: 10, color: Color(0xFF9B9CA3))),
-                        Text(_time(duration), style: const TextStyle(fontSize: 10, color: Color(0xFF9B9CA3))),
+                        Text(_time(position), style: const TextStyle(fontSize: 9, color: _muted)),
+                        Text(_time(duration), style: const TextStyle(fontSize: 9, color: _muted)),
                       ]),
                     ]);
                   },
                 ),
-                const SizedBox(height: 16),
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  IconButton(onPressed: _previous, icon: const Icon(Icons.shuffle_rounded, color: Color(0xFFB9B7BC), size: 21)),
-                  IconButton(onPressed: _previous, icon: const Icon(Icons.skip_previous_rounded, color: Colors.white, size: 35)),
+                const SizedBox(height: 8),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                  IconButton(
+                    onPressed: _previous,
+                    icon: const Icon(Icons.skip_previous_rounded, color: _ink, size: 31),
+                  ),
                   StreamBuilder<PlayerState>(
                     stream: _audio.playerStateStream,
-                    builder: (_, snap) => IconButton(
-                      onPressed: () async {
-                        if (snap.data?.playing == true) { await _audio.pause(); } else { await _audio.play(); }
-                        if (sheetContext.mounted) refresh(() {});
-                      },
-                      icon: Icon(snap.data?.playing == true ? Icons.pause_circle_filled_rounded : Icons.play_circle_fill_rounded, color: Colors.white, size: 68),
-                    ),
+                    builder: (_, snapshot) {
+                      final playing = snapshot.data?.playing == true;
+                      return IconButton(
+                        onPressed: () async {
+                          if (playing) {
+                            await _audio.pause();
+                          } else {
+                            await _audio.play();
+                          }
+                          if (sheetContext.mounted) refresh(() {});
+                        },
+                        icon: Icon(
+                          playing ? Icons.pause_circle_filled_rounded : Icons.play_circle_fill_rounded,
+                          color: _ink,
+                          size: 64,
+                        ),
+                      );
+                    },
                   ),
-                  IconButton(onPressed: _next, icon: const Icon(Icons.skip_next_rounded, color: Colors.white, size: 35)),
-                  IconButton(onPressed: () { Navigator.pop(sheetContext); setState(() => _tab = 1); }, icon: const Icon(Icons.queue_music_rounded, color: Color(0xFFB9B7BC), size: 22)),
+                  IconButton(
+                    onPressed: _next,
+                    icon: const Icon(Icons.skip_next_rounded, color: _ink, size: 31),
+                  ),
                 ]),
+                const SizedBox(height: 4),
+                Text(
+                  'QUEUE  ·  ' + _queue.length.toString().padLeft(2, '0') + ' TRACKS',
+                  style: const TextStyle(fontSize: 8, letterSpacing: 1.8, color: Color(0xFFAAAAAA)),
+                ),
               ]),
-            )),
-          ]),
+            ),
+          ),
         );
       }),
     );
+    _playerRefresh = null;
   }
 
   Future<void> _previous() async {
