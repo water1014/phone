@@ -102,8 +102,9 @@
      The iframe keeps Mio's original DOM/CSS/JS isolated from Phone's globals. */
   const MIO_VIEWS = {
     /* Only exact Mio modules are redirected. Unmatched Phone apps keep their own pages. */
-    chat:'chat', personas:'personas', worldbook:'worlds', diary:'diary',
-    music:'music', mcp:'mcp', settings:'settings',
+    /* Phone dock keeps its own native chat, diary and settings pages. */
+    personas:'personas', worldbook:'worlds',
+    music:'music', mcp:'mcp',
     wallet:'wallet', life:'life', coread:'coread', offline:'offline',
     preset:'preset', repo:'repo', youtube:'youtube', crread:'crread',
     couple:'couple', msgs:'msgs', iff:'iff', xinji:'xinji', app:'app',
