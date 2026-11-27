@@ -61,7 +61,7 @@ class ChatSettingsPage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(0, 15, 0, 11),
                       child: Row(children: [
-                        const Expanded(child: Text('消息字体大小', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w550, color: AppColors.ink))),
+                        const Expanded(child: Text('消息字体大小', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.ink))),
                         Text('${prefs.fontSize.round()} px', style: const TextStyle(fontSize: 12, color: AppColors.muted)),
                       ]),
                     ),
@@ -162,7 +162,7 @@ class _PreferenceSwitch extends StatelessWidget {
     ),
     child: Row(children: [
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
-        Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w550, color: AppColors.ink)),
+        Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.ink)),
         const SizedBox(height: 4),
         Text(subtitle, style: const TextStyle(fontSize: 10, height: 1.4, color: AppColors.muted)),
       ])),
