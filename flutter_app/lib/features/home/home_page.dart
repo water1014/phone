@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' show FontFeature;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -95,7 +96,7 @@ class _HomePageState extends State<HomePage> {
   int get _togetherDays {
     final start = DateTime.tryParse(_since);
     if (start == null) return -1;
-    return _now.difference(start).inDays.clamp(0, 1000000);
+    return _now.difference(start).inDays.clamp(0, 1000000).toInt();
   }
 
   String get _weekday => const [
