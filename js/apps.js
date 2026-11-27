@@ -91,6 +91,9 @@
     { id: 'desktopcustom', name: '桌面自定义', icon: ['M3 4h18v13H3z', 'M8 21h8', 'M12 17v4'], sidebarOnly: true },
     { id: 'css', name: '样式设置', icon: ['M4 5h16v14H4z', 'M8 9h8', 'M8 13h5'], sidebarOnly: true },
     { id: 'profile', name: '个人资料', icon: ['M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', 'M4 21a8 8 0 0 1 16 0'], sidebarOnly: true },
+    { id: 'app', name: '应用中心', icon: ['M4 4h6v6H4z', 'M14 4h6v6h-6z', 'M4 14h6v6H4z', 'M14 14h6v6h-6z'], sidebarOnly: true },
+    { id: 'cset', name: '聊天设置', icon: ['M4 7h16', 'M4 12h16', 'M4 17h16', 'M8 5v4', 'M15 10v4', 'M10 15v4'], sidebarOnly: true },
+    { id: 'deco', name: '主页装饰', icon: ['M4 5h16v14H4z', 'M8 9h8', 'M8 13h5'], sidebarOnly: true },
 
     /* 设置：两根滑块 */
     { id: 'settings', name: '设置', icon: ['M4.5 8.5h4.5', 'M13 8.5h6.5', 'M10.5 6.6a1.9 1.9 0 1 0 0 3.8 1.9 1.9 0 0 0 0-3.8z', 'M4.5 15.5h4.5', 'M13 15.5h6.5', 'M16.5 13.6a1.9 1.9 0 1 0 0 3.8 1.9 1.9 0 0 0 0-3.8z'] }
