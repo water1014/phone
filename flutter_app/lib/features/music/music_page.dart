@@ -350,24 +350,40 @@ class _MusicPageState extends State<MusicPage> {
     }
   }
 
-  Widget _songTile(MusicSong song, int index, {VoidCallback? onTap}) => ListTile(
-    dense: true,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 1),
-    leading: SizedBox(
-      width: 26,
-      child: Center(child: Text(index.toString().padLeft(2, '0'), style: const TextStyle(fontSize: 10, color: _muted, fontFeatures: []))),
+  Widget _songTile(MusicSong song, int index, {VoidCallback? onTap}) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap ?? () => _play(song, source: _results),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Row(children: [
+          SizedBox(
+            width: 22,
+            child: Center(child: Text(index.toString().padLeft(2, '0'), style: const TextStyle(fontSize: 9, color: Color(0xFFB69AA5)))),
+          ),
+          const SizedBox(width: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: song.cover.isEmpty
+                ? Container(width: 46, height: 46, color: const Color(0xFFEEDFE6), child: const Icon(Icons.music_note_rounded, color: Color(0xFFB18A99), size: 20))
+                : Image.network(song.cover, width: 46, height: 46, fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(width: 46, height: 46, color: const Color(0xFFEEDFE6), child: const Icon(Icons.music_note_rounded, color: Color(0xFFB18A99), size: 20))),
+          ),
+          const SizedBox(width: 11),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(song.name, maxLines: 1, overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 13, color: _current?.id == song.id ? const Color(0xFFC2708A) : const Color(0xFF654B56), fontWeight: FontWeight.w600)),
+            const SizedBox(height: 4),
+            Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: Color(0xFFAA8C98))),
+          ])),
+          const SizedBox(width: 8),
+          Icon(_current?.id == song.id ? Icons.equalizer_rounded : Icons.play_circle_outline_rounded,
+              color: const Color(0xFFB18A99), size: 21),
+        ]),
+      ),
     ),
-    title: Text(song.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: _current?.id == song.id ? _ink : const Color(0xFF333333), fontWeight: _current?.id == song.id ? FontWeight.w600 : FontWeight.w400)),
-    subtitle: Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: _muted)),
-    trailing: Icon(_current?.id == song.id ? Icons.equalizer_rounded : Icons.play_arrow_rounded, color: _current?.id == song.id ? _ink : _muted, size: 19),
-    onTap: onTap ?? () => _play(song, source: _results),
   );
-
-  Widget _content() {
-    if (_tab == 1) return _playlistContent();
-    if (_tab == 2) return _discoverContent();
-    return _homeContent();
-  }
 
   Widget _homeContent() {
     final featured = _current ?? (_queue.isNotEmpty ? _queue.first : null);
@@ -402,7 +418,7 @@ class _MusicPageState extends State<MusicPage> {
         const SizedBox(height: 27),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           const Text('NOW PLAYING', style: TextStyle(fontSize: 10, letterSpacing: 2, color: Color(0xFF9B7180), fontWeight: FontWeight.w700)),
-          Text(_queue.isEmpty ? 'YOUR COLLECTION' : _queue.length.toString().padLeft(2, '0') + ' TRACKS',
+          Text(_queue.isEmpty ? 'YOUR COLLECTION' : '${_queue.length.toString().padLeft(2, '0')} TRACKS',
               style: const TextStyle(fontSize: 9, letterSpacing: 1.2, color: Color(0xFFB79AA5))),
         ]),
         const SizedBox(height: 12),
@@ -498,7 +514,7 @@ class _MusicPageState extends State<MusicPage> {
                     const SizedBox(height: 7),
                     Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontSize: 11, color: Color(0xFF654B56), fontWeight: FontWeight.w600)),
-                    Text(p.count.toString() + ' songs', style: const TextStyle(fontSize: 9, color: Color(0xFFAA8C98))),
+                    Text('${p.count} songs', style: const TextStyle(fontSize: 9, color: Color(0xFFAA8C98))),
                   ])),
                 );
               },
@@ -554,7 +570,7 @@ class _MusicPageState extends State<MusicPage> {
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, color: Color(0xFF654B56), fontWeight: FontWeight.w700)),
                 const SizedBox(height: 5),
-                Text(p.count.toString() + ' songs', style: const TextStyle(fontSize: 10, color: Color(0xFFAA8C98))),
+                Text('${p.count} songs', style: const TextStyle(fontSize: 10, color: Color(0xFFAA8C98))),
               ])),
               const Icon(Icons.chevron_right_rounded, color: Color(0xFFB18A99)),
             ]),
@@ -594,10 +610,10 @@ class _MusicPageState extends State<MusicPage> {
           )),
         ]),
       ),
-      Padding(
-        padding: const EdgeInsets.fromLTRB(22, 2, 22, 8),
+      const Padding(
+        padding: EdgeInsets.fromLTRB(22, 2, 22, 8),
         child: Row(children: [
-          const Text('DISCOVER', style: TextStyle(fontSize: 10, letterSpacing: 2.3, color: Color(0xFF9B7180), fontWeight: FontWeight.w700)),
+          Text('DISCOVER', style: TextStyle(fontSize: 10, letterSpacing: 2.3, color: Color(0xFF9B7180), fontWeight: FontWeight.w700)),
           const SizedBox(width: 10),
           const Expanded(child: Divider(color: Color(0xFFE8D6DE))),
         ]),
