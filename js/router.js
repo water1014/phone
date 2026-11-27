@@ -401,7 +401,7 @@
       })
       .filter(function (m) { return m.content; });
 
-    const system = '你在「小窝」这个私人小手机里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。可以用（括号）写神情和动作当旁白，也可以直接说话，不要列条目。';
+    const baseSystem = '你在「小窝」这个私人小手机里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。可以用（括号）写神情和动作当旁白，也可以直接说话，不要列条目。';\n    const latestUser = history.slice().reverse().find(function (m) { return m.role === 'user'; });\n    const latestText = latestUser ? latestUser.content.toLowerCase() : '';\n    const activeContact = String(XW.S.activeContactId || '');\n    const books = (Array.isArray(XW.S.worldbooks) ? XW.S.worldbooks : []).filter(function (w) {\n      if (!w || w.enabled === false || w.on === false || !String(w.content || '').trim()) return false;\n      if (w.scope === 'contact' && (!activeContact || !(Array.isArray(w.contacts) ? w.contacts : []).includes(activeContact))) return false;\n      if (w.trigger === 'keyword') {\n        const keys = String(w.keys || '').split(/[,，\\n]/).map(function (k) { return k.trim().toLowerCase(); }).filter(Boolean);\n        return keys.some(function (k) { return latestText.includes(k); });\n      }\n      return true;\n    });\n    const wbBefore = books.filter(function (w) { return w.position === 'before'; }).map(function (w) { return '【世界书：' + (w.title || '未命名') + '】\\n' + w.content; }).join('\\n\\n');\n    const wbAfter = books.filter(function (w) { return w.position !== 'before'; }).map(function (w) { return '【世界书：' + (w.title || '未命名') + '】\\n' + w.content; }).join('\\n\\n');\n    const system = baseSystem + (wbBefore ? '\\n\\n【已启用世界书（提示词前）】\\n' + wbBefore : '') + (wbAfter ? '\\n\\n【已启用世界书（提示词后）】\\n' + wbAfter : '');
 
     const body = JSON.stringify({
       model: model,
