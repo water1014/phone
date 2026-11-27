@@ -739,14 +739,22 @@ class _ChatPageState extends State<ChatPage> {
     if (_loadingHistory) {
       return const Center(child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)));
     }
-    final visible = _messages.asMap().entries.where((entry) {
-      final dayMatches = _selectedDay == null ||
-          (entry.value.time.year == _selectedDay!.year &&
-           entry.value.time.month == _selectedDay!.month &&
-           entry.value.time.day == _selectedDay!.day);
-      return dayMatches && (_query.isEmpty || _searchableText(entry.value).contains(_query));
-    }).toList();
-    if (visible.isEmpty) {
+    // In the normal chat view, avoid rebuilding a full filtered copy of the
+    // conversation on every streaming update. Only create the index list when
+    // the user is actively searching or viewing a specific day.
+    final hasFilter = _selectedDay != null || _query.isNotEmpty;
+    final visible = hasFilter
+        ? _messages.asMap().entries.where((entry) {
+            final dayMatches = _selectedDay == null ||
+                (entry.value.time.year == _selectedDay!.year &&
+                 entry.value.time.month == _selectedDay!.month &&
+                 entry.value.time.day == _selectedDay!.day);
+            return dayMatches &&
+                (_query.isEmpty || _searchableText(entry.value).contains(_query));
+          }).toList()
+        : null;
+    final visibleCount = visible?.length ?? _messages.length;
+    if (visibleCount == 0) {
       return Center(child: Text(_selectedDay != null ? '这一天还没有聊天记录' : (_query.isEmpty ? '还没有消息，在下面写一句吧。' : '没有找到相关消息'), style: const TextStyle(color: AppColors.muted, fontSize: 13)));
     }
     return Stack(
@@ -756,10 +764,10 @@ class _ChatPageState extends State<ChatPage> {
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
       controller: _messagesScroll,
       physics: const BouncingScrollPhysics(),
-      itemCount: visible.length,
+      itemCount: visibleCount,
       itemBuilder: (context, index) {
-        final originalIndex = visible[index].key;
-        final message = visible[index].value;
+        final originalIndex = visible == null ? index : visible[index].key;
+        final message = visible == null ? _messages[index] : visible[index].value;
         final previous = originalIndex > 0 ? _messages[originalIndex - 1] : null;
         final gap = previous == null ? const Duration(days: 1) : message.time.difference(previous.time);
         final sameGroup = !message.isSystem && previous != null && !previous.isSystem && prefs.compact && previous.mine == message.mine && gap >= Duration.zero && gap < const Duration(minutes: 5);
