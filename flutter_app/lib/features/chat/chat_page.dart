@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/theme/app_theme.dart';
+import '../../app/widgets/app_side_drawer.dart';
 import 'chat_preferences.dart';
 import 'chat_api_client.dart';
 import 'chat_message.dart';
@@ -214,6 +215,7 @@ class _ChatPageState extends State<ChatPage> {
     return ValueListenableBuilder<ChatPreferences>(
       valueListenable: ChatPreferenceStore.value,
       builder: (context, prefs, _) => Scaffold(
+        drawer: const AppSideDrawer(active: 'chat'),
         backgroundColor: const Color(0xFFF7F8F7),
         body: SafeArea(
           bottom: false,
@@ -230,7 +232,7 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  Widget _buildHeader() => Padding(
+  Widget _buildHeader() => Builder(builder: (scaffoldContext) => Padding(
     padding: const EdgeInsets.fromLTRB(13, 8, 13, 9),
     child: Container(
       height: 58,
@@ -242,6 +244,11 @@ class _ChatPageState extends State<ChatPage> {
         boxShadow: [BoxShadow(color: const Color(0xFF333333).withValues(alpha: .035), blurRadius: 16, offset: const Offset(0, 4))],
       ),
       child: Row(children: [
+        IconButton(
+          tooltip: '打开侧栏',
+          onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
+          icon: const Icon(Icons.menu_rounded, size: 20, color: AppColors.secondary),
+        ),
         IconButton(
           tooltip: '返回',
           onPressed: () => context.pop(),
@@ -298,7 +305,7 @@ class _ChatPageState extends State<ChatPage> {
         ),
       ]),
     ),
-  );
+  ));
 
   Widget _buildSearchBar() => Padding(
     padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
