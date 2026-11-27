@@ -15,7 +15,12 @@
     accounting: 'LEDGER', weather: 'WEATHER', mood: 'MOOD', health: 'HEALTH',
     cycle: 'CYCLE', study: 'STUDY', quotes: 'QUOTES', moments: 'MOMENTS',
     favorites: 'SAVED', games: 'GAMES', studio: 'STUDIO', worldbook: 'WORLD',
-    windows: 'WINDOWS', mcp: 'MCP', beautify: 'STYLE', settings: 'SETTINGS'
+    windows: 'WINDOWS', mcp: 'MCP', beautify: 'STYLE', settings: 'SETTINGS',
+    wallet: 'WALLET', life: 'LIFE', coread: 'TOGETHER READ', offline: 'OFFLINE',
+    preset: 'PRESETS', repo: 'REPOSITORY', youtube: 'VIDEO', crread: 'BOOK CLUB',
+    couple: 'COUPLE SPACE', msgs: 'MESSAGES', iff: 'INTERACTION', xinji: 'JOURNAL',
+    rolephones: 'ROLE PHONES', stickers: 'STICKERS', desktopcustom: 'DESKTOP',
+    css: 'STYLE EDITOR', profile: 'PROFILE'
   };
 
   const GROUPS = [
