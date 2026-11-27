@@ -88,13 +88,6 @@ class _HomePageState extends State<HomePage> {
     return _now.difference(start).inDays.clamp(0, 1000000).toInt();
   }
 
-  String get _weekday => const [
-        '星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'
-      ][_now.weekday - 1];
-
-  String get _clock =>
-      '${_now.hour.toString().padLeft(2, '0')}:${_now.minute.toString().padLeft(2, '0')}';
-
   Future<void> _editValue(String kind) async {
     final isDate = kind == 'start';
     final controller = TextEditingController(
