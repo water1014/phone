@@ -299,7 +299,7 @@ class _MusicPageState extends State<MusicPage> {
         AudioSource.uri(
           Uri.parse(url),
           tag: MediaItem(
-            id: song.id,
+            id: song.id.toString(),
             title: song.name,
             artist: song.artist,
             artUri: song.cover.isEmpty ? null : Uri.tryParse(song.cover),
