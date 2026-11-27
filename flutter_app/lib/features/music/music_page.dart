@@ -300,7 +300,20 @@ class _MusicPageState extends State<MusicPage> {
 
   List<Map<String, dynamic>> _parseLyrics(String raw) {
     final lines = <Map<String, dynamic>>[];
-    final pattern = RegExp(r'^\\[(\\d+):(\\d+(?:\\.\\d+)?)\\](.*)
+    final pattern = RegExp(r'^\[(\d+):(\d+(?:\.\d+)?)\](.*)$');
+    for (final line in raw.split(RegExp(r'\r?\n'))) {
+      final match = pattern.firstMatch(line.trim());
+      if (match == null) continue;
+      final text = match.group(3)?.trim() ?? '';
+      if (text.isEmpty) continue;
+      final seconds = int.parse(match.group(1)!) * 60 + double.parse(match.group(2)!);
+      lines.add({'time': seconds, 'text': text});
+    }
+    lines.sort((a, b) => (a['time'] as double).compareTo(b['time'] as double));
+    return lines;
+  }
+
+  Future<void> _openPlaylist(MusicPlaylist playlist) async {
     setState(() => _busy = true);
     try {
       final songs = await _api.playlistSongs(_worker, _cookie, playlist.id);
@@ -319,7 +332,7 @@ class _MusicPageState extends State<MusicPage> {
                   padding: const EdgeInsets.fromLTRB(18, 18, 18, 10),
                   child: Row(children: [
                     Expanded(child: Text(playlist.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _ink))),
-                    Text('${songs.length} 首', style: const TextStyle(fontSize: 11, color: _muted)),
+                    Text(songs.length.toString() + ' 首', style: const TextStyle(fontSize: 11, color: _muted)),
                   ]),
                 ),
                 Expanded(
