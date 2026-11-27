@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
@@ -46,12 +47,14 @@ class _ChatPageState extends State<ChatPage> {
   bool _searching = false;
   bool _loadingHistory = true;
   bool _sending = false;
+  bool _showJumpLatest = false;
   CancelToken? _activeCancelToken;
   String _query = '';
 
   @override
   void initState() {
     super.initState();
+    _messagesScroll.addListener(_handleScroll);
     unawaited(ChatPreferenceStore.load());
     unawaited(_loadChat());
     unawaited(_restoreDraft());
@@ -104,8 +107,15 @@ class _ChatPageState extends State<ChatPage> {
     )).toList(),
   );
 
+  void _handleScroll() {
+    if (!_messagesScroll.hasClients) return;
+    final shouldShow = _messagesScroll.position.pixels < _messagesScroll.position.maxScrollExtent - 180;
+    if (shouldShow != _showJumpLatest && mounted) setState(() => _showJumpLatest = shouldShow);
+  }
+
   @override
   void dispose() {
+    _messagesScroll.removeListener(_handleScroll);
     _input.dispose();
     _search.dispose();
     _messagesScroll.dispose();
@@ -384,7 +394,9 @@ class _ChatPageState extends State<ChatPage> {
     if (visible.isEmpty) {
       return Center(child: Text(_query.isEmpty ? '还没有消息，在下面写一句吧。' : '没有找到相关消息', style: const TextStyle(color: AppColors.muted, fontSize: 13)));
     }
-    return ListView.builder(
+    return Stack(
+      children: [
+        ListView.builder(
       reverse: false,
       padding: const EdgeInsets.fromLTRB(17, 15, 17, 17),
       controller: _messagesScroll,
@@ -415,6 +427,27 @@ class _ChatPageState extends State<ChatPage> {
               : _messageRow(message, prefs, sameGroup),
         ]);
       },
+    ),
+        if (_showJumpLatest)
+          Positioned(
+            right: 18,
+            bottom: 18,
+            child: Material(
+              color: Colors.white,
+              elevation: 3,
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: _scrollToLatest,
+                child: const SizedBox(
+                  width: 42,
+                  height: 42,
+                  child: Icon(Icons.keyboard_double_arrow_down_rounded, color: AppColors.secondary, size: 21),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -446,7 +479,9 @@ class _ChatPageState extends State<ChatPage> {
                       padding: EdgeInsets.only(left: 2, bottom: 5),
                       child: Text('宋祁', style: TextStyle(fontSize: 11, color: AppColors.muted)),
                     ),
-                  Container(
+                  GestureDetector(
+                    onLongPress: () => _showMessageActions(message),
+                    child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       color: mine ? const Color(0xFFEDE5F0) : Colors.white,
@@ -462,6 +497,7 @@ class _ChatPageState extends State<ChatPage> {
                     child: message.isTyping && message.text.isEmpty
                         ? const SizedBox(width: 34, height: 17, child: Center(child: Text('···', style: TextStyle(fontSize: 20, letterSpacing: 2, color: AppColors.muted))))
                         : Text(message.text, style: TextStyle(fontSize: prefs.fontSize, height: 1.55, color: AppColors.ink)),
+                    ),
                   ),
                   if (message.isTyping && (message.reasoning ?? '').trim().isEmpty)
                     const Padding(
@@ -500,6 +536,68 @@ class _ChatPageState extends State<ChatPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _showMessageActions(_ChatMessage message) async {
+    if (message.isTyping || message.isSystem || message.text.isEmpty) return;
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 4, 14, 18),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            ListTile(
+              leading: const Icon(Icons.copy_rounded),
+              title: const Text('复制消息'),
+              onTap: () => Navigator.pop(sheetContext, 'copy'),
+            ),
+            if (message.mine)
+              ListTile(
+                leading: const Icon(Icons.edit_outlined),
+                title: const Text('编辑并重新发送'),
+                onTap: () => Navigator.pop(sheetContext, 'edit'),
+              ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline_rounded, color: Color(0xFFB65B5B)),
+              title: const Text('删除消息', style: TextStyle(color: Color(0xFFB65B5B))),
+              onTap: () => Navigator.pop(sheetContext, 'delete'),
+            ),
+          ]),
+        ),
+      ),
+    );
+    if (!mounted || action == null) return;
+    if (action == 'copy') {
+      await Clipboard.setData(ClipboardData(text: message.text));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已复制')));
+    } else if (action == 'delete') {
+      setState(() => _messages.remove(message));
+      await _persistChat();
+    } else if (action == 'edit' && message.mine) {
+      final controller = TextEditingController(text: message.text);
+      final edited = await showDialog<String>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('编辑消息'),
+          content: TextField(controller: controller, autofocus: true, minLines: 1, maxLines: 5),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
+            TextButton(onPressed: () => Navigator.pop(dialogContext, controller.text.trim()), child: const Text('重新发送')),
+          ],
+        ),
+      );
+      controller.dispose();
+      if (edited != null && edited.isNotEmpty && mounted) {
+        setState(() {
+          _messages.remove(message);
+          _input.text = edited;
+        });
+        await _saveDraft(edited);
+        await _send();
+      }
+    }
   }
 
   Widget _buildComposer(ChatPreferences prefs) => Container(
