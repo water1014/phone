@@ -312,7 +312,7 @@
           '<div class="think-body">' + UI.esc(msg.think) + '</div></details>';
       }
       if (msg.img) {
-        inner += '<figure class="msg-img"><img src="' + UI.esc(msg.img) + '" alt=""></figure>';
+        inner += '<figure class="msg-img"><img src="' + UI.esc(msg.img) + '" alt="聊天图片" loading="lazy" decoding="async"></figure>';
       }
       if (msg.text) {
         renderText(msg.text).forEach(function (c) {
@@ -361,7 +361,8 @@
       if (t) lastT = t;
 
       const same = prev && prev.who === m.who && m.who !== 'sys' &&
-        !m.img && !prev.img && !m.quote && gap < 5 * 60 * 1000 && !prev._typing;
+        !m.img && !prev.img && !m.quote && !prev.quote &&
+        gap >= 0 && gap < 5 * 60 * 1000 && !prev._typing && !m._typing;
       return sep + messageHtml(m, same, index);
     }).join('');
 
