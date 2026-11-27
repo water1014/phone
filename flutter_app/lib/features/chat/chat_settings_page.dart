@@ -135,7 +135,7 @@ class ChatSettingsPage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(0, 8, 0, 2),
                       child: Row(children: [
-                        const _SettingIcon(icon: Icons.rounded_corner_rounded),
+                        const _SettingIcon(icon: Icons.rounded_corner),
                         const SizedBox(width: 11),
                         const Expanded(child: Text('气泡圆角', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _ink))),
                         Text('${prefs.bubbleRadius.round()} px', style: const TextStyle(fontSize: 11, color: _muted)),
