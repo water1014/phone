@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui' show FontFeature;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -33,8 +32,8 @@ class _HomePageState extends State<HomePage> {
   String _quote = '';
   String _since = _sinceDefault;
   String _avatarPath = '';
-  String _weather = '--';
-  String _weatherDescription = '天气暂不可用';
+  final String _weather = '--';
+  final String _weatherDescription = '天气暂不可用';
   List<_HomeMessage> _messages = const [];
   _HomeDiary? _latestDiary;
   int _memoryCount = 0;
