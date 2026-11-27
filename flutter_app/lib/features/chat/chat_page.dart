@@ -1,7 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/theme/app_theme.dart';
@@ -21,6 +25,7 @@ class _ChatMessage {
     this.isTyping = false,
     this.inputTokens,
     this.outputTokens,
+    this.imagePath,
   });
   final String text;
   final bool mine;
@@ -30,6 +35,7 @@ class _ChatMessage {
   final bool isTyping;
   final int? inputTokens;
   final int? outputTokens;
+  final String? imagePath;
 }
 
 class ChatPage extends StatefulWidget {
@@ -43,6 +49,8 @@ class _ChatPageState extends State<ChatPage> {
   final _search = TextEditingController();
   final _messagesScroll = ScrollController();
   final _api = ChatApiClient();
+  final _imagePicker = ImagePicker();
+  String? _pendingImagePath;
   final List<_ChatMessage> _messages = [];
   bool _searching = false;
   bool _loadingHistory = true;
@@ -89,6 +97,7 @@ class _ChatPageState extends State<ChatPage> {
           isSystem: message.isSystem,
           inputTokens: message.inputTokens,
           outputTokens: message.outputTokens,
+          imagePath: message.imagePath,
         )));
       _loadingHistory = false;
     });
@@ -104,6 +113,7 @@ class _ChatPageState extends State<ChatPage> {
       isSystem: message.isSystem,
       inputTokens: message.inputTokens,
       outputTokens: message.outputTokens,
+      imagePath: message.imagePath,
     )).toList(),
   );
 
@@ -125,10 +135,12 @@ class _ChatPageState extends State<ChatPage> {
   Future<void> _send([String? quickText]) async {
     if (_sending) return;
     final value = (quickText ?? _input.text).trim();
-    if (value.isEmpty) return;
+    final imagePath = quickText == null ? _pendingImagePath : null;
+    if (value.isEmpty && imagePath == null) return;
     setState(() {
-      _messages.add(_ChatMessage(text: value, mine: true, time: DateTime.now()));
+      _messages.add(_ChatMessage(text: value, mine: true, time: DateTime.now(), imagePath: imagePath));
       _input.clear();
+      _pendingImagePath = null;
       _query = '';
       _search.clear();
       _sending = true;
@@ -157,17 +169,41 @@ class _ChatPageState extends State<ChatPage> {
         return;
       }
 
-      final history = _messages
-          .where((message) => !message.isSystem && !message.isTyping && message.text.trim().isNotEmpty)
+      final historyMessages = _messages
+          .where((message) => !message.isSystem && !message.isTyping &&
+              (message.text.trim().isNotEmpty || message.imagePath != null))
           .toList()
           .reversed
           .take(20)
           .toList()
-          .reversed
-          .map((message) => <String, dynamic>{
+          .reversed;
+      final history = <Map<String, dynamic>>[];
+      for (final message in historyMessages) {
+        final imagePath = message.imagePath;
+        if (imagePath != null && await File(imagePath).exists()) {
+          final file = File(imagePath);
+          final bytes = await file.readAsBytes();
+          final extension = file.path.toLowerCase().split('.').last;
+          final mime = extension == 'png' ? 'image/png' :
+              extension == 'webp' ? 'image/webp' : 'image/jpeg';
+          history.add({
+            'role': message.mine ? 'user' : 'assistant',
+            'content': [
+              if (message.text.trim().isNotEmpty)
+                {'type': 'text', 'text': message.text},
+              {
+                'type': 'image_url',
+                'image_url': {'url': 'data:$mime;base64,${base64Encode(bytes)}'},
+              },
+            ],
+          });
+        } else {
+          history.add({
             'role': message.mine ? 'user' : 'assistant',
             'content': message.text,
-          }).toList();
+          });
+        }
+      }
 
       const systemPrompt = '你在「小窝」这个私人空间里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。可以用（括号）写神情和动作当旁白，也可以直接说话，不要列条目。';
       final requestMessages = <Map<String, dynamic>>[
@@ -211,6 +247,7 @@ class _ChatPageState extends State<ChatPage> {
               reasoning: current.reasoning,
               inputTokens: current.inputTokens,
               outputTokens: current.outputTokens,
+              imagePath: current.imagePath,
             );
           });
         }
@@ -519,7 +556,34 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                     child: message.isTyping && message.text.isEmpty
                         ? const SizedBox(width: 34, height: 17, child: Center(child: Text('···', style: TextStyle(fontSize: 20, letterSpacing: 2, color: AppColors.muted))))
-                        : Text(message.text, style: TextStyle(fontSize: prefs.fontSize, height: 1.55, color: AppColors.ink)),
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (message.imagePath != null && File(message.imagePath!).existsSync())
+                                GestureDetector(
+                                  onTap: () => _showFullImage(message.imagePath!),
+                                  child: Padding(
+                                    padding: EdgeInsets.only(bottom: message.text.isNotEmpty ? 8 : 0),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(11),
+                                      child: Image.file(
+                                        File(message.imagePath!),
+                                        width: 220,
+                                        height: 220,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => const SizedBox(
+                                          width: 180, height: 90,
+                                          child: Center(child: Text('图片暂时无法显示', style: TextStyle(fontSize: 11, color: AppColors.muted))),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              if (message.text.isNotEmpty)
+                                Text(message.text, style: TextStyle(fontSize: prefs.fontSize, height: 1.55, color: AppColors.ink)),
+                            ],
+                          ),
                     ),
                   ),
                   if (message.isTyping && (message.reasoning ?? '').trim().isEmpty)
@@ -631,6 +695,18 @@ class _ChatPageState extends State<ChatPage> {
       boxShadow: [BoxShadow(color: const Color(0xFF333333).withValues(alpha: .025), blurRadius: 12, offset: const Offset(0, -3))],
     ),
     child: Column(mainAxisSize: MainAxisSize.min, children: [
+      if (_pendingImagePath != null)
+        Container(
+          margin: const EdgeInsets.only(bottom: 9),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: const Color(0xFFF7F5F6), borderRadius: BorderRadius.circular(15), border: Border.all(color: const Color(0xFFECE8EB))),
+          child: Row(children: [
+            ClipRRect(borderRadius: BorderRadius.circular(9), child: Image.file(File(_pendingImagePath!), width: 58, height: 58, fit: BoxFit.cover)),
+            const SizedBox(width: 10),
+            const Expanded(child: Text('图片已准备好', style: TextStyle(fontSize: 12, color: AppColors.secondary))),
+            IconButton(visualDensity: VisualDensity.compact, tooltip: '移除图片', onPressed: () => setState(() => _pendingImagePath = null), icon: const Icon(Icons.close_rounded, size: 18)),
+          ]),
+        ),
       SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(children: [
@@ -653,7 +729,7 @@ class _ChatPageState extends State<ChatPage> {
       Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
         IconButton(
           visualDensity: VisualDensity.compact,
-          onPressed: () => _showAttachmentHint(),
+          onPressed: _showAttachmentHint,
           icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.secondary, size: 23),
         ),
         Expanded(
@@ -730,13 +806,69 @@ class _ChatPageState extends State<ChatPage> {
       context: context,
       backgroundColor: Colors.white,
       showDragHandle: true,
-      builder: (context) => const SafeArea(
+      builder: (sheetContext) => SafeArea(
         child: Padding(
-          padding: EdgeInsets.fromLTRB(22, 8, 22, 28),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            ListTile(leading: Icon(Icons.image_outlined), title: Text('图片与文件'), subtitle: Text('附件选择功能将在媒体模块迁移时接入')),
-          ]),
+          padding: const EdgeInsets.fromLTRB(22, 8, 22, 28),
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.image_outlined, color: AppColors.secondary),
+            title: const Text('从相册选择图片'),
+            subtitle: const Text('支持图片理解的模型可读取图片内容'),
+            onTap: () {
+              Navigator.pop(sheetContext);
+              _pickImage();
+            },
+          ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 84,
+        maxWidth: 2048,
+        maxHeight: 2048,
+      );
+      if (picked == null || !mounted) return;
+      final source = File(picked.path);
+      final size = await source.length();
+      if (size > 8 * 1024 * 1024) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('图片仍然太大，请选择 8 MB 以内的图片')),
+        );
+        return;
+      }
+      final appDir = await getApplicationDocumentsDirectory();
+      final mediaDir = Directory('${appDir.path}/chat_media');
+      if (!await mediaDir.exists()) await mediaDir.create(recursive: true);
+      final extension = picked.path.contains('.')
+          ? picked.path.split('.').last.toLowerCase()
+          : 'jpg';
+      final target = File('${mediaDir.path}/image_${DateTime.now().microsecondsSinceEpoch}.$extension');
+      await source.copy(target.path);
+      if (!mounted) return;
+      setState(() => _pendingImagePath = target.path);
+    } catch (error) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('选择图片失败：$error')),
+      );
+    }
+  }
+
+  void _showFullImage(String path) {
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(12),
+        child: Stack(children: [
+          Center(child: InteractiveViewer(minScale: .7, maxScale: 4, child: Image.file(File(path), fit: BoxFit.contain))),
+          Positioned(top: 4, right: 4, child: IconButton(onPressed: () => Navigator.pop(dialogContext), icon: const Icon(Icons.close_rounded, color: Colors.white))),
+        ]),
       ),
     );
   }

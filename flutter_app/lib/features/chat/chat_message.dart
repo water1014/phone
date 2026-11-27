@@ -10,6 +10,7 @@ class ChatMessageRecord {
     this.isTyping = false,
     this.inputTokens,
     this.outputTokens,
+    this.imagePath,
   });
 
   final String text;
@@ -20,6 +21,7 @@ class ChatMessageRecord {
   final bool isTyping;
   final int? inputTokens;
   final int? outputTokens;
+  final String? imagePath;
 
   Map<String, dynamic> toJson() => {
     'text': text,
@@ -29,6 +31,7 @@ class ChatMessageRecord {
     'isSystem': isSystem,
     'inputTokens': inputTokens,
     'outputTokens': outputTokens,
+    'imagePath': imagePath,
   };
 
   factory ChatMessageRecord.fromJson(Map<String, dynamic> json) =>
@@ -40,6 +43,7 @@ class ChatMessageRecord {
         isSystem: json['isSystem'] as bool? ?? false,
         inputTokens: json['inputTokens'] as int?,
         outputTokens: json['outputTokens'] as int?,
+        imagePath: json['imagePath'] as String?,
       );
 
   static String encodeList(List<ChatMessageRecord> messages) =>
