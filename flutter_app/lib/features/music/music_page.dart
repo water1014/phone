@@ -34,7 +34,6 @@ class _MusicPageState extends State<MusicPage> {
   String _message = '';
   bool _busy = false;
   bool _loggedIn = false;
-  int? _uid;
   int _tab = 0;
   List<MusicSong> _results = [];
   List<MusicSong> _queue = [];
@@ -99,7 +98,6 @@ class _MusicPageState extends State<MusicPage> {
       if (!mounted) return;
       setState(() {
         _loggedIn = true;
-        _uid = uid;
         _accountName = nickname;
         _playlists = playlists;
         _message = '';
@@ -108,7 +106,6 @@ class _MusicPageState extends State<MusicPage> {
       if (!mounted) return;
       setState(() {
         _loggedIn = false;
-        _uid = null;
         _playlists = [];
         _message = showError ? MusicApiClient.prettyError(e) : '';
       });
@@ -172,10 +169,10 @@ class _MusicPageState extends State<MusicPage> {
                   _toast('网易云已登录');
                 }
               }
-              refresh(() {});
+              if (dialogContext.mounted) refresh(() {});
             } catch (e) {
               status = MusicApiClient.prettyError(e);
-              refresh(() {});
+              if (dialogContext.mounted) refresh(() {});
             } finally {
               checking = false;
             }
@@ -644,7 +641,6 @@ class _MusicPageState extends State<MusicPage> {
     setState(() {
       _cookie = '';
       _loggedIn = false;
-      _uid = null;
       _accountName = '';
       _playlists = [];
     });
