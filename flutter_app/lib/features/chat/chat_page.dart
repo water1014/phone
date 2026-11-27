@@ -592,12 +592,12 @@ class _ChatPageState extends State<ChatPage> {
     final mineBubble = _mineBubbleColor(prefs.bubbleStyle);
     final partnerBubble = _partnerBubbleColor(prefs.bubbleStyle);
     final avatar = Container(
-      width: 40,
-      height: 40,
+      width: 34,
+      height: 34,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: mine ? const Color(0xFFE3E5E8) : const Color(0xFFE3E5E8),
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         avatarLabel,
@@ -611,16 +611,17 @@ class _ChatPageState extends State<ChatPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: mine ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
-          if (!mine && prefs.showAvatar) ...[
-            SizedBox(width: 40, height: 40, child: compact ? const SizedBox.shrink() : avatar),
-            const SizedBox(width: 8),
-          ],
           Flexible(
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * .78),
               child: Column(
                 crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
+                  if (prefs.showAvatar && !compact)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 6, left: mine ? 0 : 1, right: mine ? 1 : 0),
+                      child: avatar,
+                    ),
                   if (!mine && prefs.showName && !compact)
                     Padding(
                       padding: const EdgeInsets.only(left: 1, bottom: 1),
@@ -659,16 +660,16 @@ class _ChatPageState extends State<ChatPage> {
                     child: Container(
                       padding: mediaOnly
                           ? EdgeInsets.zero
-                          : const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                          : const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
                         color: mediaOnly
                             ? Colors.transparent
                             : (mine ? mineBubble : partnerBubble),
                         borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(!mine && !compact ? 4 : 16),
-                          topRight: Radius.circular(mine && !compact ? 4 : 16),
-                          bottomLeft: const Radius.circular(16),
-                          bottomRight: const Radius.circular(16),
+                          topLeft: Radius.circular(!mine && !compact ? 7 : 18),
+                          topRight: Radius.circular(mine && !compact ? 7 : 18),
+                          bottomLeft: const Radius.circular(18),
+                          bottomRight: const Radius.circular(18),
                         ),
                       ),
                       child: message.isTyping && message.text.isEmpty
@@ -766,10 +767,6 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ),
           ),
-          if (mine && prefs.showAvatar) ...[
-            const SizedBox(width: 8),
-            SizedBox(width: 40, height: 40, child: compact ? const SizedBox.shrink() : avatar),
-          ],
         ],
       ),
     );
