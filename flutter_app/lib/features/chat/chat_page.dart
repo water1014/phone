@@ -600,7 +600,7 @@ class _ChatPageState extends State<ChatPage> {
       width: 40,
       child: Align(
         alignment: mine ? Alignment.topRight : Alignment.topLeft,
-        child: prefs.showAvatar && !compact ? avatar : const SizedBox(width: 34, height: 34),
+        child: prefs.showAvatar ? avatar : const SizedBox(width: 34, height: 34),
       ),
     );
     final bubbleRadius = isHelloTalk
@@ -625,8 +625,53 @@ class _ChatPageState extends State<ChatPage> {
           children: [
             if (!mine && prefs.showName && !compact)
               Padding(
-                padding: const EdgeInsets.only(left: 2, bottom: 5),
+                padding: const EdgeInsets.only(left: 2, bottom: 3),
                 child: Text(partnerLabel, style: const TextStyle(fontSize: 11, color: Color(0xFF777777), fontWeight: FontWeight.w500)),
+              ),
+            if (!mine && prefs.showReasoning && message.isTyping && (message.reasoning ?? '').trim().isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(left: 2, bottom: 5),
+                child: Text('正在思考…', style: TextStyle(fontSize: 10, color: Color(0xFF888888))),
+              ),
+            if (!mine && prefs.showReasoning && (message.reasoning ?? '').trim().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(left: 1, bottom: 5),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    dividerColor: Colors.transparent,
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                  ),
+                  child: ExpansionTile(
+                    dense: true,
+                    visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                    tilePadding: EdgeInsets.zero,
+                    childrenPadding: const EdgeInsets.only(left: 2, right: 4, bottom: 7),
+                    shape: const Border(),
+                    collapsedShape: const Border(),
+                    iconColor: const Color(0xFF888888),
+                    collapsedIconColor: const Color(0xFFAAAAAA),
+                    trailing: const Icon(Icons.keyboard_arrow_down_rounded, size: 15),
+                    title: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.psychology_outlined, size: 13, color: Color(0xFF888888)),
+                        SizedBox(width: 5),
+                        Text('已思考 · 查看过程', style: TextStyle(fontSize: 10, color: Color(0xFF888888), fontWeight: FontWeight.w400)),
+                      ],
+                    ),
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.only(left: 9, top: 2, bottom: 3),
+                        decoration: const BoxDecoration(
+                          border: Border(left: BorderSide(color: Color(0xFFCCCCCC), width: 1)),
+                        ),
+                        child: Text(message.reasoning!, style: const TextStyle(fontSize: 11, height: 1.6, color: Color(0xFF777777))),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             if (message.imagePath != null && File(message.imagePath!).existsSync())
               GestureDetector(
@@ -684,58 +729,6 @@ class _ChatPageState extends State<ChatPage> {
                             color: mine ? Colors.white : const Color(0xFF222222),
                           ),
                         ),
-                ),
-              ),
-            if (prefs.showReasoning && message.isTyping && (message.reasoning ?? '').trim().isEmpty)
-              const Padding(
-                padding: EdgeInsets.only(top: 5, left: 3),
-                child: Text('正在思考…', style: TextStyle(fontSize: 10, color: Color(0xFF777777))),
-              ),
-            if (prefs.showReasoning && (message.reasoning ?? '').trim().isNotEmpty)
-              Container(
-                margin: const EdgeInsets.only(top: 7),
-                constraints: const BoxConstraints(maxWidth: 300),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF4F4F4),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFE7E7E7)),
-                ),
-                child: Theme(
-                  data: Theme.of(context).copyWith(
-                    dividerColor: Colors.transparent,
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                  ),
-                  child: ExpansionTile(
-                    dense: true,
-                    visualDensity: const VisualDensity(vertical: -2),
-                    tilePadding: const EdgeInsets.symmetric(horizontal: 11),
-                    childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    iconColor: const Color(0xFF666666),
-                    collapsedIconColor: const Color(0xFF999999),
-                    leading: Container(
-                      width: 27,
-                      height: 27,
-                      decoration: BoxDecoration(color: const Color(0xFFEBEBEB), borderRadius: BorderRadius.circular(9)),
-                      child: const Icon(Icons.psychology_alt_rounded, size: 16, color: Color(0xFF444444)),
-                    ),
-                    title: const Text('思考过程', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF444444))),
-                    subtitle: const Text('模型通过接口返回', style: TextStyle(fontSize: 9, color: Color(0xFF999999))),
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.fromLTRB(11, 9, 10, 9),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFF2F2F2),
-                          border: Border(left: BorderSide(color: Color(0xFF888888), width: 2)),
-                          borderRadius: BorderRadius.only(topRight: Radius.circular(9), bottomRight: Radius.circular(9)),
-                        ),
-                        child: Text(message.reasoning!, style: const TextStyle(fontSize: 11, height: 1.65, color: Color(0xFF666666))),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             if (prefs.showTime && !compact)
