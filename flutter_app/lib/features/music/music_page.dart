@@ -282,19 +282,23 @@ class _MusicPageState extends State<MusicPage> {
     }
   }
 
+  int _playRequest = 0;
+
   Future<void> _play(MusicSong song, {List<MusicSong>? source}) async {
     if (!mounted) return;
+    final request = ++_playRequest;
     setState(() {
       _busy = true;
       _current = song;
+      _lyrics = [];
       if (source != null) _queue = source;
       if (!_queue.any((item) => item.id == song.id)) _queue = [..._queue, song];
     });
     try {
+      // Fetch the playable URL first. Lyrics are deliberately loaded after
+      // playback starts so a slow lyric endpoint cannot hold up the music.
       final url = await _api.songUrl(_worker, song.id, cookie: _cookie);
-      final lyricResponse = await _api.lyric(_worker, song.id, cookie: _cookie).catchError((_) => <String, dynamic>{});
-      final lyricRaw = MusicApiClient.lyricText(lyricResponse) ?? '';
-      if (mounted) setState(() => _lyrics = _parseLyrics(lyricRaw));
+      if (!mounted || request != _playRequest) return;
       await _audio.setAudioSource(
         AudioSource.uri(
           Uri.parse(url),
@@ -306,11 +310,23 @@ class _MusicPageState extends State<MusicPage> {
           ),
         ),
       );
-      await _audio.play();
-    } catch (e) {
-      _toast(MusicApiClient.prettyError(e));
-    } finally {
+      if (!mounted || request != _playRequest) return;
+      unawaited(_audio.play());
       if (mounted) setState(() => _busy = false);
+
+      // Lyrics load independently and only update the lyric panel if this is
+      // still the currently requested track.
+      unawaited(_api.lyric(_worker, song.id, cookie: _cookie).then((response) {
+        if (!mounted || request != _playRequest) return;
+        final raw = MusicApiClient.lyricText(response) ?? '';
+        setState(() => _lyrics = _parseLyrics(raw));
+      }).catchError((_) {}));
+    } catch (e) {
+      if (request == _playRequest) _toast(MusicApiClient.prettyError(e));
+    } finally {
+      if (mounted && request == _playRequest && _busy) {
+        setState(() => _busy = false);
+      }
     }
   }
 
