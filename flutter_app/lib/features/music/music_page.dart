@@ -120,6 +120,7 @@ class _MusicPageState extends State<MusicPage> {
     bool checking = false;
     Timer? timer;
     var finished = false;
+    var dialogActive = true;
 
     try {
       final keyResponse = await _api.qrKey(_worker);
@@ -144,10 +145,11 @@ class _MusicPageState extends State<MusicPage> {
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, refresh) {
           Future<void> poll() async {
-            if (checking || finished || qrKey == null) return;
+            if (!dialogActive || checking || finished || qrKey == null) return;
             checking = true;
             try {
               final response = await _api.qrCheck(_worker, qrKey);
+              if (!dialogActive || !dialogContext.mounted) return;
               final code = MusicApiClient.qrCode(response);
               if (code == 800) {
                 status = '二维码已过期，请关闭后重新打开';
@@ -161,6 +163,7 @@ class _MusicPageState extends State<MusicPage> {
                   status = '登录完成，但没有取得登录凭据，请改用 Cookie 登录';
                 } else {
                   finished = true;
+                  dialogActive = false;
                   timer?.cancel();
                   await _secure.write(key: _cookieKey, value: cookie);
                   if (mounted) setState(() => _cookie = cookie);
@@ -169,10 +172,11 @@ class _MusicPageState extends State<MusicPage> {
                   _toast('网易云已登录');
                 }
               }
-              if (dialogContext.mounted) refresh(() {});
+              if (dialogActive && dialogContext.mounted) refresh(() {});
             } catch (e) {
+              if (!dialogActive || !dialogContext.mounted) return;
               status = MusicApiClient.prettyError(e);
-              if (dialogContext.mounted) refresh(() {});
+              refresh(() {});
             } finally {
               checking = false;
             }
@@ -224,7 +228,7 @@ class _MusicPageState extends State<MusicPage> {
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('取消', style: TextStyle(color: _muted))),
+              TextButton(onPressed: () { dialogActive = false; timer?.cancel(); Navigator.of(dialogContext).pop(); }, child: const Text('取消', style: TextStyle(color: _muted))),
               FilledButton(
                 style: FilledButton.styleFrom(backgroundColor: _ink, foregroundColor: Colors.white),
                 onPressed: () async {
@@ -234,6 +238,7 @@ class _MusicPageState extends State<MusicPage> {
                     return;
                   }
                   finished = true;
+                  dialogActive = false;
                   timer?.cancel();
                   await _secure.write(key: _cookieKey, value: cookie);
                   if (mounted) setState(() => _cookie = cookie);
@@ -248,6 +253,7 @@ class _MusicPageState extends State<MusicPage> {
         },
       ),
     );
+    dialogActive = false;
     timer?.cancel();
     manualController.dispose();
   }
