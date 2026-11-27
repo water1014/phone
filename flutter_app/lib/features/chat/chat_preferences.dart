@@ -74,8 +74,14 @@ abstract final class ChatPreferenceStore {
 
   static Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
+    final avatarSettingMigrated = prefs.getBool('chat.avatarSettingMigrated.v1') ?? false;
+    final showAvatar = avatarSettingMigrated ? (prefs.getBool('chat.showAvatar') ?? false) : false;
+    if (!avatarSettingMigrated) {
+      await prefs.setBool('chat.showAvatar', false);
+      await prefs.setBool('chat.avatarSettingMigrated.v1', true);
+    }
     value.value = ChatPreferences(
-      showAvatar: prefs.getBool('chat.showAvatar') ?? false,
+      showAvatar: showAvatar,
       showName: prefs.getBool('chat.showName') ?? true,
       showTime: prefs.getBool('chat.showTime') ?? true,
       compact: prefs.getBool('chat.compact') ?? true,
