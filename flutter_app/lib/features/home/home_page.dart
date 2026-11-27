@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/theme/app_theme.dart';
+import '../../app/widgets/app_side_drawer.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -8,7 +9,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const _AppDrawer(),
+      drawer: const AppSideDrawer(active: 'home'),
       body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -160,39 +161,3 @@ class _RoundAction extends StatelessWidget {
   );
 }
 
-class _AppDrawer extends StatelessWidget {
-  const _AppDrawer();
-  static const groups = <String, List<String>>{
-    '聊天与关系': ['聊天', '联系人', '记忆', '世界书', '动态'],
-    '生活与记录': ['日记', '日历', '安排', '记账', '心情', '健康'],
-    '内容与收藏': ['相册', '一起听', '收藏', '游戏', '生图室'],
-    '系统与扩展': ['MCP', '美化', '设置'],
-  };
-
-  @override
-  Widget build(BuildContext context) => Drawer(
-    backgroundColor: AppColors.paper,
-    child: SafeArea(child: ListView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-      children: [
-        const Text('小窝', style: TextStyle(fontSize: 25, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 22),
-        for (final group in groups.entries) ...[
-          Text(group.key, style: const TextStyle(
-            color: AppColors.muted, fontSize: 11, fontWeight: FontWeight.w600,
-          )),
-          const SizedBox(height: 8),
-          for (final item in group.value)
-            ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-              dense: true,
-              title: Text(item, style: const TextStyle(fontSize: 14)),
-              trailing: const Icon(Icons.chevron_right_rounded, size: 18),
-              onTap: () => Navigator.of(context).pop(),
-            ),
-          const SizedBox(height: 16),
-        ],
-      ],
-    )),
-  );
-}
