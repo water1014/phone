@@ -10,6 +10,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: const AppSideDrawer(active: 'home'),
+      drawerEnableOpenDragGesture: false,
       body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
