@@ -98,7 +98,22 @@
     quote = null;
   }
 
+  /* MioWatery original views are hosted as-is inside the existing Phone app window.
+     The iframe keeps Mio's original DOM/CSS/JS isolated from Phone's globals. */
+  const MIO_VIEWS = {
+    chat:'chat', personas:'personas', memory:'xinji', diary:'diary', album:'prof',
+    letter:'couple', music:'music', calendar:'life', plans:'life', accounting:'wallet',
+    weather:'life', mood:'life', health:'life', cycle:'life', study:'life',
+    quotes:'xinji', moments:'msgs', favorites:'xinji', games:'app', studio:'app',
+    worldbook:'worlds', windows:'desktopcustom', mcp:'mcp', beautify:'deco', settings:'settings'
+  };
+  function mioFrame(view) {
+    return '<iframe class="mio-original-frame" title="MioWatery 原版" src="mio/index.html#' +
+      encodeURIComponent(view) + '" allow="clipboard-read; clipboard-write; fullscreen" loading="eager"></iframe>';
+  }
+
   function render(id) {
+    if (MIO_VIEWS[id]) return mioFrame(MIO_VIEWS[id]);
     if (id === 'chat') return chatView();
     if (id === 'settings') return settingsView();
     const page = window.Pages && window.Pages[id];
@@ -731,6 +746,7 @@
   }
 
   function bind(id) {
+    if (bodyEl && bodyEl.querySelector('.mio-original-frame')) return;
     if (id === 'chat') {
       const btn = D.getElementById('chat-send');
       const input = D.getElementById('chat-input');
