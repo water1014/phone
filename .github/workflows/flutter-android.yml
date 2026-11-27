@@ -9,6 +9,10 @@ on:
       - "flutter_app/**"
       - ".github/workflows/flutter-android.yml"
 
+concurrency:
+  group: flutter-android-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
