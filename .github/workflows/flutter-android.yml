@@ -87,14 +87,14 @@ jobs:
                   source = gradle_file.read_text()
                   if gradle_file.name.endswith(".kts"):
                       updated = re.sub(
-                          r"(?m)^(\\s*)compileSdk(?:Version)?\\s*(?:=\\s*)?.+$",
-                          r"\\g<1>compileSdk = 36",
+                          r"(?m)^(\s*)compileSdk(?:Version)?\s*(?:=\s*)?.+$",
+                          r"\g<1>compileSdk = 36",
                           source,
                       )
                   else:
                       updated = re.sub(
-                          r"(?m)^(\\s*)compileSdk(?:Version)?\\s+.+$",
-                          r"\\g<1>compileSdkVersion 36",
+                          r"(?m)^(\s*)compileSdk(?:Version)?\s+.+$",
+                          r"\g<1>compileSdkVersion 36",
                           source,
                       )
                   if updated != source:
