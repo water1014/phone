@@ -46,7 +46,7 @@ class ChatApiConfig {
       case 'openai':
         return const ChatApiConfig(provider: 'openai', baseUrl: '', model: '');
       default:
-        return const ChatApiConfig();
+        return const ChatApiConfig(model: 'deepseek-reasoner');
     }
   }
 }
