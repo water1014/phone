@@ -41,3 +41,15 @@
 .ctc-edit-body textarea{resize:vertical;line-height:1.7}
 .ctc-edit-body input:focus,.ctc-edit-body textarea:focus{border-color:#a9c1c3}
 @media(max-width:420px){.ctc-person-tools{padding-left:15px}.ctc-person-tools button{flex:1}.ctc-person-tools button:last-child{margin-left:0}}
+
+.ctc-tools{display:flex;align-items:center;gap:10px;margin:-10px 0 22px}
+.ctc-chips{display:flex;align-items:center;gap:7px;min-width:0;flex:1;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+.ctc-chips::-webkit-scrollbar{display:none}
+.ctc-chip{flex:none;border:1px solid #e6ecec;border-radius:20px;padding:7px 12px;background:#fff;color:#8b999b;font-size:11px}
+.ctc-chip.on{border-color:#c3d4d5;background:#edf4f3;color:#57787b}
+#persona-group-manage{flex:none;border:0;background:transparent;color:#809092;font-size:11px;padding:8px 0}
+.ctc-group-title{display:flex;align-items:center;gap:8px;margin:17px 3px 8px;color:#8d9b9d;font-size:11px;letter-spacing:.08em}
+.ctc-group-title small{font-size:10px;letter-spacing:0}
+.ctc-bottom-tools{display:flex;justify-content:center;gap:12px;padding:22px 0 8px}
+.ctc-bottom-tools button{border:0;background:transparent;color:#879597;font-size:11px;padding:8px 12px}
+.ctc-edit-body select{width:100%;border:1px solid #e5ebeb;border-radius:12px;background:#fafcfc;padding:12px;color:#344448;font:inherit;font-size:13px;outline:none}
