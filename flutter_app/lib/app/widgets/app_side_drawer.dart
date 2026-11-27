@@ -40,6 +40,8 @@ class AppSideDrawer extends StatelessWidget {
     Navigator.of(context).pop();
     if (entry.id == 'chat') {
       context.go('/chat');
+    } else if (entry.id == 'music') {
+      context.go('/music');
     } else if (entry.id == 'home') {
       context.go('/');
     } else {
