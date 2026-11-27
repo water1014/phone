@@ -323,9 +323,18 @@
         (quote ? '<div class="quote-bar"><span class="qb-name">' + UI.esc(quote.name) + '</span>' +
           '<span class="qb-text">' + UI.esc(quote.text) + '</span>' +
           '<button type="button" id="quote-x" class="qb-x" aria-label="取消引用">×</button></div>' : '') +
+        '<div class="chat-tool-panel" id="chat-tool-panel" hidden>' +
+          '<button type="button" data-chat-tool="image"><span>▧</span><small>发送图片</small></button>' +
+          '<button type="button" data-chat-tool="search"><span>⌕</span><small>搜索记录</small></button>' +
+          '<button type="button" data-chat-tool="latest"><span>↓</span><small>回到最新</small></button>' +
+          '<button type="button" data-chat-tool="clear"><span>⌫</span><small>清空聊天</small></button>' +
+        '</div>' +
+        '<div class="chat-emoji-panel" id="chat-emoji-panel" hidden>' +
+          ['😀','🥰','🥺','😘','😚','😂','😭','😳','😎','🤔','😴','🤍','❤️','💕','💗','💞','🌷','🌸','✨','🎀','☁️','🌙','🫶','🐱','🐰','🍓','🍰','☕','🎧','💌'].map(function(e){return '<button type="button" data-emoji="'+e+'">'+e+'</button>';}).join('') +
+        '</div>' +
         '<div class="composer" id="inp">' +
           '<input id="chat-file" type="file" accept="image/*" hidden>' +
-          '<button type="button" id="chat-plus" class="plus-btn" aria-label="菜单">+</button>' +
+          '<button type="button" id="chat-plus" class="plus-btn" aria-label="菜单" aria-expanded="false">+</button>' +
           '<div class="ib">' +
             '<textarea id="chat-input" rows="1" placeholder="输入一条信息"></textarea>' +
             '<button type="button" id="chat-smile" aria-label="表情">♡</button>' +
@@ -754,10 +763,27 @@
       const chatBack = D.getElementById('chat-back');
       if (chatBack) chatBack.addEventListener('click', back);
       const smile = D.getElementById('chat-smile');
-      if (smile) smile.addEventListener('click', function () {
-        if (!input) return;
-        input.value = (input.value || '') + '♡';
-        input.focus();
+      const toolPanel = D.getElementById('chat-tool-panel');
+      const emojiPanel = D.getElementById('chat-emoji-panel');
+      function closeComposerPanels() {
+        if (toolPanel) toolPanel.hidden = true;
+        if (emojiPanel) emojiPanel.hidden = true;
+        if (plus) { plus.classList.remove('active'); plus.setAttribute('aria-expanded','false'); }
+      }
+      if (smile && emojiPanel) smile.addEventListener('click', function () {
+        if (toolPanel) toolPanel.hidden = true;
+        emojiPanel.hidden = !emojiPanel.hidden;
+        if (plus) { plus.classList.toggle('active', !emojiPanel.hidden); plus.setAttribute('aria-expanded', String(!emojiPanel.hidden)); }
+      });
+      if (emojiPanel && input) emojiPanel.addEventListener('click', function(e) {
+        const b = e.target.closest('[data-emoji]'); if (!b) return;
+        const start = input.selectionStart == null ? input.value.length : input.selectionStart;
+        const end = input.selectionEnd == null ? input.value.length : input.selectionEnd;
+        const value = input.value || '';
+        input.value = value.slice(0,start) + b.dataset.emoji + value.slice(end);
+        const pos = start + b.dataset.emoji.length;
+        input.focus(); input.setSelectionRange(pos,pos);
+        input.dispatchEvent(new Event('input',{bubbles:true}));
       });
       if (input) {
         input.addEventListener('input', function () {
@@ -817,7 +843,24 @@
       }
 
       if (plus && picker) {
-        plus.addEventListener('click', function () { picker.click(); });
+        plus.addEventListener('click', function () {
+          if (emojiPanel) emojiPanel.hidden = true;
+          if (toolPanel) toolPanel.hidden = !toolPanel.hidden;
+          plus.classList.toggle('active', !toolPanel || !toolPanel.hidden);
+          plus.setAttribute('aria-expanded', String(!toolPanel || !toolPanel.hidden));
+        });
+        if (toolPanel) toolPanel.addEventListener('click', function(e) {
+          const action = e.target.closest('[data-chat-tool]'); if (!action) return;
+          const what = action.dataset.chatTool;
+          closeComposerPanels();
+          if (what === 'image') picker.click();
+          if (what === 'search' && searchToggle) searchToggle.click();
+          if (what === 'latest') scrollChat();
+          if (what === 'clear') {
+            if (!window.confirm('确定清空当前聊天记录吗？此操作无法撤销。')) return;
+            XW.S.chat = []; XW.save('chat'); paint('chat'); scrollChat(); UI.toast('聊天记录已清空');
+          }
+        });
         picker.addEventListener('change', async function () {
           const file = picker.files && picker.files[0];
           picker.value = '';
