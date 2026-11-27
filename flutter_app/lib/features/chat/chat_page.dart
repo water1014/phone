@@ -764,7 +764,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> _showMessageActions(_ChatMessage message) async {
     if (message.isTyping || message.isSystem ||
-        (message.text.isEmpty && message.imagePath == null)) {
+        (message.text.isEmpty && message.imagePath == null && message.attachmentPath == null)) {
       return;
     }
     final action = await showModalBottomSheet<String>(
@@ -775,12 +775,13 @@ class _ChatPageState extends State<ChatPage> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 4, 14, 18),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            ListTile(
-              leading: const Icon(Icons.copy_rounded),
-              title: const Text('复制消息'),
-              onTap: () => Navigator.pop(sheetContext, 'copy'),
-            ),
-            if (message.mine)
+            if (message.text.isNotEmpty)
+              ListTile(
+                leading: const Icon(Icons.copy_rounded),
+                title: const Text('复制消息'),
+                onTap: () => Navigator.pop(sheetContext, 'copy'),
+              ),
+            if (message.mine && message.text.isNotEmpty)
               ListTile(
                 leading: const Icon(Icons.edit_outlined),
                 title: const Text('编辑并重新发送'),
@@ -1106,7 +1107,12 @@ class _ChatPageState extends State<ChatPage> {
       final target = File('${mediaDir.path}/image_${DateTime.now().microsecondsSinceEpoch}.$extension');
       await source.copy(target.path);
       if (!mounted) return;
-      setState(() => _pendingImagePath = target.path);
+      setState(() {
+        _pendingImagePath = target.path;
+        _pendingFilePath = null;
+        _pendingFileName = null;
+        _pendingFileSize = null;
+      });
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
