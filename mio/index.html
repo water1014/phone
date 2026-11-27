@@ -11363,6 +11363,19 @@ async function xrPlazaDetail(it){const wrap=$('#v-repo .of-wrap');if(!wrap)retur
  const rp=g('#xp-r');if(rp)rp.onclick=async()=>{const why=await xrAsk('举报原因',[['违规或不适内容','违规或不适内容'],['抄袭 / 冒名','抄袭或冒名'],['垃圾信息','垃圾信息'],['其他','其他']]);if(!why)return;
   try{await xrApi('/api/works/'+it.id+'/report',xrJsonOpt('POST',{reason:why}));toast('已举报，谢谢。多人举报后作品会被自动隐藏',3600);rp.remove()}catch(e){toast('举报失败：'+e.message,4200)}};
 }
+
+/* Phone adapter: enter the requested original Mio view after Mio has initialized. */
+try {
+  const __phoneRequestedView = decodeURIComponent((location.hash || '').replace(/^#/, '')).trim();
+  if (__phoneRequestedView && Object.prototype.hasOwnProperty.call(R, __phoneRequestedView) &&
+      typeof R[__phoneRequestedView] === 'function') {
+    const __phoneTargetView = __phoneRequestedView === 'chat' && !P(cur) ? 'personas' : __phoneRequestedView;
+    stack = ['home'];
+    go(__phoneTargetView, false);
+  }
+} catch (__phoneRouteError) {
+  console.error('[Phone/Mio route]', __phoneRouteError);
+}
 })();
 </script>
 
@@ -13604,24 +13617,5 @@ box-shadow:inset 0 0 0 1px rgba(255,255,255,.65),inset 0 1px 0 rgba(255,255,255,
 .fv-ov{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:grid;place-items:center}
 .fv-ov img{max-width:94vw;max-height:90vh;object-fit:contain}
 </style>
-<script id="phone-mio-entry-bridge">
-/* Phone adapter: keep Mio's original app code and only select its initial native view. */
-(function(){
-  function enterOriginalView(){
-    try{
-      var requested=decodeURIComponent((location.hash||'').replace(/^#/,''))||'home';
-      var allowed=['home','chat','personas','worlds','diary','wallet','mcp','life','music','coread','offline','preset','repo','youtube','crread','couple','msgs','iff','xinji','app','postdetail','cset','deco','prof','desktopcustom','rolephones','stickers','settings','css'];
-      if(allowed.indexOf(requested)<0)requested='home';
-      if(typeof R==='undefined'||typeof R[requested]!=='function')requested='home';
-      if(requested==='chat'&&typeof P==='function'&&!P(cur))requested='personas';
-      if(typeof go==='function'&&typeof stack!=='undefined'){
-        stack=['home'];
-        go(requested,false);
-      }
-    }catch(e){console.error('[Phone/Mio adapter]',e)}
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(enterOriginalView,0)},{once:true});
-  else setTimeout(enterOriginalView,0);
-})();
-</script></body>
+</body>
 </html>
