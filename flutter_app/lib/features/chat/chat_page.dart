@@ -272,7 +272,7 @@ class _ChatPageState extends State<ChatPage> {
 
       final historyMessages = _messages
           .where((message) => !message.isSystem && !message.isTyping &&
-              (message.text.trim().isNotEmpty || message.imagePath != null || message.attachmentPath != null))
+              (message.text.trim().isNotEmpty || message.imagePath != null || message.stickerUrl != null || message.audioPath != null || message.attachmentPath != null))
           .toList()
           .reversed
           .take(20)
@@ -297,6 +297,20 @@ class _ChatPageState extends State<ChatPage> {
                 'image_url': {'url': 'data:$mime;base64,$encodedImage'},
               },
             ],
+          });
+        } else if (message.stickerUrl != null) {
+          history.add({
+            'role': message.mine ? 'user' : 'assistant',
+            'content': [
+              if (message.text.trim().isNotEmpty) {'type': 'text', 'text': message.text},
+              {'type': 'image_url', 'image_url': {'url': message.stickerUrl}},
+            ],
+          });
+        } else if (message.audioPath != null && await File(message.audioPath!).exists()) {
+          final duration = ((message.audioDurationMs ?? 0) / 1000).ceil();
+          history.add({
+            'role': message.mine ? 'user' : 'assistant',
+            'content': '[用户发送了一条语音消息，时长约 $duration 秒。当前接口尚未配置语音转写或音频输入，因此请自然回应用户的语音消息，不要假装听到了具体内容。]',
           });
         } else if (message.attachmentPath != null && await File(message.attachmentPath!).exists()) {
           final file = File(message.attachmentPath!);
@@ -1986,7 +2000,7 @@ class _ChatPageState extends State<ChatPage> {
     final index = _messages.indexOf(message);
     if (index < 0) return;
     setState(() {
-      _messages[index] = _ChatMessage(text: message.text, mine: message.mine, time: message.time, reasoning: message.reasoning, attachmentPath: target.path, attachmentName: target.uri.pathSegments.last, attachmentSize: target.lengthSync(), alternateReplies: message.alternateReplies, selectedAlternative: message.selectedAlternative);
+      _messages[index] = _ChatMessage(text: message.text, mine: message.mine, time: message.time, reasoning: message.reasoning, imagePath: message.imagePath, stickerUrl: message.stickerUrl, audioPath: message.audioPath, audioDurationMs: message.audioDurationMs, attachmentPath: target.path, attachmentName: target.uri.pathSegments.last, attachmentSize: target.lengthSync(), alternateReplies: message.alternateReplies, selectedAlternative: message.selectedAlternative);
     });
     await _persistChat();
     if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已生成文件：${target.uri.pathSegments.last}')));
