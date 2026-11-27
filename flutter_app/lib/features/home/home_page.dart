@@ -212,34 +212,122 @@ class _Card extends StatelessWidget {
   );
 }
 
-class _PhotoWall extends StatelessWidget {
-  const _PhotoWall({required this.onTap}); final VoidCallback onTap;
+class _PhotoWall extends StatefulWidget {
+  const _PhotoWall({required this.onTap});
+  final VoidCallback onTap;
   @override
-  Widget build(BuildContext context) => _Card(onTap: onTap, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    const Row(children: [Text('照片墙', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)), Spacer(), Text('COLLAGE', style: TextStyle(fontSize: 9, letterSpacing: 1.7, color: Color(0xFFB8B8B8)))]),
-    const SizedBox(height: 10),
-    Row(children: List.generate(4, (i) => Expanded(child: Container(
-      height: 72, margin: EdgeInsets.only(right: i == 3 ? 0 : 6),
-      decoration: BoxDecoration(color: const Color(0xFFF5F5F5), borderRadius: BorderRadius.circular(9)),
-      child: Icon(i == 3 ? Icons.add_photo_alternate_outlined : Icons.photo_outlined, color: const Color(0xFFC5C5C5), size: 19),
-    )))),
-  ]));
+  State<_PhotoWall> createState() => _PhotoWallState();
 }
 
-class _DaysCard extends StatelessWidget {
+class _PhotoWallState extends State<_PhotoWall> {
+  int _mode = 0;
+  @override
+  Widget build(BuildContext context) => _Card(
+    onTap: widget.onTap,
+    padding: const EdgeInsets.fromLTRB(15, 14, 15, 13),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        const Text('照片墙', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _HomePageState._ink)),
+        const Spacer(),
+        for (var i = 0; i < 3; i++)
+          GestureDetector(
+            onTap: () => setState(() => _mode = i),
+            child: Padding(
+              padding: EdgeInsets.only(left: i == 0 ? 0 : 13),
+              child: Text(
+                const ['全部', '最近', '收藏'][i],
+                style: TextStyle(fontSize: 10, color: _mode == i ? const Color(0xFF333333) : const Color(0xFFB0B0B0), fontWeight: _mode == i ? FontWeight.w600 : FontWeight.normal),
+              ),
+            ),
+          ),
+      ]),
+      const SizedBox(height: 11),
+      SizedBox(height: 142, child: Row(children: [
+        Expanded(flex: 2, child: _tile(Icons.add_photo_alternate_outlined, radius: 11)),
+        const SizedBox(width: 7),
+        Expanded(child: Column(children: [
+          Expanded(child: _tile(Icons.add_photo_alternate_outlined, radius: 9)),
+          const SizedBox(height: 7),
+          Expanded(child: _tile(Icons.add_photo_alternate_outlined, radius: 9)),
+          const SizedBox(height: 7),
+          Expanded(child: _tile(Icons.add_photo_alternate_outlined, radius: 9)),
+        ])),
+      ])),
+      const SizedBox(height: 9),
+      const Text('点这里，收好你们的照片', style: TextStyle(fontSize: 10, color: Color(0xFFAAAAAA), letterSpacing: .3)),
+    ]),
+  );
+
+  Widget _tile(IconData icon, {required double radius}) => Container(
+    width: double.infinity,
+    decoration: BoxDecoration(color: const Color(0xFFF4F4F4), border: Border.all(color: const Color(0xFFEAEAEA)), borderRadius: BorderRadius.circular(radius)),
+    child: Icon(icon, size: 19, color: const Color(0xFFC3C3C3)),
+  );
+}
+
+class _DaysCard extends StatefulWidget {
+  @override
+  State<_DaysCard> createState() => _DaysCardState();
+}
+
+class _DaysCardState extends State<_DaysCard> {
+  bool _back = false;
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now(); final since = DateTime(2026, 10, 28);
+    final now = DateTime.now();
+    final since = DateTime(2026, 10, 28);
     final days = now.difference(since).inDays + 1;
-    return _Card(child: Column(children: [
-      const Text('TOGETHER', style: TextStyle(fontSize: 10, letterSpacing: 3, color: Color(0xFFB6BEC6))),
-      const SizedBox(height: 4),
-      Text('$days', style: const TextStyle(fontSize: 48, height: 1.05, fontWeight: FontWeight.w400, color: Color(0xFF24262A))),
-      const Text('D A Y S', style: TextStyle(fontSize: 9, letterSpacing: 2.5, color: Color(0xFFA4AEB8))),
-      Container(width: 150, height: 1, margin: const EdgeInsets.symmetric(vertical: 12), color: const Color(0xFFE7E9EB)),
-      const Text('宋祁 & 我', style: TextStyle(fontSize: 12, letterSpacing: 1.5, color: Color(0xFF929BA4))),
-    ]));
+    final next = ((days ~/ 100) + 1) * 100;
+    return GestureDetector(
+      onTap: () => setState(() => _back = !_back),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 260),
+        transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+        child: _Card(
+          key: ValueKey(_back),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
+          child: SizedBox(
+            height: 158,
+            child: _back
+              ? Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  const Text('SINCE 2026.10.28', style: _dayLabel),
+                  const SizedBox(height: 12),
+                  Text('${next}', style: const TextStyle(fontSize: 43, height: 1, color: _HomePageState._ink, fontWeight: FontWeight.w400)),
+                  const SizedBox(height: 5),
+                  const Text('NEXT MILESTONE', style: _dayLabel),
+                  const SizedBox(height: 12),
+                  Text('距离下一个整百天还有 ${next - days} 天', style: const TextStyle(fontSize: 11, color: Color(0xFF888888))),
+                  const SizedBox(height: 10),
+                  const Text('轻点卡片，回到正面', style: TextStyle(fontSize: 9, color: Color(0xFFB0B0B0))),
+                ])
+              : Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  const Text('TOGETHER', style: _dayLabel),
+                  const SizedBox(height: 13),
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    _person('宋', '宋祁'),
+                    const SizedBox(width: 17),
+                    Column(children: [
+                      Text('${days}', style: const TextStyle(fontSize: 45, height: .98, color: _HomePageState._ink, fontWeight: FontWeight.w400, letterSpacing: -1.2)),
+                      const Text('D A Y S', style: _dayLabel),
+                    ]),
+                    const SizedBox(width: 17),
+                    _person('我', '我'),
+                  ]),
+                  const SizedBox(height: 13),
+                  const Text('轻点卡片，看看纪念日', style: TextStyle(fontSize: 9, color: Color(0xFFB0B0B0))),
+                ]),
+          ),
+        ),
+      ),
+    );
   }
+
+  static const _dayLabel = TextStyle(fontSize: 9, letterSpacing: 2.2, color: Color(0xFFB0B0B0));
+  Widget _person(String mark, String name) => Column(children: [
+    Container(width: 34, height: 34, alignment: Alignment.center, decoration: BoxDecoration(color: const Color(0xFFF3F3F3), shape: BoxShape.circle, border: Border.all(color: const Color(0xFFE5E5E5))), child: Text(mark, style: const TextStyle(fontSize: 12, color: Color(0xFF666666)))),
+    const SizedBox(height: 5),
+    Text(name, style: const TextStyle(fontSize: 10, color: Color(0xFF777777))),
+  ]);
 }
 
 class _QuoteCard extends StatelessWidget {
