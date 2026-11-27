@@ -37,6 +37,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final _input = TextEditingController();
   final _search = TextEditingController();
+  final _messagesScroll = ScrollController();
   final _api = ChatApiClient();
   final List<_ChatMessage> _messages = [];
   bool _searching = false;
@@ -68,6 +69,7 @@ class _ChatPageState extends State<ChatPage> {
         )));
       _loadingHistory = false;
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
   }
 
   Future<void> _persistChat() => ChatMessageStore.save(
@@ -86,6 +88,7 @@ class _ChatPageState extends State<ChatPage> {
   void dispose() {
     _input.dispose();
     _search.dispose();
+    _messagesScroll.dispose();
     super.dispose();
   }
 
@@ -102,9 +105,11 @@ class _ChatPageState extends State<ChatPage> {
     });
     FocusScope.of(context).unfocus();
     await _persistChat();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
 
     try {
       final config = await ChatApiConfigStore.load();
+      if (!mounted) return;
       if (config.apiKey.trim().isEmpty || config.baseUrl.trim().isEmpty || config.model.trim().isEmpty) {
         setState(() {
           _messages.add(_ChatMessage(
@@ -174,6 +179,7 @@ class _ChatPageState extends State<ChatPage> {
         }
       }
       await _persistChat();
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -186,6 +192,7 @@ class _ChatPageState extends State<ChatPage> {
         ));
       });
       await _persistChat();
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -323,6 +330,7 @@ class _ChatPageState extends State<ChatPage> {
     return ListView.builder(
       reverse: false,
       padding: const EdgeInsets.fromLTRB(17, 15, 17, 17),
+      controller: _messagesScroll,
       physics: const BouncingScrollPhysics(),
       itemCount: visible.length,
       itemBuilder: (context, index) {
@@ -498,7 +506,20 @@ class _ChatPageState extends State<ChatPage> {
     ]),
   );
 
+  void _scrollToLatest() {
+    if (!_messagesScroll.hasClients) return;
+    _messagesScroll.animateTo(
+      _messagesScroll.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOut,
+    );
+  }
+
   Future<void> _confirmClear() async {
+    if (_sending) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('回复完成后再清空聊天记录')));
+      return;
+    }
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
