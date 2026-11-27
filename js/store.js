@@ -12,7 +12,9 @@
     photos: [],
     chat: [],
     notes: [],
-    worldbooks: [],\n    contacts: [],\n    activeContactId: '',
+    worldbooks: [],
+    contacts: [],
+    activeContactId: '',
     appOrder: [],
 
     /* 主连接：聊天用 */
