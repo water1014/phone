@@ -489,14 +489,21 @@
     const withSession = (XW.S.aiProvider === 'opencode');
 
     const history = XW.S.chat
-      .filter(function (m) { return !m._typing && m.who !== 'sys' && !m.img; })
+      .filter(function (m) { return !m._typing && m.who !== 'sys' && (m.img || String(m.text || '').trim()); })
       .slice(-20)
       .map(function (m) {
         let content = String(m.text || '');
         if (m.quote && m.quote.text) content = '（引用「' + m.quote.text + '」）' + content;
-        return { role: m.who === 'ta' ? 'assistant' : 'user', content: content };
+        const role = m.who === 'ta' ? 'assistant' : 'user';
+        if (m.img) {
+          const parts = [];
+          if (content) parts.push({ type: 'text', text: content });
+          parts.push({ type: 'image_url', image_url: { url: m.img } });
+          return { role: role, content: parts };
+        }
+        return { role: role, content: content };
       })
-      .filter(function (m) { return m.content; });
+      .filter(function (m) { return Array.isArray(m.content) || !!m.content; });
 
     const baseSystem = '你在「小窝」这个私人小手机里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。可以用（括号）写神情和动作当旁白，也可以直接说话，不要列条目。';
     const latestUser = history.slice().reverse().find(function (m) { return m.role === 'user'; });
@@ -569,16 +576,16 @@
     throw lastError || new Error('没找到能用的地址');
   }
 
-  async function sendChat() {
+  async function sendChat(imageData) {
     const input = D.getElementById('chat-input');
-    const text = (input.value || '').trim();
-    if (!text) return;
-    input.value = '';
+    const text = (input && input.value || '').trim();
+    if (!text && !imageData) return;
+    if (input) { input.value = ''; input.style.height = 'auto'; }
 
     const box = quote ? { name: quote.name, text: quote.text } : null;
     quote = null;
 
-    XW.S.chat.push({ who: 'me', text: text, t: Date.now(), quote: box || undefined });
+    XW.S.chat.push({ who: 'me', text: text, img: imageData || undefined, t: Date.now(), quote: box || undefined });
     XW.save('chat');
     paint('chat');
     scrollChat();
@@ -982,10 +989,7 @@
           UI.toast('处理中…');
           const data = await shrinkImg(file, 900, 0.8);
           if (!data) { UI.toast('这张读不出来'); return; }
-          XW.S.chat.push({ who: 'me', img: data, text: '', t: Date.now() });
-          XW.save('chat');
-          paint('chat');
-          scrollChat();
+          await sendChat(data);
         });
       }
 
