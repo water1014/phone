@@ -16,6 +16,7 @@ class ChatPreferences {
     this.partnerAvatarPath,
     this.myAvatarPath,
     this.fontSize = 14,
+    this.quickReplies = const ['在吗', '抱抱', '晚安'],
   });
 
   final bool showAvatar;
@@ -30,6 +31,7 @@ class ChatPreferences {
   final String? partnerAvatarPath;
   final String? myAvatarPath;
   final double fontSize;
+  final List<String> quickReplies;
 
   ChatPreferences copyWith({
     bool? showAvatar,
@@ -44,6 +46,7 @@ class ChatPreferences {
     String? partnerAvatarPath,
     String? myAvatarPath,
     double? fontSize,
+    List<String>? quickReplies,
   }) => ChatPreferences(
     showAvatar: showAvatar ?? this.showAvatar,
     showName: showName ?? this.showName,
@@ -57,6 +60,7 @@ class ChatPreferences {
     partnerAvatarPath: partnerAvatarPath ?? this.partnerAvatarPath,
     myAvatarPath: myAvatarPath ?? this.myAvatarPath,
     fontSize: fontSize ?? this.fontSize,
+    quickReplies: quickReplies ?? this.quickReplies,
   );
 }
 
@@ -79,6 +83,7 @@ abstract final class ChatPreferenceStore {
       partnerAvatarPath: prefs.getString('chat.partnerAvatarPath'),
       myAvatarPath: prefs.getString('chat.myAvatarPath'),
       fontSize: prefs.getDouble('chat.fontSize') ?? 14,
+      quickReplies: prefs.getStringList('chat.quickReplies') ?? const ['在吗', '抱抱', '晚安'],
     );
   }
 
@@ -98,6 +103,7 @@ abstract final class ChatPreferenceStore {
       if (next.partnerAvatarPath != null) prefs.setString('chat.partnerAvatarPath', next.partnerAvatarPath!) else prefs.remove('chat.partnerAvatarPath'),
       if (next.myAvatarPath != null) prefs.setString('chat.myAvatarPath', next.myAvatarPath!) else prefs.remove('chat.myAvatarPath'),
       prefs.setDouble('chat.fontSize', next.fontSize),
+      prefs.setStringList('chat.quickReplies', next.quickReplies),
     ]);
   }
 }
