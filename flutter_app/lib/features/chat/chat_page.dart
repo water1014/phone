@@ -621,20 +621,22 @@ class _ChatPageState extends State<ChatPage> {
       ),
       const Spacer(),
       Row(mainAxisSize: MainAxisSize.min, children: [
-        CircleAvatar(
-          radius: 19,
-          backgroundColor: const Color(0xFFEAEAEA),
-          backgroundImage: prefs.partnerAvatarPath != null && File(prefs.partnerAvatarPath!).existsSync()
-              ? FileImage(File(prefs.partnerAvatarPath!))
-              : null,
-          child: prefs.partnerAvatarPath != null && File(prefs.partnerAvatarPath!).existsSync()
-              ? null
-              : Text(
-                  prefs.partnerName.trim().isEmpty ? '祁' : prefs.partnerName.trim().substring(0, 1),
-                  style: const TextStyle(color: Color(0xFF444444), fontSize: 15, fontWeight: FontWeight.w600),
-                ),
-        ),
-        const SizedBox(width: 9),
+        if (prefs.showAvatar) ...[
+          CircleAvatar(
+            radius: 19,
+            backgroundColor: const Color(0xFFEAEAEA),
+            backgroundImage: prefs.partnerAvatarPath != null && File(prefs.partnerAvatarPath!).existsSync()
+                ? FileImage(File(prefs.partnerAvatarPath!))
+                : null,
+            child: prefs.partnerAvatarPath != null && File(prefs.partnerAvatarPath!).existsSync()
+                ? null
+                : Text(
+                    prefs.partnerName.trim().isEmpty ? '祁' : prefs.partnerName.trim().substring(0, 1),
+                    style: const TextStyle(color: Color(0xFF444444), fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+          ),
+          const SizedBox(width: 9),
+        ],
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -905,16 +907,16 @@ class _ChatPageState extends State<ChatPage> {
     );
     final bubbleRadius = isHelloTalk
         ? BorderRadius.only(
-            topLeft: Radius.circular(!mine && !compact ? 8 : 19),
-            topRight: Radius.circular(mine && !compact ? 8 : 19),
-            bottomLeft: const Radius.circular(19),
-            bottomRight: const Radius.circular(19),
+            topLeft: Radius.circular(!mine && !compact ? 8 : prefs.bubbleRadius),
+            topRight: Radius.circular(mine && !compact ? 8 : prefs.bubbleRadius),
+            bottomLeft: Radius.circular(prefs.bubbleRadius),
+            bottomRight: Radius.circular(prefs.bubbleRadius),
           )
         : BorderRadius.only(
-            topLeft: const Radius.circular(19),
-            topRight: const Radius.circular(19),
-            bottomLeft: Radius.circular(mine ? 19 : 6),
-            bottomRight: Radius.circular(mine ? 6 : 19),
+            topLeft: Radius.circular(prefs.bubbleRadius),
+            topRight: Radius.circular(prefs.bubbleRadius),
+            bottomLeft: Radius.circular(mine ? prefs.bubbleRadius : 6),
+            bottomRight: Radius.circular(mine ? 6 : prefs.bubbleRadius),
           );
 
     final content = Flexible(
