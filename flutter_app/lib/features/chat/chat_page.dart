@@ -286,31 +286,53 @@ class _ChatPageState extends State<ChatPage> {
         _messages.add(_ChatMessage(text: '', mine: false, time: DateTime.now(), isTyping: true));
       });
 
+      var pendingText = '';
+      var pendingReasoning = '';
+      int? pendingInputTokens;
+      int? pendingOutputTokens;
+      var lastUiFlush = DateTime.now();
       await for (final event in _api.streamReply(
         config: config,
         messages: requestMessages,
         cancelToken: cancelToken,
       )) {
         if (!mounted) return;
-        if (event.textDelta.isNotEmpty || event.reasoningDelta.isNotEmpty ||
-            event.inputTokens != null || event.outputTokens != null) {
+        pendingText += event.textDelta;
+        pendingReasoning += event.reasoningDelta;
+        pendingInputTokens = event.inputTokens ?? pendingInputTokens;
+        pendingOutputTokens = event.outputTokens ?? pendingOutputTokens;
+        final hasPending = pendingText.isNotEmpty ||
+            pendingReasoning.isNotEmpty ||
+            pendingInputTokens != null ||
+            pendingOutputTokens != null;
+        final shouldFlush = event.finished ||
+            DateTime.now().difference(lastUiFlush) >= const Duration(milliseconds: 48);
+        if (hasPending && shouldFlush) {
+          final textDelta = pendingText;
+          final reasoningDelta = pendingReasoning;
+          final inputTokens = pendingInputTokens;
+          final outputTokens = pendingOutputTokens;
+          pendingText = '';
+          pendingReasoning = '';
+          pendingInputTokens = null;
+          pendingOutputTokens = null;
+          lastUiFlush = DateTime.now();
           setState(() {
             final current = _messages[replyIndex];
             _messages[replyIndex] = _ChatMessage(
-              text: current.text + event.textDelta,
+              text: current.text + textDelta,
               mine: false,
               time: current.time,
-              reasoning: (current.reasoning ?? '') + event.reasoningDelta,
+              reasoning: (current.reasoning ?? '') + reasoningDelta,
               isTyping: !event.finished,
-              inputTokens: event.inputTokens ?? current.inputTokens,
-              outputTokens: event.outputTokens ?? current.outputTokens,
+              inputTokens: inputTokens ?? current.inputTokens,
+              outputTokens: outputTokens ?? current.outputTokens,
               alternateReplies: current.alternateReplies,
               selectedAlternative: current.selectedAlternative,
             );
           });
           _followStreamingReply();
-        }
-        if (event.finished) {
+        } else if (event.finished) {
           setState(() {
             final current = _messages[replyIndex];
             _messages[replyIndex] = _ChatMessage(
@@ -324,9 +346,47 @@ class _ChatPageState extends State<ChatPage> {
               attachmentPath: current.attachmentPath,
               attachmentName: current.attachmentName,
               attachmentSize: current.attachmentSize,
+              alternateReplies: current.alternateReplies,
+              selectedAlternative: current.selectedAlternative,
             );
           });
         }
+      }
+      if (!mounted) return;
+      if (pendingText.isNotEmpty || pendingReasoning.isNotEmpty ||
+          pendingInputTokens != null || pendingOutputTokens != null) {
+        setState(() {
+          final current = _messages[replyIndex];
+          _messages[replyIndex] = _ChatMessage(
+            text: current.text + pendingText,
+            mine: false,
+            time: current.time,
+            reasoning: (current.reasoning ?? '') + pendingReasoning,
+            inputTokens: pendingInputTokens ?? current.inputTokens,
+            outputTokens: pendingOutputTokens ?? current.outputTokens,
+            alternateReplies: current.alternateReplies,
+            selectedAlternative: current.selectedAlternative,
+          );
+        });
+      }
+      if (_messages[replyIndex].isTyping) {
+        setState(() {
+          final current = _messages[replyIndex];
+          _messages[replyIndex] = _ChatMessage(
+            text: current.text,
+            mine: false,
+            time: current.time,
+            reasoning: current.reasoning,
+            inputTokens: current.inputTokens,
+            outputTokens: current.outputTokens,
+            imagePath: current.imagePath,
+            attachmentPath: current.attachmentPath,
+            attachmentName: current.attachmentName,
+            attachmentSize: current.attachmentSize,
+            alternateReplies: current.alternateReplies,
+            selectedAlternative: current.selectedAlternative,
+          );
+        });
       }
       await _persistChat();
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
