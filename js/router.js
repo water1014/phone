@@ -644,10 +644,35 @@
 
       if (act === 'copy') {
         const text = String(msg.text || '');
-        if (navigator.clipboard && text) {
-          navigator.clipboard.writeText(text).catch(function () {});
+        if (text) {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+              UI.toast('复制了');
+            }).catch(function () {
+              const temp = D.createElement('textarea');
+              temp.value = text;
+              temp.style.position = 'fixed';
+              temp.style.opacity = '0';
+              D.body.appendChild(temp);
+              temp.select();
+              try { D.execCommand('copy'); UI.toast('复制了'); }
+              catch (err) { UI.toast('复制失败，请长按文字选择'); }
+              temp.remove();
+            });
+          } else {
+            const temp = D.createElement('textarea');
+            temp.value = text;
+            temp.style.position = 'fixed';
+            temp.style.opacity = '0';
+            D.body.appendChild(temp);
+            temp.select();
+            try { D.execCommand('copy'); UI.toast('复制了'); }
+            catch (err) { UI.toast('复制失败，请长按文字选择'); }
+            temp.remove();
+          }
+        } else {
+          UI.toast('这条消息没有文字');
         }
-        UI.toast('复制了');
         box.remove();
         return;
       }
