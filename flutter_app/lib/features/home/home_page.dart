@@ -14,7 +14,6 @@ class _HomePageState extends State<HomePage> {
   static const _ink = Color(0xFF202124);
   static const _muted = Color(0xFF9AA0A6);
   static const _line = Color(0xFFE5E5E5);
-  static const _fill = Color(0xFFF5F5F5);
   static const _apps = <_AppData>[
     _AppData('calendar','日历',Icons.calendar_month_outlined),
     _AppData('plans','安排',Icons.checklist_rounded),
@@ -38,14 +37,15 @@ class _HomePageState extends State<HomePage> {
     _AppData('settings','设置',Icons.tune_rounded),
   ];
   static const _defaultDock = ['chat','diary','album','memory'];
-  late List<String> _dock = List.of(_defaultDock);
+  final List<String> _dock = List.of(_defaultDock);
   final PageController _pages = PageController();
   int _page = 0;
   bool _editing = false;
 
   void _open(String id) {
     if (id == 'chat') { context.push('/chat'); return; }
-    final matches = _apps.where((a) => a.id == id);\n    final app = matches.isEmpty ? null : matches.first;
+    final matches = _apps.where((a) => a.id == id);
+    final app = matches.isEmpty ? null : matches.first;
     final name = app?.name ?? (id == 'memory' ? '记忆' : id);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text('$name功能正在移植，原版入口已保留'),
@@ -289,7 +289,7 @@ class _CalendarCard extends StatelessWidget {
     return _Card(onTap: onTap, child: Column(children: [
       Row(children: [const Text('CALENDAR', style: TextStyle(fontSize: 10, letterSpacing: 2.5, color: Color(0xFFB6BEC6))), const Spacer(), Text('${now.year}年 ${now.month}月', style: const TextStyle(fontSize: 12, color: Color(0xFF8D9AA8)))]),
       const SizedBox(height: 10),
-      const Row(children: [for(final d in ['日','一','二','三','四','五','六']) Expanded(child: Center(child: Text(d, style: TextStyle(fontSize: 10, color: Color(0xFFC6CDD4))))) ]),
+      Row(children: [for(final d in ['日','一','二','三','四','五','六']) Expanded(child: Center(child: Text(d, style: TextStyle(fontSize: 10, color: Color(0xFFC6CDD4))))) ]),
       const SizedBox(height: 5),
       GridView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), itemCount: ((first+count+6)~/7)*7,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, childAspectRatio: 1.5),
