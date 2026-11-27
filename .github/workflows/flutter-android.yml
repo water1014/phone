@@ -70,11 +70,18 @@ jobs:
               plugins.withId("com.android.library") {
                   val androidExtension = extensions.findByName("android")
                       ?: error("Android extension missing for $name")
-                  val setter = androidExtension.javaClass.methods.firstOrNull {
+                  val setters = androidExtension.javaClass.methods.filter {
                       (it.name == "setCompileSdk" || it.name == "setCompileSdkVersion") &&
                           it.parameterCount == 1
-                  } ?: error("Unable to find compileSdk setter for $name")
-                  setter.invoke(androidExtension, 36)
+                  }
+                  val setter = setters.firstOrNull {
+                      it.parameterTypes[0] == Int::class.javaPrimitiveType ||
+                          it.parameterTypes[0] == Int::class.javaObjectType
+                  } ?: setters.firstOrNull {
+                      it.parameterTypes[0] == String::class.java
+                  } ?: error("Unable to find compatible compileSdk setter for $name")
+                  val sdkValue: Any = if (setter.parameterTypes[0] == String::class.java) "36" else 36
+                  setter.invoke(androidExtension, sdkValue)
                   println("Configured compileSdk 36 for Android library: $name")
               }
           }
@@ -88,14 +95,20 @@ jobs:
                   if (androidExtension == null) {
                       throw new GradleException("Android extension missing for ${project.name}")
                   }
-                  def setter = androidExtension.class.methods.find {
+                  def setters = androidExtension.class.methods.findAll {
                       (it.name == "setCompileSdk" || it.name == "setCompileSdkVersion") &&
                           it.parameterCount == 1
                   }
-                  if (setter == null) {
-                      throw new GradleException("Unable to find compileSdk setter for ${project.name}")
+                  def setter = setters.find {
+                      it.parameterTypes[0] == Integer.TYPE || it.parameterTypes[0] == Integer
+                  } ?: setters.find {
+                      it.parameterTypes[0] == String
                   }
-                  setter.invoke(androidExtension, 36)
+                  if (setter == null) {
+                      throw new GradleException("Unable to find compatible compileSdk setter for ${project.name}")
+                  }
+                  def sdkValue = setter.parameterTypes[0] == String ? "36" : 36
+                  setter.invoke(androidExtension, sdkValue)
                   println("Configured compileSdk 36 for Android library: ${project.name}")
               }
           }
