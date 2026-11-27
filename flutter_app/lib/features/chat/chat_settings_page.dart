@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'chat_preferences.dart';
 
-const _ink = Color(0xFF202729);
-const _muted = Color(0xFF89918F);
-const _line = Color(0xFFEDF0EE);
-const _soft = Color(0xFFF4F6F4);
-const _accent = Color(0xFF52776B);
+const _ink = Color(0xFF29362F);
+const _muted = Color(0xFF9AA79F);
+const _line = Color(0xFFE5ECE7);
+const _soft = Color(0xFFEEF3EF);
+const _accent = Color(0xFF789A88);
 
 class ChatSettingsPage extends StatelessWidget {
   const ChatSettingsPage({super.key});
@@ -15,7 +15,7 @@ class ChatSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) => ValueListenableBuilder<ChatPreferences>(
     valueListenable: ChatPreferenceStore.value,
     builder: (context, prefs, _) => Scaffold(
-      backgroundColor: const Color(0xFFF8F9F8),
+      backgroundColor: const Color(0xFFF7FAF8),
       body: SafeArea(
         child: Column(children: [
           Padding(
@@ -260,7 +260,7 @@ class _BubbleStylePicker extends StatelessWidget {
 
   static const styles = [
     ('Mio 黑白', Color(0xFF111111), Color(0xFFECEEF0)),
-    ('雾林绿', Color(0xFF52776B), Color(0xFFE9F0EB)),
+    ('雾林绿', Color(0xFF6F927F), Color(0xFFE6F0E8)),
     ('薄雾蓝', Color(0xFF526A7C), Color(0xFFEAF0F5)),
     ('柔雾粉', Color(0xFF9A6D78), Color(0xFFF5ECEF)),
   ];
