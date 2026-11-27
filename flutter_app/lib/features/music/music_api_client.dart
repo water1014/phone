@@ -43,6 +43,9 @@ class MusicPlaylist {
 }
 
 class MusicApiClient {
+  static final Map<String, Map<String, dynamic>> _songUrlCache = {};
+  static final Map<String, Map<String, dynamic>> _lyricCache = {};
+
   MusicApiClient({Dio? dio}) : _dio = dio ?? Dio(BaseOptions(
     connectTimeout: const Duration(seconds: 15),
     receiveTimeout: const Duration(seconds: 25),
@@ -81,17 +84,34 @@ class MusicApiClient {
   }
 
   Future<String> songUrl(String base, int id, {String cookie = '', String quality = 'exhigh'}) async {
+    final key = '${worker(base)}|$id|$quality';
+    final cached = _songUrlCache[key];
+    if (cached != null && DateTime.now().difference(cached['time'] as DateTime) < const Duration(minutes: 8)) {
+      return cached['url'] as String;
+    }
     final r = await call(base, 'song/url', cookie: cookie, body: {'ids': [id], 'level': quality});
     final rows = r['data'];
     if (rows is List && rows.isNotEmpty && rows.first is Map) {
       final url = (rows.first['url'] ?? '').toString();
-      if (url.isNotEmpty) return url.replaceFirst(RegExp(r'^http:'), 'https:');
+      if (url.isNotEmpty) {
+        final normalized = url.replaceFirst(RegExp(r'^http:'), 'https:');
+        _songUrlCache[key] = {'url': normalized, 'time': DateTime.now()};
+        return normalized;
+      }
     }
     throw Exception('暂无可用播放地址，可能受版权或会员权限限制');
   }
 
-  Future<Map<String, dynamic>> lyric(String base, int id, {String cookie = ''}) =>
-      call(base, 'lyric', cookie: cookie, body: {'id': id});
+  Future<Map<String, dynamic>> lyric(String base, int id, {String cookie = ''}) async {
+    final key = '${worker(base)}|$id';
+    final cached = _lyricCache[key];
+    if (cached != null && DateTime.now().difference(cached['time'] as DateTime) < const Duration(hours: 12)) {
+      return Map<String, dynamic>.from(cached['value'] as Map);
+    }
+    final value = await call(base, 'lyric', cookie: cookie, body: {'id': id});
+    _lyricCache[key] = {'value': value, 'time': DateTime.now()};
+    return value;
+  }
 
   Future<Map<String, dynamic>> qrKey(String base) => call(base, 'login/qr/key');
   Future<Map<String, dynamic>> qrCreate(String base, String key) => call(base, 'login/qr/create', body: {'key': key, 'qrimg': true});
