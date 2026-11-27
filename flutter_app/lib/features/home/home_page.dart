@@ -409,7 +409,7 @@ class _RoundAction extends StatelessWidget {
     child: InkWell(
       customBorder: const CircleBorder(),
       onTap: onTap,
-      child: const SizedBox(width: 43, height: 43, child: Icon(Icons.menu_rounded, size: 20, color: AppColors.secondary)),
+      child: SizedBox(width: 43, height: 43, child: Icon(icon, size: 20, color: AppColors.secondary)),
     ),
   );
 }
