@@ -583,19 +583,18 @@ class _ChatPageState extends State<ChatPage> {
     final partnerBubble = _partnerBubbleColor(prefs.bubbleStyle);
     final isHelloTalk = prefs.bubbleStyle == 0;
 
-    final avatar = Container(
-      width: 34,
-      height: 34,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: mine ? const Color(0xFFE6E6E6) : const Color(0xFFFFFFFF),
-        shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
-      ),
-      child: Text(
-        avatarLabel,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF555555)),
-      ),
+    final avatarPath = mine ? prefs.myAvatarPath : prefs.partnerAvatarPath;
+    final avatarFile = avatarPath == null ? null : File(avatarPath);
+    final avatar = CircleAvatar(
+      radius: 17,
+      backgroundColor: mine ? const Color(0xFFE6E6E6) : Colors.white,
+      backgroundImage: avatarFile != null && avatarFile.existsSync() ? FileImage(avatarFile) : null,
+      child: avatarFile != null && avatarFile.existsSync()
+          ? null
+          : Text(
+              avatarLabel,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF555555)),
+            ),
     );
     final avatarSlot = SizedBox(
       width: 40,
