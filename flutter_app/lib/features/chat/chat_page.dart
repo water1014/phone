@@ -533,6 +533,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _messageRow(_ChatMessage message, ChatPreferences prefs, bool compact) {
     final mine = message.mine;
+    final mediaOnly = message.imagePath != null && message.text.trim().isEmpty;
     final myLabel = prefs.myName.trim().isEmpty ? '我' : prefs.myName.trim();
     final partnerLabel = prefs.partnerName.trim().isEmpty ? '宋祁' : prefs.partnerName.trim();
     final avatarLabel = mine ? myLabel.substring(0, 1) : partnerLabel.substring(0, 1);
@@ -576,9 +577,13 @@ class _ChatPageState extends State<ChatPage> {
                   GestureDetector(
                     onLongPress: () => _showMessageActions(message),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                      padding: mediaOnly
+                          ? EdgeInsets.zero
+                          : const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
                       decoration: BoxDecoration(
-                        color: mine ? mineBubble : partnerBubble,
+                        color: mediaOnly
+                            ? Colors.transparent
+                            : (mine ? mineBubble : partnerBubble),
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(!mine && !compact ? 4 : 16),
                           topRight: Radius.circular(mine && !compact ? 4 : 16),
