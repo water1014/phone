@@ -8,6 +8,20 @@
   let enEl = null;
   let currentId = null;
   let quote = null;
+  let chatSettingsOpen = false;
+
+  function chatPrefs() {
+    const defaults = { showAvatar: true, showName: true, showTime: true, compact: true, enterSend: true, fontSize: 14 };
+    const saved = XW.S.chatPrefs && typeof XW.S.chatPrefs === 'object' ? XW.S.chatPrefs : {};
+    return Object.assign({}, defaults, saved);
+  }
+
+  function saveChatPref(key, value) {
+    const prefs = chatPrefs();
+    prefs[key] = value;
+    XW.S.chatPrefs = prefs;
+    XW.save('chatPrefs');
+  }
 
   const EN = {
     chat: 'MESSAGE', memory: 'MEMORY', diary: 'DIARY', album: 'ALBUM',
@@ -103,6 +117,7 @@
     bodyEl.innerHTML = '';
     currentId = null;
     quote = null;
+    chatSettingsOpen = false;
   }
 
   function back() {
@@ -288,6 +303,8 @@
   }
 
   function messageHtml(msg, compact, index) {
+    const prefs = chatPrefs();
+    compact = prefs.compact && compact;
     if (msg.who === 'sys') {
       return '<div class="chat-event"><span>' + UI.esc(msg.text || '') + '</span></div>';
     }
@@ -330,12 +347,34 @@
     }
 
     return '<div class="msg-row r ' + (mine ? 'me' : 'ta ai') + (compact ? ' compact' : ' first') + '" data-i="' + index + '">' +
-        '<div class="msg-ava av' + (compact ? ' ghost' : '') + '">' + UI.esc(avatar) + '</div>' +
+        (prefs.showAvatar ? '<div class="msg-ava av' + (compact ? ' ghost' : '') + '">' + UI.esc(avatar) + '</div>' : '') +
         '<div class="msg-main col">' +
-          (!mine && !compact ? '<div class="msg-name nm">' + UI.esc(name) + '</div>' : '') +
+          (!mine && !compact && prefs.showName ? '<div class="msg-name nm">' + UI.esc(name) + '</div>' : '') +
           '<div class="bw"><div class="mio-message-content">' + inner + tag + '</div></div>' +
         '</div>' +
       '</div>';
+  }
+
+  function chatSettingsView() {
+    const p = chatPrefs();
+    function switchRow(key, title, desc) {
+      return '<label class="chat-pref-row"><span class="chat-pref-copy"><b>' + title + '</b><small>' + desc + '</small></span><input type="checkbox" data-chat-pref="' + key + '"' + (p[key] ? ' checked' : '') + '><i class="chat-pref-switch"></i></label>';
+    }
+    return '<div class="chat-settings-page">' +
+      '<header class="chat-settings-head"><button type="button" id="chat-settings-back" aria-label="返回聊天">‹</button><div><b>聊天设置</b><small>只影响当前聊天界面</small></div></header>' +
+      '<div class="chat-settings-scroll">' +
+        '<section class="chat-settings-card"><h3>消息显示</h3>' +
+          switchRow('showAvatar','显示头像','控制消息旁边的双方头像') +
+          switchRow('showName','显示对方昵称','在对方每组消息上方显示昵称') +
+          switchRow('showTime','显示日期与时间','显示聊天日期分隔和较长间隔的时间') +
+          switchRow('compact','合并连续消息','连续发送的消息使用紧凑排列') +
+          '<div class="chat-pref-range"><div><b>消息字体大小</b><output id="chat-font-value">' + Number(p.fontSize || 14) + ' px</output></div><input type="range" min="12" max="20" step="1" value="' + Number(p.fontSize || 14) + '" id="chat-font-size"></div>' +
+        '</section>' +
+        '<section class="chat-settings-card"><h3>输入习惯</h3>' +
+          switchRow('enterSend','按 Enter 发送','关闭后，Enter 换行，使用发送按钮发送') +
+        '</section>' +
+        '<section class="chat-settings-note"><b>说明</b><p>这些选项保存在本机，不会修改聊天记录、角色资料或 API 配置。</p></section>' +
+      '</div></div>';
   }
 
   function chatView() {
@@ -343,13 +382,15 @@
     let lastT = 0;
     let lastDay = '';
 
+    const prefs = chatPrefs();
+    if (chatSettingsOpen) return chatSettingsView();
     const rows = list.map(function (m, index) {
       const prev = index > 0 ? list[index - 1] : null;
       let sep = '';
       const t = Number(m.t) || 0;
       const gap = t - lastT;
 
-      if (m.who !== 'sys') {
+      if (prefs.showTime && m.who !== 'sys') {
         const label = dayLabel(t);
         if (label !== lastDay) {
           sep = '<div class="chat-day"><span>' + UI.esc(label) + '</span></div>';
@@ -389,6 +430,7 @@
       '</div>' +
       '<div class="chat-more-menu" id="chat-more-menu" hidden>' +
         '<button type="button" data-chat-action="search">搜索聊天记录</button>' +
+        '<button type="button" data-chat-action="settings">聊天设置</button>' +
         '<button type="button" data-chat-action="latest">回到最新消息</button>' +
         '<button type="button" data-chat-action="clear">清空对话</button>' +
       '</div>';
@@ -854,6 +896,25 @@
   function bind(id) {
     if (bodyEl && bodyEl.querySelector('.mio-original-frame')) return;
     if (id === 'chat') {
+      if (chatSettingsOpen) {
+        const backSettings = D.getElementById('chat-settings-back');
+        if (backSettings) backSettings.addEventListener('click', function () { chatSettingsOpen = false; paint('chat'); scrollChat(); });
+        Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-chat-pref]'), function (control) {
+          control.addEventListener('change', function () {
+            saveChatPref(control.dataset.chatPref, control.checked);
+            paint('chat');
+          });
+        });
+        const font = D.getElementById('chat-font-size');
+        const output = D.getElementById('chat-font-value');
+        if (font) font.addEventListener('input', function () {
+          if (output) output.textContent = font.value + ' px';
+          saveChatPref('fontSize', Number(font.value));
+          bodyEl.style.setProperty('--chat-font-size', font.value + 'px');
+        });
+        bodyEl.style.setProperty('--chat-font-size', chatPrefs().fontSize + 'px');
+        return;
+      }
       const btn = D.getElementById('chat-send');
       const input = D.getElementById('chat-input');
       const plus = D.getElementById('chat-plus');
@@ -938,6 +999,7 @@
           if (!action) return;
           closeChatMenus();
           if (action.dataset.chatAction === 'search' && searchToggle) searchToggle.click();
+          if (action.dataset.chatAction === 'settings') { chatSettingsOpen = true; paint('chat'); }
           if (action.dataset.chatAction === 'latest') scrollChat();
           if (action.dataset.chatAction === 'clear') {
             if (!window.confirm('确定清空当前聊天记录吗？此操作无法撤销。')) return;
@@ -953,7 +1015,7 @@
       if (btn) btn.addEventListener('click', sendChat);
       if (input) {
         input.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+          if (e.key === 'Enter' && !e.shiftKey && chatPrefs().enterSend) { e.preventDefault(); sendChat(); }
         });
       }
 
