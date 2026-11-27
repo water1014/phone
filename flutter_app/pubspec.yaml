@@ -20,6 +20,7 @@ dependencies:
   audio_service: ^0.18.19
   just_audio: ^0.9.46
   just_audio_background: ^0.0.1-beta.17
+  record: ^6.1.2
   webview_flutter: ^4.10.0
 dev_dependencies:
   flutter_test:
