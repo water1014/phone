@@ -131,7 +131,7 @@ class _ChatPageState extends State<ChatPage> {
 class _ChatSettings extends StatelessWidget {
   const _ChatSettings();
   @override
-  Widget build(BuildContext context) => SafeArea(child: Padding(
+  Widget build(BuildContext context) => const SafeArea(child: Padding(
     padding: const EdgeInsets.fromLTRB(22, 8, 22, 28),
     child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Text('聊天设置', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600)),
