@@ -17,6 +17,7 @@ dependencies:
   file_picker: ^8.1.7
   open_filex: ^4.7.0
   gal: ^2.3.0
+  audio_service: ^0.18.19
   just_audio: ^0.9.46
   just_audio_background: ^0.0.1-beta.17
   webview_flutter: ^4.10.0
