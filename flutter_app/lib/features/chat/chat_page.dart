@@ -303,6 +303,8 @@ class _ChatPageState extends State<ChatPage> {
               isTyping: !event.finished,
               inputTokens: event.inputTokens ?? current.inputTokens,
               outputTokens: event.outputTokens ?? current.outputTokens,
+              alternateReplies: current.alternateReplies,
+              selectedAlternative: current.selectedAlternative,
             );
           });
           _followStreamingReply();
@@ -344,6 +346,8 @@ class _ChatPageState extends State<ChatPage> {
               reasoning: current.reasoning,
               inputTokens: current.inputTokens,
               outputTokens: current.outputTokens,
+              alternateReplies: current.alternateReplies,
+              selectedAlternative: current.selectedAlternative,
             );
           }
         }
@@ -381,6 +385,50 @@ class _ChatPageState extends State<ChatPage> {
     });
     await _saveDraft(text);
     await _send();
+  }
+
+  Future<void> _rerollReply(_ChatMessage target) async {
+    if (_sending || target.mine || target.isSystem || target.text.trim().isEmpty) return;
+    final replyIndex = _messages.indexOf(target);
+    if (replyIndex < 1) return;
+    var userIndex = replyIndex - 1;
+    while (userIndex >= 0 && !_messages[userIndex].mine) {
+      userIndex--;
+    }
+    if (userIndex < 0) return;
+    final userMessage = _messages[userIndex];
+    final oldReply = target;
+    setState(() {
+      _messages.removeAt(replyIndex);
+      _messages.removeAt(userIndex);
+      _input.text = userMessage.text;
+      _pendingImagePath = userMessage.imagePath;
+      _pendingFilePath = userMessage.attachmentPath;
+      _pendingFileName = userMessage.attachmentName;
+      _pendingFileSize = userMessage.attachmentSize;
+    });
+    await _saveDraft(userMessage.text);
+    await _send();
+    if (!mounted) return;
+    final newIndex = _messages.lastIndexWhere((message) => !message.mine && !message.isSystem);
+    if (newIndex >= 0 && _messages[newIndex].text.trim().isNotEmpty) {
+      final current = _messages[newIndex];
+      setState(() {
+        _messages[newIndex] = _ChatMessage(
+          text: current.text,
+          mine: false,
+          time: current.time,
+          reasoning: current.reasoning,
+          inputTokens: current.inputTokens,
+          outputTokens: current.outputTokens,
+          alternateReplies: [...oldReply.alternateReplies, oldReply.text],
+        );
+      });
+      await _persistChat();
+    } else {
+      setState(() => _messages.insert(userIndex.clamp(0, _messages.length), oldReply));
+      await _persistChat();
+    }
   }
 
   void _stopGeneration() {
@@ -1025,6 +1073,12 @@ class _ChatPageState extends State<ChatPage> {
             ),
           ),
           const SizedBox(width: 8),
+          IconButton(
+            tooltip: '表情',
+            visualDensity: VisualDensity.compact,
+            onPressed: _showEmojiPicker,
+            icon: const Icon(Icons.emoji_emotions_outlined, size: 21, color: Color(0xFF777777)),
+          ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 2),
@@ -1065,6 +1119,56 @@ class _ChatPageState extends State<ChatPage> {
       ),
     ]),
   );
+
+  Future<void> _showEmojiPicker() async {
+    const emojis = [
+      '😀','😃','😄','😁','😆','🥹','😂','🤣','🥲','😊','😍','🥰',
+      '😘','😚','😋','😛','🤪','🤔','🥺','😭','😤','😳','🙈','🙉',
+      '🙊','😴','🤗','🤭','🫶','❤️','🩷','🧡','💛','💚','🩵','💙',
+      '💜','🤍','🖤','💔','💕','💞','💓','💗','💖','💘','💝','💟',
+      '👍','👎','👏','🙌','🙏','🤝','💪','🫂','👀','✨','⭐','🌙',
+      '☀️','🌧️','🌸','🌷','🌹','🍀','🍓','🍑','🍰','🎂','☕','🎧',
+    ];
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 18),
+          child: SizedBox(
+            height: 245,
+            child: GridView.builder(
+              itemCount: emojis.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 8,
+                mainAxisSpacing: 4,
+                crossAxisSpacing: 4,
+              ),
+              itemBuilder: (_, index) => InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  final value = _input.text;
+                  final selection = _input.selection;
+                  final start = selection.isValid ? selection.start : value.length;
+                  final end = selection.isValid ? selection.end : value.length;
+                  final next = value.replaceRange(start, end, emojis[index]);
+                  _input.value = TextEditingValue(
+                    text: next,
+                    selection: TextSelection.collapsed(offset: start + emojis[index].length),
+                  );
+                  unawaited(_saveDraft(next));
+                  Navigator.pop(sheetContext);
+                  _inputFocus.requestFocus();
+                },
+                child: Center(child: Text(emojis[index], style: const TextStyle(fontSize: 25))),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   void _scrollToLatest() {
     if (!_messagesScroll.hasClients) return;
