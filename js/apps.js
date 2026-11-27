@@ -73,6 +73,25 @@
     /* 美化：两颗星，一大一小 */
     { id: 'beautify', name: '美化', icon: ['M10 4.5l1.6 3.9 3.9 1.6-3.9 1.6L10 15.5l-1.6-3.9L4.5 10l3.9-1.6z', 'M17.3 15.3l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z'] },
 
+    /* MioWatery 原版独立应用入口：只放入侧栏，不挤占 phone 桌面布局 */
+    { id: 'wallet', name: '钱包', icon: ['M4 7h16v12H4z', 'M4 10h16', 'M16 15h1'], sidebarOnly: true },
+    { id: 'life', name: '生活', icon: ['M4 5h16v14H4z', 'M8 9h8', 'M8 13h8'], sidebarOnly: true },
+    { id: 'coread', name: '一起读', icon: ['M4 5c3-1 5.5-.5 8 1v13c-2.5-1.5-5-2-8-1z', 'M20 5c-3-1-5.5-.5-8 1v13c2.5-1.5 5-2 8-1z'], sidebarOnly: true },
+    { id: 'offline', name: '离线内容', icon: ['M5 4h14v16H5z', 'M8 8h8', 'M8 12h8', 'M8 16h5'], sidebarOnly: true },
+    { id: 'preset', name: '预设', icon: ['M5 5h14v14H5z', 'M8 9h8', 'M8 13h5'], sidebarOnly: true },
+    { id: 'repo', name: '资源仓库', icon: ['M4 7h16v13H4z', 'M4 7l2-3h12l2 3'], sidebarOnly: true },
+    { id: 'youtube', name: '视频', icon: ['M4 7h16v10H4z', 'M10 10l5 2-5 2z'], sidebarOnly: true },
+    { id: 'crread', name: '共读书架', icon: ['M4 5h16v14H4z', 'M8 8h8', 'M8 12h8'], sidebarOnly: true },
+    { id: 'couple', name: '情侣空间', icon: ['M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z'], sidebarOnly: true },
+    { id: 'msgs', name: '消息', icon: ['M4 5h16v12H9l-5 3z'], sidebarOnly: true },
+    { id: 'iff', name: '互动', icon: ['M5 5h14v14H5z', 'M8 9h8', 'M8 13h5'], sidebarOnly: true },
+    { id: 'xinji', name: '心迹', icon: ['M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z'], sidebarOnly: true },
+    { id: 'rolephones', name: '角色手机', icon: ['M7 3h10v18H7z', 'M10 6h4', 'M11 18h2'], sidebarOnly: true },
+    { id: 'stickers', name: '表情包', icon: ['M5 5h14v14H5z', 'M8 10h.1', 'M16 10h.1', 'M8 14q4 4 8 0'], sidebarOnly: true },
+    { id: 'desktopcustom', name: '桌面自定义', icon: ['M3 4h18v13H3z', 'M8 21h8', 'M12 17v4'], sidebarOnly: true },
+    { id: 'css', name: '样式设置', icon: ['M4 5h16v14H4z', 'M8 9h8', 'M8 13h5'], sidebarOnly: true },
+    { id: 'profile', name: '个人资料', icon: ['M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', 'M4 21a8 8 0 0 1 16 0'], sidebarOnly: true },
+
     /* 设置：两根滑块 */
     { id: 'settings', name: '设置', icon: ['M4.5 8.5h4.5', 'M13 8.5h6.5', 'M10.5 6.6a1.9 1.9 0 1 0 0 3.8 1.9 1.9 0 0 0 0-3.8z', 'M4.5 15.5h4.5', 'M13 15.5h6.5', 'M16.5 13.6a1.9 1.9 0 1 0 0 3.8 1.9 1.9 0 0 0 0-3.8z'] }
   ];
@@ -83,7 +102,8 @@
 
   function pages() {
     const out = [];
-    for (let i = 0; i < APPS.length; i += PER_PAGE) out.push(APPS.slice(i, i + PER_PAGE));
+    const homeApps = APPS.filter(function (app) { return !app.sidebarOnly; });
+    for (let i = 0; i < homeApps.length; i += PER_PAGE) out.push(homeApps.slice(i, i + PER_PAGE));
     return out.length ? out : [[]];
   }
 
