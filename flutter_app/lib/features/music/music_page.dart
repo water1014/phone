@@ -19,7 +19,6 @@ class _MusicPageState extends State<MusicPage> {
   static const _storage = FlutterSecureStorage();
   final _urlController = TextEditingController();
   late final WebViewController _webView;
-  bool _ready = false;
   bool _loading = false;
   bool _canGoBack = false;
   bool _showSettings = false;
@@ -43,7 +42,6 @@ class _MusicPageState extends State<MusicPage> {
           final canGoBack = await _webView.canGoBack();
           if (mounted) setState(() {
             _loading = false;
-            _ready = true;
             _canGoBack = canGoBack;
           });
         },
@@ -78,7 +76,6 @@ class _MusicPageState extends State<MusicPage> {
     final saved = await _storage.read(key: _serverUrlKey);
     if (!mounted) return;
     if (saved == null || saved.trim().isEmpty) {
-      setState(() => _ready = true);
       return;
     }
     _urlController.text = saved;
