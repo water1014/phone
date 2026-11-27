@@ -31,6 +31,8 @@ jobs:
         with:
           channel: stable
           cache: true
+      - name: Generate Android host project
+        run: flutter create --platforms=android --org com.water1014 --project-name xiaowo .
       - name: Install dependencies
         run: flutter pub get
       - name: Analyze
