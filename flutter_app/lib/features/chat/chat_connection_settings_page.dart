@@ -133,7 +133,25 @@ class _ChatConnectionSettingsPageState extends State<ChatConnectionSettingsPage>
                     const SizedBox(height: 15),
                     _field('接口地址', _url, hint: 'https://…'),
                     const SizedBox(height: 13),
-                    _field('模型名称', _model, hint: '例如 deepseek-chat'),
+                    _field('模型名称', _model, hint: '例如 deepseek-reasoner'),
+                    if (_provider == 'deepseek') ...[
+                      const SizedBox(height: 8),
+                      Wrap(spacing: 8, runSpacing: 6, children: [
+                        ActionChip(
+                          label: const Text('普通对话模型'),
+                          onPressed: () => setState(() => _model.text = 'deepseek-chat'),
+                        ),
+                        ActionChip(
+                          label: const Text('推理模型'),
+                          onPressed: () => setState(() => _model.text = 'deepseek-reasoner'),
+                        ),
+                      ]),
+                      const SizedBox(height: 5),
+                      const Text(
+                        'deepseek-reasoner 会返回服务商提供的 reasoning_content；普通对话模型通常不提供这部分数据。',
+                        style: TextStyle(fontSize: 10, height: 1.5, color: AppColors.muted),
+                      ),
+                    ],
                     const SizedBox(height: 13),
                     TextField(
                       controller: _key,
@@ -164,7 +182,7 @@ class _ChatConnectionSettingsPageState extends State<ChatConnectionSettingsPage>
                       _provider == 'opencode'
                         ? 'OpenCode Go 默认使用官方 Go 推理入口，并自动附带稳定的 x-opencode-session。若你使用中转站，可自行修改接口地址和请求头。'
                         : _provider == 'deepseek'
-                          ? '默认地址为 DeepSeek 官方兼容接口。请填写你自己的 API Key，模型名可按账户权限调整。'
+                          ? '默认使用 DeepSeek 推理模型 deepseek-reasoner。若只需要普通对话，可切换为 deepseek-chat。请填写你自己的 API Key。'
                           : '可填写任何兼容 /v1/chat/completions 的服务地址，并通过自定义请求头适配第三方服务。',
                       style: const TextStyle(fontSize: 12, height: 1.65, color: AppColors.secondary),
                     ),
