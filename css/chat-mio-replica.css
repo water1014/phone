@@ -47,3 +47,9 @@
 .chat-image-viewer{position:fixed;inset:0;z-index:10020;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(12,14,18,.94);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);touch-action:pan-y}
 .chat-image-viewer>img{display:block;max-width:100%;max-height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
 .chat-image-viewer .chat-image-close{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:16px;width:42px;height:42px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:28px;line-height:1;z-index:1}
+
+
+/* Message long-press action sheet */
+#msg-actions.msg-actions{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:10010;display:flex;align-items:center;gap:4px;width:max-content;max-width:calc(100vw - 28px);padding:7px;border:1px solid var(--glass-brd);border-radius:16px;background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:0 12px 36px rgba(20,25,35,.18);transform:translateX(-50%)}
+#msg-actions.msg-actions button{min-width:56px;padding:9px 11px;border:0;border-radius:10px;background:transparent;color:var(--ink-1,var(--ink));font:inherit;font-size:13px;white-space:nowrap}
+#msg-actions.msg-actions button:active{background:var(--glass-brd)}
