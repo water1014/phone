@@ -132,7 +132,8 @@
   function tick() {
     const app = D.getElementById('app');
     const wrap = D.querySelector('#app-body .chat-wrap');
-    const isChat = !!(app && app.classList.contains('show') && wrap);
+    const settings = D.querySelector('#app-body .chat-settings-page');
+    const isChat = !!(app && app.classList.contains('show') && (wrap || settings));
 
     if (isChat) {
       if (!D.body.classList.contains('xw-chat-on')) D.body.classList.add('xw-chat-on');
