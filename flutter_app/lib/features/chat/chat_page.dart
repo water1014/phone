@@ -392,7 +392,11 @@ class _ChatPageState extends State<ChatPage> {
   Future<void> _rerollReply(_ChatMessage target) async {
     if (_sending || target.mine || target.isSystem || target.text.trim().isEmpty) return;
     final replyIndex = _messages.indexOf(target);
-    if (replyIndex < 1) return;
+    final latestReply = _messages.lastIndexWhere((message) => !message.mine && !message.isSystem);
+    if (replyIndex < 1 || replyIndex != latestReply) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('目前只能重新生成最新一条回复')));
+      return;
+    }
     var userIndex = replyIndex - 1;
     while (userIndex >= 0 && !_messages[userIndex].mine) {
       userIndex--;
@@ -428,7 +432,7 @@ class _ChatPageState extends State<ChatPage> {
       });
       await _persistChat();
     } else {
-      setState(() => _messages.insert(userIndex.clamp(0, _messages.length), oldReply));
+      setState(() => _messages.insert(userIndex.clamp(0, _messages.length).toInt(), oldReply));
       await _persistChat();
     }
   }
@@ -895,6 +899,33 @@ class _ChatPageState extends State<ChatPage> {
                         ),
                 ),
               ),
+            if (!mine && !message.isTyping && !message.isSystem)
+              Padding(
+                padding: const EdgeInsets.only(top: 3, left: 1),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () => _rerollReply(message),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Icon(Icons.refresh_rounded, size: 13, color: Color(0xFF888888)),
+                        SizedBox(width: 3),
+                        Text('Reroll', style: TextStyle(fontSize: 10, color: Color(0xFF888888))),
+                      ]),
+                    ),
+                  ),
+                  if (message.alternateReplies.isNotEmpty)
+                    InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => _showReplyVersions(message),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+                        child: Text('版本 ${message.alternateReplies.length + 1}', style: const TextStyle(fontSize: 10, color: Color(0xFF888888))),
+                      ),
+                    ),
+                ]),
+              ),
             if (prefs.showTime && !compact)
               Padding(
                 padding: const EdgeInsets.only(top: 5, left: 3, right: 3),
@@ -915,6 +946,47 @@ class _ChatPageState extends State<ChatPage> {
             : [avatarSlot, const SizedBox(width: 6), content],
       ),
     );
+  }
+
+  Future<void> _showReplyVersions(_ChatMessage message) async {
+    final index = _messages.indexOf(message);
+    if (index < 0 || message.alternateReplies.isEmpty) return;
+    final versions = [...message.alternateReplies, message.text];
+    final selected = await showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          children: [
+            const Padding(padding: EdgeInsets.fromLTRB(4, 4, 4, 12), child: Text('回复版本', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
+            for (var i = 0; i < versions.length; i++)
+              ListTile(
+                leading: Icon(i == versions.length - 1 ? Icons.check_circle_rounded : Icons.history_rounded, color: const Color(0xFF666666)),
+                title: Text('版本 ${i + 1}', style: const TextStyle(fontSize: 13)),
+                subtitle: Text(versions[i], maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11)),
+                onTap: () => Navigator.pop(sheetContext, i),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (selected == null || !mounted || selected == versions.length - 1) return;
+    final current = _messages[index];
+    final chosen = versions[selected];
+    final nextVersions = [...versions]..removeAt(selected);
+    setState(() {
+      _messages[index] = _ChatMessage(
+        text: chosen, mine: current.mine, time: current.time, reasoning: current.reasoning,
+        inputTokens: current.inputTokens, outputTokens: current.outputTokens,
+        imagePath: current.imagePath, attachmentPath: current.attachmentPath,
+        attachmentName: current.attachmentName, attachmentSize: current.attachmentSize,
+        alternateReplies: nextVersions,
+      );
+    });
+    await _persistChat();
   }
 
   Future<void> _showMessageActions(_ChatMessage message) async {
