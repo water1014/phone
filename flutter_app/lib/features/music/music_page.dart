@@ -825,7 +825,7 @@ class _MusicPageState extends State<MusicPage> {
                     builder: (_, snap) => IconButton(
                       onPressed: () async {
                         if (snap.data?.playing == true) { await _audio.pause(); } else { await _audio.play(); }
-                        refresh(() {});
+                        if (sheetContext.mounted) refresh(() {});
                       },
                       icon: Icon(snap.data?.playing == true ? Icons.pause_circle_filled_rounded : Icons.play_circle_fill_rounded, color: Colors.white, size: 68),
                     ),
