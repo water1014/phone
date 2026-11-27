@@ -216,6 +216,7 @@ class _ChatPageState extends State<ChatPage> {
       valueListenable: ChatPreferenceStore.value,
       builder: (context, prefs, _) => Scaffold(
         drawer: const AppSideDrawer(active: 'chat'),
+        drawerEnableOpenDragGesture: false,
         backgroundColor: const Color(0xFFF7F8F7),
         body: SafeArea(
           bottom: false,
