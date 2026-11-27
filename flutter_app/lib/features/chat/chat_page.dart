@@ -644,7 +644,7 @@ class _ChatPageState extends State<ChatPage> {
                       fit: BoxFit.contain,
                       errorBuilder: (_, __, ___) => const SizedBox(
                         width: 180, height: 90,
-                        child: Center(child: Text('图片暂时无法显示', style: TextStyle(fontSize: 11, color: Color(0xFF777777))),
+                        child: Center(child: Text('图片暂时无法显示', style: TextStyle(fontSize: 11, color: Color(0xFF777777)))),
                       ),
                     ),
                   ),
@@ -675,7 +675,7 @@ class _ChatPageState extends State<ChatPage> {
                       ? const SizedBox(
                           width: 34,
                           height: 17,
-                          child: Center(child: Text('···', style: TextStyle(fontSize: 20, letterSpacing: 2, color: Color(0xFF777777))),
+                          child: Center(child: Text('···', style: TextStyle(fontSize: 20, letterSpacing: 2, color: Color(0xFF777777)))),
                         )
                       : Text(
                           message.text,
