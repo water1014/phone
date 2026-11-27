@@ -164,7 +164,7 @@ class _ChatPageState extends State<ChatPage> {
         )));
       _loadingHistory = false;
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
+    _scrollToLatest(immediate: true);
   }
 
   Future<void> _persistChat() => ChatMessageStore.save(
@@ -1365,14 +1365,24 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  void _scrollToLatest() {
-    if (!_messagesScroll.hasClients) return;
-    _messagesScroll.animateTo(
-      _messagesScroll.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOut,
-    ).then((_) {
-      if (mounted && _showJumpLatest) setState(() => _showJumpLatest = false);
+  void _scrollToLatest({bool immediate = false}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_messagesScroll.hasClients) return;
+      final position = _messagesScroll.position;
+      if (!position.hasContentDimensions) return;
+      final target = position.maxScrollExtent;
+      if (immediate) {
+        position.jumpTo(target);
+      } else {
+        _messagesScroll.animateTo(
+          target,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+        );
+      }
+      if (_showJumpLatest) {
+        setState(() => _showJumpLatest = false);
+      }
     });
   }
 
