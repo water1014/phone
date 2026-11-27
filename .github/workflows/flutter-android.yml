@@ -37,6 +37,26 @@ jobs:
           cache: true
       - name: Generate Android host project
         run: flutter create --platforms=android --org com.water1014 --project-name xiaowo .
+      - name: Set Android compile SDK
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          candidates = [Path("android/app/build.gradle"), Path("android/app/build.gradle.kts")]
+          for path in candidates:
+              if not path.exists():
+                  continue
+              source = path.read_text()
+              updated = source.replace("compileSdk = flutter.compileSdkVersion", "compileSdk = 36")
+              updated = updated.replace("compileSdkVersion flutter.compileSdkVersion", "compileSdkVersion 36")
+              updated = updated.replace("compileSdk flutter.compileSdkVersion", "compileSdk 36")
+              if updated == source and "compileSdk" in source:
+                  print(f"compileSdk declaration already explicit in {path}; leaving it unchanged")
+              else:
+                  path.write_text(updated)
+                  print(f"Configured compileSdk 36 in {path}")
+          if not any(path.exists() for path in candidates):
+              raise SystemExit("Android app Gradle file was not generated")
+          PY
       - name: Configure stable Android debug signing
         env:
           ANDROID_DEBUG_KEYSTORE_BASE64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_BASE64 }}
