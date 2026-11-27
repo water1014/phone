@@ -7,6 +7,8 @@ import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:gal/gal.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
@@ -31,6 +33,8 @@ class _ChatMessage {
     this.attachmentPath,
     this.attachmentName,
     this.attachmentSize,
+    this.alternateReplies = const [],
+    this.selectedAlternative = 0,
   });
   final String text;
   final bool mine;
@@ -44,6 +48,8 @@ class _ChatMessage {
   final String? attachmentPath;
   final String? attachmentName;
   final int? attachmentSize;
+  final List<String> alternateReplies;
+  final int selectedAlternative;
 }
 
 Color _mineBubbleColor(int style) => style == 1 ? const Color(0xFF202020) : const Color(0xFF171717);
@@ -136,6 +142,8 @@ class _ChatPageState extends State<ChatPage> {
           attachmentPath: message.attachmentPath,
           attachmentName: message.attachmentName,
           attachmentSize: message.attachmentSize,
+          alternateReplies: message.alternateReplies,
+          selectedAlternative: message.selectedAlternative,
         )));
       _loadingHistory = false;
     });
@@ -155,6 +163,8 @@ class _ChatPageState extends State<ChatPage> {
       attachmentPath: message.attachmentPath,
       attachmentName: message.attachmentName,
       attachmentSize: message.attachmentSize,
+      alternateReplies: message.alternateReplies,
+      selectedAlternative: message.selectedAlternative,
     )).toList(),
   );
 
