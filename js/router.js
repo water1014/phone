@@ -188,7 +188,7 @@
     /* Only exact Mio modules are redirected. Unmatched Phone apps keep their own pages. */
     /* Phone dock keeps its own native chat, diary and settings pages. */
     personas:'personas', worldbook:'worlds',
-    music:'music', mcp:'mcp',
+    mcp:'mcp',
     wallet:'wallet', life:'life', coread:'coread', offline:'offline',
     preset:'preset', repo:'repo', youtube:'youtube', crread:'crread',
     couple:'couple', msgs:'msgs', iff:'iff', xinji:'xinji', app:'app',
