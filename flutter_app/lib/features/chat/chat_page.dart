@@ -295,11 +295,13 @@ class _ChatPageState extends State<ChatPage> {
     if (_sending) return;
     final userIndex = _messages.lastIndexWhere((message) => message.mine && !message.isSystem);
     if (userIndex < 0) return;
-    final text = _messages[userIndex].text;
+    final failedMessage = _messages[userIndex];
+    final text = failedMessage.text;
     setState(() {
       _messages.removeWhere((message) => message.isSystem && message.text.startsWith('连接没有成功：'));
       _messages.removeAt(userIndex);
       _input.text = text;
+      _pendingImagePath = failedMessage.imagePath;
     });
     await _saveDraft(text);
     await _send();
@@ -626,7 +628,8 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _showMessageActions(_ChatMessage message) async {
-    if (message.isTyping || message.isSystem || message.text.isEmpty) return;
+    if (message.isTyping || message.isSystem ||
+        (message.text.isEmpty && message.imagePath == null)) return;
     final action = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.white,
@@ -836,14 +839,18 @@ class _ChatPageState extends State<ChatPage> {
       final source = File(picked.path);
       final size = await source.length();
       if (size > 8 * 1024 * 1024) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('图片仍然太大，请选择 8 MB 以内的图片')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('图片仍然太大，请选择 8 MB 以内的图片')),
+          );
+        }
         return;
       }
       final appDir = await getApplicationDocumentsDirectory();
       final mediaDir = Directory('${appDir.path}/chat_media');
-      if (!await mediaDir.exists()) await mediaDir.create(recursive: true);
+      if (!await mediaDir.exists()) {
+        await mediaDir.create(recursive: true);
+      }
       final extension = picked.path.contains('.')
           ? picked.path.split('.').last.toLowerCase()
           : 'jpg';
