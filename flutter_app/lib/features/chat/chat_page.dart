@@ -60,6 +60,24 @@ Color _partnerBubbleColor(int style) => switch (style) {
   _ => const Color(0xFFECEEF0),
 };
 
+class _HeaderAction extends StatelessWidget {
+  const _HeaderAction({required this.icon, required this.tooltip, required this.onTap});
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(14),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: SizedBox(width: 42, height: 42, child: Icon(icon, size: 20, color: const Color(0xFF526159))),
+    ),
+  );
+}
+
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
   @override
