@@ -12,12 +12,12 @@
   function normalize(item, fallbackScope) {
     if (!item || typeof item !== 'object') return null;
     return {
-      id: String(item.id || uid()), title: String(item.title || item.name || item.comment || '未命名世界书'),
+      id: String(item.id || uid()), title: String(item.title || item.name || item.comment || item.key || '未命名世界书'),
       keys: Array.isArray(item.keys) ? item.keys.join(', ') : String(item.keys || item.key || ''),
       content: String(item.content || item.description || item.text || ''),
       scope: item.scope === 'contact' || fallbackScope === 'contact' ? 'contact' : 'global',
       category: String(item.category || item.cat || ''), enabled: item.enabled !== false && item.on !== false,
-      trigger: String(item.trigger || 'global'), position: String(item.position || 'after'),
+      trigger: String(item.trigger || (item.selective ? 'keyword' : 'global')), position: String(item.position || (item.extensions && (item.extensions.position === 0 || item.extensions.position === 'before') ? 'before' : 'after')),
       contacts: Array.isArray(item.contacts) ? item.contacts.map(String) : []
     };
   }
@@ -25,10 +25,11 @@
     let list = [];
     if (Array.isArray(data)) list = data;
     else if (data && Array.isArray(data.worldbooks)) list = data.worldbooks;
-    else if (data && Array.isArray(data.entries)) list = data.entries;
-    else if (data && data.entries && typeof data.entries === 'object') {
+    else if (data && data.lorebook && data.lorebook.entries) data = data.lorebook;
+    if (!list.length && data && Array.isArray(data.entries)) list = data.entries;
+    else if (!list.length && data && data.entries && typeof data.entries === 'object') {
       list = Object.keys(data.entries).map(k => Object.assign({title:k}, data.entries[k]));
-    } else if (data && typeof data === 'object' && data.entries && data.name) list = [data];
+    } else if (!list.length && data && typeof data === 'object' && data.entries && data.name) list = [data];
     else if (data && typeof data === 'object') {
       list = Object.keys(data).filter(k => data[k] && typeof data[k] === 'object').map(k => Object.assign({title:k}, data[k]));
     }
