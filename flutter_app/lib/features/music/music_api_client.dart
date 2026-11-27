@@ -58,14 +58,14 @@ class MusicApiClient {
     final headers = <String, dynamic>{'Content-Type': 'application/json'};
     if (cookie.trim().isNotEmpty) headers['X-Netease-Cookie'] = cookie.trim();
     final response = await _dio.post<dynamic>(
-      '\${worker(base)}/netease/$action',
+      '${worker(base)}/netease/$action',
       data: body,
       options: Options(headers: headers, validateStatus: (s) => s != null && s < 500),
     );
     final raw = response.data;
     if ((response.statusCode ?? 0) < 200 || (response.statusCode ?? 0) >= 300) {
       final message = raw is Map ? raw['error'] ?? raw['message'] ?? raw['hint'] : null;
-      throw Exception(message ?? 'HTTP \${response.statusCode}');
+      throw Exception(message ?? 'HTTP ${response.statusCode}');
     }
     if (raw is Map<String, dynamic>) return raw;
     if (raw is Map) return Map<String, dynamic>.from(raw);
@@ -114,7 +114,7 @@ class MusicApiClient {
 
   static String? extractMusicCookie(String raw) {
     final match = RegExp(r'(?:^|;\s*)MUSIC_U=([^;]+)', caseSensitive: false).firstMatch(raw.trim());
-    if (match != null) return 'MUSIC_U=\${match.group(1)}';
+    if (match != null) return 'MUSIC_U=${match.group(1)}';
     final value = raw.trim();
     if (value.isNotEmpty && !value.contains('=') && value.length > 20) return 'MUSIC_U=$value';
     return null;
