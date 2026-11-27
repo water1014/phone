@@ -5,8 +5,8 @@ import 'package:xiaowo/app/xiaowo_app.dart';
 
 void main() {
   testWidgets('首页可以进入聊天并发送消息', (tester) async {
-    await tester.view.physicalSize = const Size(430, 932);
-    await tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
     await tester.pumpWidget(const ProviderScope(child: XiaowoApp()));
     expect(find.text('我们的日常'), findsOneWidget);
     await tester.tap(find.text('聊天'));
