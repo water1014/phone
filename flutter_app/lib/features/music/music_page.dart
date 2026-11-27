@@ -364,103 +364,316 @@ class _MusicPageState extends State<MusicPage> {
   );
 
   Widget _content() {
-    if (_tab == 1) {
-      if (!_loggedIn) return _empty('登录后查看自己的网易云歌单', Icons.library_music_outlined);
-      if (_playlists.isEmpty) return _empty('暂时没有读取到歌单', Icons.queue_music_rounded);
-      return ListView.separated(
-        padding: const EdgeInsets.fromLTRB(14, 8, 14, 20),
-        itemCount: _playlists.length,
-        separatorBuilder: (_, __) => const Divider(height: 1, color: _line, indent: 66),
-        itemBuilder: (_, i) {
-          final p = _playlists[i];
-          return ListTile(
-            contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-            leading: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: p.cover.isEmpty
-                  ? Container(width: 48, height: 48, color: const Color(0xFFEDEDED), child: const Icon(Icons.music_note_rounded, color: _muted))
-                  : Image.network(p.cover, width: 48, height: 48, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(width: 48, height: 48, color: const Color(0xFFEDEDED), child: const Icon(Icons.music_note_rounded, color: _muted))),
+    if (_tab == 1) return _playlistContent();
+    if (_tab == 2) return _discoverContent();
+    return _homeContent();
+  }
+
+  Widget _homeContent() {
+    final featured = _current ?? (_queue.isNotEmpty ? _queue.first : null);
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(_loggedIn ? 'WELCOME BACK' : 'YOUR MUSIC SPACE',
+                    style: const TextStyle(fontSize: 9, letterSpacing: 2.2, color: Color(0xFFB18A99), fontWeight: FontWeight.w700)),
+                const SizedBox(height: 7),
+                Text(_loggedIn && _accountName.isNotEmpty ? _accountName : '一起听音乐',
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 25, color: Color(0xFF49343D), fontWeight: FontWeight.w700)),
+                const SizedBox(height: 4),
+                Text(_loggedIn ? '网易云音乐已连接' : '连接网易云，收藏你的每一首歌',
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF9B7C88))),
+              ]),
             ),
-            title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: _ink, fontWeight: FontWeight.w500)),
-            subtitle: Text('${p.count} 首', style: const TextStyle(fontSize: 10, color: _muted)),
-            trailing: const Icon(Icons.chevron_right_rounded, color: _muted),
-            onTap: () => _openPlaylist(p),
-          );
-        },
-      );
+            GestureDetector(
+              onTap: _loggedIn ? _logout : _showLogin,
+              child: Container(
+                width: 44, height: 44,
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: .82), shape: BoxShape.circle, border: Border.all(color: Colors.white)),
+                child: Icon(_loggedIn ? Icons.check_rounded : Icons.person_outline_rounded, color: const Color(0xFF9B6178)),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 27),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          const Text('NOW PLAYING', style: TextStyle(fontSize: 10, letterSpacing: 2, color: Color(0xFF9B7180), fontWeight: FontWeight.w700)),
+          Text(_queue.isEmpty ? 'YOUR COLLECTION' : _queue.length.toString().padLeft(2, '0') + ' TRACKS',
+              style: const TextStyle(fontSize: 9, letterSpacing: 1.2, color: Color(0xFFB79AA5))),
+        ]),
+        const SizedBox(height: 12),
+        if (featured != null)
+          GestureDetector(
+            onTap: _showPlayer,
+            child: Container(
+              padding: const EdgeInsets.all(13),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .84),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: Colors.white, width: 1.2),
+                boxShadow: [BoxShadow(color: const Color(0xFF9B7180).withValues(alpha: .08), blurRadius: 24, offset: const Offset(0, 10))],
+              ),
+              child: Row(children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: featured.cover.isEmpty
+                      ? Container(width: 92, height: 92, color: const Color(0xFFF1E5EA), child: const Icon(Icons.music_note_rounded, size: 35, color: Color(0xFFB18A99)))
+                      : Image.network(featured.cover, width: 92, height: 92, fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(width: 92, height: 92, color: const Color(0xFFF1E5EA), child: const Icon(Icons.music_note_rounded, color: Color(0xFFB18A99)))),
+                ),
+                const SizedBox(width: 14),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Text('CONTINUE LISTENING', style: TextStyle(fontSize: 8, letterSpacing: 1.5, color: Color(0xFFB18A99))),
+                  const SizedBox(height: 8),
+                  Text(featured.name, maxLines: 2, overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 16, height: 1.3, fontWeight: FontWeight.w700, color: Color(0xFF49343D))),
+                  const SizedBox(height: 4),
+                  Text(featured.artist, maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 11, color: Color(0xFF9B7C88))),
+                  const SizedBox(height: 9),
+                  const Row(children: [
+                    Icon(Icons.graphic_eq_rounded, size: 14, color: Color(0xFFC2708A)),
+                    SizedBox(width: 5),
+                    Text('OPEN PLAYER', style: TextStyle(fontSize: 8, letterSpacing: 1.2, color: Color(0xFFC2708A), fontWeight: FontWeight.w700)),
+                  ]),
+                ])),
+              ]),
+            ),
+          )
+        else
+          GestureDetector(
+            onTap: _showLogin,
+            child: Container(
+              height: 154,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .78),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: Colors.white),
+              ),
+              child: const Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Icon(Icons.headphones_rounded, size: 34, color: Color(0xFFC2708A)),
+                SizedBox(height: 12),
+                Text('让喜欢的音乐住进来', style: TextStyle(fontSize: 14, color: Color(0xFF654B56), fontWeight: FontWeight.w600)),
+                SizedBox(height: 5),
+                Text('登录网易云音乐，读取你的歌单', style: TextStyle(fontSize: 10, color: Color(0xFFAA8C98))),
+              ]),
+            ),
+          ),
+        const SizedBox(height: 27),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          const Text('YOUR PLAYLISTS', style: TextStyle(fontSize: 10, letterSpacing: 2, color: Color(0xFF9B7180), fontWeight: FontWeight.w700)),
+          TextButton(onPressed: () => setState(() => _tab = 1),
+              child: const Text('VIEW ALL  ›', style: TextStyle(fontSize: 9, letterSpacing: 1, color: Color(0xFFC2708A)))),
+        ]),
+        if (_playlists.isEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 22),
+            alignment: Alignment.centerLeft,
+            child: Text(_loggedIn ? '还没有读取到歌单' : '登录后，这里会出现你的网易云歌单',
+                style: const TextStyle(fontSize: 11, color: Color(0xFFAA8C98))),
+          )
+        else
+          SizedBox(
+            height: 158,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _playlists.length > 8 ? 8 : _playlists.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 13),
+              itemBuilder: (_, i) {
+                final p = _playlists[i];
+                return GestureDetector(
+                  onTap: () => _openPlaylist(p),
+                  child: SizedBox(width: 112, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: p.cover.isEmpty
+                          ? Container(width: 112, height: 112, color: const Color(0xFFEEDFE6), child: const Icon(Icons.album_rounded, color: Color(0xFFB18A99), size: 30))
+                          : Image.network(p.cover, width: 112, height: 112, fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(width: 112, height: 112, color: const Color(0xFFEEDFE6), child: const Icon(Icons.album_rounded, color: Color(0xFFB18A99)))),
+                    ),
+                    const SizedBox(height: 7),
+                    Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 11, color: Color(0xFF654B56), fontWeight: FontWeight.w600)),
+                    Text(p.count.toString() + ' songs', style: const TextStyle(fontSize: 9, color: Color(0xFFAA8C98))),
+                  ])),
+                );
+              },
+            ),
+          ),
+        const SizedBox(height: 20),
+        if (_queue.isNotEmpty) ...[
+          const Text('UP NEXT', style: TextStyle(fontSize: 10, letterSpacing: 2, color: Color(0xFF9B7180), fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          ..._queue.take(4).toList().asMap().entries.map((entry) => _songTile(entry.value, entry.key + 1)),
+        ],
+      ],
+    );
+  }
+
+  Widget _playlistContent() {
+    if (!_loggedIn) {
+      return Center(child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.library_music_outlined, size: 42, color: Color(0xFFB18A99)),
+          const SizedBox(height: 14),
+          const Text('登录后查看你的歌单', style: TextStyle(fontSize: 14, color: Color(0xFF654B56), fontWeight: FontWeight.w600)),
+          const SizedBox(height: 6),
+          const Text('用网易云音乐扫码即可同步', style: TextStyle(fontSize: 10, color: Color(0xFFAA8C98))),
+          const SizedBox(height: 16),
+          FilledButton(onPressed: _showLogin, style: FilledButton.styleFrom(backgroundColor: const Color(0xFFC2708A)), child: const Text('连接网易云')),
+        ]),
+      ));
     }
-    if (_tab == 2) {
-      if (_queue.isEmpty) return _empty('搜索歌曲或打开歌单，把喜欢的歌加入播放队列', Icons.queue_music_rounded);
-      return ListView.builder(
-        padding: const EdgeInsets.only(top: 6, bottom: 12),
-        itemCount: _queue.length,
-        itemBuilder: (_, i) => _songTile(_queue[i], i + 1, onTap: () => _play(_queue[i], source: _queue)),
-      );
-    }
-    if (_results.isNotEmpty) {
-      return ListView.builder(
-        padding: const EdgeInsets.only(top: 6, bottom: 12),
-        itemCount: _results.length,
-        itemBuilder: (_, i) => _songTile(_results[i], i + 1, onTap: () => _play(_results[i], source: _results)),
-      );
-    }
-    if (_message.isNotEmpty) return _empty(_message, Icons.info_outline_rounded);
-    return _empty('搜索一首想听的歌，或者登录网易云读取你的歌单', Icons.headphones_rounded);
+    if (_playlists.isEmpty) return _empty('暂时没有读取到歌单', Icons.queue_music_rounded);
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(22, 10, 22, 24),
+      itemCount: _playlists.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (_, i) {
+        final p = _playlists[i];
+        return InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () => _openPlaylist(p),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: .82), borderRadius: BorderRadius.circular(18), border: Border.all(color: Colors.white)),
+            child: Row(children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(13),
+                child: p.cover.isEmpty
+                    ? Container(width: 66, height: 66, color: const Color(0xFFEEDFE6), child: const Icon(Icons.music_note_rounded, color: Color(0xFFB18A99)))
+                    : Image.network(p.cover, width: 66, height: 66, fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(width: 66, height: 66, color: const Color(0xFFEEDFE6), child: const Icon(Icons.music_note_rounded, color: Color(0xFFB18A99)))),
+              ),
+              const SizedBox(width: 13),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, color: Color(0xFF654B56), fontWeight: FontWeight.w700)),
+                const SizedBox(height: 5),
+                Text(p.count.toString() + ' songs', style: const TextStyle(fontSize: 10, color: Color(0xFFAA8C98))),
+              ])),
+              const Icon(Icons.chevron_right_rounded, color: Color(0xFFB18A99)),
+            ]),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _discoverContent() {
+    return Column(children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(22, 8, 22, 12),
+        child: Row(children: [
+          Expanded(child: Container(
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(30), border: Border.all(color: Colors.white), boxShadow: [
+              BoxShadow(color: const Color(0xFF9B7180).withValues(alpha: .07), blurRadius: 18, offset: const Offset(0, 6)),
+            ]),
+            child: TextField(
+              controller: _searchController,
+              textInputAction: TextInputAction.search,
+              onSubmitted: (_) => _search(),
+              decoration: const InputDecoration(
+                hintText: 'search songs or artists...',
+                hintStyle: TextStyle(fontSize: 12, color: Color(0xFFB69AA5)),
+                prefixIcon: Icon(Icons.search_rounded, color: Color(0xFFC29EAD), size: 19),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 15),
+              ),
+            ),
+          )),
+          const SizedBox(width: 9),
+          SizedBox(height: 47, child: FilledButton(
+            onPressed: _busy ? null : _search,
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFC2708A), shape: const StadiumBorder(), padding: const EdgeInsets.symmetric(horizontal: 20)),
+            child: _busy ? const SizedBox(width: 15, height: 15, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Go'),
+          )),
+        ]),
+      ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(22, 2, 22, 8),
+        child: Row(children: [
+          const Text('DISCOVER', style: TextStyle(fontSize: 10, letterSpacing: 2.3, color: Color(0xFF9B7180), fontWeight: FontWeight.w700)),
+          const SizedBox(width: 10),
+          const Expanded(child: Divider(color: Color(0xFFE8D6DE))),
+        ]),
+      ),
+      Expanded(child: _results.isNotEmpty
+          ? ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 2, 16, 18),
+              itemCount: _results.length,
+              itemBuilder: (_, i) => _songTile(_results[i], i + 1, onTap: () => _play(_results[i], source: _results)),
+            )
+          : _message.isNotEmpty
+              ? _empty(_message, Icons.info_outline_rounded)
+              : _queue.isNotEmpty
+                  ? ListView(children: [
+                      const Padding(padding: EdgeInsets.fromLTRB(22, 16, 22, 8), child: Text('RECENTLY PLAYED', style: TextStyle(fontSize: 10, letterSpacing: 1.8, color: Color(0xFFAA8C98)))),
+                      ..._queue.asMap().entries.map((entry) => _songTile(entry.value, entry.key + 1)),
+                    ])
+                  : _empty('搜索一首想听的歌，发现下一首喜欢的音乐', Icons.headphones_rounded)),
+    ]);
   }
 
   Widget _empty(String text, IconData icon) => Center(
     child: Padding(
       padding: const EdgeInsets.all(28),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, size: 34, color: const Color(0xFFB5B5B5)),
+        Icon(icon, size: 34, color: const Color(0xFFBFA7B1)),
         const SizedBox(height: 13),
-        Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, height: 1.7, color: _muted)),
+        Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, height: 1.7, color: Color(0xFF9B7C88))),
       ]),
     ),
   );
 
   Widget _miniPlayer() {
     final song = _current!;
-    return Material(
-      color: Colors.white,
-      child: InkWell(
-        onTap: _showPlayer,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(13, 9, 12, 9),
-          decoration: const BoxDecoration(border: Border(top: BorderSide(color: _line))),
-          child: Row(children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: song.cover.isEmpty
-                  ? Container(width: 39, height: 39, color: const Color(0xFFEDEDED), child: const Icon(Icons.music_note_rounded, color: _muted))
-                  : Image.network(song.cover, width: 39, height: 39, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(width: 39, height: 39, color: const Color(0xFFEDEDED), child: const Icon(Icons.music_note_rounded, color: _muted))),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+      child: Material(
+        color: const Color(0xFF252428),
+        borderRadius: BorderRadius.circular(20),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: _showPlayer,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(11, 9, 12, 9),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.white.withValues(alpha: .08)),
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(width: 10),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(song.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: _ink, fontWeight: FontWeight.w600)),
-              Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: _muted)),
-            ])),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              onPressed: () async {
-                if (_audio.playing) {
-                  await _audio.pause();
-                } else {
-                  await _audio.play();
-                }
-                if (mounted) setState(() {});
-              },
-              icon: StreamBuilder<PlayerState>(
-                stream: _audio.playerStateStream,
-                builder: (_, snapshot) => Icon(snapshot.data?.playing == true ? Icons.pause_rounded : Icons.play_arrow_rounded, color: _ink, size: 25),
+            child: Row(children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: song.cover.isEmpty
+                    ? Container(width: 43, height: 43, color: const Color(0xFF414047), child: const Icon(Icons.music_note_rounded, color: Colors.white70))
+                    : Image.network(song.cover, width: 43, height: 43, fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(width: 43, height: 43, color: const Color(0xFF414047), child: const Icon(Icons.music_note_rounded, color: Colors.white70))),
               ),
-            ),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              onPressed: _next,
-              icon: const Icon(Icons.skip_next_rounded, color: _ink, size: 24),
-            ),
-          ]),
+              const SizedBox(width: 11),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(song.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 3),
+                Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: Color(0xFFB9B7BC))),
+              ])),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                onPressed: () async {
+                  if (_audio.playing) { await _audio.pause(); } else { await _audio.play(); }
+                  if (mounted) setState(() {});
+                },
+                icon: StreamBuilder<PlayerState>(
+                  stream: _audio.playerStateStream,
+                  builder: (_, snapshot) => Icon(snapshot.data?.playing == true ? Icons.pause_rounded : Icons.play_arrow_rounded, color: Colors.white, size: 26),
+                ),
+              ),
+              IconButton(visualDensity: VisualDensity.compact, onPressed: _next, icon: const Icon(Icons.skip_next_rounded, color: Colors.white, size: 24)),
+            ]),
+          ),
         ),
       ),
     );
@@ -478,100 +691,126 @@ class _MusicPageState extends State<MusicPage> {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: _paper,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-      builder: (context) => StatefulBuilder(builder: (context, refresh) {
+      useSafeArea: true,
+      backgroundColor: const Color(0xFF101116),
+      barrierColor: Colors.black54,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (sheetContext) => StatefulBuilder(builder: (context, refresh) {
         final song = _current!;
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Container(width: 34, height: 4, decoration: BoxDecoration(color: _line, borderRadius: BorderRadius.circular(9))),
-              const SizedBox(height: 25),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(22),
-                child: song.cover.isEmpty
-                    ? Container(width: 210, height: 210, color: const Color(0xFFEDEDED), child: const Icon(Icons.album_rounded, size: 80, color: _muted))
-                    : Image.network(song.cover, width: 210, height: 210, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(width: 210, height: 210, color: const Color(0xFFEDEDED), child: const Icon(Icons.album_rounded, size: 80, color: _muted))),
+        final size = MediaQuery.of(context).size;
+        return SizedBox(
+          height: size.height,
+          child: Stack(children: [
+            Positioned.fill(
+              child: song.cover.isEmpty
+                  ? Container(color: const Color(0xFF191A20))
+                  : Image.network(song.cover, fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(color: const Color(0xFF191A20))),
+            ),
+            Positioned.fill(child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [
+                  const Color(0xFF101116).withValues(alpha: .68),
+                  const Color(0xFF101116).withValues(alpha: .78),
+                  const Color(0xFF101116),
+                ], stops: const [0, .42, 1]),
               ),
-              const SizedBox(height: 22),
-              Text(song.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _ink)),
-              const SizedBox(height: 5),
-              Text(song.artist, style: const TextStyle(fontSize: 12, color: _muted)),
-              const SizedBox(height: 25),
-              StreamBuilder<Duration>(
-                stream: _audio.positionStream,
-                builder: (_, snap) {
-                  final position = snap.data ?? Duration.zero;
-                  final duration = _audio.duration ?? Duration.zero;
-                  final max = duration.inMilliseconds.toDouble().clamp(1.0, double.infinity).toDouble();
-                  return Column(children: [
-                    Slider(
-                      value: position.inMilliseconds.toDouble().clamp(0.0, max).toDouble(),
-                      max: max,
-                      activeColor: _ink,
-                      inactiveColor: _line,
-                      onChanged: (v) => _audio.seek(Duration(milliseconds: v.toInt())),
-                    ),
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      Text(_time(position), style: const TextStyle(fontSize: 10, color: _muted)),
-                      Text(_time(duration), style: const TextStyle(fontSize: 10, color: _muted)),
-                    ]),
-                  ]);
-                },
-              ),
-              const SizedBox(height: 14),
-              Container(
-                height: 150,
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: _line)),
-                child: _lyrics.isEmpty
-                    ? const Center(child: Text('暂无歌词', style: TextStyle(fontSize: 11, color: _muted)))
-                    : StreamBuilder<Duration>(
-                        stream: _audio.positionStream,
-                        builder: (_, snapshot) {
-                          final now = (snapshot.data ?? Duration.zero).inMilliseconds / 1000;
-                          var active = _lyrics.lastIndexWhere((line) => (line['time'] as double) <= now);
-                          if (active < 0) active = 0;
-                          return ListView.builder(
-                            itemCount: _lyrics.length,
-                            itemBuilder: (_, index) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 5),
-                              child: Text(
-                                _lyrics[index]['text'] as String,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: index == active ? 12 : 10, height: 1.35, color: index == active ? _ink : const Color(0xFFAAAAAA), fontWeight: index == active ? FontWeight.w600 : FontWeight.w400),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-              ),
-              const SizedBox(height: 15),
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                IconButton(onPressed: _previous, icon: const Icon(Icons.skip_previous_rounded, size: 34, color: _ink)),
-                const SizedBox(width: 18),
-                StreamBuilder<PlayerState>(
-                  stream: _audio.playerStateStream,
-                  builder: (_, snap) => IconButton.filled(
-                    style: IconButton.styleFrom(backgroundColor: _ink, foregroundColor: Colors.white, fixedSize: const Size(58, 58)),
-                    onPressed: () async {
-                      if (snap.data?.playing == true) {
-                        await _audio.pause();
-                      } else {
-                        await _audio.play();
-                      }
-                      refresh(() {});
-                    },
-                    icon: Icon(snap.data?.playing == true ? Icons.pause_rounded : Icons.play_arrow_rounded, size: 30),
+            )),
+            SafeArea(child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 10, 24, 18),
+              child: Column(children: [
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  IconButton(onPressed: () => Navigator.pop(sheetContext), icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 30)),
+                  const Text('NOW PLAYING', style: TextStyle(fontSize: 9, letterSpacing: 2.2, color: Color(0xFFB9B7BC))),
+                  IconButton(onPressed: () { Navigator.pop(sheetContext); _showSettings(); }, icon: const Icon(Icons.more_horiz_rounded, color: Colors.white, size: 25)),
+                ]),
+                const SizedBox(height: 22),
+                Row(children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(13),
+                    child: song.cover.isEmpty
+                        ? Container(width: 58, height: 58, color: const Color(0xFF30313A), child: const Icon(Icons.music_note_rounded, color: Colors.white70))
+                        : Image.network(song.cover, width: 58, height: 58, fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(width: 58, height: 58, color: const Color(0xFF30313A), child: const Icon(Icons.music_note_rounded, color: Colors.white70))),
                   ),
+                  const SizedBox(width: 13),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(song.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 4),
+                    Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Color(0xFFB9B7BC))),
+                  ])),
+                ]),
+                const SizedBox(height: 26),
+                Expanded(child: StreamBuilder<Duration>(
+                  stream: _audio.positionStream,
+                  builder: (_, snapshot) {
+                    final now = (snapshot.data ?? Duration.zero).inMilliseconds / 1000;
+                    var active = _lyrics.lastIndexWhere((line) => (line['time'] as double) <= now);
+                    if (active < 0) active = 0;
+                    if (_lyrics.isEmpty) {
+                      return const Center(child: Text('让音乐慢慢流淌', style: TextStyle(fontSize: 13, color: Color(0xFF777982))));
+                    }
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 26),
+                      itemCount: _lyrics.length,
+                      itemBuilder: (_, index) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Text(
+                          _lyrics[index]['text'] as String,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: index == active ? 21 : 15,
+                            height: 1.4,
+                            color: index == active ? Colors.white : const Color(0xFF777982),
+                            fontWeight: index == active ? FontWeight.w700 : FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                )),
+                const SizedBox(height: 10),
+                StreamBuilder<Duration>(
+                  stream: _audio.positionStream,
+                  builder: (_, snap) {
+                    final position = snap.data ?? Duration.zero;
+                    final duration = _audio.duration ?? Duration.zero;
+                    final max = duration.inMilliseconds.toDouble().clamp(1.0, double.infinity).toDouble();
+                    return Column(children: [
+                      Slider(
+                        value: position.inMilliseconds.toDouble().clamp(0.0, max).toDouble(),
+                        max: max,
+                        activeColor: Colors.white,
+                        inactiveColor: const Color(0xFF4A4B52),
+                        onChanged: (v) => _audio.seek(Duration(milliseconds: v.toInt())),
+                      ),
+                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                        Text(_time(position), style: const TextStyle(fontSize: 10, color: Color(0xFF9B9CA3))),
+                        Text(_time(duration), style: const TextStyle(fontSize: 10, color: Color(0xFF9B9CA3))),
+                      ]),
+                    ]);
+                  },
                 ),
-                const SizedBox(width: 18),
-                IconButton(onPressed: _next, icon: const Icon(Icons.skip_next_rounded, size: 34, color: _ink)),
+                const SizedBox(height: 16),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  IconButton(onPressed: _previous, icon: const Icon(Icons.shuffle_rounded, color: Color(0xFFB9B7BC), size: 21)),
+                  IconButton(onPressed: _previous, icon: const Icon(Icons.skip_previous_rounded, color: Colors.white, size: 35)),
+                  StreamBuilder<PlayerState>(
+                    stream: _audio.playerStateStream,
+                    builder: (_, snap) => IconButton(
+                      onPressed: () async {
+                        if (snap.data?.playing == true) { await _audio.pause(); } else { await _audio.play(); }
+                        refresh(() {});
+                      },
+                      icon: Icon(snap.data?.playing == true ? Icons.pause_circle_filled_rounded : Icons.play_circle_fill_rounded, color: Colors.white, size: 68),
+                    ),
+                  ),
+                  IconButton(onPressed: _next, icon: const Icon(Icons.skip_next_rounded, color: Colors.white, size: 35)),
+                  IconButton(onPressed: () { Navigator.pop(sheetContext); setState(() => _tab = 1); }, icon: const Icon(Icons.queue_music_rounded, color: Color(0xFFB9B7BC), size: 22)),
+                ]),
               ]),
-            ]),
-          ),
+            )),
+          ]),
         );
       }),
     );
@@ -656,87 +895,55 @@ class _MusicPageState extends State<MusicPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: _paper,
-    appBar: AppBar(
-      backgroundColor: _paper,
-      surfaceTintColor: Colors.transparent,
-      elevation: 0,
-      leading: IconButton(onPressed: () => Navigator.of(context).maybePop(), icon: const Icon(Icons.chevron_left_rounded, color: _ink, size: 28)),
-      titleSpacing: 0,
-      title: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('TOGETHER LISTENING', style: TextStyle(fontSize: 9, letterSpacing: 1.3, color: _muted, fontWeight: FontWeight.w600)),
-        SizedBox(height: 3),
-        Text('一起听', style: TextStyle(fontSize: 18, color: _ink, fontWeight: FontWeight.w600)),
-      ]),
-      actions: [
-        if (_loggedIn)
-          IconButton(tooltip: '退出网易云', onPressed: _logout, icon: const Icon(Icons.logout_rounded, color: _muted, size: 19)),
-        IconButton(tooltip: '连接设置', onPressed: _showSettings, icon: const Icon(Icons.tune_rounded, color: _ink, size: 20)),
-      ],
-    ),
-    body: Column(children: [
+    backgroundColor: const Color(0xFFFAF0F4),
+    body: SafeArea(child: Column(children: [
       Padding(
-        padding: const EdgeInsets.fromLTRB(15, 7, 15, 10),
-        child: Row(children: [
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              textInputAction: TextInputAction.search,
-              onSubmitted: (_) => _search(),
-              decoration: InputDecoration(
-                hintText: '搜索歌曲、歌手或专辑',
-                hintStyle: const TextStyle(fontSize: 12, color: Color(0xFFAAAAAA)),
-                prefixIcon: const Icon(Icons.search_rounded, color: _muted, size: 19),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: _line)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: _line)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: _ink)),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          SizedBox(
-            height: 46,
-            child: FilledButton(
-              onPressed: _busy ? null : _search,
-              style: FilledButton.styleFrom(backgroundColor: _ink, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13))),
-              child: _busy ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('搜索', style: TextStyle(fontSize: 12)),
-            ),
-          ),
-        ]),
+        padding: const EdgeInsets.fromLTRB(17, 8, 17, 8),
+        child: SizedBox(height: 48, child: Stack(alignment: Alignment.center, children: [
+          const Text('music', style: TextStyle(fontFamily: 'serif', fontSize: 30, color: Color(0xFF9B536E), letterSpacing: .5)),
+          Align(alignment: Alignment.centerLeft, child: _roundHeaderButton(Icons.chevron_left_rounded, () => Navigator.of(context).maybePop())),
+          Align(alignment: Alignment.centerRight, child: _roundHeaderButton(Icons.tune_rounded, _showSettings)),
+        ])),
       ),
-      Padding(
-        padding: const EdgeInsets.fromLTRB(15, 0, 15, 9),
-        child: Row(children: [
-          _tabChip('搜索', 0),
-          const SizedBox(width: 7),
-          _tabChip('我的歌单', 1),
-          const SizedBox(width: 7),
-          _tabChip('播放队列', 2),
-          const Spacer(),
-          if (_loggedIn)
-            Text(_accountName.isEmpty ? '已登录' : _accountName, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: _muted)),
-          if (!_loggedIn)
-            TextButton(onPressed: _showLogin, style: TextButton.styleFrom(foregroundColor: _ink, visualDensity: VisualDensity.compact), child: const Text('登录', style: TextStyle(fontSize: 11))),
-        ]),
-      ),
-      if (_message.isNotEmpty && _tab != 0)
-        Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4), child: Text(_message, style: const TextStyle(fontSize: 10, color: _muted))),
-      Expanded(child: _content()),
+      Expanded(child: _tab == 0 ? _homeContent() : _tab == 1 ? _playlistContent() : _discoverContent()),
       if (_current != null) _miniPlayer(),
-    ]),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(18, 2, 18, 10),
+        child: Container(
+          height: 66,
+          decoration: BoxDecoration(color: Colors.white.withValues(alpha: .88), borderRadius: BorderRadius.circular(35), border: Border.all(color: Colors.white, width: 1.2),
+            boxShadow: [BoxShadow(color: const Color(0xFF9B7180).withValues(alpha: .08), blurRadius: 20, offset: const Offset(0, 7))]),
+          child: Row(children: [
+            _bottomTab(Icons.home_outlined, 'Home', 0),
+            _bottomTab(Icons.library_music_outlined, 'Playlists', 1),
+            _bottomTab(Icons.search_rounded, 'Discover', 2),
+          ]),
+        ),
+      ),
+    ])),
   );
 
-  Widget _tabChip(String label, int value) => ChoiceChip(
-    label: Text(label, style: TextStyle(fontSize: 10, color: _tab == value ? Colors.white : _muted)),
-    selected: _tab == value,
-    onSelected: (_) => setState(() => _tab = value),
-    selectedColor: _ink,
-    backgroundColor: Colors.white,
-    side: BorderSide(color: _tab == value ? _ink : _line),
-    visualDensity: VisualDensity.compact,
-    padding: const EdgeInsets.symmetric(horizontal: 4),
+  Widget _roundHeaderButton(IconData icon, VoidCallback onTap) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(30),
+    child: Container(width: 42, height: 42, decoration: BoxDecoration(color: Colors.white.withValues(alpha: .9), shape: BoxShape.circle, border: Border.all(color: Colors.white)),
+      child: Icon(icon, color: const Color(0xFF9B6178), size: 22)),
   );
+
+  Widget _bottomTab(IconData icon, String label, int value) => Expanded(
+    child: GestureDetector(
+      onTap: () => setState(() => _tab = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        margin: const EdgeInsets.all(5),
+        decoration: BoxDecoration(color: _tab == value ? const Color(0xFFF7E7ED) : Colors.transparent, borderRadius: BorderRadius.circular(28)),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(icon, size: 21, color: _tab == value ? const Color(0xFF9B536E) : const Color(0xFFB69AA5)),
+          const SizedBox(height: 2),
+          Text(label, style: TextStyle(fontSize: 9, color: _tab == value ? const Color(0xFF9B536E) : const Color(0xFFB69AA5), fontWeight: _tab == value ? FontWeight.w700 : FontWeight.w400)),
+        ]),
+      ),
+    ),
+  );
+
 }
