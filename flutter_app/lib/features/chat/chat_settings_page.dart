@@ -94,6 +94,12 @@ class ChatSettingsPage extends StatelessWidget {
                     selected: prefs.bubbleStyle,
                     onChanged: (v) => _update(prefs.copyWith(bubbleStyle: v)),
                   ),
+                  _SettingsAction(
+                    icon: Icons.flash_on_outlined,
+                    title: '常用语',
+                    value: prefs.quickReplies.isEmpty ? '未设置' : prefs.quickReplies.join(' · '),
+                    onTap: () => _editQuickReplies(context, prefs),
+                  ),
                   _PreferenceSwitch(
                       icon: Icons.schedule_rounded,
                       title: '显示消息时间',
@@ -263,6 +269,71 @@ class ChatSettingsPage extends StatelessWidget {
     controller.dispose();
     if (value == null || value.trim().isEmpty) return;
     await _update(partner ? prefs.copyWith(partnerName: value.trim()) : prefs.copyWith(myName: value.trim()));
+  }
+
+  Future<void> _editQuickReplies(BuildContext context, ChatPreferences prefs) async {
+    final values = List.generate(
+      4,
+      (index) => TextEditingController(
+        text: index < prefs.quickReplies.length ? prefs.quickReplies[index] : '',
+      ),
+    );
+    final result = await showDialog<List<String>>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        title: const Text('编辑常用语', style: TextStyle(fontSize: 17, color: _ink)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var index = 0; index < values.length; index++)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 9),
+                  child: TextField(
+                    controller: values[index],
+                    maxLength: 18,
+                    decoration: InputDecoration(
+                      counterText: '',
+                      labelText: '常用语 ${index + 1}',
+                      filled: true,
+                      fillColor: _soft,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(13),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+              const Text(
+                '这些短句会出现在输入框上方，点击后填入输入框，不会直接发送。',
+                style: TextStyle(fontSize: 10, height: 1.5, color: _muted),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(
+              dialogContext,
+              values.map((item) => item.text.trim()).where((item) => item.isNotEmpty).toList(),
+            ),
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+    for (final controller in values) {
+      controller.dispose();
+    }
+    if (result != null) {
+      await _update(prefs.copyWith(quickReplies: result));
+    }
   }
 
   Future<void> _update(ChatPreferences next) => ChatPreferenceStore.update(next);
