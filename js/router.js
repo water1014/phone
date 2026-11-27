@@ -227,7 +227,7 @@
 
     const mine = msg.who === 'me';
     const name = mine ? (XW.S.herName || '我') : (XW.S.hisName || '他');
-
+    const avatar = String(name).trim().charAt(0) || (mine ? '我' : '他');
     let inner = '';
 
     if (msg.quote && msg.quote.text) {
@@ -238,19 +238,19 @@
     }
 
     if (msg._typing) {
-      inner += '<div class="bub typing">…</div>';
+      inner += '<div class="bub m typing">…</div>';
     } else {
       if (msg.think) {
         inner += '<details class="think"><summary>思考</summary>' +
           '<div class="think-body">' + UI.esc(msg.think) + '</div></details>';
       }
       if (msg.img) {
-        inner += '<figure class="msg-img"><img src="' + msg.img + '" alt=""></figure>';
+        inner += '<figure class="msg-img"><img src="' + UI.esc(msg.img) + '" alt=""></figure>';
       }
       if (msg.text) {
         renderText(msg.text).forEach(function (c) {
           if (c.kind === 'narr') inner += '<div class="narr">' + UI.esc(c.text) + '</div>';
-          else inner += '<div class="bub' + (mine ? ' me' : '') + '">' + UI.esc(c.text) + '</div>';
+          else inner += '<div class="bub m' + (mine ? ' me' : '') + '">' + UI.esc(c.text) + '</div>';
         });
       }
     }
@@ -262,11 +262,11 @@
       tag = '<div class="msg-tag">' + bits.join(' · ') + '</div>';
     }
 
-    return '<div class="msg-row ' + (mine ? 'me' : 'ta') + (compact ? ' compact' : '') + '" data-i="' + index + '">' +
-        '<div class="msg-ava' + (compact ? ' ghost' : '') + '">' + UI.esc(String(name).charAt(0)) + '</div>' +
-        '<div class="msg-main">' +
-          (compact ? '' : '<div class="msg-name">' + UI.esc(name) + '</div>') +
-          inner + tag +
+    return '<div class="msg-row r ' + (mine ? 'me' : 'ai') + (compact ? ' compact' : ' first') + '" data-i="' + index + '">' +
+        '<div class="msg-ava av' + (compact ? ' ghost' : '') + '">' + UI.esc(avatar) + '</div>' +
+        '<div class="msg-main col">' +
+          (!mine && !compact ? '<div class="msg-name nm">' + UI.esc(name) + '</div>' : '') +
+          '<div class="bw"><div class="mio-message-content">' + inner + tag + '</div></div>' +
         '</div>' +
       '</div>';
   }
