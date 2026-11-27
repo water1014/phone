@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/theme/app_theme.dart';
 import '../../app/widgets/app_side_drawer.dart';
@@ -52,6 +54,22 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     unawaited(ChatPreferenceStore.load());
     unawaited(_loadChat());
+    unawaited(_restoreDraft());
+  }
+
+  Future<void> _restoreDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    final draft = prefs.getString('chat.draft.v1') ?? '';
+    if (!mounted || _input.text.isNotEmpty || draft.isEmpty) return;
+    _input.value = TextEditingValue(
+      text: draft,
+      selection: TextSelection.collapsed(offset: draft.length),
+    );
+  }
+
+  Future<void> _saveDraft(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('chat.draft.v1', value);
   }
 
   Future<void> _loadChat() async {
@@ -106,6 +124,7 @@ class _ChatPageState extends State<ChatPage> {
       _sending = true;
     });
     FocusScope.of(context).unfocus();
+    unawaited(_saveDraft(''));
     await _persistChat();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
 
@@ -514,6 +533,7 @@ class _ChatPageState extends State<ChatPage> {
         Expanded(
           child: TextField(
             controller: _input,
+            onChanged: (value) => unawaited(_saveDraft(value)),
             minLines: 1,
             maxLines: 4,
             textInputAction: prefs.enterSend ? TextInputAction.send : TextInputAction.newline,
