@@ -32,7 +32,7 @@ class ChatSettingsPage extends StatelessWidget {
                 children: [
                   Text('CHAT PREFERENCES', style: TextStyle(fontSize: 9, letterSpacing: 1.5, fontWeight: FontWeight.w600, color: _muted)),
                   SizedBox(height: 4),
-                  Text('聊天设置', style: TextStyle(fontSize: 22, height: 1.1, fontWeight: FontWeight.w650, color: _ink)),
+                  Text('聊天设置', style: TextStyle(fontSize: 22, height: 1.1, fontWeight: FontWeight.w600, color: _ink)),
                   SizedBox(height: 4),
                   Text('把聊天调整成舒服的样子', style: TextStyle(fontSize: 11, color: _muted)),
                 ],
@@ -81,7 +81,7 @@ class ChatSettingsPage extends StatelessWidget {
                       child: Row(children: [
                         const _SettingIcon(icon: Icons.text_fields_rounded),
                         const SizedBox(width: 11),
-                        const Expanded(child: Text('消息字体大小', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w550, color: _ink))),
+                        const Expanded(child: Text('消息字体大小', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _ink))),
                         Text('${prefs.fontSize.round()} px', style: const TextStyle(fontSize: 11, color: _muted)),
                       ]),
                     ),
@@ -208,7 +208,7 @@ class _SettingsSection extends StatelessWidget {
         _SettingIcon(icon: icon, color: _accent),
         const SizedBox(width: 10),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w650, color: _ink)),
+          Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
           const SizedBox(height: 3),
           Text(subtitle, style: const TextStyle(fontSize: 10, color: _muted)),
         ])),
@@ -264,7 +264,7 @@ class _PreferenceSwitch extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w550, color: _ink)),
+          Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _ink)),
           const SizedBox(height: 4),
           Text(subtitle, style: const TextStyle(fontSize: 10, height: 1.4, color: _muted)),
         ],

@@ -613,68 +613,28 @@ class _ChatPageState extends State<ChatPage> {
                             ),
                     ),
                   ),
-                  if (prefs.showReasoning && message.isTyping && (message.reasoning ?? '').trim().isEmpty)
+                  if (message.isTyping && (message.reasoning ?? '').trim().isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 5, left: 3),
                       child: Text('正在思考…', style: TextStyle(fontSize: 10, color: Color(0xFF6B7480))),
                     ),
-                  if (prefs.showReasoning && (message.reasoning ?? '').trim().isNotEmpty)
+                  if ((message.reasoning ?? '').trim().isNotEmpty)
                     Container(
                       margin: const EdgeInsets.only(top: 7),
                       constraints: const BoxConstraints(maxWidth: 300),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5F7F5),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFE9EEEA)),
-                      ),
+                      decoration: BoxDecoration(color: const Color(0xFFF3F4F5), borderRadius: BorderRadius.circular(12)),
                       child: Theme(
-                        data: Theme.of(context).copyWith(
-                          dividerColor: Colors.transparent,
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                        ),
+                        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
                         child: ExpansionTile(
                           dense: true,
-                          visualDensity: const VisualDensity(vertical: -2),
-                          tilePadding: const EdgeInsets.symmetric(horizontal: 11),
-                          childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          iconColor: const Color(0xFF71877C),
-                          collapsedIconColor: const Color(0xFF89918F),
-                          leading: Container(
-                            width: 27,
-                            height: 27,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE8EFEA),
-                              borderRadius: BorderRadius.circular(9),
-                            ),
-                            child: const Icon(Icons.psychology_alt_rounded, size: 16, color: Color(0xFF52776B)),
-                          ),
-                          title: const Text('思考过程', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF3E4A44))),
-                          subtitle: const Text('模型通过接口返回', style: TextStyle(fontSize: 9, color: Color(0xFF89918F))),
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.fromLTRB(11, 9, 10, 9),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFEFF3EF),
-                                border: Border(left: BorderSide(color: Color(0xFF9AB4A5), width: 2)),
-                                borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(9),
-                                  bottomRight: Radius.circular(9),
-                                ),
-                              ),
-                              child: Text(
-                                message.reasoning!,
-                                style: const TextStyle(fontSize: 11, height: 1.65, color: Color(0xFF59635D)),
-                              ),
-                            ),
-                          ],
+                          tilePadding: const EdgeInsets.symmetric(horizontal: 10),
+                          childrenPadding: const EdgeInsets.fromLTRB(11, 0, 11, 11),
+                          title: const Text('思考过程 · 服务商返回', style: TextStyle(fontSize: 10, color: Color(0xFF6B7480))),
+                          children: [Text(message.reasoning!, style: const TextStyle(fontSize: 11, height: 1.5, color: Color(0xFF333333)))],
                         ),
                       ),
                     ),
-                  if (prefs.showTime && !compact)
+                  if (!compact)
                     Padding(
                       padding: const EdgeInsets.only(top: 4, left: 3, right: 3),
                       child: Text(_clock(message.time), style: const TextStyle(fontSize: 10, color: Color(0xFF9AA1A8))),
