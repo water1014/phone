@@ -3346,25 +3346,7 @@ function xsjChatExport(pid,fmt){
   const z=n=>String(n).padStart(2,'0'),ft=t=>{if(!t)return'';const d=new Date(t);return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+' '+z(d.getHours())+':'+z(d.getMinutes())};
   const rows=msgs.map(m=>{const tx=esc(String(m.content||'')).replace(/\n/g,'<br>');if(m.narr)return'<div class="n">'+tx+'</div>';const me=m.role==='user',q=m.quote&&m.quote.text?'<div class="q">'+esc(m.quote.text)+'</div>':'',im=(typeof m.image==='string'&&m.image.indexOf('data:image')===0)?'<img src="'+m.image.replace(/"/g,'%22')+'">':'';return'<div class="r '+(me?'me':'ta')+'"><div class="b">'+q+im+tx+'</div><div class="t">'+esc(ft(m.t))+'</div></div>'});
   const css='body{margin:0;background:#f4f4f5;color:#111;font:15px/1.6 -apple-system,"PingFang SC",sans-serif}main{max-width:640px;margin:0 auto;padding:20px 14px 60px}h1{font-size:18px;margin:0 0 4px}.s{color:#888;font-size:12px;margin-bottom:18px}.r{display:flex;flex-direction:column;margin:10px 0}.r.me{align-items:flex-end}.r.ta{align-items:flex-start}.b{max-width:82%;padding:9px 13px;border-radius:16px;word-break:break-word}.me .b{background:#111;color:#fff}.ta .b{background:#fff;border:1px solid #e4e4e7}.b img{max-width:100%;border-radius:10px;display:block;margin-bottom:6px}.q{font-size:12px;opacity:.6;border-left:2px solid currentColor;padding-left:8px;margin-bottom:6px}.t{font-size:11px;color:#999;margin:2px 6px}.n{text-align:center;color:#888;font-size:13px;font-style:italic;margin:12px 20px}@media(prefers-color-scheme:dark){body{background:#000;color:#eee}.ta .b{background:#1c1c1e;border-color:#2c2c2e}.me .b{background:#eee;color:#111}}';
-  const html='<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(name)+' 聊天记录</title><style>'+css+'</style></head><body><main><h1>'+esc(name)+'</h1><div class="s">导出于 '+stamp+' · 共 '+msgs.length+' 条</div>'+rows.join('')+'</main><script type="application/json" id="xsj-data">'+json.replace(/</g,'\\u003c')+'<\/script><script id="phone-mio-entry-bridge">
-/* Phone integration: preserve MioWatery's original implementation; only select its initial view. */
-(function(){
-  function enterOriginalView(){
-    try{
-      var requested=decodeURIComponent((location.hash||'').replace(/^#/,''))||'home';
-      var allowed=['home','chat','personas','worlds','diary','wallet','mcp','life','music','coread','offline','preset','repo','youtube','crread','couple','msgs','iff','xinji','app','postdetail','cset','deco','prof','desktopcustom','rolephones','stickers','settings','css'];
-      if(allowed.indexOf(requested)<0)requested='home';
-      if(requested==='chat'&&typeof P==='function'&&!P(cur))requested='personas';
-      if(typeof go==='function'&&typeof stack!=='undefined'){
-        stack=['home'];
-        go(requested,false);
-      }
-    }catch(e){console.error('[Phone/Mio bridge]',e)}
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(enterOriginalView,0)},{once:true});
-  else setTimeout(enterOriginalView,0);
-})();
-</script>
+  const html='<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(name)+' 聊天记录</title><style>'+css+'</style></head><body><main><h1>'+esc(name)+'</h1><div class="s">导出于 '+stamp+' · 共 '+msgs.length+' 条</div>'+rows.join('')+'</main><script type="application/json" id="xsj-data">'+json.replace(/</g,'\\u003c')+'<\/script>
 </body></html>';
   xsjDl(new Blob([html],{type:'text/html'}),safe+'-聊天记录-'+stamp+'.html');
 }
@@ -13623,5 +13605,25 @@ box-shadow:inset 0 0 0 1px rgba(255,255,255,.65),inset 0 1px 0 rgba(255,255,255,
 .fv-ov{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:grid;place-items:center}
 .fv-ov img{max-width:94vw;max-height:90vh;object-fit:contain}
 </style>
+<script id="phone-mio-entry-bridge">
+/* Phone adapter: keep Mio's original app code and only select its initial native view. */
+(function(){
+  function enterOriginalView(){
+    try{
+      var requested=decodeURIComponent((location.hash||'').replace(/^#/,''))||'home';
+      var allowed=['home','chat','personas','worlds','diary','wallet','mcp','life','music','coread','offline','preset','repo','youtube','crread','couple','msgs','iff','xinji','app','postdetail','cset','deco','prof','desktopcustom','rolephones','stickers','settings','css'];
+      if(allowed.indexOf(requested)<0)requested='home';
+      if(typeof R==='undefined'||typeof R[requested]!=='function')requested='home';
+      if(requested==='chat'&&typeof P==='function'&&!P(cur))requested='personas';
+      if(typeof go==='function'&&typeof stack!=='undefined'){
+        stack=['home'];
+        go(requested,false);
+      }
+    }catch(e){console.error('[Phone/Mio adapter]',e)}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(enterOriginalView,0)},{once:true});
+  else setTimeout(enterOriginalView,0);
+})();
+</script>
 </body>
 </html>
