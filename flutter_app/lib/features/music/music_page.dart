@@ -757,11 +757,14 @@ class _MusicPageState extends State<MusicPage> {
                   ])),
                 ]),
                 const SizedBox(height: 26),
-                Expanded(child: StreamBuilder<Duration>(
-                  stream: _audio.positionStream,
+                Expanded(child: StreamBuilder<int>(
+                  // 只在歌词行变化时重建，避免 positionStream 高频刷新整份歌词列表。
+                  stream: _audio.positionStream.map((position) {
+                    final seconds = position.inMilliseconds / 1000;
+                    return _lyrics.lastIndexWhere((line) => (line['time'] as double) <= seconds);
+                  }).distinct(),
                   builder: (_, snapshot) {
-                    final now = (snapshot.data ?? Duration.zero).inMilliseconds / 1000;
-                    var active = _lyrics.lastIndexWhere((line) => (line['time'] as double) <= now);
+                    var active = snapshot.data ?? 0;
                     if (active < 0) active = 0;
                     if (_lyrics.isEmpty) {
                       return const Center(child: Text('让音乐慢慢流淌', style: TextStyle(fontSize: 13, color: Color(0xFF777982))));
