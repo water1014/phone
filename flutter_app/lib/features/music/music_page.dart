@@ -46,7 +46,7 @@ class _MusicPageState extends State<MusicPage> {
           });
         },
         onWebResourceError: (error) {
-          if (!mounted || error.errorType == WebResourceErrorType.cancelled) return;
+          if (!mounted) return;
           setState(() {
             _loading = false;
             _error = '播放器暂时无法连接。请检查服务器地址、网络和 HTTPS 配置。';
