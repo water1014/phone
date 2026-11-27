@@ -52,6 +52,12 @@
     if (!row.classList.contains('ta')) return;
     const main = row.querySelector('.msg-main');
     if (!main) return;
+    const prefs = XW.S.chatPrefs || {};
+    if (prefs.showTime === false) {
+      const existing = row.querySelector('.cc-time');
+      if (existing) existing.remove();
+      return;
+    }
 
     const i = Number(row.getAttribute('data-i'));
     const list = Array.isArray(XW.S.chat) ? XW.S.chat : [];
