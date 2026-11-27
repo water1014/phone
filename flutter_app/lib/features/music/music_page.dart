@@ -124,8 +124,8 @@ class _MusicPageState extends State<MusicPage> {
     try {
       final keyResponse = await _api.qrKey(_worker);
       qrKey = MusicApiClient.qrKeyValue(keyResponse);
-      if (qrKey == null || qrKey!.isEmpty) throw Exception('无法获取登录二维码');
-      final imageResponse = await _api.qrCreate(_worker, qrKey!);
+      if (qrKey == null || qrKey.isEmpty) throw Exception('无法获取登录二维码');
+      final imageResponse = await _api.qrCreate(_worker, qrKey);
       final image = MusicApiClient.qrImage(imageResponse);
       if (image == null) throw Exception('二维码生成失败');
       qrImage = image;
@@ -147,7 +147,7 @@ class _MusicPageState extends State<MusicPage> {
             if (checking || finished || qrKey == null) return;
             checking = true;
             try {
-              final response = await _api.qrCheck(_worker, qrKey!);
+              final response = await _api.qrCheck(_worker, qrKey);
               final code = MusicApiClient.qrCode(response);
               if (code == 800) {
                 status = '二维码已过期，请关闭后重新打开';
@@ -194,7 +194,7 @@ class _MusicPageState extends State<MusicPage> {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(color: Colors.white, border: Border.all(color: _line), borderRadius: BorderRadius.circular(16)),
                       child: Image.memory(
-                        base64Decode(qrImage!.replaceFirst(RegExp(r'^data:image/[^;]+;base64,'), '')),
+                        base64Decode(qrImage.replaceFirst(RegExp(r'^data:image/[^;]+;base64,'), '')),
                         fit: BoxFit.contain,
                         errorBuilder: (_, __, ___) => const Center(child: Text('二维码无法显示')),
                       ),
@@ -329,7 +329,7 @@ class _MusicPageState extends State<MusicPage> {
                   padding: const EdgeInsets.fromLTRB(18, 18, 18, 10),
                   child: Row(children: [
                     Expanded(child: Text(playlist.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _ink))),
-                    Text(songs.length.toString() + ' 首', style: const TextStyle(fontSize: 11, color: _muted)),
+                    Text('${songs.length} 首', style: const TextStyle(fontSize: 11, color: _muted)),
                   ]),
                 ),
                 Expanded(
@@ -663,7 +663,7 @@ class _MusicPageState extends State<MusicPage> {
       elevation: 0,
       leading: IconButton(onPressed: () => Navigator.of(context).maybePop(), icon: const Icon(Icons.chevron_left_rounded, color: _ink, size: 28)),
       titleSpacing: 0,
-      title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
+      title: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('TOGETHER LISTENING', style: TextStyle(fontSize: 9, letterSpacing: 1.3, color: _muted, fontWeight: FontWeight.w600)),
         SizedBox(height: 3),
         Text('一起听', style: TextStyle(fontSize: 18, color: _ink, fontWeight: FontWeight.w600)),
