@@ -37,6 +37,51 @@ jobs:
           cache: true
       - name: Generate Android host project
         run: flutter create --platforms=android --org com.water1014 --project-name xiaowo .
+      - name: Configure Android background audio
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          manifest = Path("android/app/src/main/AndroidManifest.xml")
+          source = manifest.read_text()
+          if 'xmlns:tools=' not in source:
+              source = source.replace('<manifest ', '<manifest xmlns:tools="http://schemas.android.com/tools" ', 1)
+          permissions = [
+              'android.permission.WAKE_LOCK',
+              'android.permission.FOREGROUND_SERVICE',
+              'android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK',
+          ]
+          for permission in permissions:
+              tag = f'<uses-permission android:name="{permission}"/>'
+              if permission not in source:
+                  source = source.replace('<application', f'    {tag}\\n    <application', 1)
+          source = re.sub(
+              r'(<activity\\s+android:name=")[^"]+(")',
+              r'\\g<1>com.ryanheise.audioservice.AudioServiceActivity\\g<2>',
+              source,
+              count=1,
+          )
+          components = '''
+              <service android:name="com.ryanheise.audioservice.AudioService"
+                  android:foregroundServiceType="mediaPlayback"
+                  android:exported="true" tools:ignore="Instantiatable">
+                  <intent-filter>
+                      <action android:name="android.media.browse.MediaBrowserService" />
+                  </intent-filter>
+              </service>
+              <receiver android:name="com.ryanheise.audioservice.MediaButtonReceiver"
+                  android:exported="true" tools:ignore="Instantiatable">
+                  <intent-filter>
+                      <action android:name="android.intent.action.MEDIA_BUTTON" />
+                  </intent-filter>
+              </receiver>
+          '''
+          if 'com.ryanheise.audioservice.AudioService' not in source:
+              source = source.replace('</application>', components + '\\n</application>', 1)
+          manifest.write_text(source)
+          print("Configured Android media playback foreground service")
+          PY
       - name: Set Android compile SDK for all modules
         run: |
           python3 - <<'PY'
