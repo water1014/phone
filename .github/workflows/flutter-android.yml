@@ -55,10 +55,10 @@ jobs:
           for permission in permissions:
               tag = f'<uses-permission android:name="{permission}"/>'
               if permission not in source:
-                  source = source.replace('<application', f'    {tag}\\n    <application', 1)
+                  source = source.replace('<application', f'    {tag}\n    <application', 1)
           source = re.sub(
-              r'(<activity\\s+android:name=")[^"]+(")',
-              r'\\g<1>com.ryanheise.audioservice.AudioServiceActivity\\g<2>',
+              r'(<activity\s+android:name=")[^"]+(")',
+              r'\g<1>com.ryanheise.audioservice.AudioServiceActivity\g<2>',
               source,
               count=1,
           )
@@ -78,7 +78,7 @@ jobs:
               </receiver>
           '''
           if 'com.ryanheise.audioservice.AudioService' not in source:
-              source = source.replace('</application>', components + '\\n</application>', 1)
+              source = source.replace('</application>', components + '\n</application>', 1)
           manifest.write_text(source)
           print("Configured Android media playback foreground service")
           PY
