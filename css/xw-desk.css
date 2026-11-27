@@ -252,3 +252,49 @@
 #rail .rail-setting i{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-style:normal;font-size:20px;color:var(--c-ink3,#87999c)}
 #rail .rail-setting:active{transform:scale(.985);background:rgba(225,239,240,.72)}
 html.dark #rail .rail-setting{background:rgba(43,61,65,.58);border-color:rgba(170,200,204,.12);color:#e4eeee}
+
+
+/* Sidebar visibility fix: keep the app navigation reachable on the redesigned desktop. */
+.desk > .rail-toggle{
+  display:flex!important;position:fixed!important;left:14px!important;
+  top:calc(env(safe-area-inset-top,0px) + 14px)!important;
+  z-index:35!important;width:38px!important;height:38px!important;
+  align-items:center!important;justify-content:center!important;
+  border:1px solid #E0E0E0!important;border-radius:11px!important;
+  background:#FFFFFF!important;color:#111!important;box-shadow:none!important;
+}
+.desk > .rail-toggle i{display:block!important;width:15px;height:1.5px;background:#111;border-radius:2px}
+#rail.rail{
+  position:fixed!important;inset:0 auto 0 0!important;z-index:51!important;
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  width:min(82vw,330px)!important;height:100dvh!important;
+  padding:calc(env(safe-area-inset-top,0px) + 18px) 16px calc(env(safe-area-inset-bottom,0px) + 18px)!important;
+  overflow:hidden!important;background:#FFF!important;border-right:1px solid #E5E5E5!important;
+  box-shadow:12px 0 36px rgba(0,0,0,.08)!important;
+  transform:translateX(-105%)!important;transition:transform .26s ease!important;
+}
+#rail.rail.open{transform:translateX(0)!important}
+#rail .rail-profile{flex:0 0 auto!important}
+#rail .rail-list{display:block!important;flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;padding:4px 2px 14px!important}
+#rail .rail-grp{display:block!important}
+#rail .rail-row{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  width:100%!important;min-height:42px!important;margin:2px 0!important;padding:9px 11px!important;
+  border:0!important;border-radius:10px!important;background:transparent!important;
+  color:#222!important;text-align:left!important;box-shadow:none!important;
+}
+#rail .rail-row b{font-size:13px!important;font-weight:550!important}
+#rail .rail-row i{font-size:9px!important;font-style:normal!important;letter-spacing:.1em!important;color:#AAA!important}
+#rail .rail-row:active{background:#F4F4F4!important}
+#rail .rail-subhead,#rail .rail-settings,#rail .rail-foot{flex:0 0 auto!important}
+#scrim.scrim{
+  display:block!important;position:fixed!important;inset:0!important;z-index:50!important;
+  background:rgba(20,25,26,.28)!important;opacity:0!important;pointer-events:none!important;
+}
+#scrim.scrim:not([hidden]){opacity:1!important;pointer-events:auto!important}
+#drawer.drawer:not([hidden]){
+  display:block!important;position:fixed!important;inset:0!important;z-index:60!important;
+  overflow-y:auto!important;padding:calc(env(safe-area-inset-top,0px) + 24px) 18px 24px!important;
+  background:rgba(255,255,255,.98)!important;
+}
+#drawer .drawer-inner{max-width:620px;margin:0 auto}
