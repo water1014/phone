@@ -229,6 +229,7 @@ class ChatApiClient {
       }
 
       await for (final line in response.data!.stream
+          .cast<List<int>>()
           .transform(utf8.decoder)
           .transform(const LineSplitter())) {
         if (!line.startsWith('data:')) continue;
