@@ -1344,7 +1344,138 @@ class _ChatPageState extends State<ChatPage> {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('附件文件不存在')));
       return;
     }
-    await OpenFilex.open(path);
+    final extension = path.split('.').last.toLowerCase();
+    if (extension == 'html' || extension == 'htm') {
+      await _previewHtml(path);
+    } else if ({'mp3', 'm4a', 'aac', 'wav', 'ogg', 'flac'}.contains(extension)) {
+      await _playAudio(path);
+    } else {
+      await OpenFilex.open(path);
+    }
+  }
+
+  Future<void> _previewHtml(String path) async {
+    final controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(NavigationDelegate(
+        onNavigationRequest: (request) {
+          final uri = Uri.tryParse(request.url);
+          if (uri == null || uri.scheme == 'file' || uri.scheme == 'about' || uri.scheme == 'data') return NavigationDecision.navigate;
+          return NavigationDecision.prevent;
+        },
+      ))
+      ..loadFile(path);
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        insetPadding: const EdgeInsets.all(10),
+        clipBehavior: Clip.antiAlias,
+        child: SizedBox(
+          width: double.maxFinite,
+          height: MediaQuery.sizeOf(context).height * .82,
+          child: Column(children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 9, 6, 9),
+              child: Row(children: [
+                const Icon(Icons.code_rounded, size: 18),
+                const SizedBox(width: 8),
+                const Expanded(child: Text('HTML 作品预览', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
+                IconButton(onPressed: () => Navigator.pop(dialogContext), icon: const Icon(Icons.close_rounded)),
+              ]),
+            ),
+            const Divider(height: 1),
+            Expanded(child: WebViewWidget(controller: controller)),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _playAudio(String path) async {
+    final player = AudioPlayer();
+    try {
+      await player.setFilePath(path);
+      if (!mounted) return;
+      await showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: Colors.white,
+        showDragHandle: true,
+        builder: (sheetContext) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(22, 8, 22, 24),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              const Icon(Icons.music_note_rounded, size: 34, color: Color(0xFF444444)),
+              const SizedBox(height: 8),
+              Text(path.split(Platform.pathSeparator).last, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 14),
+              StreamBuilder<Duration>(
+                stream: player.positionStream,
+                builder: (context, snapshot) {
+                  final position = snapshot.data ?? Duration.zero;
+                  final total = player.duration ?? Duration.zero;
+                  final max = total.inMilliseconds.toDouble().clamp(1, double.infinity);
+                  return Column(children: [
+                    Slider(value: position.inMilliseconds.toDouble().clamp(0, max), max: max, activeColor: const Color(0xFF333333), onChanged: (value) => player.seek(Duration(milliseconds: value.round()))),
+                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      Text(_clockDuration(position), style: const TextStyle(fontSize: 10, color: Color(0xFF888888))),
+                      Text(_clockDuration(total), style: const TextStyle(fontSize: 10, color: Color(0xFF888888))),
+                    ]),
+                  ]);
+                },
+              ),
+              StreamBuilder<PlayerState>(
+                stream: player.playerStateStream,
+                builder: (context, snapshot) {
+                  final playing = snapshot.data?.playing ?? false;
+                  return IconButton.filled(
+                    style: IconButton.styleFrom(backgroundColor: const Color(0xFF222222), foregroundColor: Colors.white),
+                    iconSize: 28,
+                    onPressed: () => playing ? player.pause() : player.play(),
+                    icon: Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
+                  );
+                },
+              ),
+            ]),
+          ),
+        ),
+      );
+    } catch (error) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('无法播放音频：$error')));
+    } finally {
+      await player.dispose();
+    }
+  }
+
+  String _clockDuration(Duration value) {
+    final minutes = value.inMinutes.toString().padLeft(2, '0');
+    final seconds = (value.inSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
+  Future<void> _saveCodeBlockAsFile(_ChatMessage message) async {
+    final match = RegExp(r'```([a-zA-Z0-9_+-]*)\s*\n([\s\S]*?)\n?```').firstMatch(message.text);
+    if (match == null) return;
+    final language = (match.group(1) ?? '').toLowerCase();
+    final extension = switch (language) {
+      'html' => 'html', 'css' => 'css', 'js' || 'javascript' => 'js',
+      'dart' => 'dart', 'py' || 'python' => 'py', 'json' => 'json',
+      'md' || 'markdown' => 'md', 'xml' => 'xml', 'svg' => 'svg',
+      'txt' || '' => 'txt', _ => language.replaceAll(RegExp(r'[^a-z0-9]'), '').isEmpty ? 'txt' : language,
+    };
+    final appDir = await getApplicationDocumentsDirectory();
+    final mediaDir = Directory('${appDir.path}/chat_media');
+    if (!await mediaDir.exists()) await mediaDir.create(recursive: true);
+    final target = File('${mediaDir.path}/assistant_${DateTime.now().microsecondsSinceEpoch}.$extension');
+    await target.writeAsString(match.group(2) ?? '');
+    if (!mounted) return;
+    final index = _messages.indexOf(message);
+    if (index < 0) return;
+    setState(() {
+      _messages[index] = _ChatMessage(text: message.text, mine: message.mine, time: message.time, reasoning: message.reasoning, attachmentPath: target.path, attachmentName: target.uri.pathSegments.last, attachmentSize: target.lengthSync(), alternateReplies: message.alternateReplies, selectedAlternative: message.selectedAlternative);
+    });
+    await _persistChat();
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已生成文件：${target.uri.pathSegments.last}')));
   }
 
   String _formatFileSize(int bytes) {
