@@ -23,15 +23,23 @@
   }
   function importPayload(data) {
     let list = [];
-    if (Array.isArray(data)) list = data;
-    else if (data && Array.isArray(data.worldbooks)) list = data.worldbooks;
-    else if (data && data.lorebook && data.lorebook.entries) data = data.lorebook;
-    if (!list.length && data && Array.isArray(data.entries)) list = data.entries;
-    else if (!list.length && data && data.entries && typeof data.entries === 'object') {
-      list = Object.keys(data.entries).map(k => Object.assign({title:k}, data.entries[k]));
-    } else if (!list.length && data && typeof data === 'object' && data.entries && data.name) list = [data];
-    else if (data && typeof data === 'object') {
-      list = Object.keys(data).filter(k => data[k] && typeof data[k] === 'object').map(k => Object.assign({title:k}, data[k]));
+    if (Array.isArray(data)) {
+      list = data;
+    } else {
+      if (data && Array.isArray(data.worldbooks)) {
+        list = data.worldbooks;
+      } else {
+        if (data && data.lorebook && data.lorebook.entries) data = data.lorebook;
+        if (data && Array.isArray(data.entries)) {
+          list = data.entries;
+        } else if (data && data.entries && typeof data.entries === 'object') {
+          list = Object.keys(data.entries).map(k => Object.assign({title:k}, data.entries[k]));
+        } else if (data && typeof data === 'object' && data.name && data.entries) {
+          list = [data];
+        } else if (data && typeof data === 'object') {
+          list = Object.keys(data).filter(k => data[k] && typeof data[k] === 'object').map(k => Object.assign({title:k}, data[k]));
+        }
+      }
     }
     return list.map(x => normalize(x, scope)).filter(Boolean);
   }
