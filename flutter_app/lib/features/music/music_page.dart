@@ -309,6 +309,7 @@ class _MusicPageState extends State<MusicPage> {
             artUri: song.cover.isEmpty ? null : Uri.tryParse(song.cover),
           ),
         ),
+        preload: false,
       );
       if (!mounted || request != _playRequest) return;
       unawaited(_audio.play());
@@ -328,6 +329,23 @@ class _MusicPageState extends State<MusicPage> {
         setState(() => _busy = false);
       }
     }
+  }
+
+  int _lyricIndexAt(double seconds) {
+    var low = 0;
+    var high = _lyrics.length - 1;
+    var answer = -1;
+    while (low <= high) {
+      final mid = (low + high) >> 1;
+      final time = _lyrics[mid]['time'] as double;
+      if (time <= seconds) {
+        answer = mid;
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+    return answer;
   }
 
   List<Map<String, dynamic>> _parseLyrics(String raw) {
@@ -796,7 +814,7 @@ class _MusicPageState extends State<MusicPage> {
                   // 只在歌词行变化时重建，避免 positionStream 高频刷新整份歌词列表。
                   stream: _audio.positionStream.map((position) {
                     final seconds = position.inMilliseconds / 1000;
-                    return _lyrics.lastIndexWhere((line) => (line['time'] as double) <= seconds);
+                    return _lyricIndexAt(seconds);
                   }).distinct(),
                   builder: (_, snapshot) {
                     var active = snapshot.data ?? 0;
