@@ -132,7 +132,7 @@ class _SettingsCard extends StatelessWidget {
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Padding(
         padding: const EdgeInsets.only(bottom: 9),
-        child: Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w650, color: AppColors.secondary)),
+        child: Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.secondary)),
       ),
       ...children,
     ]),
