@@ -207,7 +207,8 @@ class ChatApiClient {
       if (contentType.contains('application/json')) {
         final raw = await utf8.decoder.bind(response.data!.stream).join();
         final decoded = jsonDecode(raw) as Map<String, dynamic>;
-        final choice = (decoded['choices'] as List?)?.firstOrNull as Map?;
+        final choices = decoded['choices'];
+        final choice = choices is List && choices.isNotEmpty ? choices.first as Map? : null;
         final message = choice?['message'] as Map?;
         final content = message?['content'];
         final text = content is String
@@ -239,7 +240,8 @@ class ChatApiClient {
         }
         try {
           final decoded = jsonDecode(data) as Map<String, dynamic>;
-          final choice = (decoded['choices'] as List?)?.firstOrNull as Map?;
+          final choices = decoded['choices'];
+          final choice = choices is List && choices.isNotEmpty ? choices.first as Map? : null;
           final delta = choice?['delta'] as Map? ?? choice?['message'] as Map?;
           final content = delta?['content'];
           final text = content is String
