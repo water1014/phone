@@ -58,68 +58,9 @@ jobs:
           app_file.write_text(source)
           print(f"Configured app compileSdk 36 in {app_file}")
 
-          root_candidates = [Path("android/build.gradle"), Path("android/build.gradle.kts")]
-          root_file = next((path for path in root_candidates if path.exists()), None)
-          if root_file is None:
-              raise SystemExit("Android root Gradle file was not generated")
-
-          if root_file.suffix == ".kts":
-              override = """
-          // Apply the SDK override as soon as each Android library plugin is applied.
-          subprojects {
-              plugins.withId("com.android.library") {
-                  val androidExtension = extensions.findByName("android")
-                      ?: error("Android extension missing for $name")
-                  val setters = androidExtension.javaClass.methods.filter {
-                      (it.name == "setCompileSdk" || it.name == "setCompileSdkVersion") &&
-                          it.parameterCount == 1
-                  }
-                  val setter = setters.firstOrNull {
-                      it.parameterTypes[0] == Int::class.javaPrimitiveType ||
-                          it.parameterTypes[0] == Int::class.javaObjectType
-                  } ?: setters.firstOrNull {
-                      it.parameterTypes[0] == String::class.java
-                  } ?: error("Unable to find compatible compileSdk setter for $name")
-                  val sdkValue: Any = if (setter.parameterTypes[0] == String::class.java) "36" else 36
-                  setter.invoke(androidExtension, sdkValue)
-                  println("Configured compileSdk 36 for Android library: $name")
-              }
-          }
-          """
-          else:
-              override = """
-          // Apply the SDK override as soon as each Android library plugin is applied.
-          subprojects {
-              plugins.withId("com.android.library") {
-                  def androidExtension = extensions.findByName("android")
-                  if (androidExtension == null) {
-                      throw new GradleException("Android extension missing for ${project.name}")
-                  }
-                  def setters = androidExtension.class.methods.findAll {
-                      (it.name == "setCompileSdk" || it.name == "setCompileSdkVersion") &&
-                          it.parameterCount == 1
-                  }
-                  def setter = setters.find {
-                      it.parameterTypes[0] == Integer.TYPE || it.parameterTypes[0] == Integer
-                  } ?: setters.find {
-                      it.parameterTypes[0] == String
-                  }
-                  if (setter == null) {
-                      throw new GradleException("Unable to find compatible compileSdk setter for ${project.name}")
-                  }
-                  def sdkValue = setter.parameterTypes[0] == String ? "36" : 36
-                  setter.invoke(androidExtension, sdkValue)
-                  println("Configured compileSdk 36 for Android library: ${project.name}")
-              }
-          }
-          """
-          root_source = root_file.read_text()
-          if "plugins.withId(\"com.android.library\")" not in root_source:
-              root_source += "\n" + override
-          root_file.write_text(root_source)
-          print(f"Added plugin-time compileSdk override to {root_file}")
           PY
       - name: Configure stable Android debug signing
+        env:
         env:
           ANDROID_DEBUG_KEYSTORE_BASE64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_BASE64 }}
         run: |
@@ -132,6 +73,38 @@ jobs:
           chmod 600 "$HOME/.android/debug.keystore"
       - name: Install dependencies
         run: flutter pub get
+      - name: Patch Android plugin compile SDK
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          cache = Path.home() / ".pub-cache" / "hosted" / "pub.dev"
+          patched = []
+          if cache.exists():
+              for gradle_file in cache.glob("*/android/build.gradle*"):
+                  if gradle_file.suffix not in {".gradle", ".kts"}:
+                      continue
+                  source = gradle_file.read_text()
+                  if gradle_file.name.endswith(".kts"):
+                      updated = re.sub(
+                          r"(?m)^(\\s*)compileSdk(?:Version)?\\s*(?:=\\s*)?.+$",
+                          r"\\g<1>compileSdk = 36",
+                          source,
+                      )
+                  else:
+                      updated = re.sub(
+                          r"(?m)^(\\s*)compileSdk(?:Version)?\\s+.+$",
+                          r"\\g<1>compileSdkVersion 36",
+                          source,
+                      )
+                  if updated != source:
+                      gradle_file.write_text(updated)
+                      patched.append(str(gradle_file))
+          print(f"Patched {len(patched)} Android plugin Gradle files to compileSdk 36")
+          for path in patched:
+              print(path)
+          PY
       - name: Analyze
         run: flutter analyze
       - name: Test
