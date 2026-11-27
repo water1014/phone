@@ -12,6 +12,7 @@
     photos: [],
     chat: [],
     notes: [],
+    worldbooks: [],
     appOrder: [],
 
     /* 主连接：聊天用 */
