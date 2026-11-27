@@ -240,9 +240,9 @@ class _ChatPageState extends State<ChatPage> {
           const readable = {'txt', 'md', 'csv', 'json', 'xml', 'yaml', 'yml', 'log'};
           if (readable.contains(extension)) {
             final content = await file.readAsString();
-            history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${message.text.isEmpty ? '' : '${message.text}\\n'}[附件：${message.attachmentName}]\\n$content'});
+            history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${message.text.isEmpty ? '' : '${message.text}\n'}[附件：${message.attachmentName}]\n$content'});
           } else {
-            history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${message.text.isEmpty ? '' : '${message.text}\\n'}[用户附加了文件：${message.attachmentName}。当前接口适配层尚未解析此文件格式。]'});
+            history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${message.text.isEmpty ? '' : '${message.text}\n'}[用户附加了文件：${message.attachmentName}。当前接口适配层尚未解析此文件格式。]'});
           }
         } else {
           history.add({
