@@ -289,7 +289,7 @@ class _CalendarCard extends StatelessWidget {
     return _Card(onTap: onTap, child: Column(children: [
       Row(children: [const Text('CALENDAR', style: TextStyle(fontSize: 10, letterSpacing: 2.5, color: Color(0xFFB6BEC6))), const Spacer(), Text('${now.year}年 ${now.month}月', style: const TextStyle(fontSize: 12, color: Color(0xFF8D9AA8)))]),
       const SizedBox(height: 10),
-      Row(children: [for(final d in ['日','一','二','三','四','五','六']) Expanded(child: Center(child: Text(d, style: TextStyle(fontSize: 10, color: Color(0xFFC6CDD4))))) ]),
+      Row(children: [for(final d in ['日','一','二','三','四','五','六']) Expanded(child: Center(child: Text(d, style: const TextStyle(fontSize: 10, color: Color(0xFFC6CDD4))))) ]),
       const SizedBox(height: 5),
       GridView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), itemCount: ((first+count+6)~/7)*7,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, childAspectRatio: 1.5),
