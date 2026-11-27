@@ -262,7 +262,7 @@
       tag = '<div class="msg-tag">' + bits.join(' · ') + '</div>';
     }
 
-    return '<div class="msg-row r ' + (mine ? 'me' : 'ai') + (compact ? ' compact' : ' first') + '" data-i="' + index + '">' +
+    return '<div class="msg-row r ' + (mine ? 'me' : 'ta ai') + (compact ? ' compact' : ' first') + '" data-i="' + index + '">' +
         '<div class="msg-ava av' + (compact ? ' ghost' : '') + '">' + UI.esc(avatar) + '</div>' +
         '<div class="msg-main col">' +
           (!mine && !compact ? '<div class="msg-name nm">' + UI.esc(name) + '</div>' : '') +
