@@ -56,7 +56,7 @@ class AppSideDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Drawer(
     width: 304,
-    backgroundColor: const Color(0xFFF9FAF9),
+    backgroundColor: const Color(0xFFFAFAFA),
     surfaceTintColor: Colors.transparent,
     child: SafeArea(
       child: Column(children: [
@@ -68,10 +68,10 @@ class AppSideDrawer extends StatelessWidget {
                 width: 43,
                 height: 43,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8F0EA),
+                  color: const Color(0xFF242424),
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: const Center(child: Text('祁', style: TextStyle(fontSize: 17, color: Color(0xFF6F927F), fontWeight: FontWeight.w600))),
+                child: const Center(child: Text('祁', style: TextStyle(fontSize: 17, color: Colors.white, fontWeight: FontWeight.w600))),
               ),
               const SizedBox(width: 11),
               const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -94,7 +94,7 @@ class AppSideDrawer extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: const Color(0xFFEAECE9)),
+                  border: Border.all(color: const Color(0xFFE7E7E7)),
                 ),
                 child: const Row(children: [
                   Icon(Icons.home_outlined, size: 18, color: AppColors.secondary),
@@ -107,7 +107,7 @@ class AppSideDrawer extends StatelessWidget {
             ),
           ]),
         ),
-        const Divider(height: 1, color: Color(0xFFECEDEB)),
+        const Divider(height: 1, color: Color(0xFFE7E7E7)),
         Expanded(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(13, 17, 13, 20),
@@ -153,7 +153,7 @@ class _DrawerItemTile extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(bottom: 3),
     child: Material(
-      color: selected ? const Color(0xFFE8F0EA) : Colors.transparent,
+      color: selected ? const Color(0xFFEAEAEA) : Colors.transparent,
       borderRadius: BorderRadius.circular(13),
       child: InkWell(
         borderRadius: BorderRadius.circular(13),
@@ -162,14 +162,14 @@ class _DrawerItemTile extends StatelessWidget {
           height: 42,
           child: Row(children: [
             const SizedBox(width: 12),
-            Icon(entry.icon, size: 18, color: selected ? const Color(0xFF6F927F) : AppColors.secondary),
+            Icon(entry.icon, size: 18, color: selected ? const Color(0xFF222222) : AppColors.secondary),
             const SizedBox(width: 12),
             Expanded(child: Text(entry.title, style: TextStyle(fontSize: 12, fontWeight: selected ? FontWeight.w600 : FontWeight.w400, color: selected ? AppColors.ink : AppColors.secondary))),
             if (selected) Container(
               width: 4,
               height: 4,
               margin: const EdgeInsets.only(right: 13),
-              decoration: const BoxDecoration(color: Color(0xFF8EAA98), shape: BoxShape.circle),
+              decoration: const BoxDecoration(color: Color(0xFF242424), shape: BoxShape.circle),
             ) else const SizedBox(width: 13),
           ]),
         ),
