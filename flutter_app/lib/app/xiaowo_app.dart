@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../features/home/home_page.dart';
 import '../features/chat/chat_page.dart';
 import '../features/chat/chat_settings_page.dart';
+import '../features/chat/chat_connection_settings_page.dart';
 import 'theme/app_theme.dart';
 
 class XiaowoApp extends StatelessWidget {
@@ -18,6 +19,12 @@ class XiaowoApp extends StatelessWidget {
           GoRoute(
             path: 'settings',
             builder: (context, state) => const ChatSettingsPage(),
+            routes: [
+              GoRoute(
+                path: 'connection',
+                builder: (context, state) => const ChatConnectionSettingsPage(),
+              ),
+            ],
           ),
         ],
       ),
