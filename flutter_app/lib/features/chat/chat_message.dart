@@ -11,6 +11,9 @@ class ChatMessageRecord {
     this.inputTokens,
     this.outputTokens,
     this.imagePath,
+    this.attachmentPath,
+    this.attachmentName,
+    this.attachmentSize,
   });
 
   final String text;
@@ -22,6 +25,9 @@ class ChatMessageRecord {
   final int? inputTokens;
   final int? outputTokens;
   final String? imagePath;
+  final String? attachmentPath;
+  final String? attachmentName;
+  final int? attachmentSize;
 
   Map<String, dynamic> toJson() => {
     'text': text,
@@ -32,6 +38,9 @@ class ChatMessageRecord {
     'inputTokens': inputTokens,
     'outputTokens': outputTokens,
     'imagePath': imagePath,
+    'attachmentPath': attachmentPath,
+    'attachmentName': attachmentName,
+    'attachmentSize': attachmentSize,
   };
 
   factory ChatMessageRecord.fromJson(Map<String, dynamic> json) =>
@@ -44,6 +53,9 @@ class ChatMessageRecord {
         inputTokens: json['inputTokens'] as int?,
         outputTokens: json['outputTokens'] as int?,
         imagePath: json['imagePath'] as String?,
+        attachmentPath: json['attachmentPath'] as String?,
+        attachmentName: json['attachmentName'] as String?,
+        attachmentSize: json['attachmentSize'] as int?,
       );
 
   static String encodeList(List<ChatMessageRecord> messages) =>
