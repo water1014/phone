@@ -1598,7 +1598,7 @@ class _ChatPageState extends State<ChatPage> {
       setState(() => _recordingVoice = false);
       _recordingStartedAt = null;
       if (path == null || duration < const Duration(milliseconds: 400)) {
-        if (path != null) await File(path).delete().catchError((_) => File(path));
+        if (path != null) { try { await File(path).delete(); } catch (_) {} }
         return;
       }
       await _send('', path, duration.inMilliseconds);
