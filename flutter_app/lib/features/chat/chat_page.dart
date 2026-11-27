@@ -382,7 +382,7 @@ class _ChatPageState extends State<ChatPage> {
       builder: (context, prefs, _) => Scaffold(
         drawer: const AppSideDrawer(active: 'chat'),
         drawerEnableOpenDragGesture: false,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF8FAF8),
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -399,67 +399,62 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildHeader() => Builder(builder: (scaffoldContext) => Container(
-    height: 56,
-    padding: const EdgeInsets.symmetric(horizontal: 9),
+    height: 66,
+    padding: const EdgeInsets.symmetric(horizontal: 12),
     decoration: const BoxDecoration(
-      color: Colors.white,
-      border: Border(bottom: BorderSide(color: Color(0xFFEAECEE))),
+      color: Color(0xFFF8FAF8),
+      border: Border(bottom: BorderSide(color: Color(0xFFE9EEEA))),
     ),
     child: Row(children: [
-      IconButton(
-        tooltip: '打开侧栏',
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints.tightFor(width: 40, height: 40),
-        onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
-        icon: const Icon(Icons.menu_rounded, size: 23, color: Color(0xFF0F1419)),
-      ),
-      IconButton(
-        tooltip: '返回',
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints.tightFor(width: 38, height: 40),
-        onPressed: () => context.pop(),
-        icon: const Icon(Icons.chevron_left_rounded, size: 29, color: Color(0xFF0F1419)),
-      ),
-      const Expanded(
-        child: Center(
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            CircleAvatar(
-              radius: 15,
-              backgroundColor: Color(0xFFE3E5E8),
-              child: Text('祁', style: TextStyle(color: Color(0xFF6B7480), fontSize: 12)),
-            ),
-            SizedBox(width: 8),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('宋祁', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF0F1419))),
-                SizedBox(height: 2),
-                Row(children: [
-                  Icon(Icons.circle, size: 6, color: Color(0xFF63B89C)),
-                  SizedBox(width: 4),
-                  Text('在线', style: TextStyle(fontSize: 10, color: Color(0xFF6B7480))),
-                ]),
-              ],
-            ),
-          ]),
+      Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () => Scaffold.of(scaffoldContext).openDrawer(),
+          child: const SizedBox(
+            width: 42, height: 42,
+            child: Icon(Icons.menu_rounded, size: 22, color: Color(0xFF34433B)),
+          ),
         ),
       ),
-      IconButton(
+      const Spacer(),
+      const Row(mainAxisSize: MainAxisSize.min, children: [
+        CircleAvatar(
+          radius: 19,
+          backgroundColor: Color(0xFFE5EEE8),
+          child: Text('祁', style: TextStyle(color: Color(0xFF52776B), fontSize: 15, fontWeight: FontWeight.w600)),
+        ),
+        SizedBox(width: 9),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('宋祁', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF26332C))),
+            SizedBox(height: 3),
+            Row(children: [
+              Icon(Icons.circle, size: 6, color: Color(0xFF7EAA91)),
+              SizedBox(width: 5),
+              Text('在这里陪你', style: TextStyle(fontSize: 10, color: Color(0xFF8A9690))),
+            ]),
+          ],
+        ),
+      ]),
+      const Spacer(),
+      _HeaderAction(
+        icon: _searching ? Icons.close_rounded : Icons.search_rounded,
         tooltip: '搜索聊天',
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints.tightFor(width: 38, height: 40),
-        onPressed: () => setState(() {
+        onTap: () => setState(() {
           _searching = !_searching;
           _query = '';
           _search.clear();
         }),
-        icon: Icon(_searching ? Icons.close_rounded : Icons.search_rounded, size: 21, color: const Color(0xFF0F1419)),
       ),
+      const SizedBox(width: 7),
       PopupMenuButton<String>(
         tooltip: '更多',
         padding: EdgeInsets.zero,
-        icon: const Icon(Icons.more_horiz_rounded, color: Color(0xFF0F1419)),
+        icon: const Icon(Icons.more_horiz_rounded, color: Color(0xFF526159), size: 23),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         onSelected: (value) {
           if (value == 'settings') context.push('/chat/settings');
@@ -508,7 +503,7 @@ class _ChatPageState extends State<ChatPage> {
       children: [
         ListView.builder(
       reverse: false,
-      padding: const EdgeInsets.fromLTRB(17, 15, 17, 17),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
       controller: _messagesScroll,
       physics: const BouncingScrollPhysics(),
       itemCount: visible.length,
@@ -829,34 +824,34 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildComposer(ChatPreferences prefs) => Container(
-    padding: EdgeInsets.fromLTRB(12, 7, 12, 7 + MediaQuery.paddingOf(context).bottom),
+    padding: EdgeInsets.fromLTRB(14, 11, 14, 10 + MediaQuery.paddingOf(context).bottom),
     decoration: const BoxDecoration(
-      color: Colors.white,
-      border: Border(top: BorderSide(color: Color(0xFFEAECEE))),
+      color: Color(0xFFF8FAF8),
+      border: Border(top: BorderSide(color: Color(0xFFE9EEEA))),
     ),
     child: Column(mainAxisSize: MainAxisSize.min, children: [
       if (_pendingImagePath != null)
         Container(
           margin: const EdgeInsets.only(bottom: 9),
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: const Color(0xFFF3F4F5), borderRadius: BorderRadius.circular(15)),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFFE8EDE9))),
           child: Row(children: [
-            ClipRRect(borderRadius: BorderRadius.circular(9), child: Image.file(File(_pendingImagePath!), width: 58, height: 58, fit: BoxFit.cover)),
+            ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.file(File(_pendingImagePath!), width: 58, height: 58, fit: BoxFit.cover)),
             const SizedBox(width: 10),
-            const Expanded(child: Text('图片已准备好', style: TextStyle(fontSize: 12, color: Color(0xFF333333)))),
+            const Expanded(child: Text('图片已准备好', style: TextStyle(fontSize: 12, color: Color(0xFF526159)))),
             IconButton(visualDensity: VisualDensity.compact, tooltip: '移除图片', onPressed: () => setState(() => _pendingImagePath = null), icon: const Icon(Icons.close_rounded, size: 18)),
           ]),
         ),
       if (_pendingFilePath != null)
         Container(
           margin: const EdgeInsets.only(bottom: 9),
-          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
-          decoration: BoxDecoration(color: const Color(0xFFF3F4F5), borderRadius: BorderRadius.circular(14)),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), border: Border.all(color: const Color(0xFFE8EDE9))),
           child: Row(children: [
-            const Icon(Icons.insert_drive_file_outlined, size: 25, color: Color(0xFF52776B)),
+            Container(width: 35, height: 38, decoration: BoxDecoration(color: const Color(0xFFEAF1EC), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.insert_drive_file_outlined, size: 19, color: Color(0xFF52776B))),
             const SizedBox(width: 9),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(_pendingFileName ?? '附件', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Color(0xFF333333))),
+              Text(_pendingFileName ?? '附件', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Color(0xFF34433B))),
               Text(_formatFileSize(_pendingFileSize ?? 0), style: const TextStyle(fontSize: 10, color: Color(0xFF89918F))),
             ])),
             IconButton(visualDensity: VisualDensity.compact, tooltip: '移除文件', onPressed: () => setState(() {
@@ -864,76 +859,62 @@ class _ChatPageState extends State<ChatPage> {
             }), icon: const Icon(Icons.close_rounded, size: 18)),
           ]),
         ),
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(children: [
-          for (final word in ['在吗', '抱抱', '晚安'])
-            Padding(
-              padding: const EdgeInsets.only(right: 7),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: () => _send(word),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
-                  decoration: BoxDecoration(color: const Color(0xFFF3F4F5), borderRadius: BorderRadius.circular(20)),
-                  child: Text(word, style: const TextStyle(fontSize: 11, color: Color(0xFF333333))),
+      Container(
+        padding: const EdgeInsets.fromLTRB(7, 7, 7, 7),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(23),
+          border: Border.all(color: const Color(0xFFE4EAE5)),
+          boxShadow: [BoxShadow(color: const Color(0xFF526159).withValues(alpha: .045), blurRadius: 18, offset: const Offset(0, 5))],
+        ),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+          Material(
+            color: const Color(0xFFF0F4F0),
+            borderRadius: BorderRadius.circular(15),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(15),
+              onTap: _showAttachmentHint,
+              child: const SizedBox(width: 42, height: 42, child: Icon(Icons.add_rounded, color: Color(0xFF526B5E), size: 23)),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: TextField(
+                controller: _input,
+                onChanged: (value) => unawaited(_saveDraft(value)),
+                minLines: 1,
+                maxLines: 5,
+                textInputAction: prefs.enterSend ? TextInputAction.send : TextInputAction.newline,
+                onSubmitted: prefs.enterSend ? (_) => _send() : null,
+                decoration: const InputDecoration(
+                  hintText: '说点什么吧…',
+                  hintStyle: TextStyle(color: Color(0xFFA0AAA4), fontSize: 14),
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 11),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
                 ),
               ),
             ),
+          ),
+          const SizedBox(width: 7),
+          Material(
+            color: const Color(0xFF34483D),
+            borderRadius: BorderRadius.circular(15),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(15),
+              onTap: _sending ? _stopGeneration : _send,
+              child: SizedBox(
+                width: 42, height: 42,
+                child: Icon(_sending ? Icons.stop_rounded : Icons.arrow_upward_rounded, color: Colors.white, size: 20),
+              ),
+            ),
+          ),
         ]),
       ),
-      const SizedBox(height: 7),
-      Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        Material(
-          color: const Color(0xFFF3F4F5),
-          shape: const CircleBorder(),
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: _showAttachmentHint,
-            child: const SizedBox(
-              width: 40,
-              height: 40,
-              child: Icon(Icons.add_rounded, color: Color(0xFF333333), size: 22),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: TextField(
-            controller: _input,
-            onChanged: (value) => unawaited(_saveDraft(value)),
-            minLines: 1,
-            maxLines: 4,
-            textInputAction: prefs.enterSend ? TextInputAction.send : TextInputAction.newline,
-            onSubmitted: prefs.enterSend ? (_) => _send() : null,
-            decoration: InputDecoration(
-              hintText: '输入一条信息',
-              hintStyle: const TextStyle(color: Color(0xFF6B7480), fontSize: 14),
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
-              filled: true,
-              fillColor: const Color(0xFFF3F4F5),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide.none),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide.none),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide.none),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Material(
-          color: const Color(0xFF111111),
-          shape: const CircleBorder(),
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: _sending ? _stopGeneration : _send,
-            child: SizedBox(
-              width: 36,
-              height: 36,
-              child: Icon(_sending ? Icons.stop_rounded : Icons.arrow_upward_rounded, color: Colors.white, size: 19),
-            ),
-          ),
-        ),
-      ]),
     ]),
   );
 
