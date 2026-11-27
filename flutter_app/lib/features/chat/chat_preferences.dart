@@ -16,6 +16,7 @@ class ChatPreferences {
     this.partnerAvatarPath,
     this.myAvatarPath,
     this.fontSize = 14,
+    this.bubbleRadius = 19,
     this.quickReplies = const ['在吗', '抱抱', '晚安'],
   });
 
@@ -31,6 +32,7 @@ class ChatPreferences {
   final String? partnerAvatarPath;
   final String? myAvatarPath;
   final double fontSize;
+  final double bubbleRadius;
   final List<String> quickReplies;
 
   ChatPreferences copyWith({
@@ -46,6 +48,7 @@ class ChatPreferences {
     String? partnerAvatarPath,
     String? myAvatarPath,
     double? fontSize,
+    double? bubbleRadius,
     List<String>? quickReplies,
   }) => ChatPreferences(
     showAvatar: showAvatar ?? this.showAvatar,
@@ -60,6 +63,7 @@ class ChatPreferences {
     partnerAvatarPath: partnerAvatarPath ?? this.partnerAvatarPath,
     myAvatarPath: myAvatarPath ?? this.myAvatarPath,
     fontSize: fontSize ?? this.fontSize,
+    bubbleRadius: bubbleRadius ?? this.bubbleRadius,
     quickReplies: quickReplies ?? this.quickReplies,
   );
 }
@@ -83,6 +87,7 @@ abstract final class ChatPreferenceStore {
       partnerAvatarPath: prefs.getString('chat.partnerAvatarPath'),
       myAvatarPath: prefs.getString('chat.myAvatarPath'),
       fontSize: prefs.getDouble('chat.fontSize') ?? 14,
+      bubbleRadius: prefs.getDouble('chat.bubbleRadius') ?? 19,
       quickReplies: prefs.getStringList('chat.quickReplies') ?? const ['在吗', '抱抱', '晚安'],
     );
   }
@@ -103,6 +108,7 @@ abstract final class ChatPreferenceStore {
       if (next.partnerAvatarPath != null) prefs.setString('chat.partnerAvatarPath', next.partnerAvatarPath!) else prefs.remove('chat.partnerAvatarPath'),
       if (next.myAvatarPath != null) prefs.setString('chat.myAvatarPath', next.myAvatarPath!) else prefs.remove('chat.myAvatarPath'),
       prefs.setDouble('chat.fontSize', next.fontSize),
+      prefs.setDouble('chat.bubbleRadius', next.bubbleRadius),
       prefs.setStringList('chat.quickReplies', next.quickReplies),
     ]);
   }
