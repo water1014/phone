@@ -84,7 +84,10 @@ class MusicApiClient {
   }
 
   Future<String> songUrl(String base, int id, {String cookie = '', String quality = 'exhigh'}) async {
-    final key = '${worker(base)}|$id|$quality';
+    // A playback URL can be account/entitlement dependent. Never reuse it across
+    // different NetEase sessions, even when the worker and song are identical.
+    final session = cookie.trim().hashCode;
+    final key = '${worker(base)}|$id|$quality|$session';
     final cached = _songUrlCache[key];
     if (cached != null && DateTime.now().difference(cached['time'] as DateTime) < const Duration(minutes: 8)) {
       return cached['url'] as String;
