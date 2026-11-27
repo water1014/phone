@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
@@ -26,6 +27,9 @@ class _ChatMessage {
     this.inputTokens,
     this.outputTokens,
     this.imagePath,
+    this.attachmentPath,
+    this.attachmentName,
+    this.attachmentSize,
   });
   final String text;
   final bool mine;
@@ -36,6 +40,9 @@ class _ChatMessage {
   final int? inputTokens;
   final int? outputTokens;
   final String? imagePath;
+  final String? attachmentPath;
+  final String? attachmentName;
+  final int? attachmentSize;
 }
 
 Color _mineBubbleColor(int style) => switch (style) {
@@ -65,6 +72,9 @@ class _ChatPageState extends State<ChatPage> {
   final _api = ChatApiClient();
   final _imagePicker = ImagePicker();
   String? _pendingImagePath;
+  String? _pendingFilePath;
+  String? _pendingFileName;
+  int? _pendingFileSize;
   final List<_ChatMessage> _messages = [];
   bool _searching = false;
   bool _loadingHistory = true;
@@ -112,6 +122,9 @@ class _ChatPageState extends State<ChatPage> {
           inputTokens: message.inputTokens,
           outputTokens: message.outputTokens,
           imagePath: message.imagePath,
+          attachmentPath: message.attachmentPath,
+          attachmentName: message.attachmentName,
+          attachmentSize: message.attachmentSize,
         )));
       _loadingHistory = false;
     });
@@ -128,6 +141,9 @@ class _ChatPageState extends State<ChatPage> {
       inputTokens: message.inputTokens,
       outputTokens: message.outputTokens,
       imagePath: message.imagePath,
+      attachmentPath: message.attachmentPath,
+      attachmentName: message.attachmentName,
+      attachmentSize: message.attachmentSize,
     )).toList(),
   );
 
@@ -150,11 +166,17 @@ class _ChatPageState extends State<ChatPage> {
     if (_sending) return;
     final value = (quickText ?? _input.text).trim();
     final imagePath = quickText == null ? _pendingImagePath : null;
-    if (value.isEmpty && imagePath == null) return;
+    final attachmentPath = quickText == null ? _pendingFilePath : null;
+    final attachmentName = quickText == null ? _pendingFileName : null;
+    final attachmentSize = quickText == null ? _pendingFileSize : null;
+    if (value.isEmpty && imagePath == null && attachmentPath == null) return;
     setState(() {
-      _messages.add(_ChatMessage(text: value, mine: true, time: DateTime.now(), imagePath: imagePath));
+      _messages.add(_ChatMessage(text: value, mine: true, time: DateTime.now(), imagePath: imagePath, attachmentPath: attachmentPath, attachmentName: attachmentName, attachmentSize: attachmentSize));
       _input.clear();
       _pendingImagePath = null;
+      _pendingFilePath = null;
+      _pendingFileName = null;
+      _pendingFileSize = null;
       _query = '';
       _search.clear();
       _sending = true;
@@ -185,7 +207,7 @@ class _ChatPageState extends State<ChatPage> {
 
       final historyMessages = _messages
           .where((message) => !message.isSystem && !message.isTyping &&
-              (message.text.trim().isNotEmpty || message.imagePath != null))
+              (message.text.trim().isNotEmpty || message.imagePath != null || message.attachmentPath != null))
           .toList()
           .reversed
           .take(20)
@@ -211,6 +233,16 @@ class _ChatPageState extends State<ChatPage> {
               },
             ],
           });
+        } else if (message.attachmentPath != null && await File(message.attachmentPath!).exists()) {
+          final file = File(message.attachmentPath!);
+          final extension = message.attachmentName?.split('.').last.toLowerCase() ?? '';
+          const readable = {'txt', 'md', 'csv', 'json', 'xml', 'yaml', 'yml', 'log'};
+          if (readable.contains(extension)) {
+            final content = await file.readAsString();
+            history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${message.text.isEmpty ? '' : '${message.text}\\n'}[附件：${message.attachmentName}]\\n$content'});
+          } else {
+            history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${message.text.isEmpty ? '' : '${message.text}\\n'}[用户附加了文件：${message.attachmentName}。当前接口适配层尚未解析此文件格式。]'});
+          }
         } else {
           history.add({
             'role': message.mine ? 'user' : 'assistant',
@@ -262,6 +294,9 @@ class _ChatPageState extends State<ChatPage> {
               inputTokens: current.inputTokens,
               outputTokens: current.outputTokens,
               imagePath: current.imagePath,
+              attachmentPath: current.attachmentPath,
+              attachmentName: current.attachmentName,
+              attachmentSize: current.attachmentSize,
             );
           });
         }
@@ -316,6 +351,9 @@ class _ChatPageState extends State<ChatPage> {
       _messages.removeAt(userIndex);
       _input.text = text;
       _pendingImagePath = failedMessage.imagePath;
+      _pendingFilePath = failedMessage.attachmentPath;
+      _pendingFileName = failedMessage.attachmentName;
+      _pendingFileSize = failedMessage.attachmentSize;
     });
     await _saveDraft(text);
     await _send();
