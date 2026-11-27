@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 
+/// phone 黑白主题：以纯白、墨黑和中性灰构成层次。
 abstract final class AppColors {
-  static const paper = Color(0xFFF7FAF8);
+  static const paper = Color(0xFFFAFAFA);
   static const card = Color(0xFFFFFFFF);
-  static const line = Color(0xFFE5ECE7);
-  static const fill = Color(0xFFEEF3EF);
-  static const ink = Color(0xFF29362F);
-  static const secondary = Color(0xFF68796F);
-  static const muted = Color(0xFF9AA79F);
-  static const accent = Color(0xFF789A88);
-  static const accentSoft = Color(0xFFE8F0EA);
-  static const bubbleMe = Color(0xFFDCEBE1);
+  static const line = Color(0xFFE7E7E7);
+  static const fill = Color(0xFFF3F3F3);
+  static const ink = Color(0xFF202020);
+  static const secondary = Color(0xFF666666);
+  static const muted = Color(0xFFA3A3A3);
+  static const accent = Color(0xFF242424);
+  static const accentSoft = Color(0xFFEDEDED);
+  static const bubbleMe = Color(0xFFF0F0F0);
   static const bubblePartner = Color(0xFFFFFFFF);
-  static const blush = Color(0xFFF2E9E9);
-  static const sky = Color(0xFFE8EFF2);
+  static const blush = Color(0xFFF3F3F3);
+  static const sky = Color(0xFFF1F1F1);
 }
 
 abstract final class AppRadii {
@@ -43,9 +44,9 @@ abstract final class AppTheme {
 
   static ThemeData get dark => _build(
         brightness: Brightness.dark,
-        scaffold: const Color(0xFF111A15),
-        surface: const Color(0xFF1B2820),
-        foreground: const Color(0xFFF0F5F1),
+        scaffold: const Color(0xFF111111),
+        surface: const Color(0xFF1C1C1C),
+        foreground: const Color(0xFFF3F3F3),
       );
 
   static ThemeData _build({
@@ -54,15 +55,16 @@ abstract final class AppTheme {
     required Color surface,
     required Color foreground,
   }) {
+    final isLight = brightness == Brightness.light;
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.accent,
       brightness: brightness,
       surface: surface,
     ).copyWith(
-      primary: AppColors.accent,
-      onPrimary: Colors.white,
-      secondary: AppColors.secondary,
-      outline: AppColors.line,
+      primary: isLight ? const Color(0xFF242424) : const Color(0xFFF1F1F1),
+      onPrimary: isLight ? Colors.white : const Color(0xFF171717),
+      secondary: isLight ? const Color(0xFF666666) : const Color(0xFFBDBDBD),
+      outline: isLight ? AppColors.line : const Color(0xFF3B3B3B),
     );
 
     return ThemeData(
@@ -73,7 +75,7 @@ abstract final class AppTheme {
       fontFamily: 'sans-serif',
       splashFactory: NoSplash.splashFactory,
       highlightColor: Colors.transparent,
-      dividerColor: AppColors.line,
+      dividerColor: isLight ? AppColors.line : const Color(0xFF363636),
       appBarTheme: AppBarTheme(
         backgroundColor: scaffold,
         foregroundColor: foreground,
@@ -90,16 +92,17 @@ abstract final class AppTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.card),
-          side: BorderSide(color: AppColors.line.withValues(alpha: .8)),
+          side: BorderSide(
+            color: isLight ? AppColors.line : const Color(0xFF383838),
+          ),
         ),
       ),
       iconTheme: IconThemeData(color: foreground),
-      textTheme: Typography.blackCupertino.apply(
-        bodyColor: foreground, displayColor: foreground,
-      ),
+      textTheme: (isLight ? Typography.blackCupertino : Typography.whiteCupertino)
+          .apply(bodyColor: foreground, displayColor: foreground),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.fill,
+        fillColor: isLight ? AppColors.fill : const Color(0xFF292929),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.hero),
           borderSide: BorderSide.none,
@@ -110,7 +113,10 @@ abstract final class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.hero),
-          borderSide: const BorderSide(color: AppColors.accent, width: 1),
+          borderSide: BorderSide(
+            color: isLight ? AppColors.accent : const Color(0xFFBDBDBD),
+            width: 1,
+          ),
         ),
       ),
     );
