@@ -614,8 +614,8 @@ class _MusicPageState extends State<MusicPage> {
         padding: EdgeInsets.fromLTRB(22, 2, 22, 8),
         child: Row(children: [
           Text('DISCOVER', style: TextStyle(fontSize: 10, letterSpacing: 2.3, color: Color(0xFF9B7180), fontWeight: FontWeight.w700)),
-          const SizedBox(width: 10),
-          const Expanded(child: Divider(color: Color(0xFFE8D6DE))),
+          SizedBox(width: 10),
+          Expanded(child: Divider(color: Color(0xFFE8D6DE))),
         ]),
       ),
       Expanded(child: _results.isNotEmpty
