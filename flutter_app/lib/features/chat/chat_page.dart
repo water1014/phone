@@ -98,6 +98,7 @@ class _ChatPageState extends State<ChatPage> {
   bool _sending = false;
   bool _showJumpLatest = false;
   CancelToken? _activeCancelToken;
+  Timer? _draftSaveTimer;
   String _query = '';
   DateTime? _selectedDay;
 
@@ -123,6 +124,13 @@ class _ChatPageState extends State<ChatPage> {
   Future<void> _saveDraft(String value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('chat.draft.v1', value);
+  }
+
+  void _scheduleDraftSave(String value) {
+    _draftSaveTimer?.cancel();
+    _draftSaveTimer = Timer(const Duration(milliseconds: 350), () {
+      unawaited(_saveDraft(value));
+    });
   }
 
   Future<void> _loadChat() async {
@@ -178,6 +186,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void dispose() {
     _activeCancelToken?.cancel('聊天页面已关闭');
+    _draftSaveTimer?.cancel();
     _messagesScroll.removeListener(_handleScroll);
     _input.dispose();
     _inputFocus.dispose();
@@ -1255,7 +1264,7 @@ class _ChatPageState extends State<ChatPage> {
               child: TextField(
                 controller: _input,
                 focusNode: _inputFocus,
-                onChanged: (value) => unawaited(_saveDraft(value)),
+                onChanged: _scheduleDraftSave,
                 minLines: 1,
                 maxLines: 5,
                 textInputAction: prefs.enterSend ? TextInputAction.send : TextInputAction.newline,
