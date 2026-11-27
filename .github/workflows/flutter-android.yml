@@ -65,42 +65,46 @@ jobs:
 
           if root_file.suffix == ".kts":
               override = """
-          // Keep every Android plugin module aligned with the app compile SDK.
+          // Apply the SDK override as soon as each Android library plugin is applied.
           subprojects {
-              afterEvaluate {
+              plugins.withId("com.android.library") {
                   val androidExtension = extensions.findByName("android")
-                  if (androidExtension != null) {
-                      val setter = androidExtension.javaClass.methods.firstOrNull {
-                          it.name == "setCompileSdk" && it.parameterCount == 1
-                      } ?: error("Unable to set compileSdk for $name")
-                      setter.invoke(androidExtension, 36)
-                      println("Configured compileSdk 36 for Android module: $name")
-                  }
+                      ?: error("Android extension missing for $name")
+                  val setter = androidExtension.javaClass.methods.firstOrNull {
+                      (it.name == "setCompileSdk" || it.name == "setCompileSdkVersion") &&
+                          it.parameterCount == 1
+                  } ?: error("Unable to find compileSdk setter for $name")
+                  setter.invoke(androidExtension, 36)
+                  println("Configured compileSdk 36 for Android library: $name")
               }
           }
           """
           else:
               override = """
-          // Keep every Android plugin module aligned with the app compile SDK.
+          // Apply the SDK override as soon as each Android library plugin is applied.
           subprojects {
-              afterEvaluate {
+              plugins.withId("com.android.library") {
                   def androidExtension = extensions.findByName("android")
-                  if (androidExtension != null) {
-                      androidExtension.compileSdkVersion(36)
-                      println("Configured compileSdk 36 for Android module: ${project.name}")
+                  if (androidExtension == null) {
+                      throw new GradleException("Android extension missing for ${project.name}")
                   }
+                  def setter = androidExtension.class.methods.find {
+                      (it.name == "setCompileSdk" || it.name == "setCompileSdkVersion") &&
+                          it.parameterCount == 1
+                  }
+                  if (setter == null) {
+                      throw new GradleException("Unable to find compileSdk setter for ${project.name}")
+                  }
+                  setter.invoke(androidExtension, 36)
+                  println("Configured compileSdk 36 for Android library: ${project.name}")
               }
           }
           """
-          marker = "tasks.register<Delete>(\"clean\")"
-          if marker in root_file.read_text():
-              root_source = root_file.read_text().replace(marker, override + "\n" + marker, 1)
-          elif "tasks.register('clean'" in root_file.read_text():
-              root_source = root_file.read_text().replace("tasks.register('clean'", override + "\ntasks.register('clean'", 1)
-          else:
-              root_source = root_file.read_text() + "\n" + override
+          root_source = root_file.read_text()
+          if "plugins.withId(\"com.android.library\")" not in root_source:
+              root_source += "\n" + override
           root_file.write_text(root_source)
-          print(f"Added all-module compileSdk override to {root_file}")
+          print(f"Added plugin-time compileSdk override to {root_file}")
           PY
       - name: Configure stable Android debug signing
         env:
