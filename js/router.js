@@ -972,6 +972,37 @@
         });
       });
 
+      /* 图片点开查看原图；预览层独立于消息列表，不改变聊天记录。 */
+      Array.prototype.forEach.call(bodyEl.querySelectorAll('#chat-scroll .msg-img img'), function (img) {
+        img.setAttribute('role', 'button');
+        img.setAttribute('tabindex', '0');
+        img.setAttribute('aria-label', '查看图片');
+        function preview() {
+          const old = D.getElementById('chat-image-viewer');
+          if (old) old.remove();
+          const viewer = D.createElement('div');
+          viewer.id = 'chat-image-viewer';
+          viewer.className = 'chat-image-viewer';
+          viewer.setAttribute('role', 'dialog');
+          viewer.setAttribute('aria-modal', 'true');
+          viewer.setAttribute('aria-label', '图片预览');
+          viewer.innerHTML = '<button type="button" class="chat-image-close" aria-label="关闭图片">×</button><img alt="聊天图片原图">';
+          const full = viewer.querySelector('img');
+          full.src = img.currentSrc || img.src;
+          function close() { viewer.remove(); D.removeEventListener('keydown', onKey); }
+          function onKey(e) { if (e.key === 'Escape') close(); }
+          viewer.addEventListener('click', function (e) {
+            if (e.target === viewer || e.target.closest('.chat-image-close')) close();
+          });
+          D.addEventListener('keydown', onKey);
+          D.body.appendChild(viewer);
+        }
+        img.addEventListener('click', preview);
+        img.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); preview(); }
+        });
+      });
+
       bindHold();
       scrollChat();
       return;
