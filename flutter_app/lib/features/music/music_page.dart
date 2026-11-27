@@ -24,6 +24,16 @@ class MusicPage extends StatefulWidget {
 class _MusicPageState extends State<MusicPage> {
   static const _secure = FlutterSecureStorage();
   static final AudioPlayer _audio = AudioPlayer();
+  static final MusicApiClient _backgroundApi = MusicApiClient();
+  static StreamSubscription<PlayerState>? _globalPlayerSubscription;
+  static _MusicPageState? _activePage;
+  static List<MusicSong> _backgroundQueue = [];
+  static int _backgroundCurrentId = 0;
+  static String _backgroundWorker = MusicApiClient.defaultWorker;
+  static String _backgroundCookie = '';
+  static bool _backgroundAdvancing = false;
+  static const _queueKey = 'phone.music.queue.v1';
+  static const _currentKey = 'phone.music.currentId.v1';
   static const _cookieKey = 'phone.music.netease.cookie';
   static const _workerKey = 'phone.music.worker';
   final _api = MusicApiClient();
@@ -47,29 +57,119 @@ class _MusicPageState extends State<MusicPage> {
   @override
   void initState() {
     super.initState();
-    _playerSubscription = _audio.playerStateStream.listen((state) {
-      if (state.processingState == ProcessingState.completed && mounted) _next();
+    _activePage = this;
+    // Keep one listener for the lifetime of the process, not the music page.
+    // The Android media service can therefore advance the queue after the
+    // user navigates away from this screen.
+    _globalPlayerSubscription ??= _audio.playerStateStream.listen((state) {
+      if (state.processingState != ProcessingState.completed) return;
+      final page = _activePage;
+      if (page != null && page.mounted) {
+        unawaited(page._next());
+      } else {
+        unawaited(_advanceBackgroundQueue());
+      }
     });
     _restore();
   }
 
   @override
   void dispose() {
-    _playerSubscription?.cancel();
+    if (identical(_activePage, this)) _activePage = null;
     _searchController.dispose();
     _workerController.dispose();
     super.dispose();
+  }
+
+  static Future<void> _advanceBackgroundQueue() async {
+    if (_backgroundAdvancing || _backgroundQueue.isEmpty) return;
+    _backgroundAdvancing = true;
+    try {
+      final currentIndex = _backgroundQueue.indexWhere((song) => song.id == _backgroundCurrentId);
+      final nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % _backgroundQueue.length;
+      final song = _backgroundQueue[nextIndex];
+      final url = await _backgroundApi.songUrl(
+        _backgroundWorker,
+        song.id,
+        cookie: _backgroundCookie,
+      );
+      _backgroundCurrentId = song.id;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_currentKey, song.id);
+      await _audio.setAudioSource(
+        AudioSource.uri(
+          Uri.parse(url),
+          tag: MediaItem(
+            id: song.id.toString(),
+            title: song.name,
+            artist: song.artist,
+            artUri: song.cover.isEmpty ? null : Uri.tryParse(song.cover),
+          ),
+        ),
+        preload: false,
+      );
+      await _audio.play();
+    } catch (_) {
+      // A temporary URL/worker failure must not tear down the media session.
+    } finally {
+      _backgroundAdvancing = false;
+    }
+  }
+
+  static List<Map<String, dynamic>> _encodeQueue(List<MusicSong> songs) =>
+      songs.map((song) => <String, dynamic>{
+        'id': song.id,
+        'name': song.name,
+        'artist': song.artist,
+        'album': song.album,
+        'cover': song.cover,
+        'durationMs': song.durationMs,
+        'fee': song.fee,
+      }).toList();
+
+  static List<MusicSong> _decodeQueue(String? raw) {
+    if (raw == null || raw.isEmpty) return [];
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return [];
+      return decoded.whereType<Map>().map((item) => MusicSong(
+        id: (item['id'] as num?)?.toInt() ?? 0,
+        name: (item['name'] ?? '未知歌曲').toString(),
+        artist: (item['artist'] ?? '未知歌手').toString(),
+        album: (item['album'] ?? '').toString(),
+        cover: (item['cover'] ?? '').toString(),
+        durationMs: (item['durationMs'] as num?)?.toInt() ?? 0,
+        fee: (item['fee'] as num?)?.toInt() ?? 0,
+      )).where((song) => song.id > 0).toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   Future<void> _restore() async {
     final prefs = await SharedPreferences.getInstance();
     final worker = prefs.getString(_workerKey) ?? MusicApiClient.defaultWorker;
     final cookie = await _secure.read(key: _cookieKey) ?? '';
+    final restoredQueue = _decodeQueue(prefs.getString(_queueKey));
+    final restoredCurrentId = prefs.getInt(_currentKey) ?? 0;
     if (!mounted) return;
+    _backgroundWorker = _api.worker(worker);
+    _backgroundCookie = cookie;
+    if (restoredQueue.isNotEmpty) _backgroundQueue = restoredQueue;
+    if (restoredCurrentId > 0) _backgroundCurrentId = restoredCurrentId;
     setState(() {
-      _worker = _api.worker(worker);
+      _worker = _backgroundWorker;
       _workerController.text = _worker;
       _cookie = cookie;
+      if (_queue.isEmpty) _queue = _backgroundQueue;
+      if (_current == null) {
+        for (final song in _queue) {
+          if (song.id == _backgroundCurrentId) {
+            _current = song;
+            break;
+          }
+        }
+      }
     });
     if (cookie.isNotEmpty) await _loadAccount(showError: false);
   }
@@ -81,6 +181,7 @@ class _MusicPageState extends State<MusicPage> {
     if (!mounted) return;
     setState(() {
       _worker = normalized;
+      _backgroundWorker = normalized;
       _workerController.text = normalized;
     });
     if (_cookie.isNotEmpty) await _loadAccount(showError: false);
@@ -295,6 +396,14 @@ class _MusicPageState extends State<MusicPage> {
       if (source != null) _queue = source;
       if (!_queue.any((item) => item.id == song.id)) _queue = [..._queue, song];
     });
+    _backgroundWorker = _worker;
+    _backgroundCookie = _cookie;
+    _backgroundQueue = List<MusicSong>.unmodifiable(_queue);
+    _backgroundCurrentId = song.id;
+    unawaited(SharedPreferences.getInstance().then((prefs) async {
+      await prefs.setString(_queueKey, jsonEncode(_encodeQueue(_backgroundQueue)));
+      await prefs.setInt(_currentKey, song.id);
+    }));
     _playerRefresh?.call();
     try {
       // Fetch the playable URL first. Lyrics are deliberately loaded after
