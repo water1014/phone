@@ -20,14 +20,14 @@
     preset: 'PRESETS', repo: 'REPOSITORY', youtube: 'VIDEO', crread: 'BOOK CLUB',
     couple: 'COUPLE SPACE', msgs: 'MESSAGES', iff: 'INTERACTION', xinji: 'JOURNAL',
     rolephones: 'ROLE PHONES', stickers: 'STICKERS', desktopcustom: 'DESKTOP',
-    css: 'STYLE EDITOR', profile: 'PROFILE'
+    css: 'STYLE EDITOR', profile: 'PROFILE', app: 'APP CENTER', cset: 'CHAT SETTINGS', deco: 'HOME DECOR'
   };
 
   const GROUPS = [
     { title: '聊天与关系', ids: ['chat', 'personas', 'memory', 'worldbook', 'letter', 'moments', 'msgs', 'couple', 'iff', 'xinji'] },
     { title: '生活与记录', ids: ['diary', 'calendar', 'plans', 'accounting', 'wallet', 'life', 'mood', 'health', 'cycle', 'study', 'weather'] },
     { title: '内容与收藏', ids: ['album', 'music', 'quotes', 'favorites', 'games', 'studio', 'windows', 'coread', 'crread', 'offline', 'youtube', 'repo', 'preset', 'stickers'] },
-    { title: '系统与扩展', ids: ['mcp', 'beautify', 'settings', 'rolephones', 'desktopcustom', 'css', 'profile'] }
+    { title: '系统与扩展', ids: ['mcp', 'beautify', 'settings', 'rolephones', 'desktopcustom', 'css', 'profile', 'app', 'cset', 'deco'] }
   ];
 
   function pagesHtml() {
