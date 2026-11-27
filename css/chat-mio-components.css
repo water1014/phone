@@ -1,0 +1,309 @@
+/* chat-mio-components.css
+   Stable, scoped controls for the Phone chat renderer.
+   Keep this layer after legacy chat styles so native browser control defaults
+   cannot leak into the MioWatery header and composer.
+*/
+.chat-wrap.mio-chat-wrap{
+  display:flex;
+  flex:1 1 auto;
+  flex-direction:column;
+  width:100%;
+  height:100%;
+  min-width:0;
+  min-height:0;
+  gap:0;
+  overflow:hidden;
+  box-sizing:border-box;
+}
+.chat-wrap.mio-chat-wrap *,
+.chat-wrap.mio-chat-wrap *::before,
+.chat-wrap.mio-chat-wrap *::after{box-sizing:border-box}
+
+.chat-wrap.mio-chat-wrap > .mio-chat-bar{
+  position:relative;
+  display:flex;
+  flex:0 0 auto;
+  align-items:center;
+  gap:8px;
+  min-height:56px;
+  padding:7px 12px;
+  border:0;
+  background:transparent;
+}
+.chat-wrap.mio-chat-wrap .mio-chat-bar #ctitle{
+  position:absolute;
+  left:50%;
+  top:50%;
+  z-index:0;
+  width:max-content;
+  max-width:42%;
+  margin:0;
+  overflow:hidden;
+  transform:translate(-50%,-50%);
+  text-align:center;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  pointer-events:none;
+  font-size:20px;
+  line-height:1.2;
+  font-weight:650;
+  color:var(--ink-1,var(--ink,#26383b));
+}
+.chat-wrap.mio-chat-wrap .mio-chat-bar button{
+  display:inline-flex;
+  flex:0 0 40px;
+  align-items:center;
+  justify-content:center;
+  width:40px;
+  min-width:40px;
+  height:40px;
+  min-height:40px;
+  margin:0;
+  padding:0;
+  border:1px solid var(--glass-brd,rgba(100,130,135,.2));
+  border-radius:14px;
+  background:var(--glass-bg,rgba(255,255,255,.62));
+  color:var(--ink-1,var(--ink,#26383b));
+  box-shadow:0 2px 10px rgba(40,70,75,.045);
+  font:inherit;
+  font-size:21px;
+  line-height:1;
+  appearance:none;
+  -webkit-appearance:none;
+  touch-action:manipulation;
+}
+.chat-wrap.mio-chat-wrap .mio-chat-bar #chat-back{
+  position:relative;
+  z-index:1;
+  border-radius:50%;
+  font-size:25px;
+}
+.chat-wrap.mio-chat-wrap .mio-chat-bar #chat-search-toggle{margin-left:auto}
+.chat-wrap.mio-chat-wrap .mio-chat-bar #chat-more-toggle{
+  position:relative;
+  z-index:1;
+  font-size:21px;
+  letter-spacing:1px;
+}
+.chat-wrap.mio-chat-wrap .mio-chat-bar button:active,
+.chat-wrap.mio-chat-wrap .composer button:active{transform:scale(.96);opacity:.78}
+
+.chat-wrap.mio-chat-wrap > .chat-scroll{
+  display:flex;
+  flex:1 1 0%;
+  flex-direction:column;
+  width:100%;
+  min-width:0;
+  min-height:0;
+  padding:12px 14px;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.chat-wrap.mio-chat-wrap > .quick{
+  display:flex;
+  flex:0 0 auto;
+  gap:8px;
+  min-width:0;
+  padding:7px 14px 9px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.chat-wrap.mio-chat-wrap > .quick::-webkit-scrollbar{display:none}
+.chat-wrap.mio-chat-wrap .quick-chip{
+  display:inline-flex;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:center;
+  min-height:36px;
+  padding:0 15px;
+  border:1px solid var(--glass-brd,rgba(100,130,135,.2));
+  border-radius:999px;
+  background:var(--glass-bg,rgba(255,255,255,.68));
+  color:var(--ink-2,var(--ink,#26383b));
+  font:inherit;
+  font-size:14px;
+  white-space:nowrap;
+}
+
+.chat-wrap.mio-chat-wrap > .composer{
+  position:relative;
+  display:grid;
+  flex:0 0 auto;
+  grid-template-columns:42px minmax(0,1fr);
+  align-items:end;
+  gap:8px;
+  width:100%;
+  min-width:0;
+  margin:0;
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));
+  border:1px solid var(--glass-brd,rgba(100,130,135,.22));
+  border-bottom:0;
+  border-radius:25px 25px 0 0;
+  background:var(--glass-bg,rgba(255,255,255,.82));
+  -webkit-backdrop-filter:var(--glass-blur,blur(18px));
+  backdrop-filter:var(--glass-blur,blur(18px));
+  box-shadow:0 -5px 24px rgba(50,80,85,.055);
+  box-sizing:border-box;
+}
+.chat-wrap.mio-chat-wrap .composer > #chat-file{display:none}
+.chat-wrap.mio-chat-wrap .composer > #chat-plus{
+  grid-column:1;
+  grid-row:1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:42px;
+  min-width:42px;
+  height:42px;
+  min-height:42px;
+  margin:0 0 1px;
+  padding:0;
+  border:1px solid var(--glass-brd,rgba(100,130,135,.24));
+  border-radius:50%;
+  background:rgba(255,255,255,.55);
+  color:var(--ink-2,var(--ink,#26383b));
+  font:inherit;
+  font-size:27px;
+  line-height:1;
+  appearance:none;
+  -webkit-appearance:none;
+}
+.chat-wrap.mio-chat-wrap .composer > .ib{
+  grid-column:2;
+  grid-row:1;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 40px 42px;
+  align-items:end;
+  gap:6px;
+  min-width:0;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+}
+.chat-wrap.mio-chat-wrap .composer textarea#chat-input{
+  display:block;
+  width:100%;
+  min-width:0;
+  min-height:42px;
+  max-height:112px;
+  margin:0;
+  padding:10px 12px;
+  border:1px solid var(--glass-brd,rgba(100,130,135,.24));
+  border-radius:17px;
+  outline:none;
+  background:rgba(255,255,255,.72);
+  color:var(--ink-1,var(--ink,#26383b));
+  box-shadow:none;
+  font:inherit;
+  font-size:16px;
+  line-height:1.45;
+  resize:none;
+  overflow-y:auto;
+  appearance:none;
+  -webkit-appearance:none;
+}
+.chat-wrap.mio-chat-wrap .composer textarea#chat-input:focus{
+  border-color:var(--accent,rgba(115,170,175,.65));
+  box-shadow:0 0 0 3px rgba(115,170,175,.10);
+}
+.chat-wrap.mio-chat-wrap .composer textarea#chat-input::placeholder{color:var(--ink-3,#9aa9aa)}
+.chat-wrap.mio-chat-wrap .composer #chat-smile,
+.chat-wrap.mio-chat-wrap .composer #chat-send{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:40px;
+  min-width:40px;
+  height:42px;
+  min-height:42px;
+  margin:0;
+  padding:0;
+  border:1px solid var(--glass-brd,rgba(100,130,135,.22));
+  border-radius:15px;
+  background:rgba(255,255,255,.58);
+  color:var(--ink-2,var(--ink,#26383b));
+  font:inherit;
+  font-size:22px;
+  line-height:1;
+  appearance:none;
+  -webkit-appearance:none;
+}
+.chat-wrap.mio-chat-wrap .composer #chat-send{
+  width:42px;
+  min-width:42px;
+  border:0;
+  border-radius:50%;
+  background:var(--accent,#8bb9bd);
+  color:#fff;
+  box-shadow:0 4px 12px rgba(100,155,160,.2);
+  font-size:25px;
+}
+.chat-wrap.mio-chat-wrap .chat-more-menu[hidden],
+.chat-wrap.mio-chat-wrap .mio-chat-search[hidden],
+.chat-wrap.mio-chat-wrap .chat-tool-panel[hidden],
+.chat-wrap.mio-chat-wrap .chat-emoji-panel[hidden]{display:none!important}
+.chat-wrap.mio-chat-wrap .mio-chat-search{
+  display:flex;
+  flex:0 0 auto;
+  align-items:center;
+  gap:8px;
+  padding:7px 12px;
+}
+.chat-wrap.mio-chat-wrap .mio-chat-search input{
+  flex:1;
+  min-width:0;
+  height:40px;
+  padding:0 13px;
+  border:1px solid var(--glass-brd,rgba(100,130,135,.2));
+  border-radius:999px;
+  background:var(--glass-bg,rgba(255,255,255,.7));
+  color:var(--ink-1,var(--ink,#26383b));
+  font:inherit;
+  font-size:14px;
+}
+.chat-wrap.mio-chat-wrap .mio-chat-search button{
+  min-height:40px;
+  padding:0 10px;
+  border:0;
+  background:transparent;
+  color:var(--ink-2,var(--ink,#26383b));
+  font:inherit;
+}
+.chat-wrap.mio-chat-wrap .chat-tool-panel,
+.chat-wrap.mio-chat-wrap .chat-emoji-panel{
+  display:flex;
+  flex:0 0 auto;
+  flex-wrap:wrap;
+  gap:8px;
+  padding:10px 14px;
+}
+.chat-wrap.mio-chat-wrap .chat-tool-panel button,
+.chat-wrap.mio-chat-wrap .chat-emoji-panel button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:42px;
+  min-height:42px;
+  padding:8px 11px;
+  border:1px solid var(--glass-brd,rgba(100,130,135,.2));
+  border-radius:13px;
+  background:var(--glass-bg,rgba(255,255,255,.7));
+  color:var(--ink-2,var(--ink,#26383b));
+  font:inherit;
+}
+@media(max-width:360px){
+  .chat-wrap.mio-chat-wrap .composer{grid-template-columns:36px minmax(0,1fr);gap:6px;padding-left:9px;padding-right:9px}
+  .chat-wrap.mio-chat-wrap .composer > #chat-plus{width:36px;min-width:36px;height:36px;min-height:36px}
+  .chat-wrap.mio-chat-wrap .composer > .ib{grid-template-columns:minmax(0,1fr) 34px 38px;gap:4px}
+  .chat-wrap.mio-chat-wrap .composer #chat-smile{width:34px;min-width:34px}
+  .chat-wrap.mio-chat-wrap .composer #chat-send{width:38px;min-width:38px}
+}
+@media(max-height:520px){
+  .chat-wrap.mio-chat-wrap > .quick{display:none}
+  .chat-wrap.mio-chat-wrap .composer{padding-top:6px}
+}
