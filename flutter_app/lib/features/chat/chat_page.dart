@@ -10,7 +10,6 @@ import 'package:open_filex/open_filex.dart';
 import 'package:gal/gal.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
@@ -261,7 +260,7 @@ class _ChatPageState extends State<ChatPage> {
         } else if (message.attachmentPath != null && await File(message.attachmentPath!).exists()) {
           final file = File(message.attachmentPath!);
           final extension = message.attachmentName?.split('.').last.toLowerCase() ?? '';
-          const readable = {'txt', 'md', 'csv', 'json', 'xml', 'yaml', 'yml', 'log', 'html', 'htm', 'css', 'js', 'mjs', 'ts', 'tsx', 'jsx', 'dart', 'py', 'java', 'kt', 'kts', 'swift', 'c', 'h', 'cpp', 'hpp', 'rs', 'go', 'php', 'rb', 'sh', 'bash', 'sql', 'toml', 'ini', 'conf', 'properties', 'gradle', 'properties', 'svg'};
+          const readable = {'txt', 'md', 'csv', 'json', 'xml', 'yaml', 'yml', 'log', 'html', 'htm', 'css', 'js', 'mjs', 'ts', 'tsx', 'jsx', 'dart', 'py', 'java', 'kt', 'kts', 'swift', 'c', 'h', 'cpp', 'hpp', 'rs', 'go', 'php', 'rb', 'sh', 'bash', 'sql', 'toml', 'ini', 'conf', 'properties', 'gradle', 'svg'};
           if (readable.contains(extension)) {
             final content = await file.readAsString();
             history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${message.text.isEmpty ? '' : '${message.text}\n'}[附件：${message.attachmentName}]\n$content'});
