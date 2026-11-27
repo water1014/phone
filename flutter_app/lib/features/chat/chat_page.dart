@@ -858,7 +858,7 @@ class _ChatPageState extends State<ChatPage> {
       width: 40,
       child: Align(
         alignment: mine ? Alignment.topRight : Alignment.topLeft,
-        child: prefs.showAvatar ? avatar : const SizedBox(width: 34, height: 34),
+        child: avatar,
       ),
     );
     final bubbleRadius = isHelloTalk
@@ -1031,9 +1031,11 @@ class _ChatPageState extends State<ChatPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: mine ? MainAxisAlignment.end : MainAxisAlignment.start,
-        children: mine
-            ? [content, const SizedBox(width: 6), avatarSlot]
-            : [avatarSlot, const SizedBox(width: 6), content],
+        children: !prefs.showAvatar
+            ? [content]
+            : mine
+                ? [content, const SizedBox(width: 6), avatarSlot]
+                : [avatarSlot, const SizedBox(width: 6), content],
       ),
     );
   }
