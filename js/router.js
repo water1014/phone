@@ -111,7 +111,7 @@
     rolephones:'rolephones', stickers:'stickers', desktopcustom:'desktopcustom'
   };
   function mioFrame(view) {
-    return '<iframe class="mio-original-frame" title="MioWatery 原版" src="mio/index.html?v=20261127-4#' +
+    return '<iframe class="mio-original-frame" title="MioWatery 原版" src="mio/index.html?v=20261127-5#' +
       encodeURIComponent(view) + '" allow="clipboard-read; clipboard-write; fullscreen" loading="eager"></iframe>';
   }
 
