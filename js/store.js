@@ -14,6 +14,7 @@
     notes: [],
     worldbooks: [],
     contacts: [],
+    contactGroups: [],
     activeContactId: '',
     appOrder: [],
 
