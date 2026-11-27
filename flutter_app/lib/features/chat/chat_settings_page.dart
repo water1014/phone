@@ -21,7 +21,7 @@ class ChatSettingsPage extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('聊天设置', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w650, color: AppColors.ink)),
+                Text('聊天设置', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.ink)),
                 SizedBox(height: 3),
                 Text('只影响当前聊天界面', style: TextStyle(fontSize: 11, color: AppColors.muted)),
               ])),
@@ -66,7 +66,7 @@ class ChatSettingsPage extends StatelessWidget {
                       ]),
                     ),
                     Slider(
-                      value: prefs.fontSize.clamp(12, 20),
+                      value: prefs.fontSize.clamp(12, 20).toDouble(),
                       min: 12,
                       max: 20,
                       divisions: 8,
