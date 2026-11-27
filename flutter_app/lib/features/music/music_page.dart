@@ -226,7 +226,7 @@ class _MusicPageState extends State<MusicPage> {
                   TextField(
                     controller: _cookieController,
                     obscureText: !_showCookie,
-                    maxLines: 2,
+                    maxLines: _showCookie ? 3 : 1,
                     minLines: 1,
                     autocorrect: false,
                     enableSuggestions: false,
