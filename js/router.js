@@ -901,8 +901,8 @@
         if (backSettings) backSettings.addEventListener('click', function () { chatSettingsOpen = false; paint('chat'); scrollChat(); });
         Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-chat-pref]'), function (control) {
           control.addEventListener('change', function () {
+            /* 设置项即时落盘；不重绘整页，避免滚动位置和焦点丢失。 */
             saveChatPref(control.dataset.chatPref, control.checked);
-            paint('chat');
           });
         });
         const font = D.getElementById('chat-font-size');
