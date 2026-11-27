@@ -185,10 +185,10 @@ class ChatApiClient {
           options: Options(
             responseType: ResponseType.stream,
             headers: headers,
-            cancelToken: cancelToken,
             validateStatus: (status) => status != null && status < 500,
             receiveTimeout: const Duration(minutes: 3),
           ),
+          cancelToken: cancelToken,
         );
       } on DioException catch (error) {
         lastError = error;
