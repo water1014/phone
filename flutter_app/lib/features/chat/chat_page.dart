@@ -53,6 +53,13 @@ class _ChatMessage {
   final int selectedAlternative;
 }
 
+// Read and encode image attachments away from the UI isolate so large images
+// do not freeze scrolling, typing, or the streaming response animation.
+Future<String> _encodeImageFileForRequest(String path) async {
+  final bytes = await File(path).readAsBytes();
+  return base64Encode(bytes);
+}
+
 Color _mineBubbleColor(int style) => style == 1 ? const Color(0xFF202020) : const Color(0xFF171717);
 
 Color _partnerBubbleColor(int style) => style == 1 ? const Color(0xFFF0F0F0) : const Color(0xFFF4F4F4);
@@ -250,11 +257,11 @@ class _ChatPageState extends State<ChatPage> {
       for (final message in historyMessages) {
         final imagePath = message.imagePath;
         if (imagePath != null && await File(imagePath).exists()) {
-          final file = File(imagePath);
-          final bytes = await file.readAsBytes();
-          final extension = file.path.toLowerCase().split('.').last;
+          final extension = imagePath.toLowerCase().split('.').last;
           final mime = extension == 'png' ? 'image/png' :
               extension == 'webp' ? 'image/webp' : 'image/jpeg';
+          final encodedImage = await compute(_encodeImageFileForRequest, imagePath);
+          if (!mounted) return;
           history.add({
             'role': message.mine ? 'user' : 'assistant',
             'content': [
@@ -262,7 +269,7 @@ class _ChatPageState extends State<ChatPage> {
                 {'type': 'text', 'text': message.text},
               {
                 'type': 'image_url',
-                'image_url': {'url': 'data:$mime;base64,${base64Encode(bytes)}'},
+                'image_url': {'url': 'data:$mime;base64,$encodedImage'},
               },
             ],
           });
