@@ -132,6 +132,24 @@ class ChatSettingsPage extends StatelessWidget {
                       inactiveColor: const Color(0xFFE7ECE8),
                       onChanged: (v) => _update(prefs.copyWith(fontSize: v)),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 8, 0, 2),
+                      child: Row(children: [
+                        const _SettingIcon(icon: Icons.rounded_corner_rounded),
+                        const SizedBox(width: 11),
+                        const Expanded(child: Text('气泡圆角', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _ink))),
+                        Text('${prefs.bubbleRadius.round()} px', style: const TextStyle(fontSize: 11, color: _muted)),
+                      ]),
+                    ),
+                    Slider(
+                      value: prefs.bubbleRadius.clamp(12, 26).toDouble(),
+                      min: 12,
+                      max: 26,
+                      divisions: 7,
+                      activeColor: _accent,
+                      inactiveColor: const Color(0xFFE7E7E7),
+                      onChanged: (v) => _update(prefs.copyWith(bubbleRadius: v)),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 13),
@@ -433,7 +451,7 @@ class _BubbleStylePicker extends StatelessWidget {
         }),
         const Padding(
           padding: EdgeInsets.only(bottom: 4),
-          child: Text('两种样式都会显示双方头像，照片和文件仍以独立附件展示。', style: TextStyle(fontSize: 10, height: 1.5, color: _muted)),
+          child: Text('头像可单独关闭；照片、表情包和文件仍以独立内容展示。', style: TextStyle(fontSize: 10, height: 1.5, color: _muted)),
         ),
       ],
     );
