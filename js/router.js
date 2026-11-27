@@ -101,15 +101,13 @@
   /* MioWatery original views are hosted as-is inside the existing Phone app window.
      The iframe keeps Mio's original DOM/CSS/JS isolated from Phone's globals. */
   const MIO_VIEWS = {
-    chat:'chat', personas:'personas', memory:'xinji', diary:'diary', album:'prof',
-    letter:'couple', music:'music', calendar:'life', plans:'life', accounting:'wallet',
-    weather:'life', mood:'life', health:'life', cycle:'life', study:'life',
-    quotes:'xinji', moments:'msgs', favorites:'xinji', games:'app', studio:'app',
-    worldbook:'worlds', windows:'desktopcustom', mcp:'mcp', beautify:'deco', settings:'settings',
-    wallet:'wallet', life:'life', coread:'coread', offline:'offline', preset:'preset',
-    repo:'repo', youtube:'youtube', crread:'crread', couple:'couple', msgs:'msgs',
-    iff:'iff', xinji:'xinji', rolephones:'rolephones', stickers:'stickers',
-    desktopcustom:'desktopcustom', css:'css', profile:'prof'
+    chat:'chat', personas:'personas', worldbook:'worlds', diary:'diary',
+    music:'music', wallet:'wallet', mcp:'mcp', life:'life', coread:'coread',
+    offline:'offline', preset:'preset', repo:'repo', youtube:'youtube',
+    crread:'crread', couple:'couple', msgs:'msgs', iff:'iff', xinji:'xinji',
+    app:'app', cset:'cset', deco:'deco', css:'css', profile:'prof',
+    rolephones:'rolephones', stickers:'stickers', desktopcustom:'desktopcustom',
+    settings:'settings'
   };
   function mioFrame(view) {
     return '<iframe class="mio-original-frame" title="MioWatery 原版" src="mio/index.html#' +
