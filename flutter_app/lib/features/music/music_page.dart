@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -412,14 +413,14 @@ class _MusicPageState extends State<MusicPage> {
           children: [
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(_loggedIn ? 'WELCOME BACK' : 'YOUR MUSIC SPACE',
+                Text(_loggedIn ? '欢迎回来' : 'LISTENING SPACE',
                     style: const TextStyle(fontSize: 9, letterSpacing: 2.2, color: Color(0xFF666666), fontWeight: FontWeight.w700)),
                 const SizedBox(height: 7),
-                Text(_loggedIn && _accountName.isNotEmpty ? _accountName : '一起听音乐',
+                Text(_loggedIn && _accountName.isNotEmpty ? _accountName : '音乐',
                     maxLines: 1, overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 25, color: Color(0xFF202020), fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
-                Text(_loggedIn ? '网易云音乐已连接' : '连接网易云，收藏你的每一首歌',
+                Text(_loggedIn ? '网易云音乐已连接' : '让喜欢的音乐，随时陪着你',
                     style: const TextStyle(fontSize: 11, color: Color(0xFF777777))),
               ]),
             ),
@@ -435,8 +436,8 @@ class _MusicPageState extends State<MusicPage> {
         ),
         const SizedBox(height: 27),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          const Text('NOW PLAYING', style: TextStyle(fontSize: 10, letterSpacing: 2, color: Color(0xFF666666), fontWeight: FontWeight.w700)),
-          Text(_queue.isEmpty ? 'YOUR COLLECTION' : '${_queue.length.toString().padLeft(2, '0')} TRACKS',
+          const Text('正在播放', style: TextStyle(fontSize: 10, letterSpacing: 2, color: Color(0xFF666666), fontWeight: FontWeight.w700)),
+          Text(_queue.isEmpty ? '我的音乐' : '${_queue.length.toString().padLeft(2, '0')} TRACKS',
               style: const TextStyle(fontSize: 9, letterSpacing: 1.2, color: Color(0xFF999999))),
         ]),
         const SizedBox(height: 12),
@@ -461,7 +462,7 @@ class _MusicPageState extends State<MusicPage> {
                 ),
                 const SizedBox(width: 14),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('CONTINUE LISTENING', style: TextStyle(fontSize: 8, letterSpacing: 1.5, color: Color(0xFF666666))),
+                  const Text('继续聆听', style: TextStyle(fontSize: 8, letterSpacing: 1.5, color: Color(0xFF666666))),
                   const SizedBox(height: 8),
                   Text(featured.name, maxLines: 2, overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontSize: 16, height: 1.3, fontWeight: FontWeight.w700, color: Color(0xFF202020))),
@@ -499,7 +500,7 @@ class _MusicPageState extends State<MusicPage> {
           ),
         const SizedBox(height: 27),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          const Text('YOUR PLAYLISTS', style: TextStyle(fontSize: 10, letterSpacing: 2, color: Color(0xFF666666), fontWeight: FontWeight.w700)),
+          const Text('我的歌单', style: TextStyle(fontSize: 10, letterSpacing: 2, color: Color(0xFF666666), fontWeight: FontWeight.w700)),
           TextButton(onPressed: () => setState(() => _tab = 1),
               child: const Text('VIEW ALL  ›', style: TextStyle(fontSize: 9, letterSpacing: 1, color: Color(0xFF202020)))),
         ]),
@@ -540,7 +541,7 @@ class _MusicPageState extends State<MusicPage> {
           ),
         const SizedBox(height: 20),
         if (_queue.isNotEmpty) ...[
-          const Text('UP NEXT', style: TextStyle(fontSize: 10, letterSpacing: 2, color: Color(0xFF666666), fontWeight: FontWeight.w700)),
+          const Text('接下来播放', style: TextStyle(fontSize: 10, letterSpacing: 2, color: Color(0xFF666666), fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           ..._queue.take(4).toList().asMap().entries.map((entry) => _songTile(entry.value, entry.key + 1)),
         ],
@@ -937,7 +938,7 @@ class _MusicPageState extends State<MusicPage> {
       Padding(
         padding: const EdgeInsets.fromLTRB(17, 8, 17, 8),
         child: SizedBox(height: 48, child: Stack(alignment: Alignment.center, children: [
-          const Text('music', style: TextStyle(fontFamily: 'serif', fontSize: 30, color: Color(0xFF202020), letterSpacing: .5)),
+          const Text('音乐', style: TextStyle(fontSize: 22, color: Color(0xFF202020), fontWeight: FontWeight.w700, letterSpacing: 1)),
           Align(alignment: Alignment.centerLeft, child: _roundHeaderButton(Icons.chevron_left_rounded, () => Navigator.of(context).maybePop())),
           Align(alignment: Alignment.centerRight, child: _roundHeaderButton(Icons.tune_rounded, _showSettings)),
         ])),
