@@ -9,6 +9,7 @@ class ChatPreferences {
     this.showTime = true,
     this.compact = true,
     this.enterSend = true,
+    this.showReasoning = true,
     this.fontSize = 14,
   });
 
@@ -17,6 +18,7 @@ class ChatPreferences {
   final bool showTime;
   final bool compact;
   final bool enterSend;
+  final bool showReasoning;
   final double fontSize;
 
   ChatPreferences copyWith({
@@ -25,6 +27,7 @@ class ChatPreferences {
     bool? showTime,
     bool? compact,
     bool? enterSend,
+    bool? showReasoning,
     double? fontSize,
   }) => ChatPreferences(
     showAvatar: showAvatar ?? this.showAvatar,
@@ -32,6 +35,7 @@ class ChatPreferences {
     showTime: showTime ?? this.showTime,
     compact: compact ?? this.compact,
     enterSend: enterSend ?? this.enterSend,
+    showReasoning: showReasoning ?? this.showReasoning,
     fontSize: fontSize ?? this.fontSize,
   );
 }
@@ -48,6 +52,7 @@ abstract final class ChatPreferenceStore {
       showTime: prefs.getBool('chat.showTime') ?? true,
       compact: prefs.getBool('chat.compact') ?? true,
       enterSend: prefs.getBool('chat.enterSend') ?? true,
+      showReasoning: prefs.getBool('chat.showReasoning') ?? true,
       fontSize: prefs.getDouble('chat.fontSize') ?? 14,
     );
   }
@@ -61,6 +66,7 @@ abstract final class ChatPreferenceStore {
       prefs.setBool('chat.showTime', next.showTime),
       prefs.setBool('chat.compact', next.compact),
       prefs.setBool('chat.enterSend', next.enterSend),
+      prefs.setBool('chat.showReasoning', next.showReasoning),
       prefs.setDouble('chat.fontSize', next.fontSize),
     ]);
   }
