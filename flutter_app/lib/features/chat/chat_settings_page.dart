@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'chat_preferences.dart';
 import '../../app/theme/app_theme.dart';
 
@@ -87,6 +88,29 @@ class ChatSettingsPage extends StatelessWidget {
                       last: true,
                     ),
                   ],
+                ),
+                const SizedBox(height: 13),
+                InkWell(
+                  borderRadius: BorderRadius.circular(18),
+                  onTap: () => context.push('/chat/settings/connection'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: .92),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0xFFE9E9E8)),
+                    ),
+                    child: const Row(children: [
+                      Icon(Icons.tune_rounded, size: 19, color: AppColors.secondary),
+                      SizedBox(width: 11),
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text('聊天接口配置', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.ink)),
+                        SizedBox(height: 4),
+                        Text('DeepSeek、OpenCode Go、自定义兼容接口', style: TextStyle(fontSize: 10, color: AppColors.muted)),
+                      ])),
+                      Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+                    ]),
+                  ),
                 ),
                 const SizedBox(height: 13),
                 Container(
