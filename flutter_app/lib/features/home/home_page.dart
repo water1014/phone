@@ -26,8 +26,7 @@ class _HomePageState extends State<HomePage> {
   static const _soft = Color(0xFFF5F5F5);
   static const _sinceDefault = '2026-10-28';
 
-  Timer? _clockTimer;
-  DateTime _now = DateTime.now();
+  DateTime get _now => DateTime.now();
   String _bio = '';
   String _quote = '';
   String _since = _sinceDefault;
@@ -43,16 +42,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _clockTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-      if (mounted) setState(() => _now = DateTime.now());
-    });
     _loadHomeData();
-  }
-
-  @override
-  void dispose() {
-    _clockTimer?.cancel();
-    super.dispose();
   }
 
   Future<void> _loadHomeData() async {
@@ -275,30 +265,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              _clock,
-              style: const TextStyle(
-                fontFamily: 'Georgia',
-                fontSize: 39,
-                height: 1,
-                fontWeight: FontWeight.w300,
-                letterSpacing: -1.2,
-                color: _ink,
-                fontFeatures: [FontFeature.tabularFigures()],
-              ),
-            ),
-          ),
-          Text(
-            '${_now.year}年${_now.month}月${_now.day}日\n$_weekday',
-            textAlign: TextAlign.right,
-            style: const TextStyle(
-              fontSize: 10.5,
-              height: 1.65,
-              letterSpacing: .7,
-              color: _muted,
-            ),
-          ),
+          const Expanded(child: _HomeClock()),
         ],
       );
 
@@ -806,4 +773,69 @@ class _HomeDiary {
   const _HomeDiary({required this.date, required this.text});
   final String date;
   final String text;
+}
+
+
+class _HomeClock extends StatefulWidget {
+  const _HomeClock();
+
+  @override
+  State<_HomeClock> createState() => _HomeClockState();
+}
+
+class _HomeClockState extends State<_HomeClock> {
+  late DateTime _now;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _now = DateTime.now();
+    _timer = Timer.periodic(const Duration(seconds: 20), (_) {
+      if (mounted) setState(() => _now = DateTime.now());
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final clock =
+        '${_now.hour.toString().padLeft(2, '0')}:${_now.minute.toString().padLeft(2, '0')}';
+    final weekday = const [
+      '星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'
+    ][_now.weekday - 1];
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            clock,
+            style: const TextStyle(
+              fontFamily: 'Georgia',
+              fontSize: 39,
+              height: 1,
+              fontWeight: FontWeight.w300,
+              letterSpacing: -1.2,
+              color: Color(0xFF000000),
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
+          ),
+        ),
+        Text(
+          '${_now.year}年${_now.month}月${_now.day}日\\n$weekday',
+          textAlign: TextAlign.right,
+          style: const TextStyle(
+            fontSize: 10.5,
+            height: 1.65,
+            letterSpacing: .7,
+            color: Color(0xFF999999),
+          ),
+        ),
+      ],
+    );
+  }
 }
