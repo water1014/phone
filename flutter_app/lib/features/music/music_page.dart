@@ -281,6 +281,7 @@ class _MusicPageState extends State<MusicPage> {
   }
 
   Future<void> _play(MusicSong song, {List<MusicSong>? source}) async {
+    if (!mounted) return;
     setState(() {
       _busy = true;
       _current = song;
