@@ -103,6 +103,11 @@ class ChatApiClient {
 
   final Dio _dio;
 
+  static bool validateHeaders(String source) {
+    final decoded = jsonDecode(source);
+    return decoded is Map<String, dynamic>;
+  }
+
   String _base(String url) => url.trim().replaceAll(RegExp(r'/+$'), '')
       .replaceFirst(RegExp(r'/chat/completions$'), '');
 
