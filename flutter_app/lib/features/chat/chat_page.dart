@@ -278,7 +278,7 @@ class _ChatPageState extends State<ChatPage> {
             if (value == 'settings') context.push('/chat/settings');
             if (value == 'latest') FocusScope.of(context).unfocus();
             if (value == 'clear') {
-              setState(_messages.clear);
+              _confirmClear();
             }
             if (value == 'search') setState(() => _searching = true);
           },
@@ -312,6 +312,9 @@ class _ChatPageState extends State<ChatPage> {
   );
 
   Widget _buildMessages(ChatPreferences prefs) {
+    if (_loadingHistory) {
+      return const Center(child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)));
+    }
     final visible = _messages.asMap().entries.where((entry) =>
       _query.isEmpty || entry.value.text.toLowerCase().contains(_query)).toList();
     if (visible.isEmpty) {
@@ -327,7 +330,7 @@ class _ChatPageState extends State<ChatPage> {
         final message = visible[index].value;
         final previous = originalIndex > 0 ? _messages[originalIndex - 1] : null;
         final gap = previous == null ? const Duration(days: 1) : message.time.difference(previous.time);
-        final sameGroup = prefs.compact && previous != null && previous.mine == message.mine && gap >= Duration.zero && gap < const Duration(minutes: 5);
+        final sameGroup = !message.isSystem && previous != null && !previous.isSystem && prefs.compact && previous.mine == message.mine && gap >= Duration.zero && gap < const Duration(minutes: 5);
         final dayChanged = previous == null || previous.time.day != message.time.day || previous.time.month != message.time.month || previous.time.year != message.time.year;
         final showTime = prefs.showTime && (dayChanged || gap > const Duration(minutes: 5));
         return Column(children: [
@@ -339,7 +342,12 @@ class _ChatPageState extends State<ChatPage> {
               child: Text(dayChanged ? _dayLabel(message.time) : _clock(message.time), style: const TextStyle(fontSize: 10, letterSpacing: .3, color: AppColors.muted)),
             ),
           ),
-          _messageRow(message, prefs, sameGroup),
+          message.isSystem
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 18),
+                  child: Text(message.text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, height: 1.5, color: AppColors.muted)),
+                )
+              : _messageRow(message, prefs, sameGroup),
         ]);
       },
     );
@@ -386,8 +394,26 @@ class _ChatPageState extends State<ChatPage> {
                       border: Border.all(color: const Color(0xFFEAE7E9), width: .65),
                       boxShadow: [BoxShadow(color: const Color(0xFF303030).withValues(alpha: .025), blurRadius: 8, offset: const Offset(0, 2))],
                     ),
-                    child: Text(message.text, style: TextStyle(fontSize: prefs.fontSize, height: 1.55, color: AppColors.ink)),
+                    child: message.isTyping && message.text.isEmpty
+                        ? const SizedBox(width: 34, height: 17, child: Center(child: Text('···', style: TextStyle(fontSize: 20, letterSpacing: 2, color: AppColors.muted))))
+                        : Text(message.text, style: TextStyle(fontSize: prefs.fontSize, height: 1.55, color: AppColors.ink)),
                   ),
+                  if ((message.reasoning ?? '').trim().isNotEmpty)
+                    Container(
+                      margin: const EdgeInsets.only(top: 7),
+                      constraints: const BoxConstraints(maxWidth: 300),
+                      decoration: BoxDecoration(color: const Color(0xFFF4F2F4), borderRadius: BorderRadius.circular(12)),
+                      child: Theme(
+                        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                        child: ExpansionTile(
+                          dense: true,
+                          tilePadding: const EdgeInsets.symmetric(horizontal: 10),
+                          childrenPadding: const EdgeInsets.fromLTRB(11, 0, 11, 11),
+                          title: const Text('思考过程', style: TextStyle(fontSize: 10, color: AppColors.muted)),
+                          children: [Text(message.reasoning!, style: const TextStyle(fontSize: 11, height: 1.5, color: AppColors.secondary))],
+                        ),
+                      ),
+                    ),
                   if (!compact)
                     Padding(
                       padding: const EdgeInsets.only(top: 4, left: 3, right: 3),
@@ -471,6 +497,24 @@ class _ChatPageState extends State<ChatPage> {
       ]),
     ]),
   );
+
+  Future<void> _confirmClear() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('清空聊天记录？'),
+        content: const Text('这会删除本机保存的聊天记录，无法撤销。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('清空')),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      setState(_messages.clear);
+      await ChatMessageStore.clear();
+    }
+  }
 
   void _showAttachmentHint() {
     showModalBottomSheet<void>(
