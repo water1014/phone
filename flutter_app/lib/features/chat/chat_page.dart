@@ -367,7 +367,7 @@ class _ChatPageState extends State<ChatPage> {
         onPressed: () => context.pop(),
         icon: const Icon(Icons.chevron_left_rounded, size: 29, color: Color(0xFF0F1419)),
       ),
-      Expanded(
+      const Expanded(
         child: Center(
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             const CircleAvatar(
