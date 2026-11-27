@@ -11,6 +11,9 @@ class ChatMessageRecord {
     this.inputTokens,
     this.outputTokens,
     this.imagePath,
+    this.stickerUrl,
+    this.audioPath,
+    this.audioDurationMs,
     this.attachmentPath,
     this.attachmentName,
     this.attachmentSize,
@@ -27,6 +30,9 @@ class ChatMessageRecord {
   final int? inputTokens;
   final int? outputTokens;
   final String? imagePath;
+  final String? stickerUrl;
+  final String? audioPath;
+  final int? audioDurationMs;
   final String? attachmentPath;
   final String? attachmentName;
   final int? attachmentSize;
@@ -42,6 +48,9 @@ class ChatMessageRecord {
     'inputTokens': inputTokens,
     'outputTokens': outputTokens,
     'imagePath': imagePath,
+    'stickerUrl': stickerUrl,
+    'audioPath': audioPath,
+    'audioDurationMs': audioDurationMs,
     'attachmentPath': attachmentPath,
     'attachmentName': attachmentName,
     'attachmentSize': attachmentSize,
@@ -59,6 +68,9 @@ class ChatMessageRecord {
         inputTokens: json['inputTokens'] as int?,
         outputTokens: json['outputTokens'] as int?,
         imagePath: json['imagePath'] as String?,
+        stickerUrl: json['stickerUrl'] as String?,
+        audioPath: json['audioPath'] as String?,
+        audioDurationMs: json['audioDurationMs'] as int?,
         attachmentPath: json['attachmentPath'] as String?,
         attachmentName: json['attachmentName'] as String?,
         attachmentSize: json['attachmentSize'] as int?,
