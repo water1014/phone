@@ -107,7 +107,9 @@ class _MusicPageState extends State<MusicPage> {
         ),
         preload: false,
       );
-      await _audio.play();
+      // Do not await play(): its future remains pending until playback
+      // ends, which would keep the queue-advance guard locked for the whole song.
+      unawaited(_audio.play().catchError((Object _) {}));
     } catch (_) {
       // A temporary URL/worker failure must not tear down the media session.
     } finally {
