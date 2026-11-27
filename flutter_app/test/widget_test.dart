@@ -7,16 +7,18 @@ import 'package:xiaowo/app/xiaowo_app.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('phone 原版桌面可以进入聊天并发送消息', (tester) async {
+  testWidgets('complete-frontend 首页可以进入聊天并发送消息', (tester) async {
     SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(430, 932);
     tester.view.devicePixelRatio = 1;
 
     await tester.pumpWidget(const ProviderScope(child: XiaowoApp()));
+    await tester.pump();
 
-    // 验证当前 Flutter 桌面，而不是旧 Web 首页的标题。
-    expect(find.text('小窝'), findsOneWidget);
-    expect(find.text('聊天'), findsOneWidget);
+    // 首页已按 feature/complete-frontend 改为单页 dashboard，
+    // 不再显示旧版四页桌面的“小窝”标题。
+    expect(find.text('宋祁 & 我'), findsOneWidget);
+    expect(find.text('聊天'), findsWidgets);
 
     await tester.tap(find.text('聊天').first);
     await tester.pumpAndSettle();
