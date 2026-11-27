@@ -53,6 +53,7 @@ class _MusicPageState extends State<MusicPage> {
   }
 
   Dio _client(String cookie) => Dio(BaseOptions(
+    baseUrl: 'https://music.163.com',
     connectTimeout: const Duration(seconds: 15),
     receiveTimeout: const Duration(seconds: 15),
     sendTimeout: const Duration(seconds: 15),
