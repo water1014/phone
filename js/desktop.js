@@ -83,7 +83,8 @@
   }
 
   function drawerHtml() {
-    const cells = window.Apps.ALL.map(function (app) {
+    /* Mio original modules marked sidebarOnly belong in the left rail, not the home app drawer. */
+    const cells = window.Apps.ALL.filter(function (app) { return !app.sidebarOnly; }).map(function (app) {
       return '<button type="button" class="appcell" data-app="' + app.id + '">' +
           UI.icon(app.icon) + '<span>' + app.name + '</span></button>';
     }).join('');
