@@ -78,6 +78,11 @@
     ensure();
     const app = window.Apps.find(id);
     if (!app) return;
+    if (!currentId) {
+      try {
+        history.pushState({ xwPhoneApp: true, xwPhoneAppId: id }, '', location.href);
+      } catch (err) {}
+    }
     currentId = id;
     nameEl.textContent = app.name;
     enEl.textContent = EN[id] || '';
@@ -91,14 +96,76 @@
     bind(id);
   }
 
-  function back() {
-    if (!host) return;
+  function closeCurrent() {
+    if (!host || !currentId) return;
     D.body.classList.remove('xw-settings-on');
     host.classList.remove('show');
     bodyEl.innerHTML = '';
     currentId = null;
     quote = null;
   }
+
+  function back() {
+    if (!host || !currentId) return;
+    /* 让浏览器 / PWA 的系统返回先消费本应用压入的历史项，避免直接退出 phone。 */
+    if (history.state && history.state.xwPhoneApp) {
+      try { history.back(); return; } catch (err) {}
+    }
+    closeCurrent();
+  }
+
+  /* vivo 从左向右的边缘返回：只在 App 窗口打开时识别，不干扰首页横向分页。 */
+  (function bindEdgeBack() {
+    let startX = 0;
+    let startY = 0;
+    let tracking = false;
+    let claimed = false;
+    const EDGE = 22;
+    const DISTANCE = 42;
+
+    D.addEventListener('touchstart', function (event) {
+      if (!currentId || !event.touches || event.touches.length !== 1) {
+        tracking = false;
+        claimed = false;
+        return;
+      }
+      const touch = event.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      tracking = startX <= EDGE;
+      claimed = false;
+    }, { passive: true });
+
+    D.addEventListener('touchmove', function (event) {
+      if (!tracking || !event.touches || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      const dx = touch.clientX - startX;
+      const dy = touch.clientY - startY;
+      if (dx > 10 && dx > Math.abs(dy) * 1.25) {
+        claimed = true;
+        if (event.cancelable) event.preventDefault();
+      }
+    }, { passive: false });
+
+    function finish() {
+      if (tracking && claimed) {
+        const wasOpen = !!currentId;
+        if (wasOpen) back();
+      }
+      tracking = false;
+      claimed = false;
+    }
+    D.addEventListener('touchend', finish, { passive: true });
+    D.addEventListener('touchcancel', function () {
+      tracking = false;
+      claimed = false;
+    }, { passive: true });
+  })();
+
+  /* Android / 浏览器系统返回若先于页面手势到达，也只关闭当前 App，不退出首页。 */
+  window.addEventListener('popstate', function () {
+    if (currentId) closeCurrent();
+  });
 
   /* MioWatery original views are hosted as-is inside the existing Phone app window.
      The iframe keeps Mio's original DOM/CSS/JS isolated from Phone's globals. */
