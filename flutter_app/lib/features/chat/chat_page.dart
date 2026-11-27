@@ -652,9 +652,9 @@ class _ChatPageState extends State<ChatPage> {
                     iconColor: const Color(0xFF888888),
                     collapsedIconColor: const Color(0xFFAAAAAA),
                     trailing: const Icon(Icons.keyboard_arrow_down_rounded, size: 15),
-                    title: Row(
+                    title: const Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         Icon(Icons.psychology_outlined, size: 13, color: Color(0xFF888888)),
                         SizedBox(width: 5),
                         Text('已思考 · 查看过程', style: TextStyle(fontSize: 10, color: Color(0xFF888888), fontWeight: FontWeight.w400)),
