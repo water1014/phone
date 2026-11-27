@@ -329,7 +329,7 @@ class _ChatPageState extends State<ChatPage> {
       builder: (context, prefs, _) => Scaffold(
         drawer: const AppSideDrawer(active: 'chat'),
         drawerEnableOpenDragGesture: false,
-        backgroundColor: const Color(0xFFF7F8F7),
+        backgroundColor: Colors.white,
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -345,79 +345,83 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  Widget _buildHeader() => Builder(builder: (scaffoldContext) => Padding(
-    padding: const EdgeInsets.fromLTRB(13, 8, 13, 9),
-    child: Container(
-      height: 58,
-      padding: const EdgeInsets.symmetric(horizontal: 7),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .88),
-        borderRadius: BorderRadius.circular(21),
-        border: Border.all(color: const Color(0xFFE9E9E8)),
-        boxShadow: [BoxShadow(color: const Color(0xFF333333).withValues(alpha: .035), blurRadius: 16, offset: const Offset(0, 4))],
-      ),
-      child: Row(children: [
-        IconButton(
-          tooltip: '打开侧栏',
-          onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
-          icon: const Icon(Icons.menu_rounded, size: 20, color: AppColors.secondary),
-        ),
-        IconButton(
-          tooltip: '返回',
-          onPressed: () => context.pop(),
-          icon: const Icon(Icons.chevron_left_rounded, size: 28, color: AppColors.secondary),
-        ),
-        const Spacer(),
-        const CircleAvatar(
-          radius: 17,
-          backgroundColor: Color(0xFFE9E3EA),
-          child: Text('祁', style: TextStyle(color: Color(0xFF665A67), fontSize: 13)),
-        ),
-        const SizedBox(width: 9),
-        const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('宋祁', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink)),
-            SizedBox(height: 3),
-            Row(children: [
-              Icon(Icons.circle, size: 6, color: Color(0xFF8DAA91)),
-              SizedBox(width: 4),
-              Text('在线', style: TextStyle(fontSize: 10, color: AppColors.muted)),
-            ]),
-          ],
-        ),
-        const Spacer(),
-        IconButton(
-          tooltip: '搜索聊天',
-          onPressed: () => setState(() {
-            _searching = !_searching;
-            _query = '';
-            _search.clear();
-          }),
-          icon: Icon(_searching ? Icons.close_rounded : Icons.search_rounded, size: 20, color: AppColors.secondary),
-        ),
-        PopupMenuButton<String>(
-          tooltip: '更多',
-          icon: const Icon(Icons.more_horiz_rounded, color: AppColors.secondary),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          onSelected: (value) {
-            if (value == 'settings') context.push('/chat/settings');
-            if (value == 'latest') FocusScope.of(context).unfocus();
-            if (value == 'clear') {
-              _confirmClear();
-            }
-            if (value == 'search') setState(() => _searching = true);
-          },
-          itemBuilder: (context) => const [
-            PopupMenuItem(value: 'search', child: Text('搜索聊天记录')),
-            PopupMenuItem(value: 'settings', child: Text('聊天设置')),
-            PopupMenuItem(value: 'latest', child: Text('回到最新消息')),
-            PopupMenuItem(value: 'clear', child: Text('清空对话')),
-          ],
-        ),
-      ]),
+  Widget _buildHeader() => Builder(builder: (scaffoldContext) => Container(
+    height: 56,
+    padding: const EdgeInsets.symmetric(horizontal: 9),
+    decoration: const BoxDecoration(
+      color: Colors.white,
+      border: Border(bottom: BorderSide(color: Color(0xFFEAECEE))),
     ),
+    child: Row(children: [
+      IconButton(
+        tooltip: '打开侧栏',
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+        onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
+        icon: const Icon(Icons.menu_rounded, size: 23, color: Color(0xFF0F1419)),
+      ),
+      IconButton(
+        tooltip: '返回',
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: 38, height: 40),
+        onPressed: () => context.pop(),
+        icon: const Icon(Icons.chevron_left_rounded, size: 29, color: Color(0xFF0F1419)),
+      ),
+      Expanded(
+        child: Center(
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            const CircleAvatar(
+              radius: 15,
+              backgroundColor: Color(0xFFE3E5E8),
+              child: Text('祁', style: TextStyle(color: Color(0xFF6B7480), fontSize: 12)),
+            ),
+            const SizedBox(width: 8),
+            const Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('宋祁', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF0F1419))),
+                SizedBox(height: 2),
+                Row(children: [
+                  Icon(Icons.circle, size: 6, color: Color(0xFF63B89C)),
+                  SizedBox(width: 4),
+                  Text('在线', style: TextStyle(fontSize: 10, color: Color(0xFF6B7480))),
+                ]),
+              ],
+            ),
+          ]),
+        ),
+      ),
+      IconButton(
+        tooltip: '搜索聊天',
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: 38, height: 40),
+        onPressed: () => setState(() {
+          _searching = !_searching;
+          _query = '';
+          _search.clear();
+        }),
+        icon: Icon(_searching ? Icons.close_rounded : Icons.search_rounded, size: 21, color: const Color(0xFF0F1419)),
+      ),
+      PopupMenuButton<String>(
+        tooltip: '更多',
+        padding: EdgeInsets.zero,
+        icon: const Icon(Icons.more_horiz_rounded, color: Color(0xFF0F1419)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        onSelected: (value) {
+          if (value == 'settings') context.push('/chat/settings');
+          if (value == 'latest') FocusScope.of(context).unfocus();
+          if (value == 'clear') _confirmClear();
+          if (value == 'search') setState(() => _searching = true);
+        },
+        itemBuilder: (context) => const [
+          PopupMenuItem(value: 'search', child: Text('搜索聊天记录')),
+          PopupMenuItem(value: 'settings', child: Text('聊天设置')),
+          PopupMenuItem(value: 'latest', child: Text('回到最新消息')),
+          PopupMenuItem(value: 'clear', child: Text('清空对话')),
+        ],
+      ),
+    ]),
   ));
 
   Widget _buildSearchBar() => Padding(
@@ -515,104 +519,125 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _messageRow(_ChatMessage message, ChatPreferences prefs, bool compact) {
     final mine = message.mine;
-    final avatar = CircleAvatar(
-      radius: 17,
-      backgroundColor: mine ? const Color(0xFFF0E8EE) : const Color(0xFFE9E3EA),
-      child: Text(mine ? '我' : '祁', style: const TextStyle(fontSize: 11, color: Color(0xFF746A75))),
+    final avatar = Container(
+      width: 40,
+      height: 40,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: mine ? const Color(0xFFE3E5E8) : const Color(0xFFE3E5E8),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Text(
+        mine ? '我' : '祁',
+        style: const TextStyle(fontSize: 15, color: Color(0xFF6B7480)),
+      ),
     );
+    final bubbleTextColor = mine ? Colors.white : const Color(0xFF0F1419);
     return Padding(
-      padding: EdgeInsets.only(bottom: compact ? 7 : 17),
+      padding: EdgeInsets.only(top: compact ? 0 : 10, bottom: compact ? 2 : 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: mine ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!mine && prefs.showAvatar) ...[
-            SizedBox(width: 34, child: compact ? const SizedBox.shrink() : avatar),
+            SizedBox(width: 40, height: 40, child: compact ? const SizedBox.shrink() : avatar),
             const SizedBox(width: 8),
           ],
           Flexible(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 310),
+              constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * .78),
               child: Column(
                 crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
                   if (!mine && prefs.showName && !compact)
                     const Padding(
-                      padding: EdgeInsets.only(left: 2, bottom: 5),
-                      child: Text('宋祁', style: TextStyle(fontSize: 11, color: AppColors.muted)),
+                      padding: EdgeInsets.only(left: 1, bottom: 1),
+                      child: Text('宋祁', style: TextStyle(fontSize: 13, color: Color(0xFF333333))),
                     ),
                   GestureDetector(
                     onLongPress: () => _showMessageActions(message),
                     child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: mine ? const Color(0xFFEDE5F0) : Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(!mine && !compact ? 5 : 17),
-                        topRight: Radius.circular(mine && !compact ? 5 : 17),
-                        bottomLeft: const Radius.circular(17),
-                        bottomRight: const Radius.circular(17),
+                      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: mine ? const Color(0xFF111111) : const Color(0xFFECEEF0),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(!mine && !compact ? 4 : 16),
+                          topRight: Radius.circular(mine && !compact ? 4 : 16),
+                          bottomLeft: const Radius.circular(16),
+                          bottomRight: const Radius.circular(16),
+                        ),
                       ),
-                      border: Border.all(color: const Color(0xFFEAE7E9), width: .65),
-                      boxShadow: [BoxShadow(color: const Color(0xFF303030).withValues(alpha: .025), blurRadius: 8, offset: const Offset(0, 2))],
-                    ),
-                    child: message.isTyping && message.text.isEmpty
-                        ? const SizedBox(width: 34, height: 17, child: Center(child: Text('···', style: TextStyle(fontSize: 20, letterSpacing: 2, color: AppColors.muted))))
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (message.imagePath != null && File(message.imagePath!).existsSync())
-                                GestureDetector(
-                                  onTap: () => _showFullImage(message.imagePath!),
-                                  child: Padding(
-                                    padding: EdgeInsets.only(bottom: message.text.isNotEmpty ? 8 : 0),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(11),
-                                      child: Image.file(
-                                        File(message.imagePath!),
-                                        width: 220,
-                                        height: 220,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) => const SizedBox(
-                                          width: 180, height: 90,
-                                          child: Center(child: Text('图片暂时无法显示', style: TextStyle(fontSize: 11, color: AppColors.muted))),
+                      child: message.isTyping && message.text.isEmpty
+                          ? const SizedBox(
+                              width: 34,
+                              height: 17,
+                              child: Center(
+                                child: Text('···', style: TextStyle(fontSize: 20, letterSpacing: 2, color: Color(0xFF6B7480))),
+                              ),
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (message.imagePath != null && File(message.imagePath!).existsSync())
+                                  GestureDetector(
+                                    onTap: () => _showFullImage(message.imagePath!),
+                                    child: Padding(
+                                      padding: EdgeInsets.only(bottom: message.text.isNotEmpty ? 6 : 0),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(14),
+                                        child: Image.file(
+                                          File(message.imagePath!),
+                                          width: 250,
+                                          height: 250,
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (_, __, ___) => const SizedBox(
+                                            width: 180,
+                                            height: 90,
+                                            child: Center(child: Text('图片暂时无法显示', style: TextStyle(fontSize: 11, color: Color(0xFF6B7480)))),
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              if (message.text.isNotEmpty)
-                                Text(message.text, style: TextStyle(fontSize: prefs.fontSize, height: 1.55, color: AppColors.ink)),
-                            ],
-                          ),
+                                if (message.text.isNotEmpty)
+                                  Text(
+                                    message.text,
+                                    style: TextStyle(
+                                      fontSize: prefs.fontSize,
+                                      height: 1.5,
+                                      color: message.imagePath != null && !mine ? const Color(0xFF0F1419) : bubbleTextColor,
+                                    ),
+                                  ),
+                              ],
+                            ),
                     ),
                   ),
                   if (message.isTyping && (message.reasoning ?? '').trim().isEmpty)
                     const Padding(
-                      padding: EdgeInsets.only(top: 6, left: 3),
-                      child: Text('正在思考…', style: TextStyle(fontSize: 10, color: AppColors.muted)),
+                      padding: EdgeInsets.only(top: 5, left: 3),
+                      child: Text('正在思考…', style: TextStyle(fontSize: 10, color: Color(0xFF6B7480))),
                     ),
                   if ((message.reasoning ?? '').trim().isNotEmpty)
                     Container(
                       margin: const EdgeInsets.only(top: 7),
                       constraints: const BoxConstraints(maxWidth: 300),
-                      decoration: BoxDecoration(color: const Color(0xFFF4F2F4), borderRadius: BorderRadius.circular(12)),
+                      decoration: BoxDecoration(color: const Color(0xFFF3F4F5), borderRadius: BorderRadius.circular(12)),
                       child: Theme(
                         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
                         child: ExpansionTile(
                           dense: true,
                           tilePadding: const EdgeInsets.symmetric(horizontal: 10),
                           childrenPadding: const EdgeInsets.fromLTRB(11, 0, 11, 11),
-                          title: const Text('思考过程 · 服务商返回', style: TextStyle(fontSize: 10, color: AppColors.muted)),
-                          children: [Text(message.reasoning!, style: const TextStyle(fontSize: 11, height: 1.5, color: AppColors.secondary))],
+                          title: const Text('思考过程 · 服务商返回', style: TextStyle(fontSize: 10, color: Color(0xFF6B7480))),
+                          children: [Text(message.reasoning!, style: const TextStyle(fontSize: 11, height: 1.5, color: Color(0xFF333333)))],
                         ),
                       ),
                     ),
                   if (!compact)
                     Padding(
                       padding: const EdgeInsets.only(top: 4, left: 3, right: 3),
-                      child: Text(_clock(message.time), style: const TextStyle(fontSize: 9, color: Color(0xFFB1B0B1))),
+                      child: Text(_clock(message.time), style: const TextStyle(fontSize: 10, color: Color(0xFF9AA1A8))),
                     ),
                 ],
               ),
@@ -620,7 +645,7 @@ class _ChatPageState extends State<ChatPage> {
           ),
           if (mine && prefs.showAvatar) ...[
             const SizedBox(width: 8),
-            SizedBox(width: 34, child: compact ? const SizedBox.shrink() : avatar),
+            SizedBox(width: 40, height: 40, child: compact ? const SizedBox.shrink() : avatar),
           ],
         ],
       ),
@@ -693,22 +718,21 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildComposer(ChatPreferences prefs) => Container(
-    padding: EdgeInsets.fromLTRB(14, 9, 14, 10 + MediaQuery.paddingOf(context).bottom),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .94),
-      border: const Border(top: BorderSide(color: Color(0xFFEAE9E8))),
-      boxShadow: [BoxShadow(color: const Color(0xFF333333).withValues(alpha: .025), blurRadius: 12, offset: const Offset(0, -3))],
+    padding: EdgeInsets.fromLTRB(12, 7, 12, 7 + MediaQuery.paddingOf(context).bottom),
+    decoration: const BoxDecoration(
+      color: Colors.white,
+      border: Border(top: BorderSide(color: Color(0xFFEAECEE))),
     ),
     child: Column(mainAxisSize: MainAxisSize.min, children: [
       if (_pendingImagePath != null)
         Container(
           margin: const EdgeInsets.only(bottom: 9),
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: const Color(0xFFF7F5F6), borderRadius: BorderRadius.circular(15), border: Border.all(color: const Color(0xFFECE8EB))),
+          decoration: BoxDecoration(color: const Color(0xFFF3F4F5), borderRadius: BorderRadius.circular(15)),
           child: Row(children: [
             ClipRRect(borderRadius: BorderRadius.circular(9), child: Image.file(File(_pendingImagePath!), width: 58, height: 58, fit: BoxFit.cover)),
             const SizedBox(width: 10),
-            const Expanded(child: Text('图片已准备好', style: TextStyle(fontSize: 12, color: AppColors.secondary))),
+            const Expanded(child: Text('图片已准备好', style: TextStyle(fontSize: 12, color: Color(0xFF333333)))),
             IconButton(visualDensity: VisualDensity.compact, tooltip: '移除图片', onPressed: () => setState(() => _pendingImagePath = null), icon: const Icon(Icons.close_rounded, size: 18)),
           ]),
         ),
@@ -723,20 +747,29 @@ class _ChatPageState extends State<ChatPage> {
                 onTap: () => _send(word),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
-                  decoration: BoxDecoration(color: const Color(0xFFF7F5F6), borderRadius: BorderRadius.circular(20), border: Border.all(color: const Color(0xFFECE8EB))),
-                  child: Text(word, style: const TextStyle(fontSize: 11, color: AppColors.secondary)),
+                  decoration: BoxDecoration(color: const Color(0xFFF3F4F5), borderRadius: BorderRadius.circular(20)),
+                  child: Text(word, style: const TextStyle(fontSize: 11, color: Color(0xFF333333))),
                 ),
               ),
             ),
         ]),
       ),
-      const SizedBox(height: 9),
-      Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-        IconButton(
-          visualDensity: VisualDensity.compact,
-          onPressed: _showAttachmentHint,
-          icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.secondary, size: 23),
+      const SizedBox(height: 7),
+      Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        Material(
+          color: const Color(0xFFF3F4F5),
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: _showAttachmentHint,
+            child: const SizedBox(
+              width: 40,
+              height: 40,
+              child: Icon(Icons.add_rounded, color: Color(0xFF333333), size: 22),
+            ),
+          ),
         ),
+        const SizedBox(width: 8),
         Expanded(
           child: TextField(
             controller: _input,
@@ -747,26 +780,27 @@ class _ChatPageState extends State<ChatPage> {
             onSubmitted: prefs.enterSend ? (_) => _send() : null,
             decoration: InputDecoration(
               hintText: '输入一条信息',
+              hintStyle: const TextStyle(color: Color(0xFF6B7480), fontSize: 14),
               isDense: true,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
               filled: true,
-              fillColor: const Color(0xFFF5F4F5),
+              fillColor: const Color(0xFFF3F4F5),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide.none),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide.none),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: const BorderSide(color: AppColors.accent, width: .8)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide.none),
             ),
           ),
         ),
         const SizedBox(width: 8),
         Material(
-          color: AppColors.ink,
+          color: const Color(0xFF111111),
           shape: const CircleBorder(),
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: _sending ? _stopGeneration : _send,
             child: SizedBox(
-              width: 41,
-              height: 41,
+              width: 36,
+              height: 36,
               child: Icon(_sending ? Icons.stop_rounded : Icons.arrow_upward_rounded, color: Colors.white, size: 19),
             ),
           ),
