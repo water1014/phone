@@ -707,7 +707,7 @@ class _MusicPageState extends State<MusicPage> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
       child: Material(
-        color: const Color(0xFF252428),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -715,22 +715,22 @@ class _MusicPageState extends State<MusicPage> {
           child: Container(
             padding: const EdgeInsets.fromLTRB(11, 9, 12, 9),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.white.withValues(alpha: .08)),
+              border: Border.all(color: const Color(0xFFE7E7E7)),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: song.cover.isEmpty
-                    ? Container(width: 43, height: 43, color: const Color(0xFF414047), child: const Icon(Icons.music_note_rounded, color: Colors.white70))
+                    ? Container(width: 43, height: 43, color: const Color(0xFFF0F0F0), child: const Icon(Icons.music_note_rounded, color: Color(0xFF777777)))
                     : Image.network(song.cover, width: 43, height: 43, fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(width: 43, height: 43, color: const Color(0xFF414047), child: const Icon(Icons.music_note_rounded, color: Colors.white70))),
+                        errorBuilder: (_, __, ___) => Container(width: 43, height: 43, color: const Color(0xFFF0F0F0), child: const Icon(Icons.music_note_rounded, color: Color(0xFF777777)))),
               ),
               const SizedBox(width: 11),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(song.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w700)),
+                Text(song.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: _ink, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 3),
-                Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: Color(0xFFB9B7BC))),
+                Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: _muted)),
               ])),
               IconButton(
                 visualDensity: VisualDensity.compact,
@@ -740,10 +740,10 @@ class _MusicPageState extends State<MusicPage> {
                 },
                 icon: StreamBuilder<PlayerState>(
                   stream: _audio.playerStateStream,
-                  builder: (_, snapshot) => Icon(snapshot.data?.playing == true ? Icons.pause_rounded : Icons.play_arrow_rounded, color: Colors.white, size: 26),
+                  builder: (_, snapshot) => Icon(snapshot.data?.playing == true ? Icons.pause_rounded : Icons.play_arrow_rounded, color: _ink, size: 26),
                 ),
               ),
-              IconButton(visualDensity: VisualDensity.compact, onPressed: _next, icon: const Icon(Icons.skip_next_rounded, color: Colors.white, size: 24)),
+              IconButton(visualDensity: VisualDensity.compact, onPressed: _next, icon: const Icon(Icons.skip_next_rounded, color: _ink, size: 24)),
             ]),
           ),
         ),
@@ -845,10 +845,7 @@ class _MusicPageState extends State<MusicPage> {
                     Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontSize: 12, color: _muted)),
                   ])),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.favorite_border_rounded, color: _muted, size: 22),
-                  ),
+                  const Icon(Icons.graphic_eq_rounded, color: _muted, size: 22),
                 ]),
                 const SizedBox(height: 10),
                 Expanded(
