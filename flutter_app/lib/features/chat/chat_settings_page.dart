@@ -54,7 +54,7 @@ class ChatSettingsPage extends StatelessWidget {
                     _PreferenceSwitch(
                       icon: Icons.account_circle_outlined,
                       title: '显示头像',
-                      subtitle: '在双方消息旁显示头像',
+                      subtitle: '关闭后气泡直接贴近左右边缘，不保留头像空位',
                       value: prefs.showAvatar,
                       onChanged: (v) => _update(prefs.copyWith(showAvatar: v)),
                     ),
