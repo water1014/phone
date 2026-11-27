@@ -44,6 +44,7 @@ class _ChatPageState extends State<ChatPage> {
   bool _searching = false;
   bool _loadingHistory = true;
   bool _sending = false;
+  CancelToken? _activeCancelToken;
   String _query = '';
 
   @override
@@ -108,6 +109,8 @@ class _ChatPageState extends State<ChatPage> {
     await _persistChat();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
 
+    final cancelToken = CancelToken();
+    _activeCancelToken = cancelToken;
     try {
       final config = await ChatApiConfigStore.load();
       if (!mounted) return;
@@ -148,7 +151,11 @@ class _ChatPageState extends State<ChatPage> {
         _messages.add(_ChatMessage(text: '', mine: false, time: DateTime.now(), isTyping: true));
       });
 
-      await for (final event in _api.streamReply(config: config, messages: requestMessages)) {
+      await for (final event in _api.streamReply(
+        config: config,
+        messages: requestMessages,
+        cancelToken: cancelToken,
+      )) {
         if (!mounted) return;
         if (event.textDelta.isNotEmpty || event.reasoningDelta.isNotEmpty ||
             event.inputTokens != null || event.outputTokens != null) {
@@ -183,20 +190,43 @@ class _ChatPageState extends State<ChatPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
     } catch (error) {
       if (!mounted) return;
+      final cancelled = CancelToken.isCancel(error) || cancelToken.isCancelled;
       setState(() {
-        _messages.removeWhere((message) => message.isTyping);
-        _messages.add(_ChatMessage(
-          text: '连接没有成功：${error.toString().replaceFirst('Exception: ', '')}',
-          mine: false,
-          isSystem: true,
-          time: DateTime.now(),
-        ));
+        final typingIndex = _messages.lastIndexWhere((message) => message.isTyping);
+        if (typingIndex >= 0) {
+          final current = _messages[typingIndex];
+          if (current.text.trim().isEmpty && (current.reasoning ?? '').trim().isEmpty) {
+            _messages.removeAt(typingIndex);
+          } else {
+            _messages[typingIndex] = _ChatMessage(
+              text: current.text,
+              mine: current.mine,
+              time: current.time,
+              reasoning: current.reasoning,
+              inputTokens: current.inputTokens,
+              outputTokens: current.outputTokens,
+            );
+          }
+        }
+        if (!cancelled) {
+          _messages.add(_ChatMessage(
+            text: '连接没有成功：${error.toString().replaceFirst('Exception: ', '')}',
+            mine: false,
+            isSystem: true,
+            time: DateTime.now(),
+          ));
+        }
       });
       await _persistChat();
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
     } finally {
+      _activeCancelToken = null;
       if (mounted) setState(() => _sending = false);
     }
+  }
+
+  void _stopGeneration() {
+    _activeCancelToken?.cancel('用户停止生成');
   }
 
   String _dayLabel(DateTime date) {
@@ -506,8 +536,12 @@ class _ChatPageState extends State<ChatPage> {
           shape: const CircleBorder(),
           child: InkWell(
             customBorder: const CircleBorder(),
-            onTap: _send,
-            child: const SizedBox(width: 41, height: 41, child: Icon(Icons.arrow_upward_rounded, color: Colors.white, size: 19)),
+            onTap: _sending ? _stopGeneration : _send,
+            child: SizedBox(
+              width: 41,
+              height: 41,
+              child: Icon(_sending ? Icons.stop_rounded : Icons.arrow_upward_rounded, color: Colors.white, size: 19),
+            ),
           ),
         ),
       ]),
