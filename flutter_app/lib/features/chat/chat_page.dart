@@ -3,12 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/theme/app_theme.dart';
 import 'chat_preferences.dart';
+import 'chat_api_client.dart';
+import 'chat_message.dart';
+import 'chat_message_store.dart';
 
 class _ChatMessage {
-  const _ChatMessage({required this.text, required this.mine, required this.time});
+  const _ChatMessage({
+    required this.text,
+    required this.mine,
+    required this.time,
+    this.reasoning,
+    this.isSystem = false,
+    this.isTyping = false,
+    this.inputTokens,
+    this.outputTokens,
+  });
   final String text;
   final bool mine;
   final DateTime time;
+  final String? reasoning;
+  final bool isSystem;
+  final bool isTyping;
+  final int? inputTokens;
+  final int? outputTokens;
 }
 
 class ChatPage extends StatefulWidget {
@@ -20,20 +37,50 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final _input = TextEditingController();
   final _search = TextEditingController();
+  final _api = ChatApiClient();
+  final List<_ChatMessage> _messages = [];
   bool _searching = false;
+  bool _loadingHistory = true;
+  bool _sending = false;
   String _query = '';
-
-  late final List<_ChatMessage> _messages = [
-    _ChatMessage(text: '今天也辛苦啦。先坐一会儿，和我说说今天发生了什么？', mine: false, time: DateTime.now().subtract(const Duration(minutes: 11))),
-    _ChatMessage(text: '今天想把小窝再好好整理一下。', mine: true, time: DateTime.now().subtract(const Duration(minutes: 10))),
-    _ChatMessage(text: '那我们慢慢来。先把最喜欢的角落留出来，其他的，一点一点添上去。', mine: false, time: DateTime.now().subtract(const Duration(minutes: 10))),
-  ];
 
   @override
   void initState() {
     super.initState();
     unawaited(ChatPreferenceStore.load());
+    unawaited(_loadChat());
   }
+
+  Future<void> _loadChat() async {
+    final saved = await ChatMessageStore.load();
+    if (!mounted) return;
+    setState(() {
+      _messages
+        ..clear()
+        ..addAll(saved.map((message) => _ChatMessage(
+          text: message.text,
+          mine: message.mine,
+          time: message.createdAt,
+          reasoning: message.reasoning,
+          isSystem: message.isSystem,
+          inputTokens: message.inputTokens,
+          outputTokens: message.outputTokens,
+        )));
+      _loadingHistory = false;
+    });
+  }
+
+  Future<void> _persistChat() => ChatMessageStore.save(
+    _messages.where((message) => !message.isTyping).map((message) => ChatMessageRecord(
+      text: message.text,
+      mine: message.mine,
+      createdAt: message.time,
+      reasoning: message.reasoning,
+      isSystem: message.isSystem,
+      inputTokens: message.inputTokens,
+      outputTokens: message.outputTokens,
+    )).toList(),
+  );
 
   @override
   void dispose() {
@@ -42,7 +89,8 @@ class _ChatPageState extends State<ChatPage> {
     super.dispose();
   }
 
-  void _send([String? quickText]) {
+  Future<void> _send([String? quickText]) async {
+    if (_sending) return;
     final value = (quickText ?? _input.text).trim();
     if (value.isEmpty) return;
     setState(() {
@@ -50,8 +98,97 @@ class _ChatPageState extends State<ChatPage> {
       _input.clear();
       _query = '';
       _search.clear();
+      _sending = true;
     });
     FocusScope.of(context).unfocus();
+    await _persistChat();
+
+    try {
+      final config = await ChatApiConfigStore.load();
+      if (config.apiKey.trim().isEmpty || config.baseUrl.trim().isEmpty || config.model.trim().isEmpty) {
+        setState(() {
+          _messages.add(_ChatMessage(
+            text: '还没有配置聊天接口。打开「更多 → 聊天设置 → 聊天接口配置」，填入服务商和 API Key 后就可以开始聊天啦。',
+            mine: false,
+            isSystem: true,
+            time: DateTime.now(),
+          ));
+          _sending = false;
+        });
+        await _persistChat();
+        return;
+      }
+
+      final history = _messages
+          .where((message) => !message.isSystem && !message.isTyping && message.text.trim().isNotEmpty)
+          .toList()
+          .reversed
+          .take(20)
+          .toList()
+          .reversed
+          .map((message) => <String, dynamic>{
+            'role': message.mine ? 'user' : 'assistant',
+            'content': message.text,
+          }).toList();
+
+      const systemPrompt = '你在「小窝」这个私人空间里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。可以用（括号）写神情和动作当旁白，也可以直接说话，不要列条目。';
+      final requestMessages = <Map<String, dynamic>>[
+        {'role': 'system', 'content': systemPrompt},
+        ...history,
+      ];
+
+      final replyIndex = _messages.length;
+      setState(() {
+        _messages.add(_ChatMessage(text: '', mine: false, time: DateTime.now(), isTyping: true));
+      });
+
+      await for (final event in _api.streamReply(config: config, messages: requestMessages)) {
+        if (!mounted) return;
+        if (event.textDelta.isNotEmpty || event.reasoningDelta.isNotEmpty ||
+            event.inputTokens != null || event.outputTokens != null) {
+          setState(() {
+            final current = _messages[replyIndex];
+            _messages[replyIndex] = _ChatMessage(
+              text: current.text + event.textDelta,
+              mine: false,
+              time: current.time,
+              reasoning: (current.reasoning ?? '') + event.reasoningDelta,
+              isTyping: !event.finished,
+              inputTokens: event.inputTokens ?? current.inputTokens,
+              outputTokens: event.outputTokens ?? current.outputTokens,
+            );
+          });
+        }
+        if (event.finished) {
+          setState(() {
+            final current = _messages[replyIndex];
+            _messages[replyIndex] = _ChatMessage(
+              text: current.text,
+              mine: false,
+              time: current.time,
+              reasoning: current.reasoning,
+              inputTokens: current.inputTokens,
+              outputTokens: current.outputTokens,
+            );
+          });
+        }
+      }
+      await _persistChat();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _messages.removeWhere((message) => message.isTyping);
+        _messages.add(_ChatMessage(
+          text: '连接没有成功：${error.toString().replaceFirst('Exception: ', '')}',
+          mine: false,
+          isSystem: true,
+          time: DateTime.now(),
+        ));
+      });
+      await _persistChat();
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
   }
 
   String _dayLabel(DateTime date) {
