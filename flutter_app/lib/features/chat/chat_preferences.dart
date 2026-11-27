@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 @immutable
 class ChatPreferences {
   const ChatPreferences({
-    this.showAvatar = true,
+    this.showAvatar = false,
     this.showName = true,
     this.showTime = true,
     this.compact = true,
@@ -71,7 +71,7 @@ abstract final class ChatPreferenceStore {
   static Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     value.value = ChatPreferences(
-      showAvatar: prefs.getBool('chat.showAvatar') ?? true,
+      showAvatar: prefs.getBool('chat.showAvatar') ?? false,
       showName: prefs.getBool('chat.showName') ?? true,
       showTime: prefs.getBool('chat.showTime') ?? true,
       compact: prefs.getBool('chat.compact') ?? true,
