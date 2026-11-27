@@ -13,6 +13,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:record/record.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/theme/app_theme.dart';
 import '../../app/widgets/app_side_drawer.dart';
@@ -32,6 +33,9 @@ class _ChatMessage {
     this.inputTokens,
     this.outputTokens,
     this.imagePath,
+    this.stickerUrl,
+    this.audioPath,
+    this.audioDurationMs,
     this.attachmentPath,
     this.attachmentName,
     this.attachmentSize,
@@ -47,6 +51,9 @@ class _ChatMessage {
   final int? inputTokens;
   final int? outputTokens;
   final String? imagePath;
+  final String? stickerUrl;
+  final String? audioPath;
+  final int? audioDurationMs;
   final String? attachmentPath;
   final String? attachmentName;
   final int? attachmentSize;
@@ -96,6 +103,14 @@ class _ChatPageState extends State<ChatPage> {
   final _messagesScroll = ScrollController();
   final _api = ChatApiClient();
   final _imagePicker = ImagePicker();
+  final _recorder = AudioRecorder();
+  final _voicePlayer = AudioPlayer();
+  static const _stickerStorageKey = 'chat.stickers.v1';
+  static const _defaultStickerCategories = ['常用', '表情', '日常', '爱心'];
+  List<Map<String, String>> _stickers = [];
+  bool _recordingVoice = false;
+  DateTime? _recordingStartedAt;
+  String? _playingVoicePath;
   String? _pendingImagePath;
   String? _pendingFilePath;
   String? _pendingFileName;
@@ -117,6 +132,7 @@ class _ChatPageState extends State<ChatPage> {
     unawaited(ChatPreferenceStore.load());
     unawaited(_loadChat());
     unawaited(_restoreDraft());
+    unawaited(_loadStickers());
   }
 
   Future<void> _restoreDraft() async {
@@ -156,6 +172,9 @@ class _ChatPageState extends State<ChatPage> {
           inputTokens: message.inputTokens,
           outputTokens: message.outputTokens,
           imagePath: message.imagePath,
+          stickerUrl: message.stickerUrl,
+          audioPath: message.audioPath,
+          audioDurationMs: message.audioDurationMs,
           attachmentPath: message.attachmentPath,
           attachmentName: message.attachmentName,
           attachmentSize: message.attachmentSize,
@@ -177,6 +196,9 @@ class _ChatPageState extends State<ChatPage> {
       inputTokens: message.inputTokens,
       outputTokens: message.outputTokens,
       imagePath: message.imagePath,
+      stickerUrl: message.stickerUrl,
+      audioPath: message.audioPath,
+      audioDurationMs: message.audioDurationMs,
       attachmentPath: message.attachmentPath,
       attachmentName: message.attachmentName,
       attachmentSize: message.attachmentSize,
@@ -200,6 +222,8 @@ class _ChatPageState extends State<ChatPage> {
     _inputFocus.dispose();
     _search.dispose();
     _messagesScroll.dispose();
+    _recorder.dispose();
+    _voicePlayer.dispose();
     super.dispose();
   }
 
@@ -360,6 +384,9 @@ class _ChatPageState extends State<ChatPage> {
               inputTokens: current.inputTokens,
               outputTokens: current.outputTokens,
               imagePath: current.imagePath,
+              stickerUrl: current.stickerUrl,
+              audioPath: current.audioPath,
+              audioDurationMs: current.audioDurationMs,
               attachmentPath: current.attachmentPath,
               attachmentName: current.attachmentName,
               attachmentSize: current.attachmentSize,
@@ -739,7 +766,8 @@ class _ChatPageState extends State<ChatPage> {
     message.reasoning ?? '',
     message.attachmentName ?? '',
     message.isSystem ? '系统消息' : '',
-    message.imagePath != null ? '图片 image' : '',
+    message.imagePath != null || message.stickerUrl != null ? '图片 表情包 image sticker' : '',
+    message.audioPath != null ? '语音 voice' : '',
     message.attachmentPath != null ? '文件 附件 file' : '',
   ].join(' ').toLowerCase();
 
@@ -833,7 +861,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _messageRow(_ChatMessage message, ChatPreferences prefs, bool compact) {
     final mine = message.mine;
-    final mediaOnly = (message.imagePath != null || message.attachmentPath != null) && message.text.trim().isEmpty;
+    final mediaOnly = (message.imagePath != null || message.stickerUrl != null || message.audioPath != null || message.attachmentPath != null) && message.text.trim().isEmpty;
     final myLabel = prefs.myName.trim().isEmpty ? '我' : prefs.myName.trim();
     final partnerLabel = prefs.partnerName.trim().isEmpty ? '宋祁' : prefs.partnerName.trim();
     final avatarLabel = mine ? myLabel.substring(0, 1) : partnerLabel.substring(0, 1);
@@ -952,6 +980,23 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                 ),
               ),
+            if (message.stickerUrl != null)
+              GestureDetector(
+                onTap: () => _showStickerImage(message.stickerUrl!),
+                onLongPress: () => _showMessageActions(message),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 7),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Image.network(
+                      message.stickerUrl!, width: 190, height: 190, fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const SizedBox(width: 150, height: 70, child: Center(child: Text('表情包链接无法加载'))),
+                    ),
+                  ),
+                ),
+              ),
+            if (message.audioPath != null)
+              _voiceMessageBubble(message),
             if (message.attachmentPath != null)
               GestureDetector(
                 onTap: () => _openAttachment(message),
@@ -1073,7 +1118,7 @@ class _ChatPageState extends State<ChatPage> {
       _messages[index] = _ChatMessage(
         text: chosen, mine: current.mine, time: current.time, reasoning: current.reasoning,
         inputTokens: current.inputTokens, outputTokens: current.outputTokens,
-        imagePath: current.imagePath, attachmentPath: current.attachmentPath,
+        imagePath: current.imagePath, stickerUrl: current.stickerUrl, audioPath: current.audioPath, audioDurationMs: current.audioDurationMs, attachmentPath: current.attachmentPath,
         attachmentName: current.attachmentName, attachmentSize: current.attachmentSize,
         alternateReplies: nextVersions,
       );
@@ -1083,7 +1128,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> _showMessageActions(_ChatMessage message) async {
     if (message.isTyping || message.isSystem ||
-        (message.text.isEmpty && message.imagePath == null && message.attachmentPath == null)) {
+        (message.text.isEmpty && message.imagePath == null && message.stickerUrl == null && message.audioPath == null && message.attachmentPath == null)) {
       return;
     }
     final action = await showModalBottomSheet<String>(
@@ -1113,7 +1158,7 @@ class _ChatPageState extends State<ChatPage> {
                 subtitle: const Text('保留当前回复，生成另一个版本'),
                 onTap: () => Navigator.pop(sheetContext, 'reroll'),
               ),
-            if (message.imagePath != null)
+            if (message.imagePath != null || message.stickerUrl != null)
               ListTile(
                 leading: const Icon(Icons.save_alt_rounded),
                 title: const Text('保存照片到相册'),
@@ -1251,6 +1296,11 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ),
       if (prefs.quickReplies.isNotEmpty) const SizedBox(height: 8),
+      if (_recordingVoice)
+        const Padding(
+          padding: EdgeInsets.only(bottom: 8),
+          child: Row(children: [Icon(Icons.fiber_manual_record_rounded, color: Color(0xFF555555), size: 12), SizedBox(width: 7), Text('正在录音 · 再点一次结束并发送', style: TextStyle(fontSize: 11, color: Color(0xFF666666)))]),
+        ),
       Container(
         padding: const EdgeInsets.fromLTRB(7, 7, 7, 7),
         decoration: BoxDecoration(
@@ -1276,6 +1326,12 @@ class _ChatPageState extends State<ChatPage> {
             onPressed: _showEmojiPicker,
             icon: const Icon(Icons.emoji_emotions_outlined, size: 21, color: Color(0xFF777777)),
           ),
+          IconButton(
+            tooltip: '表情包',
+            visualDensity: VisualDensity.compact,
+            onPressed: _showStickerPicker,
+            icon: const Icon(Icons.sticky_note_2_outlined, size: 20, color: Color(0xFF777777)),
+          ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 2),
@@ -1299,7 +1355,14 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ),
           ),
-          const SizedBox(width: 7),
+          const SizedBox(width: 3),
+          IconButton(
+            tooltip: _recordingVoice ? '结束并发送语音' : '录制语音',
+            visualDensity: VisualDensity.compact,
+            onPressed: _toggleVoiceRecording,
+            icon: Icon(_recordingVoice ? Icons.stop_circle_rounded : Icons.mic_none_rounded, color: _recordingVoice ? const Color(0xFF333333) : const Color(0xFF777777), size: 22),
+          ),
+          const SizedBox(width: 3),
           Material(
             color: const Color(0xFF333333),
             borderRadius: BorderRadius.circular(15),
@@ -1316,6 +1379,283 @@ class _ChatPageState extends State<ChatPage> {
       ),
     ]),
   );
+
+  Future<void> _loadStickers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_stickerStorageKey);
+    if (raw == null || raw.isEmpty || !mounted) return;
+    try {
+      final decoded = jsonDecode(raw) as List<dynamic>;
+      setState(() {
+        _stickers = decoded.whereType<Map>().map((item) => {
+          'source': (item['source'] ?? '').toString(),
+          'category': (item['category'] ?? '常用').toString(),
+          'type': (item['type'] ?? 'url').toString(),
+        }).where((item) => item['source']!.isNotEmpty).toList();
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _saveStickers() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_stickerStorageKey, jsonEncode(_stickers));
+  }
+
+  Future<void> _showStickerPicker() async {
+    var selectedCategory = '全部';
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
+      builder: (sheetContext) => StatefulBuilder(builder: (context, refresh) {
+        final categories = ['全部', ...{..._defaultStickerCategories, ..._stickers.map((item) => item['category']!)}];
+        final visible = _stickers.where((item) => selectedCategory == '全部' || item['category'] == selectedCategory).toList();
+        return SafeArea(
+          child: SizedBox(
+            height: MediaQuery.sizeOf(context).height * .62,
+            child: Column(children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(17, 0, 17, 10),
+                child: Row(children: [
+                  const Expanded(child: Text('我的表情包', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
+                  TextButton.icon(onPressed: () async {
+                    await _addStickerFromGallery();
+                    if (sheetContext.mounted) refresh(() {});
+                  }, icon: const Icon(Icons.add_photo_alternate_outlined, size: 17), label: const Text('上传')),
+                  TextButton.icon(onPressed: () async {
+                    await _addStickerLink();
+                    if (sheetContext.mounted) refresh(() {});
+                  }, icon: const Icon(Icons.link_rounded, size: 17), label: const Text('图床链接')),
+                ]),
+              ),
+              SizedBox(
+                height: 40,
+                child: ListView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 14), children: [
+                  for (final category in categories)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 7),
+                      child: ChoiceChip(
+                        label: Text(category),
+                        selected: selectedCategory == category,
+                        onSelected: (_) => refresh(() => selectedCategory = category),
+                        selectedColor: const Color(0xFFEAEAEA),
+                        backgroundColor: const Color(0xFFF7F7F7),
+                        labelStyle: const TextStyle(fontSize: 11, color: Color(0xFF333333)),
+                        side: BorderSide.none,
+                      ),
+                    ),
+                ]),
+              ),
+              const SizedBox(height: 8),
+              Expanded(child: visible.isEmpty
+                ? const Center(child: Text('还没有表情包，上传图片或添加图床链接吧', style: TextStyle(fontSize: 12, color: Color(0xFF888888))))
+                : GridView.builder(
+                    padding: const EdgeInsets.all(14),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, crossAxisSpacing: 10, mainAxisSpacing: 10),
+                    itemCount: visible.length,
+                    itemBuilder: (_, index) {
+                      final item = visible[index];
+                      final local = item['type'] == 'file';
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.pop(sheetContext);
+                          _sendSticker(item);
+                        },
+                        onLongPress: () async {
+                          _stickers.remove(item);
+                          await _saveStickers();
+                          if (sheetContext.mounted) refresh(() {});
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(color: const Color(0xFFF7F7F7), borderRadius: BorderRadius.circular(13)),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(9),
+                            child: local
+                              ? Image.file(File(item['source']!), fit: BoxFit.contain, errorBuilder: (_, __, ___) => const Icon(Icons.broken_image_outlined))
+                              : Image.network(item['source']!, fit: BoxFit.contain, errorBuilder: (_, __, ___) => const Icon(Icons.broken_image_outlined)),
+                          ),
+                        ),
+                      );
+                    },
+                  )),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(14, 0, 14, 12),
+                child: Text('点击发送 · 长按删除 · 支持本地图片和图床 URL', style: TextStyle(fontSize: 10, color: Color(0xFF999999))),
+              ),
+            ]),
+          ),
+        );
+      }),
+    );
+  }
+
+  Future<String?> _askStickerCategory() async {
+    final controller = TextEditingController(text: '常用');
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('表情包分类'),
+        content: TextField(controller: controller, decoration: const InputDecoration(hintText: '例如：表情、日常、爱心')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(dialogContext, controller.text.trim()), child: const Text('保存')),
+        ],
+      ),
+    );
+    controller.dispose();
+    return result == null || result.isEmpty ? null : result;
+  }
+
+  Future<void> _addStickerFromGallery() async {
+    final picked = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 90, maxWidth: 1200, maxHeight: 1200);
+    if (picked == null || !mounted) return;
+    final category = await _askStickerCategory();
+    if (category == null || !mounted) return;
+    final appDir = await getApplicationDocumentsDirectory();
+    final dir = Directory('${appDir.path}/chat_stickers');
+    if (!await dir.exists()) await dir.create(recursive: true);
+    final ext = picked.path.contains('.') ? picked.path.split('.').last : 'jpg';
+    final target = File('${dir.path}/sticker_${DateTime.now().microsecondsSinceEpoch}.$ext');
+    await File(picked.path).copy(target.path);
+    _stickers.add({'source': target.path, 'category': category, 'type': 'file'});
+    await _saveStickers();
+  }
+
+  Future<void> _addStickerLink() async {
+    final urlController = TextEditingController();
+    final categoryController = TextEditingController(text: '常用');
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('添加图床表情包'),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(controller: urlController, keyboardType: TextInputType.url, autocorrect: false, decoration: const InputDecoration(labelText: '图片 URL', hintText: 'https://…')),
+          const SizedBox(height: 9),
+          TextField(controller: categoryController, decoration: const InputDecoration(labelText: '分类', hintText: '常用 / 表情 / 日常')),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('添加')),
+        ],
+      ),
+    );
+    final url = urlController.text.trim();
+    final category = categoryController.text.trim();
+    urlController.dispose();
+    categoryController.dispose();
+    if (result != true || !mounted) return;
+    final uri = Uri.tryParse(url);
+    if (uri == null || !{'http', 'https'}.contains(uri.scheme) || uri.host.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请输入有效的图片链接')));
+      return;
+    }
+    _stickers.add({'source': url, 'category': category.isEmpty ? '常用' : category, 'type': 'url'});
+    await _saveStickers();
+  }
+
+  void _sendSticker(Map<String, String> sticker) {
+    final local = sticker['type'] == 'file';
+    setState(() {
+      _messages.add(_ChatMessage(
+        text: '', mine: true, time: DateTime.now(),
+        imagePath: local ? sticker['source'] : null,
+        stickerUrl: local ? null : sticker['source'],
+      ));
+    });
+    unawaited(_persistChat());
+    _scrollToLatest();
+  }
+
+  void _showStickerImage(String url) {
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GestureDetector(onTap: () => Navigator.pop(dialogContext), child: InteractiveViewer(child: Image.network(url, fit: BoxFit.contain))),
+      ),
+    );
+  }
+
+  Future<void> _toggleVoiceRecording() async {
+    if (_recordingVoice) {
+      final path = await _recorder.stop();
+      final duration = _recordingStartedAt == null ? Duration.zero : DateTime.now().difference(_recordingStartedAt!);
+      if (!mounted) return;
+      setState(() => _recordingVoice = false);
+      _recordingStartedAt = null;
+      if (path == null || duration < const Duration(milliseconds: 400)) {
+        if (path != null) await File(path).delete().catchError((_) => File(path));
+        return;
+      }
+      setState(() {
+        _messages.add(_ChatMessage(text: '', mine: true, time: DateTime.now(), audioPath: path, audioDurationMs: duration.inMilliseconds));
+      });
+      await _persistChat();
+      _scrollToLatest();
+      return;
+    }
+    try {
+      if (!await _recorder.hasPermission()) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('需要麦克风权限才能录制语音')));
+        return;
+      }
+      final appDir = await getApplicationDocumentsDirectory();
+      final dir = Directory('${appDir.path}/chat_voice');
+      if (!await dir.exists()) await dir.create(recursive: true);
+      final path = '${dir.path}/voice_${DateTime.now().microsecondsSinceEpoch}.wav';
+      await _recorder.start(const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000, numChannels: 1), path: path);
+      if (!mounted) return;
+      _recordingStartedAt = DateTime.now();
+      setState(() => _recordingVoice = true);
+    } catch (error) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('无法开始录音：$error')));
+    }
+  }
+
+  Future<void> _playVoice(String path) async {
+    try {
+      setState(() => _playingVoicePath = path);
+      await _voicePlayer.setFilePath(path);
+      await _voicePlayer.play();
+    } catch (error) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('语音播放失败：$error')));
+    }
+  }
+
+  Widget _voiceMessageBubble(_ChatMessage message) {
+    final path = message.audioPath!;
+    final seconds = ((message.audioDurationMs ?? 0) / 1000).ceil();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 7),
+      child: Material(
+        color: message.mine ? const Color(0xFF202020) : const Color(0xFFF0F0F0),
+        borderRadius: BorderRadius.circular(15),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(15),
+          onTap: () => _playVoice(path),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              StreamBuilder<PlayerState>(
+                stream: _voicePlayer.playerStateStream,
+                builder: (_, snapshot) {
+                  final playing = _playingVoicePath == path && (snapshot.data?.playing ?? false);
+                  return Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded, color: message.mine ? Colors.white : const Color(0xFF333333), size: 21);
+                },
+              ),
+              const SizedBox(width: 7),
+              Icon(Icons.graphic_eq_rounded, color: message.mine ? Colors.white70 : const Color(0xFF777777), size: 18),
+              const SizedBox(width: 9),
+              Text('$seconds″', style: TextStyle(fontSize: 12, color: message.mine ? Colors.white : const Color(0xFF333333))),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<void> _showEmojiPicker() async {
     const emojis = [
