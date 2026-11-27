@@ -52,7 +52,6 @@ class _MusicPageState extends State<MusicPage> {
   List<MusicPlaylist> _playlists = [];
   MusicSong? _current;
   List<Map<String, dynamic>> _lyrics = [];
-  StreamSubscription<PlayerState>? _playerSubscription;
 
   @override
   void initState() {
