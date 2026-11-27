@@ -47,14 +47,14 @@ class _ChatMessage {
 }
 
 Color _mineBubbleColor(int style) => switch (style) {
-  1 => const Color(0xFF52776B),
+  1 => const Color(0xFF6F927F),
   2 => const Color(0xFF526A7C),
   3 => const Color(0xFF9A6D78),
   _ => const Color(0xFF111111),
 };
 
 Color _partnerBubbleColor(int style) => switch (style) {
-  1 => const Color(0xFFE9F0EB),
+  1 => const Color(0xFFE6F0E8),
   2 => const Color(0xFFEAF0F5),
   3 => const Color(0xFFF5ECEF),
   _ => const Color(0xFFECEEF0),
@@ -596,7 +596,7 @@ class _ChatPageState extends State<ChatPage> {
       height: 34,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: mine ? const Color(0xFFE3E5E8) : const Color(0xFFE3E5E8),
+        color: const Color(0xFFE3ECE5),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
