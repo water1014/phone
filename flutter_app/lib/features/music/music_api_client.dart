@@ -138,5 +138,27 @@ class MusicApiClient {
     final id = account is Map ? account['id'] : (profile is Map ? profile['userId'] : null);
     return (id as num?)?.toInt();
   }
+  static String prettyError(Object error) {
+    if (error is DioException) {
+      final data = error.response?.data;
+      if (data is Map) {
+        final message = data['message'] ?? data['msg'] ?? data['error'];
+        if (message != null && message.toString().trim().isNotEmpty) {
+          return message.toString();
+        }
+      }
+      if (error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.receiveTimeout ||
+          error.type == DioExceptionType.sendTimeout) {
+        return '音乐服务连接超时，请稍后重试';
+      }
+      if (error.type == DioExceptionType.connectionError) {
+        return '无法连接音乐服务，请检查网络或代理地址';
+      }
+      return error.message ?? '音乐服务请求失败';
+    }
+    return error.toString().replaceFirst(RegExp(r'^Exception: ?'), '');
+  }
+
   static String? lyricText(Map<String, dynamic> r) => (r['lrc'] is Map ? r['lrc']['lyric'] : null)?.toString();
 }
