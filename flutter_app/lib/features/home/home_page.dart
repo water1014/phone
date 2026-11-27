@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
 
   void _open(String id) {
     if (id == 'chat') { context.push('/chat'); return; }
-    final app = _apps.where((a) => a.id == id).firstOrNull;
+    final matches = _apps.where((a) => a.id == id);\n    final app = matches.isEmpty ? null : matches.first;
     final name = app?.name ?? (id == 'memory' ? '记忆' : id);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text('$name功能正在移植，原版入口已保留'),
