@@ -284,7 +284,6 @@ class _DaysCardState extends State<_DaysCard> {
         duration: const Duration(milliseconds: 260),
         transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
         child: _Card(
-          key: ValueKey(_back),
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
           child: SizedBox(
             height: 158,
