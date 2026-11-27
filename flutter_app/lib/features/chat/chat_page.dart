@@ -227,16 +227,16 @@ class _ChatPageState extends State<ChatPage> {
     super.dispose();
   }
 
-  Future<void> _send([String? quickText]) async {
+  Future<void> _send([String? quickText, String? voicePath, int? voiceDurationMs, String? stickerPath, String? stickerUrl]) async {
     if (_sending) return;
     final value = (quickText ?? _input.text).trim();
-    final imagePath = quickText == null ? _pendingImagePath : null;
+    final imagePath = quickText == null ? _pendingImagePath : stickerPath;
     final attachmentPath = quickText == null ? _pendingFilePath : null;
     final attachmentName = quickText == null ? _pendingFileName : null;
     final attachmentSize = quickText == null ? _pendingFileSize : null;
-    if (value.isEmpty && imagePath == null && attachmentPath == null) return;
+    if (value.isEmpty && imagePath == null && attachmentPath == null && voicePath == null && stickerUrl == null) return;
     setState(() {
-      _messages.add(_ChatMessage(text: value, mine: true, time: DateTime.now(), imagePath: imagePath, attachmentPath: attachmentPath, attachmentName: attachmentName, attachmentSize: attachmentSize));
+      _messages.add(_ChatMessage(text: value, mine: true, time: DateTime.now(), imagePath: imagePath, stickerUrl: stickerUrl, audioPath: voicePath, audioDurationMs: voiceDurationMs, attachmentPath: attachmentPath, attachmentName: attachmentName, attachmentSize: attachmentSize));
       _input.clear();
       _pendingImagePath = null;
       _pendingFilePath = null;
@@ -438,6 +438,9 @@ class _ChatPageState extends State<ChatPage> {
             inputTokens: current.inputTokens,
             outputTokens: current.outputTokens,
             imagePath: current.imagePath,
+            stickerUrl: current.stickerUrl,
+            audioPath: current.audioPath,
+            audioDurationMs: current.audioDurationMs,
             attachmentPath: current.attachmentPath,
             attachmentName: current.attachmentName,
             attachmentSize: current.attachmentSize,
@@ -1573,15 +1576,7 @@ class _ChatPageState extends State<ChatPage> {
 
   void _sendSticker(Map<String, String> sticker) {
     final local = sticker['type'] == 'file';
-    setState(() {
-      _messages.add(_ChatMessage(
-        text: '', mine: true, time: DateTime.now(),
-        imagePath: local ? sticker['source'] : null,
-        stickerUrl: local ? null : sticker['source'],
-      ));
-    });
-    unawaited(_persistChat());
-    _scrollToLatest();
+    unawaited(_send('', null, null, local ? sticker['source'] : null, local ? null : sticker['source']));
   }
 
   void _showStickerImage(String url) {
@@ -1606,11 +1601,7 @@ class _ChatPageState extends State<ChatPage> {
         if (path != null) await File(path).delete().catchError((_) => File(path));
         return;
       }
-      setState(() {
-        _messages.add(_ChatMessage(text: '', mine: true, time: DateTime.now(), audioPath: path, audioDurationMs: duration.inMilliseconds));
-      });
-      await _persistChat();
-      _scrollToLatest();
+      await _send('', path, duration.inMilliseconds);
       return;
     }
     try {
