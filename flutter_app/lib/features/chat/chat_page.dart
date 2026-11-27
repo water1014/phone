@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
@@ -571,7 +572,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _messageRow(_ChatMessage message, ChatPreferences prefs, bool compact) {
     final mine = message.mine;
-    final mediaOnly = message.imagePath != null && message.text.trim().isEmpty;
+    final mediaOnly = (message.imagePath != null || message.attachmentPath != null) && message.text.trim().isEmpty;
     final myLabel = prefs.myName.trim().isEmpty ? '我' : prefs.myName.trim();
     final partnerLabel = prefs.partnerName.trim().isEmpty ? '宋祁' : prefs.partnerName.trim();
     final avatarLabel = mine ? myLabel.substring(0, 1) : partnerLabel.substring(0, 1);
@@ -612,7 +613,35 @@ class _ChatPageState extends State<ChatPage> {
                       padding: const EdgeInsets.only(left: 1, bottom: 1),
                       child: Text(partnerLabel, style: const TextStyle(fontSize: 13, color: Color(0xFF333333))),
                     ),
-                  GestureDetector(
+                  if (message.imagePath != null && File(message.imagePath!).existsSync())
+                    GestureDetector(
+                      onTap: () => _showFullImage(message.imagePath!),
+                      onLongPress: () => _showMessageActions(message),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 7),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: Image.file(
+                            File(message.imagePath!),
+                            width: 250,
+                            height: 250,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const SizedBox(
+                              width: 180, height: 90,
+                              child: Center(child: Text('图片暂时无法显示', style: TextStyle(fontSize: 11, color: Color(0xFF6B7480)))),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (message.attachmentPath != null)
+                    GestureDetector(
+                      onTap: () => _openAttachment(message),
+                      onLongPress: () => _showMessageActions(message),
+                      child: _buildAttachmentCard(message),
+                    ),
+                  if (message.text.isNotEmpty || message.isTyping)
+                    GestureDetector(
                     onLongPress: () => _showMessageActions(message),
                     child: Container(
                       padding: mediaOnly
@@ -641,27 +670,6 @@ class _ChatPageState extends State<ChatPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (message.imagePath != null && File(message.imagePath!).existsSync())
-                                  GestureDetector(
-                                    onTap: () => _showFullImage(message.imagePath!),
-                                    child: Padding(
-                                      padding: EdgeInsets.only(bottom: message.text.isNotEmpty ? 6 : 0),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(14),
-                                        child: Image.file(
-                                          File(message.imagePath!),
-                                          width: 250,
-                                          height: 250,
-                                          fit: BoxFit.contain,
-                                          errorBuilder: (_, __, ___) => const SizedBox(
-                                            width: 180,
-                                            height: 90,
-                                            child: Center(child: Text('图片暂时无法显示', style: TextStyle(fontSize: 11, color: Color(0xFF6B7480)))),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
                                 if (message.text.isNotEmpty)
                                   Text(
                                     message.text,
@@ -838,6 +846,23 @@ class _ChatPageState extends State<ChatPage> {
             IconButton(visualDensity: VisualDensity.compact, tooltip: '移除图片', onPressed: () => setState(() => _pendingImagePath = null), icon: const Icon(Icons.close_rounded, size: 18)),
           ]),
         ),
+      if (_pendingFilePath != null)
+        Container(
+          margin: const EdgeInsets.only(bottom: 9),
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+          decoration: BoxDecoration(color: const Color(0xFFF3F4F5), borderRadius: BorderRadius.circular(14)),
+          child: Row(children: [
+            const Icon(Icons.insert_drive_file_outlined, size: 25, color: Color(0xFF52776B)),
+            const SizedBox(width: 9),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(_pendingFileName ?? '附件', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Color(0xFF333333))),
+              Text(_formatFileSize(_pendingFileSize ?? 0), style: const TextStyle(fontSize: 10, color: Color(0xFF89918F))),
+            ])),
+            IconButton(visualDensity: VisualDensity.compact, tooltip: '移除文件', onPressed: () => setState(() {
+              _pendingFilePath = null; _pendingFileName = null; _pendingFileSize = null;
+            }), icon: const Icon(Icons.close_rounded, size: 18)),
+          ]),
+        ),
       SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(children: [
@@ -949,20 +974,106 @@ class _ChatPageState extends State<ChatPage> {
       showDragHandle: true,
       builder: (sheetContext) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(22, 8, 22, 28),
-          child: ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.image_outlined, color: AppColors.secondary),
-            title: const Text('从相册选择图片'),
-            subtitle: const Text('支持图片理解的模型可读取图片内容'),
-            onTap: () {
-              Navigator.pop(sheetContext);
-              _pickImage();
-            },
-          ),
+          padding: const EdgeInsets.fromLTRB(22, 8, 22, 24),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.image_outlined, color: AppColors.secondary),
+              title: const Text('从相册选择图片'),
+              subtitle: const Text('图片会单独显示，不放进聊天气泡'),
+              onTap: () { Navigator.pop(sheetContext); _pickImage(); },
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.attach_file_rounded, color: AppColors.secondary),
+              title: const Text('选择文件'),
+              subtitle: const Text('支持文档、文本、表格及其他常见文件，单个最大 15 MB'),
+              onTap: () { Navigator.pop(sheetContext); _pickFile(); },
+            ),
+          ]),
         ),
       ),
     );
+  }
+
+  Future<void> _pickFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+        allowMultiple: false,
+        withData: false,
+      );
+      if (result == null || result.files.isEmpty || !mounted) return;
+      final picked = result.files.single;
+      final sourcePath = picked.path;
+      if (sourcePath == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('无法读取这个文件')));
+        return;
+      }
+      if (picked.size > 15 * 1024 * 1024) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('文件太大，请选择 15 MB 以内的文件')));
+        return;
+      }
+      final appDir = await getApplicationDocumentsDirectory();
+      final mediaDir = Directory('${appDir.path}/chat_media');
+      if (!await mediaDir.exists()) await mediaDir.create(recursive: true);
+      final extension = picked.name.contains('.') ? picked.name.split('.').last.toLowerCase() : 'bin';
+      final target = File('${mediaDir.path}/file_${DateTime.now().microsecondsSinceEpoch}.$extension');
+      await File(sourcePath).copy(target.path);
+      if (!mounted) return;
+      setState(() {
+        _pendingFilePath = target.path;
+        _pendingFileName = picked.name;
+        _pendingFileSize = picked.size;
+        _pendingImagePath = null;
+      });
+    } catch (error) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('选择文件失败：$error')));
+    }
+  }
+
+  Widget _buildAttachmentCard(_ChatMessage message) {
+    final name = message.attachmentName ?? '附件';
+    final ext = name.contains('.') ? name.split('.').last.toUpperCase() : 'FILE';
+    return Container(
+      width: 238,
+      margin: const EdgeInsets.only(bottom: 7),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F7F5),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE7ECE8)),
+      ),
+      child: Row(children: [
+        Container(
+          width: 39, height: 43,
+          decoration: BoxDecoration(color: const Color(0xFFE5EEE8), borderRadius: BorderRadius.circular(10)),
+          child: const Icon(Icons.insert_drive_file_outlined, color: Color(0xFF52776B), size: 21),
+        ),
+        const SizedBox(width: 10),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(name, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, height: 1.35, fontWeight: FontWeight.w600, color: Color(0xFF26312B))),
+          const SizedBox(height: 4),
+          Text('$ext · ${_formatFileSize(message.attachmentSize ?? 0)}', style: const TextStyle(fontSize: 9, color: Color(0xFF89918F))),
+        ])),
+        const Icon(Icons.open_in_new_rounded, size: 15, color: Color(0xFF89918F)),
+      ]),
+    );
+  }
+
+  Future<void> _openAttachment(_ChatMessage message) async {
+    final path = message.attachmentPath;
+    if (path == null || !await File(path).exists()) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('附件文件不存在')));
+      return;
+    }
+    await OpenFilex.open(path);
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
   Future<void> _pickImage() async {
