@@ -81,7 +81,7 @@ abstract final class AppTheme {
           color: foreground, fontSize: 17, fontWeight: FontWeight.w600,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: surface,
         elevation: 0,
         margin: EdgeInsets.zero,
