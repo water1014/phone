@@ -104,10 +104,10 @@ body.xw-chat-on #chat-scroll .msg-row.ta .msg-main{order:1 !important;align-item
 body.xw-chat-on #chat-scroll .msg-row.me .msg-main{order:1 !important;align-items:flex-end !important;text-align:left !important}
 
 /* 顺序：时间 → 水滴 → 气泡 */
-body.xw-chat-on #chat-scroll .msg-main > .msg-name{display:none !important;order:-20 !important}
+body.xw-chat-on #chat-scroll .msg-main > .msg-name{display:block !important;order:-20 !important}
 body.xw-chat-on #chat-scroll .msg-main > .cc-time{order:-10 !important}
 body.xw-chat-on #chat-scroll .msg-main > .msg-tag{display:none !important;order:-9 !important}
-body.xw-chat-on #chat-scroll .msg-main > details.think{display:none !important;order:-8 !important}
+body.xw-chat-on #chat-scroll .msg-main > details.think{display:block !important;order:-8 !important}
 body.xw-chat-on #chat-scroll .msg-main > .cc-cloud{order:-9 !important}
 body.xw-chat-on #chat-scroll .msg-main > .qblock{order:-6 !important}
 body.xw-chat-on #chat-scroll .msg-main > .msg-img{order:-4 !important}
@@ -161,7 +161,8 @@ body.xw-chat-on #chat-scroll .msg-row .bub{
   text-justify:auto !important;
   text-align-last:left !important;
   word-break:break-word !important;
-  white-space:normal !important;
+  white-space:pre-wrap !important;
+  overflow-wrap:anywhere !important;
   border-top-left-radius:var(--rd-1) !important;
   border-top-right-radius:var(--rd-4) !important;
   border-bottom-right-radius:var(--rd-4) !important;
