@@ -101,13 +101,14 @@
   /* MioWatery original views are hosted as-is inside the existing Phone app window.
      The iframe keeps Mio's original DOM/CSS/JS isolated from Phone's globals. */
   const MIO_VIEWS = {
+    /* Only exact Mio modules are redirected. Unmatched Phone apps keep their own pages. */
     chat:'chat', personas:'personas', worldbook:'worlds', diary:'diary',
-    music:'music', wallet:'wallet', mcp:'mcp', life:'life', coread:'coread',
-    offline:'offline', preset:'preset', repo:'repo', youtube:'youtube',
-    crread:'crread', couple:'couple', msgs:'msgs', iff:'iff', xinji:'xinji',
-    app:'app', cset:'cset', deco:'deco', css:'css', profile:'prof',
-    rolephones:'rolephones', stickers:'stickers', desktopcustom:'desktopcustom',
-    settings:'settings'
+    music:'music', mcp:'mcp', settings:'settings',
+    wallet:'wallet', life:'life', coread:'coread', offline:'offline',
+    preset:'preset', repo:'repo', youtube:'youtube', crread:'crread',
+    couple:'couple', msgs:'msgs', iff:'iff', xinji:'xinji', app:'app',
+    cset:'cset', deco:'deco', css:'css', profile:'prof',
+    rolephones:'rolephones', stickers:'stickers', desktopcustom:'desktopcustom'
   };
   function mioFrame(view) {
     return '<iframe class="mio-original-frame" title="MioWatery 原版" src="mio/index.html?v=20261127-3#' +
