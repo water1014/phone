@@ -756,7 +756,7 @@ class _MusicPageState extends State<MusicPage> {
               child: Column(children: [
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   IconButton(onPressed: () => Navigator.pop(sheetContext), icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 30)),
-                  '正在播放', style: TextStyle(fontSize: 9, letterSpacing: 2.2, color: Color(0xFFB9B7BC))),
+                  const Text('正在播放', style: TextStyle(fontSize: 9, letterSpacing: 2.2, color: Color(0xFFB9B7BC))),
                   IconButton(onPressed: () { Navigator.pop(sheetContext); _showSettings(); }, icon: const Icon(Icons.more_horiz_rounded, color: Colors.white, size: 25)),
                 ]),
                 const SizedBox(height: 22),
