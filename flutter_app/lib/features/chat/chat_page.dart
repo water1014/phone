@@ -9,6 +9,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:gal/gal.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
@@ -940,6 +942,26 @@ class _ChatPageState extends State<ChatPage> {
                 title: const Text('编辑并重新发送'),
                 onTap: () => Navigator.pop(sheetContext, 'edit'),
               ),
+            if (!message.mine && !message.isTyping)
+              ListTile(
+                leading: const Icon(Icons.refresh_rounded),
+                title: const Text('Reroll · 重新生成'),
+                subtitle: const Text('保留当前回复，生成另一个版本'),
+                onTap: () => Navigator.pop(sheetContext, 'reroll'),
+              ),
+            if (message.imagePath != null)
+              ListTile(
+                leading: const Icon(Icons.save_alt_rounded),
+                title: const Text('保存照片到相册'),
+                onTap: () => Navigator.pop(sheetContext, 'save_image'),
+              ),
+            if (!message.mine && RegExp(r'```[a-zA-Z0-9_+-]*\\s*\\n[\\s\\S]*?```').hasMatch(message.text))
+              ListTile(
+                leading: const Icon(Icons.file_download_outlined),
+                title: const Text('把代码保存为文件'),
+                subtitle: const Text('可生成 HTML、文本或代码文件'),
+                onTap: () => Navigator.pop(sheetContext, 'save_code'),
+              ),
             ListTile(
               leading: const Icon(Icons.delete_outline_rounded, color: Color(0xFF666666)),
               title: const Text('删除消息', style: TextStyle(color: Color(0xFF666666))),
@@ -953,6 +975,17 @@ class _ChatPageState extends State<ChatPage> {
     if (action == 'copy') {
       await Clipboard.setData(ClipboardData(text: message.text));
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已复制')));
+    } else if (action == 'reroll') {
+      await _rerollReply(message);
+    } else if (action == 'save_image' && message.imagePath != null) {
+      try {
+        await Gal.putImage(message.imagePath!, album: 'Phone聊天');
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('照片已保存到相册')));
+      } catch (error) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存照片失败：$error')));
+      }
+    } else if (action == 'save_code') {
+      await _saveCodeBlockAsFile(message);
     } else if (action == 'delete') {
       setState(() => _messages.remove(message));
       await _persistChat();
