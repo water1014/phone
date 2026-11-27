@@ -413,7 +413,7 @@ class _MusicPageState extends State<MusicPage> {
           children: [
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(_loggedIn ? '欢迎回来' : 'LISTENING SPACE',
+                Text(_loggedIn ? '欢迎回来' : '听歌时间',
                     style: const TextStyle(fontSize: 9, letterSpacing: 2.2, color: Color(0xFF666666), fontWeight: FontWeight.w700)),
                 const SizedBox(height: 7),
                 Text(_loggedIn && _accountName.isNotEmpty ? _accountName : '音乐',
@@ -437,7 +437,7 @@ class _MusicPageState extends State<MusicPage> {
         const SizedBox(height: 27),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           const Text('正在播放', style: TextStyle(fontSize: 10, letterSpacing: 2, color: Color(0xFF666666), fontWeight: FontWeight.w700)),
-          Text(_queue.isEmpty ? '我的音乐' : '${_queue.length.toString().padLeft(2, '0')} TRACKS',
+          Text(_queue.isEmpty ? '我的音乐' : '${_queue.length.toString().padLeft(2, '0')} 首歌曲',
               style: const TextStyle(fontSize: 9, letterSpacing: 1.2, color: Color(0xFF999999))),
         ]),
         const SizedBox(height: 12),
@@ -473,7 +473,7 @@ class _MusicPageState extends State<MusicPage> {
                   const Row(children: [
                     Icon(Icons.graphic_eq_rounded, size: 14, color: Color(0xFF202020)),
                     SizedBox(width: 5),
-                    Text('OPEN PLAYER', style: TextStyle(fontSize: 8, letterSpacing: 1.2, color: Color(0xFF202020), fontWeight: FontWeight.w700)),
+                    Text('打开播放器', style: TextStyle(fontSize: 8, letterSpacing: 1.2, color: Color(0xFF202020), fontWeight: FontWeight.w700)),
                   ]),
                 ])),
               ]),
@@ -502,7 +502,7 @@ class _MusicPageState extends State<MusicPage> {
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           const Text('我的歌单', style: TextStyle(fontSize: 10, letterSpacing: 2, color: Color(0xFF666666), fontWeight: FontWeight.w700)),
           TextButton(onPressed: () => setState(() => _tab = 1),
-              child: const Text('VIEW ALL  ›', style: TextStyle(fontSize: 9, letterSpacing: 1, color: Color(0xFF202020)))),
+              child: const Text('查看全部  ›', style: TextStyle(fontSize: 9, letterSpacing: 1, color: Color(0xFF202020)))),
         ]),
         if (_playlists.isEmpty)
           Container(
@@ -533,7 +533,7 @@ class _MusicPageState extends State<MusicPage> {
                     const SizedBox(height: 7),
                     Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontSize: 11, color: Color(0xFF414141), fontWeight: FontWeight.w600)),
-                    Text('${p.count} songs', style: const TextStyle(fontSize: 9, color: Color(0xFF888888))),
+                    Text('${p.count} 首歌曲', style: const TextStyle(fontSize: 9, color: Color(0xFF888888))),
                   ])),
                 );
               },
@@ -589,7 +589,7 @@ class _MusicPageState extends State<MusicPage> {
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, color: Color(0xFF414141), fontWeight: FontWeight.w700)),
                 const SizedBox(height: 5),
-                Text('${p.count} songs', style: const TextStyle(fontSize: 10, color: Color(0xFF888888))),
+                Text('${p.count} 首歌曲', style: const TextStyle(fontSize: 10, color: Color(0xFF888888))),
               ])),
               const Icon(Icons.chevron_right_rounded, color: Color(0xFF666666)),
             ]),
@@ -613,7 +613,7 @@ class _MusicPageState extends State<MusicPage> {
               textInputAction: TextInputAction.search,
               onSubmitted: (_) => _search(),
               decoration: const InputDecoration(
-                hintText: 'search songs or artists...',
+                hintText: '搜索歌曲或歌手…',
                 hintStyle: TextStyle(fontSize: 12, color: Color(0xFF999999)),
                 prefixIcon: Icon(Icons.search_rounded, color: Color(0xFF777777), size: 19),
                 border: InputBorder.none,
@@ -625,14 +625,14 @@ class _MusicPageState extends State<MusicPage> {
           SizedBox(height: 47, child: FilledButton(
             onPressed: _busy ? null : _search,
             style: FilledButton.styleFrom(backgroundColor: const Color(0xFF202020), shape: const StadiumBorder(), padding: const EdgeInsets.symmetric(horizontal: 20)),
-            child: _busy ? const SizedBox(width: 15, height: 15, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Go'),
+            child: _busy ? const SizedBox(width: 15, height: 15, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('搜索'),
           )),
         ]),
       ),
       const Padding(
         padding: EdgeInsets.fromLTRB(22, 2, 22, 8),
         child: Row(children: [
-          Text('DISCOVER', style: TextStyle(fontSize: 10, letterSpacing: 2.3, color: Color(0xFF666666), fontWeight: FontWeight.w700)),
+          Text('发现音乐', style: TextStyle(fontSize: 10, letterSpacing: 2.3, color: Color(0xFF666666), fontWeight: FontWeight.w700)),
           SizedBox(width: 10),
           Expanded(child: Divider(color: Color(0xFFE7E7E7))),
         ]),
@@ -647,7 +647,7 @@ class _MusicPageState extends State<MusicPage> {
               ? _empty(_message, Icons.info_outline_rounded)
               : _queue.isNotEmpty
                   ? ListView(children: [
-                      const Padding(padding: EdgeInsets.fromLTRB(22, 16, 22, 8), child: Text('RECENTLY PLAYED', style: TextStyle(fontSize: 10, letterSpacing: 1.8, color: Color(0xFF888888)))),
+                      const Padding(padding: EdgeInsets.fromLTRB(22, 16, 22, 8), child: Text('最近播放', style: TextStyle(fontSize: 10, letterSpacing: 1.8, color: Color(0xFF888888)))),
                       ..._queue.asMap().entries.map((entry) => _songTile(entry.value, entry.key + 1)),
                     ])
                   : _empty('搜索一首想听的歌，发现下一首喜欢的音乐', Icons.headphones_rounded)),
@@ -756,7 +756,7 @@ class _MusicPageState extends State<MusicPage> {
               child: Column(children: [
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   IconButton(onPressed: () => Navigator.pop(sheetContext), icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 30)),
-                  const Text('NOW PLAYING', style: TextStyle(fontSize: 9, letterSpacing: 2.2, color: Color(0xFFB9B7BC))),
+                  '正在播放', style: TextStyle(fontSize: 9, letterSpacing: 2.2, color: Color(0xFFB9B7BC))),
                   IconButton(onPressed: () { Navigator.pop(sheetContext); _showSettings(); }, icon: const Icon(Icons.more_horiz_rounded, color: Colors.white, size: 25)),
                 ]),
                 const SizedBox(height: 22),
@@ -952,9 +952,9 @@ class _MusicPageState extends State<MusicPage> {
           decoration: BoxDecoration(color: Colors.white.withValues(alpha: .88), borderRadius: BorderRadius.circular(35), border: Border.all(color: Colors.white, width: 1.2),
             boxShadow: [BoxShadow(color: const Color(0xFF666666).withValues(alpha: .08), blurRadius: 20, offset: const Offset(0, 7))]),
           child: Row(children: [
-            _bottomTab(Icons.home_outlined, 'Home', 0),
-            _bottomTab(Icons.library_music_outlined, 'Playlists', 1),
-            _bottomTab(Icons.search_rounded, 'Discover', 2),
+            _bottomTab(Icons.home_outlined, '首页', 0),
+            _bottomTab(Icons.library_music_outlined, '歌单', 1),
+            _bottomTab(Icons.search_rounded, '发现', 2),
           ]),
         ),
       ),
