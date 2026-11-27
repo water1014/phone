@@ -135,9 +135,9 @@ class _ChatSettings extends StatelessWidget {
     padding: EdgeInsets.fromLTRB(22, 8, 22, 28),
     child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('聊天设置', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600)),
-      const SizedBox(height: 18),
+      SizedBox(height: 18),
       _SettingRow(icon: Icons.palette_outlined, title: '聊天外观', subtitle: '气泡、背景与字体'),
-      const _SettingRow(icon: Icons.tune_rounded, title: '回复与生成', subtitle: '模型、生成参数与流式输出'),
+      _SettingRow(icon: Icons.tune_rounded, title: '回复与生成', subtitle: '模型、生成参数与流式输出'),
       const _SettingRow(icon: Icons.notifications_none_rounded, title: '消息提醒', subtitle: '通知与主动消息'),
       const _SettingRow(icon: Icons.manage_search_rounded, title: '查找聊天', subtitle: '按日期、图片和文件查找'),
     ]),
