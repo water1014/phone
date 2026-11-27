@@ -76,6 +76,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final _input = TextEditingController();
+  final _inputFocus = FocusNode();
   final _search = TextEditingController();
   final _messagesScroll = ScrollController();
   final _api = ChatApiClient();
@@ -167,6 +168,7 @@ class _ChatPageState extends State<ChatPage> {
     _activeCancelToken?.cancel('聊天页面已关闭');
     _messagesScroll.removeListener(_handleScroll);
     _input.dispose();
+    _inputFocus.dispose();
     _search.dispose();
     _messagesScroll.dispose();
     super.dispose();
@@ -448,7 +450,7 @@ class _ChatPageState extends State<ChatPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(prefs.partnerName, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF202020))),
+            Text(prefs.partnerName.trim().isEmpty ? '宋祁' : prefs.partnerName, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF202020))),
             const SizedBox(height: 3),
             const Row(children: [
               Icon(Icons.circle, size: 6, color: Color(0xFF555555)),
@@ -897,7 +899,7 @@ class _ChatPageState extends State<ChatPage> {
                       selection: TextSelection.collapsed(offset: phrase.length),
                     );
                     unawaited(_saveDraft(phrase));
-                    FocusScope.of(context).requestFocus(FocusNode());
+                    FocusScope.of(context).requestFocus(_inputFocus);
                   },
                   child: Container(
                     alignment: Alignment.center,
@@ -938,6 +940,7 @@ class _ChatPageState extends State<ChatPage> {
               padding: const EdgeInsets.only(bottom: 2),
               child: TextField(
                 controller: _input,
+                focusNode: _inputFocus,
                 onChanged: (value) => unawaited(_saveDraft(value)),
                 minLines: 1,
                 maxLines: 5,
