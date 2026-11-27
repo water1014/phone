@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'chat_preferences.dart';
 
 const _ink = Color(0xFF202020);
@@ -73,6 +76,18 @@ class ChatSettingsPage extends StatelessWidget {
                     title: '我的昵称',
                     value: prefs.myName,
                     onTap: () => _editName(context, prefs, partner: false),
+                  ),
+                  _SettingsAction(
+                    icon: Icons.face_rounded,
+                    title: '宋祁的头像',
+                    value: prefs.partnerAvatarPath == null ? '选择照片' : '已设置 · 更换',
+                    onTap: () => _pickAvatar(context, prefs, partner: true),
+                  ),
+                  _SettingsAction(
+                    icon: Icons.account_circle_rounded,
+                    title: '我的头像',
+                    value: prefs.myAvatarPath == null ? '选择照片' : '已设置 · 更换',
+                    onTap: () => _pickAvatar(context, prefs, partner: false),
                   ),
                   const SizedBox(height: 7),
                   _BubbleStylePicker(
@@ -194,6 +209,31 @@ class ChatSettingsPage extends StatelessWidget {
       ),
     ),
   );
+
+  Future<void> _pickAvatar(BuildContext context, ChatPreferences prefs, {required bool partner}) async {
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 88,
+        maxWidth: 1024,
+        maxHeight: 1024,
+      );
+      if (picked == null) return;
+      final directory = await getApplicationDocumentsDirectory();
+      final avatarDirectory = Directory('${directory.path}/chat_avatars');
+      if (!await avatarDirectory.exists()) await avatarDirectory.create(recursive: true);
+      final target = File('${avatarDirectory.path}/${partner ? 'partner' : 'me'}_avatar.jpg');
+      await File(picked.path).copy(target.path);
+      final next = partner
+          ? prefs.copyWith(partnerAvatarPath: target.path)
+          : prefs.copyWith(myAvatarPath: target.path);
+      await _update(next);
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('设置头像失败：$error')));
+      }
+    }
+  }
 
   Future<void> _editName(BuildContext context, ChatPreferences prefs, {required bool partner}) async {
     final controller = TextEditingController(text: partner ? prefs.partnerName : prefs.myName);
