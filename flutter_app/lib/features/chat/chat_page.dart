@@ -46,19 +46,9 @@ class _ChatMessage {
   final int? attachmentSize;
 }
 
-Color _mineBubbleColor(int style) => switch (style) {
-  1 => const Color(0xFF333333),
-  2 => const Color(0xFF666666),
-  3 => const Color(0xFF777777),
-  _ => const Color(0xFF111111),
-};
+Color _mineBubbleColor(int style) => style == 1 ? const Color(0xFF202020) : const Color(0xFF171717);
 
-Color _partnerBubbleColor(int style) => switch (style) {
-  1 => const Color(0xFFEDEDED),
-  2 => const Color(0xFFF1F1F1),
-  3 => const Color(0xFFF3F3F3),
-  _ => const Color(0xFFECEEF0),
-};
+Color _partnerBubbleColor(int style) => style == 1 ? const Color(0xFFF0F0F0) : const Color(0xFFF4F4F4);
 
 class _HeaderAction extends StatelessWidget {
   const _HeaderAction({required this.icon, required this.tooltip, required this.onTap});
@@ -591,183 +581,182 @@ class _ChatPageState extends State<ChatPage> {
     final avatarLabel = mine ? myLabel.substring(0, 1) : partnerLabel.substring(0, 1);
     final mineBubble = _mineBubbleColor(prefs.bubbleStyle);
     final partnerBubble = _partnerBubbleColor(prefs.bubbleStyle);
+    final isHelloTalk = prefs.bubbleStyle == 0;
+
     final avatar = Container(
       width: 34,
       height: 34,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: const Color(0xFFEDEDED),
-        borderRadius: BorderRadius.circular(12),
+        color: mine ? const Color(0xFFE6E6E6) : const Color(0xFFFFFFFF),
+        shape: BoxShape.circle,
+        border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
       ),
       child: Text(
         avatarLabel,
-        style: const TextStyle(fontSize: 15, color: Color(0xFF777777)),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF555555)),
       ),
     );
-    final bubbleTextColor = mine ? Colors.white : const Color(0xFF0F1419);
+    final avatarSlot = SizedBox(
+      width: 40,
+      child: Align(
+        alignment: mine ? Alignment.topRight : Alignment.topLeft,
+        child: prefs.showAvatar && !compact ? avatar : const SizedBox(width: 34, height: 34),
+      ),
+    );
+    final bubbleRadius = isHelloTalk
+        ? BorderRadius.only(
+            topLeft: Radius.circular(!mine && !compact ? 8 : 19),
+            topRight: Radius.circular(mine && !compact ? 8 : 19),
+            bottomLeft: const Radius.circular(19),
+            bottomRight: const Radius.circular(19),
+          )
+        : BorderRadius.only(
+            topLeft: const Radius.circular(19),
+            topRight: const Radius.circular(19),
+            bottomLeft: Radius.circular(mine ? 19 : 6),
+            bottomRight: Radius.circular(mine ? 6 : 19),
+          );
+
+    final content = Flexible(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * .72),
+        child: Column(
+          crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            if (!mine && prefs.showName && !compact)
+              Padding(
+                padding: const EdgeInsets.only(left: 2, bottom: 5),
+                child: Text(partnerLabel, style: const TextStyle(fontSize: 11, color: Color(0xFF777777), fontWeight: FontWeight.w500)),
+              ),
+            if (message.imagePath != null && File(message.imagePath!).existsSync())
+              GestureDetector(
+                onTap: () => _showFullImage(message.imagePath!),
+                onLongPress: () => _showMessageActions(message),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 7),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Image.file(
+                      File(message.imagePath!),
+                      width: 250,
+                      height: 250,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const SizedBox(
+                        width: 180, height: 90,
+                        child: Center(child: Text('图片暂时无法显示', style: TextStyle(fontSize: 11, color: Color(0xFF777777))),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            if (message.attachmentPath != null)
+              GestureDetector(
+                onTap: () => _openAttachment(message),
+                onLongPress: () => _showMessageActions(message),
+                child: _buildAttachmentCard(message),
+              ),
+            if (message.text.isNotEmpty || message.isTyping)
+              GestureDetector(
+                onLongPress: () => _showMessageActions(message),
+                child: Container(
+                  padding: mediaOnly ? EdgeInsets.zero : const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
+                  decoration: BoxDecoration(
+                    color: mediaOnly ? Colors.transparent : (mine ? mineBubble : partnerBubble),
+                    borderRadius: bubbleRadius,
+                    border: !mine && !mediaOnly && isHelloTalk
+                        ? Border.all(color: const Color(0xFFE8E8E8), width: .7)
+                        : null,
+                    boxShadow: !mediaOnly && isHelloTalk
+                        ? [BoxShadow(color: Colors.black.withValues(alpha: .035), blurRadius: 8, offset: const Offset(0, 2))]
+                        : null,
+                  ),
+                  child: message.isTyping && message.text.isEmpty
+                      ? const SizedBox(
+                          width: 34,
+                          height: 17,
+                          child: Center(child: Text('···', style: TextStyle(fontSize: 20, letterSpacing: 2, color: Color(0xFF777777))),
+                        )
+                      : Text(
+                          message.text,
+                          style: TextStyle(
+                            fontSize: prefs.fontSize,
+                            height: 1.5,
+                            color: mine ? Colors.white : const Color(0xFF222222),
+                          ),
+                        ),
+                ),
+              ),
+            if (prefs.showReasoning && message.isTyping && (message.reasoning ?? '').trim().isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: 5, left: 3),
+                child: Text('正在思考…', style: TextStyle(fontSize: 10, color: Color(0xFF777777))),
+              ),
+            if (prefs.showReasoning && (message.reasoning ?? '').trim().isNotEmpty)
+              Container(
+                margin: const EdgeInsets.only(top: 7),
+                constraints: const BoxConstraints(maxWidth: 300),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF4F4F4),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE7E7E7)),
+                ),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    dividerColor: Colors.transparent,
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                  ),
+                  child: ExpansionTile(
+                    dense: true,
+                    visualDensity: const VisualDensity(vertical: -2),
+                    tilePadding: const EdgeInsets.symmetric(horizontal: 11),
+                    childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    iconColor: const Color(0xFF666666),
+                    collapsedIconColor: const Color(0xFF999999),
+                    leading: Container(
+                      width: 27,
+                      height: 27,
+                      decoration: BoxDecoration(color: const Color(0xFFEBEBEB), borderRadius: BorderRadius.circular(9)),
+                      child: const Icon(Icons.psychology_alt_rounded, size: 16, color: Color(0xFF444444)),
+                    ),
+                    title: const Text('思考过程', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF444444))),
+                    subtitle: const Text('模型通过接口返回', style: TextStyle(fontSize: 9, color: Color(0xFF999999))),
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.fromLTRB(11, 9, 10, 9),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF2F2F2),
+                          border: Border(left: BorderSide(color: Color(0xFF888888), width: 2)),
+                          borderRadius: BorderRadius.only(topRight: Radius.circular(9), bottomRight: Radius.circular(9)),
+                        ),
+                        child: Text(message.reasoning!, style: const TextStyle(fontSize: 11, height: 1.65, color: Color(0xFF666666))),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            if (prefs.showTime && !compact)
+              Padding(
+                padding: const EdgeInsets.only(top: 5, left: 3, right: 3),
+                child: Text(_clock(message.time), style: const TextStyle(fontSize: 10, color: Color(0xFF9A9A9A))),
+              ),
+          ],
+        ),
+      ),
+    );
+
     return Padding(
-      padding: EdgeInsets.only(top: compact ? 0 : 10, bottom: compact ? 2 : 10),
+      padding: EdgeInsets.only(top: compact ? 1 : 9, bottom: compact ? 2 : 7),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: mine ? MainAxisAlignment.end : MainAxisAlignment.start,
-        children: [
-          Flexible(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * .78),
-              child: Column(
-                crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                children: [
-                  if (prefs.showAvatar && !compact)
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 6, left: mine ? 0 : 1, right: mine ? 1 : 0),
-                      child: avatar,
-                    ),
-                  if (!mine && prefs.showName && !compact)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 1, bottom: 1),
-                      child: Text(partnerLabel, style: const TextStyle(fontSize: 13, color: Color(0xFF333333))),
-                    ),
-                  if (message.imagePath != null && File(message.imagePath!).existsSync())
-                    GestureDetector(
-                      onTap: () => _showFullImage(message.imagePath!),
-                      onLongPress: () => _showMessageActions(message),
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 7),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
-                          child: Image.file(
-                            File(message.imagePath!),
-                            width: 250,
-                            height: 250,
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => const SizedBox(
-                              width: 180, height: 90,
-                              child: Center(child: Text('图片暂时无法显示', style: TextStyle(fontSize: 11, color: Color(0xFF777777)))),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  if (message.attachmentPath != null)
-                    GestureDetector(
-                      onTap: () => _openAttachment(message),
-                      onLongPress: () => _showMessageActions(message),
-                      child: _buildAttachmentCard(message),
-                    ),
-                  if (message.text.isNotEmpty || message.isTyping)
-                    GestureDetector(
-                    onLongPress: () => _showMessageActions(message),
-                    child: Container(
-                      padding: mediaOnly
-                          ? EdgeInsets.zero
-                          : const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: mediaOnly
-                            ? Colors.transparent
-                            : (mine ? mineBubble : partnerBubble),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(!mine && !compact ? 7 : 18),
-                          topRight: Radius.circular(mine && !compact ? 7 : 18),
-                          bottomLeft: const Radius.circular(18),
-                          bottomRight: const Radius.circular(18),
-                        ),
-                      ),
-                      child: message.isTyping && message.text.isEmpty
-                          ? const SizedBox(
-                              width: 34,
-                              height: 17,
-                              child: Center(
-                                child: Text('···', style: TextStyle(fontSize: 20, letterSpacing: 2, color: Color(0xFF777777))),
-                              ),
-                            )
-                          : Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (message.text.isNotEmpty)
-                                  Text(
-                                    message.text,
-                                    style: TextStyle(
-                                      fontSize: prefs.fontSize,
-                                      height: 1.5,
-                                      color: message.imagePath != null && !mine ? const Color(0xFF0F1419) : bubbleTextColor,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                    ),
-                  ),
-                  if (prefs.showReasoning && message.isTyping && (message.reasoning ?? '').trim().isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 5, left: 3),
-                      child: Text('正在思考…', style: TextStyle(fontSize: 10, color: Color(0xFF777777))),
-                    ),
-                  if (prefs.showReasoning && (message.reasoning ?? '').trim().isNotEmpty)
-                    Container(
-                      margin: const EdgeInsets.only(top: 7),
-                      constraints: const BoxConstraints(maxWidth: 300),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF4F4F4),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFE7E7E7)),
-                      ),
-                      child: Theme(
-                        data: Theme.of(context).copyWith(
-                          dividerColor: Colors.transparent,
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                        ),
-                        child: ExpansionTile(
-                          dense: true,
-                          visualDensity: const VisualDensity(vertical: -2),
-                          tilePadding: const EdgeInsets.symmetric(horizontal: 11),
-                          childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          iconColor: const Color(0xFF666666),
-                          collapsedIconColor: const Color(0xFF999999),
-                          leading: Container(
-                            width: 27,
-                            height: 27,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEBEBEB),
-                              borderRadius: BorderRadius.circular(9),
-                            ),
-                            child: const Icon(Icons.psychology_alt_rounded, size: 16, color: Color(0xFF444444)),
-                          ),
-                          title: const Text('思考过程', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF444444))),
-                          subtitle: const Text('模型通过接口返回', style: TextStyle(fontSize: 9, color: Color(0xFF999999))),
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.fromLTRB(11, 9, 10, 9),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFF2F2F2),
-                                border: Border(left: BorderSide(color: Color(0xFF888888), width: 2)),
-                                borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(9),
-                                  bottomRight: Radius.circular(9),
-                                ),
-                              ),
-                              child: Text(
-                                message.reasoning!,
-                                style: const TextStyle(fontSize: 11, height: 1.65, color: Color(0xFF666666)),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  if (prefs.showTime && !compact)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4, left: 3, right: 3),
-                      child: Text(_clock(message.time), style: const TextStyle(fontSize: 10, color: Color(0xFF9AA1A8))),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        children: mine
+            ? [content, const SizedBox(width: 6), avatarSlot]
+            : [avatarSlot, const SizedBox(width: 6), content],
       ),
     );
   }
