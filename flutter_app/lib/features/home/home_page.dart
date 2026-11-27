@@ -90,47 +90,20 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _editValue(String kind) async {
     final isDate = kind == 'start';
-    final controller = TextEditingController(
-      text: kind == 'bio' ? _bio : kind == 'quote' ? _quote : _since,
-    );
+    final initialValue =
+        kind == 'bio' ? _bio : kind == 'quote' ? _quote : _since;
     final value = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent,
-        title: Text(
-          kind == 'bio' ? '写一句介绍' : kind == 'quote' ? '留下一句话' : '相伴起算日',
-          style: const TextStyle(fontSize: 16, color: _ink),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLines: kind == 'quote' ? 3 : 1,
-          keyboardType: isDate ? TextInputType.datetime : TextInputType.text,
-          decoration: InputDecoration(
-            hintText: isDate ? '2026-10-28' : '写一点想留下的内容',
-            hintStyle: const TextStyle(color: Color(0xFFBBBBBB), fontSize: 13),
-            enabledBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: _line),
-            ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: _ink),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消', style: TextStyle(color: _muted)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('保存', style: TextStyle(color: _ink)),
-          ),
-        ],
+      builder: (_) => _HomeEditDialog(
+        initialValue: initialValue,
+        title:
+            kind == 'bio' ? '写一句介绍' : kind == 'quote' ? '留下一句话' : '相伴起算日',
+        hint: isDate ? '2026-10-28' : '写一点想留下的内容',
+        maxLines: kind == 'quote' ? 3 : 1,
+        keyboardType:
+            isDate ? TextInputType.datetime : TextInputType.text,
       ),
     );
-    controller.dispose();
     if (value == null || !mounted) return;
     if (isDate && value.isNotEmpty && DateTime.tryParse(value) == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -561,6 +534,87 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       );
+}
+
+class _HomeEditDialog extends StatefulWidget {
+  const _HomeEditDialog({
+    required this.initialValue,
+    required this.title,
+    required this.hint,
+    required this.maxLines,
+    required this.keyboardType,
+  });
+
+  final String initialValue;
+  final String title;
+  final String hint;
+  final int maxLines;
+  final TextInputType keyboardType;
+
+  @override
+  State<_HomeEditDialog> createState() => _HomeEditDialogState();
+}
+
+class _HomeEditDialogState extends State<_HomeEditDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      title: Text(
+        widget.title,
+        style: const TextStyle(fontSize: 16, color: Colors.black),
+      ),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        maxLines: widget.maxLines,
+        keyboardType: widget.keyboardType,
+        decoration: InputDecoration(
+          hintText: widget.hint,
+          hintStyle:
+              const TextStyle(color: Color(0xFFBBBBBB), fontSize: 13),
+          enabledBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFFE0E0E0)),
+          ),
+          focusedBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.black),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text(
+            '取消',
+            style: TextStyle(color: Color(0xFF999999)),
+          ),
+        ),
+        TextButton(
+          onPressed: () =>
+              Navigator.of(context).pop(_controller.text.trim()),
+          child: const Text(
+            '保存',
+            style: TextStyle(color: Colors.black),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _HomeCard extends StatelessWidget {
