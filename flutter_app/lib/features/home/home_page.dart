@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../app/theme/app_theme.dart';
 
 class HomePage extends StatelessWidget {
@@ -45,9 +46,10 @@ class HomePage extends StatelessWidget {
                     fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.ink,
                   )),
                   const SizedBox(height: 12),
-                  const _HomeTile(
+                  _HomeTile(
                     icon: Icons.chat_bubble_outline_rounded,
                     title: '聊天', subtitle: '留住每一次对话', wide: true,
+                    onTap: () => context.push('/chat'),
                   ),
                   const SizedBox(height: 12),
                   const Row(children: [
@@ -104,14 +106,20 @@ class _RelationshipCard extends StatelessWidget {
 }
 
 class _HomeTile extends StatelessWidget {
-  const _HomeTile({required this.icon, required this.title, required this.subtitle, this.wide = false});
+  const _HomeTile({required this.icon, required this.title, required this.subtitle, this.wide = false, this.onTap});
   final IconData icon;
   final String title;
   final String subtitle;
   final bool wide;
+  final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => Material(
+    color: Colors.transparent,
+    child: InkWell(
+      borderRadius: BorderRadius.circular(AppRadii.card),
+      onTap: onTap,
+      child: Container(
     constraints: BoxConstraints(minHeight: wide ? 104 : 124),
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
@@ -129,6 +137,8 @@ class _HomeTile extends StatelessWidget {
         const SizedBox(height: 3),
         Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.muted)),
       ],
+    ),
+      ),
     ),
   );
 }
