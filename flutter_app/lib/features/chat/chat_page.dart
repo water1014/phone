@@ -370,13 +370,13 @@ class _ChatPageState extends State<ChatPage> {
       const Expanded(
         child: Center(
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            const CircleAvatar(
+            CircleAvatar(
               radius: 15,
               backgroundColor: Color(0xFFE3E5E8),
               child: Text('祁', style: TextStyle(color: Color(0xFF6B7480), fontSize: 12)),
             ),
-            const SizedBox(width: 8),
-            const Column(
+            SizedBox(width: 8),
+            Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
