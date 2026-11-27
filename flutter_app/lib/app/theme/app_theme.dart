@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppColors {
-  static const paper = Color(0xFFFFFFFF);
+  static const paper = Color(0xFFF7FAF8);
   static const card = Color(0xFFFFFFFF);
-  static const line = Color(0xFFE0E0E0);
-  static const fill = Color(0xFFF5F5F5);
-  static const ink = Color(0xFF171717);
-  static const secondary = Color(0xFF555555);
-  static const muted = Color(0xFF999999);
-  static const accent = Color(0xFF9E6A71);
-  static const accentSoft = Color(0xFFF0E2E3);
-  static const bubbleMe = Color(0xFFE4DAF2);
+  static const line = Color(0xFFE5ECE7);
+  static const fill = Color(0xFFEEF3EF);
+  static const ink = Color(0xFF29362F);
+  static const secondary = Color(0xFF68796F);
+  static const muted = Color(0xFF9AA79F);
+  static const accent = Color(0xFF789A88);
+  static const accentSoft = Color(0xFFE8F0EA);
+  static const bubbleMe = Color(0xFFDCEBE1);
+  static const bubblePartner = Color(0xFFFFFFFF);
+  static const blush = Color(0xFFF2E9E9);
+  static const sky = Color(0xFFE8EFF2);
 }
 
 abstract final class AppRadii {
@@ -40,9 +43,9 @@ abstract final class AppTheme {
 
   static ThemeData get dark => _build(
         brightness: Brightness.dark,
-        scaffold: const Color(0xFF111111),
-        surface: const Color(0xFF1B1B1B),
-        foreground: const Color(0xFFF5F5F5),
+        scaffold: const Color(0xFF111A15),
+        surface: const Color(0xFF1B2820),
+        foreground: const Color(0xFFF0F5F1),
       );
 
   static ThemeData _build({
@@ -56,9 +59,9 @@ abstract final class AppTheme {
       brightness: brightness,
       surface: surface,
     ).copyWith(
-      primary: foreground,
-      onPrimary: scaffold,
-      secondary: AppColors.accent,
+      primary: AppColors.accent,
+      onPrimary: Colors.white,
+      secondary: AppColors.secondary,
       outline: AppColors.line,
     );
 
