@@ -463,6 +463,11 @@ class _ChatPageState extends State<ChatPage> {
                         ? const SizedBox(width: 34, height: 17, child: Center(child: Text('···', style: TextStyle(fontSize: 20, letterSpacing: 2, color: AppColors.muted))))
                         : Text(message.text, style: TextStyle(fontSize: prefs.fontSize, height: 1.55, color: AppColors.ink)),
                   ),
+                  if (message.isTyping && (message.reasoning ?? '').trim().isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 6, left: 3),
+                      child: Text('正在思考…', style: TextStyle(fontSize: 10, color: AppColors.muted)),
+                    ),
                   if ((message.reasoning ?? '').trim().isNotEmpty)
                     Container(
                       margin: const EdgeInsets.only(top: 7),
@@ -474,7 +479,7 @@ class _ChatPageState extends State<ChatPage> {
                           dense: true,
                           tilePadding: const EdgeInsets.symmetric(horizontal: 10),
                           childrenPadding: const EdgeInsets.fromLTRB(11, 0, 11, 11),
-                          title: const Text('思考过程', style: TextStyle(fontSize: 10, color: AppColors.muted)),
+                          title: const Text('思考过程 · 服务商返回', style: TextStyle(fontSize: 10, color: AppColors.muted)),
                           children: [Text(message.reasoning!, style: const TextStyle(fontSize: 11, height: 1.5, color: AppColors.secondary))],
                         ),
                       ),
