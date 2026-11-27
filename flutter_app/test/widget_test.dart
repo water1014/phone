@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xiaowo/app/xiaowo_app.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   testWidgets('首页可以进入聊天并发送消息', (tester) async {
+    SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(430, 932);
     tester.view.devicePixelRatio = 1;
     await tester.pumpWidget(const ProviderScope(child: XiaowoApp()));
