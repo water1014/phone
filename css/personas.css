@@ -1,1 +1,43 @@
 .personas-page{max-width:900px;margin:0 auto;padding:clamp(16px,3vw,30px)}.personas-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:20px}.personas-head h2{margin:5px 0;font-size:clamp(25px,4vw,34px);font-weight:550}.personas-head p{margin:0;color:var(--sub,#777);font-size:13px}.persona-card{display:flex;align-items:center;gap:13px;padding:15px;margin:10px 0;border:1px solid var(--line,rgba(0,0,0,.08));border-radius:20px;background:var(--card,rgba(255,255,255,.65));flex-wrap:wrap}.persona-avatar{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:var(--bg,rgba(0,0,0,.06));flex:none}.persona-avatar img{width:100%;height:100%;object-fit:cover}.persona-info{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}.persona-info small,.persona-info code{color:var(--sub,#777);font-size:12px;overflow-wrap:anywhere}.persona-actions{display:flex;gap:6px;flex-wrap:wrap}.persona-actions button{border:1px solid var(--line,rgba(0,0,0,.1));border-radius:12px;padding:8px 10px;background:transparent;color:inherit;font:inherit;font-size:12px}
+
+/* MioWatery-inspired contact book, hosted inside the phone app shell */
+.mio-contacts{max-width:760px!important;padding:clamp(18px,4vw,30px)!important}
+.ctc-page-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:2px 0 22px}
+.ctc-page-head h2{margin:5px 0 4px!important;font-size:clamp(27px,5vw,34px)!important;font-weight:650!important;letter-spacing:-.04em}
+.ctc-page-head p{margin:0;color:#92999b;font-size:12px}
+.ctc-add{width:42px;height:42px;flex:none;border:1px solid #e6e9e9;border-radius:50%;background:#fff;color:#263538;font-size:25px;line-height:1;box-shadow:0 4px 16px rgba(30,55,60,.07)}
+.ctc-search{height:46px;display:flex;align-items:center;gap:10px;padding:0 15px;border:1px solid #e8eded;border-radius:15px;background:#f7f9f9;margin-bottom:25px}
+.ctc-search>span{font-size:23px;color:#99a5a7}
+.ctc-search input{flex:1;min-width:0;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;padding:0!important;font-size:14px!important;color:#344448!important}
+.ctc-section-label{display:flex;align-items:center;gap:9px;margin:0 2px 10px;font-size:11px;font-weight:700;letter-spacing:.12em;color:#9aa6a8}
+.ctc-section-label small{font-size:10px;font-weight:500;letter-spacing:0}
+.ctc-list{display:flex;flex-direction:column;gap:9px}
+.ctc-person{border:1px solid #e9eeee;border-radius:17px;background:#fff;overflow:hidden;transition:border-color .18s,background .18s}
+.ctc-person.is-active{border-color:#b9ccce;background:#fbfdfd}
+.ctc-person-main{display:flex;align-items:center;gap:13px;min-height:76px;padding:12px 15px;cursor:pointer}
+.ctc-avatar{width:46px;height:46px;flex:none;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#e7eeee,#d5e1e2);color:#607477;font-size:18px;font-weight:600}
+.ctc-avatar img{width:100%;height:100%;object-fit:cover}
+.ctc-person-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:5px}
+.ctc-person-copy b{font-size:14px;font-weight:650;color:#354448}
+.ctc-person-copy span{font-size:11px;color:#9aa5a7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctc-current{font-style:normal;font-size:10px;color:#77999b;padding:5px 8px;border-radius:20px;background:#edf4f3}
+.ctc-chevron{font-style:normal;color:#b6c0c1;font-size:22px}
+.ctc-person-tools{display:flex;gap:8px;padding:0 14px 12px 74px}
+.ctc-person-tools button{border:0;border-radius:9px;background:#f4f7f7;padding:7px 10px;color:#748386;font-size:10px}
+.ctc-person-tools button:last-child{margin-left:auto;color:#b18b8b;background:#fbf5f5}
+.ctc-empty{padding:42px 18px;text-align:center;border:1px dashed #dfe7e7;border-radius:16px;color:#9aa5a7;font-size:12px;line-height:1.8}
+.ctc-edit-mask{position:fixed;inset:0;z-index:10020;display:flex;align-items:flex-end;justify-content:center;background:rgba(30,42,44,.28);padding-top:20px}
+.ctc-edit-sheet{width:100%;max-width:720px;max-height:92dvh;overflow:auto;border-radius:22px 22px 0 0;background:#fff;color:#344448;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 36px rgba(20,40,44,.12)}
+.ctc-edit-sheet header{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;padding:15px 19px;border-bottom:1px solid #edf0f0;background:rgba(255,255,255,.96);backdrop-filter:blur(16px)}
+.ctc-edit-sheet header button{border:0;background:transparent;color:#899597;font-size:13px}
+.ctc-edit-sheet header b{font-size:14px;color:#354448}
+.ctc-edit-sheet header .ctc-save{color:#496f73;font-weight:700}
+.ctc-edit-body{padding:19px}
+.ctc-avatar-edit{display:flex;align-items:center;gap:12px;margin:3px 0 22px}
+.ctc-avatar.large{width:66px;height:66px;border:0;font-size:24px}
+.ctc-avatar-edit span,.ctc-edit-hint{font-size:11px;color:#9aa5a7}
+.ctc-edit-body>label{display:flex;flex-direction:column;gap:8px;margin:15px 0;font-size:12px;font-weight:650;color:#627275}
+.ctc-edit-body input,.ctc-edit-body textarea{width:100%;box-sizing:border-box;border:1px solid #e5ebeb;border-radius:12px;background:#fafcfc;padding:12px;color:#344448;font:inherit;font-size:13px;outline:none}
+.ctc-edit-body textarea{resize:vertical;line-height:1.7}
+.ctc-edit-body input:focus,.ctc-edit-body textarea:focus{border-color:#a9c1c3}
+@media(max-width:420px){.ctc-person-tools{padding-left:15px}.ctc-person-tools button{flex:1}.ctc-person-tools button:last-child{margin-left:0}}
