@@ -98,6 +98,8 @@ jobs:
               "compileSdk = flutter.compileSdkVersion": "compileSdk = 36",
               "compileSdkVersion flutter.compileSdkVersion": "compileSdkVersion 36",
               "compileSdk flutter.compileSdkVersion": "compileSdk 36",
+              "minSdk = flutter.minSdkVersion": "minSdk = 23",
+              "minSdkVersion flutter.minSdkVersion": "minSdkVersion 23",
           }
           for old, new in replacements.items():
               source = source.replace(old, new)
