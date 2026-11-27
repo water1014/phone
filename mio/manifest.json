@@ -1,0 +1,17 @@
+{
+  "name": "Mio水汪汪",
+  "short_name": "Mio",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/water1014/MioWatery/main/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
