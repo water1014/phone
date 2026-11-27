@@ -155,6 +155,7 @@ class ChatApiClient {
   Stream<ChatStreamEvent> streamReply({
     required ChatApiConfig config,
     required List<Map<String, dynamic>> messages,
+    CancelToken? cancelToken,
   }) async* {
     if (config.apiKey.trim().isEmpty) {
       throw Exception('请先在聊天设置中填写 API Key');
@@ -184,6 +185,7 @@ class ChatApiClient {
           options: Options(
             responseType: ResponseType.stream,
             headers: headers,
+            cancelToken: cancelToken,
             validateStatus: (status) => status != null && status < 500,
             receiveTimeout: const Duration(minutes: 3),
           ),
