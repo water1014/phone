@@ -404,6 +404,7 @@ class _ChatPageState extends State<ChatPage> {
     if (userIndex < 0) return;
     final userMessage = _messages[userIndex];
     final oldReply = target;
+    final previousMessages = List<_ChatMessage>.from(_messages);
     setState(() {
       _messages.removeAt(replyIndex);
       _messages.removeAt(userIndex);
@@ -414,10 +415,11 @@ class _ChatPageState extends State<ChatPage> {
       _pendingFileSize = userMessage.attachmentSize;
     });
     await _saveDraft(userMessage.text);
+    final minimumNewIndex = _messages.length;
     await _send();
     if (!mounted) return;
     final newIndex = _messages.lastIndexWhere((message) => !message.mine && !message.isSystem);
-    if (newIndex >= 0 && _messages[newIndex].text.trim().isNotEmpty) {
+    if (newIndex >= minimumNewIndex && _messages[newIndex].text.trim().isNotEmpty) {
       final current = _messages[newIndex];
       setState(() {
         _messages[newIndex] = _ChatMessage(
@@ -432,7 +434,11 @@ class _ChatPageState extends State<ChatPage> {
       });
       await _persistChat();
     } else {
-      setState(() => _messages.insert(userIndex.clamp(0, _messages.length).toInt(), oldReply));
+      setState(() {
+        _messages
+          ..clear()
+          ..addAll(previousMessages);
+      });
       await _persistChat();
     }
   }
@@ -1486,9 +1492,9 @@ class _ChatPageState extends State<ChatPage> {
                 builder: (context, snapshot) {
                   final position = snapshot.data ?? Duration.zero;
                   final total = player.duration ?? Duration.zero;
-                  final max = total.inMilliseconds.toDouble().clamp(1, double.infinity);
+                  final max = total.inMilliseconds.toDouble().clamp(1, double.infinity).toDouble();
                   return Column(children: [
-                    Slider(value: position.inMilliseconds.toDouble().clamp(0, max), max: max, activeColor: const Color(0xFF333333), onChanged: (value) => player.seek(Duration(milliseconds: value.round()))),
+                    Slider(value: position.inMilliseconds.toDouble().clamp(0, max).toDouble(), max: max, activeColor: const Color(0xFF333333), onChanged: (value) => player.seek(Duration(milliseconds: value.round()))),
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                       Text(_clockDuration(position), style: const TextStyle(fontSize: 10, color: Color(0xFF888888))),
                       Text(_clockDuration(total), style: const TextStyle(fontSize: 10, color: Color(0xFF888888))),
