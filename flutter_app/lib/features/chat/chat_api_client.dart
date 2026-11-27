@@ -194,13 +194,13 @@ class ChatApiClient {
         continue;
       }
       if (status < 200 || status >= 300) {
-        final detail = await response.data?.stream.bytesToString() ?? '';
-        throw Exception('HTTP $status${detail.isEmpty ? '' : '：${detail.substring(0, detail.length.clamp(0, 240))}'}');
+        final detail = response.data == null ? '' : await utf8.decoder.bind(response.data!.stream).join();
+        throw Exception('HTTP $status${detail.isEmpty ? '' : '：${detail.substring(0, detail.length < 240 ? detail.length : 240)}'}');
       }
 
       final contentType = response.headers.value('content-type') ?? '';
       if (contentType.contains('application/json')) {
-        final raw = await response.data!.stream.bytesToString();
+        final raw = await utf8.decoder.bind(response.data!.stream).join();
         final decoded = jsonDecode(raw) as Map<String, dynamic>;
         final choice = (decoded['choices'] as List?)?.firstOrNull as Map?;
         final message = choice?['message'] as Map?;
