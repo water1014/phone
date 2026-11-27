@@ -62,7 +62,24 @@ class ChatSettingsPage extends StatelessWidget {
                       value: prefs.showName,
                       onChanged: (v) => _update(prefs.copyWith(showName: v)),
                     ),
-                    _PreferenceSwitch(
+                    _SettingsAction(
+                    icon: Icons.person_outline_rounded,
+                    title: '对方昵称',
+                    value: prefs.partnerName,
+                    onTap: () => _editName(context, prefs, partner: true),
+                  ),
+                  _SettingsAction(
+                    icon: Icons.person_rounded,
+                    title: '我的昵称',
+                    value: prefs.myName,
+                    onTap: () => _editName(context, prefs, partner: false),
+                  ),
+                  const SizedBox(height: 7),
+                  _BubbleStylePicker(
+                    selected: prefs.bubbleStyle,
+                    onChanged: (v) => _update(prefs.copyWith(bubbleStyle: v)),
+                  ),
+                  _PreferenceSwitch(
                       icon: Icons.schedule_rounded,
                       title: '显示消息时间',
                       subtitle: '在消息下方标记发送时间',
@@ -178,7 +195,120 @@ class ChatSettingsPage extends StatelessWidget {
     ),
   );
 
+  Future<void> _editName(BuildContext context, ChatPreferences prefs, {required bool partner}) async {
+    final controller = TextEditingController(text: partner ? prefs.partnerName : prefs.myName);
+    final value = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        title: Text(partner ? '修改对方昵称' : '修改我的昵称', style: const TextStyle(fontSize: 17, color: _ink)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLength: 16,
+          decoration: InputDecoration(
+            hintText: '输入显示昵称',
+            filled: true,
+            fillColor: _soft,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: BorderSide.none),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(dialogContext, controller.text.trim()), child: const Text('保存')),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (value == null || value.trim().isEmpty) return;
+    await _update(partner ? prefs.copyWith(partnerName: value.trim()) : prefs.copyWith(myName: value.trim()));
+  }
+
   Future<void> _update(ChatPreferences next) => ChatPreferenceStore.update(next);
+}
+
+class _SettingsAction extends StatelessWidget {
+  const _SettingsAction({required this.icon, required this.title, required this.value, required this.onTap});
+  final IconData icon;
+  final String title;
+  final String value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(12),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(children: [
+        _SettingIcon(icon: icon),
+        const SizedBox(width: 11),
+        Expanded(child: Text(title, style: const TextStyle(fontSize: 12, color: _ink))),
+        Text(value, style: const TextStyle(fontSize: 11, color: _muted)),
+        const SizedBox(width: 4),
+        const Icon(Icons.chevron_right_rounded, size: 18, color: _muted),
+      ]),
+    ),
+  );
+}
+
+class _BubbleStylePicker extends StatelessWidget {
+  const _BubbleStylePicker({required this.selected, required this.onChanged});
+  final int selected;
+  final ValueChanged<int> onChanged;
+
+  static const styles = [
+    ('Mio 黑白', Color(0xFF111111), Color(0xFFECEEF0)),
+    ('雾林绿', Color(0xFF52776B), Color(0xFFE9F0EB)),
+    ('薄雾蓝', Color(0xFF526A7C), Color(0xFFEAF0F5)),
+    ('柔雾粉', Color(0xFF9A6D78), Color(0xFFF5ECEF)),
+  ];
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Padding(
+        padding: EdgeInsets.only(top: 8, bottom: 9),
+        child: Text('聊天气泡样式', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _ink)),
+      ),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: List.generate(styles.length, (index) {
+          final style = styles[index];
+          final active = selected == index;
+          return InkWell(
+            onTap: () => onChanged(index),
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              width: 137,
+              padding: const EdgeInsets.fromLTRB(9, 9, 9, 8),
+              decoration: BoxDecoration(
+                color: active ? const Color(0xFFF4F7F4) : Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: active ? _accent : _line, width: active ? 1.4 : 1),
+              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  Container(width: 47, height: 17, decoration: BoxDecoration(color: style.$3, borderRadius: BorderRadius.circular(8))),
+                  const Spacer(),
+                  Container(width: 42, height: 17, decoration: BoxDecoration(color: style.$2, borderRadius: BorderRadius.circular(8))),
+                ]),
+                const SizedBox(height: 7),
+                Row(children: [
+                  Expanded(child: Text(style.$1, style: const TextStyle(fontSize: 10, color: _ink))),
+                  Icon(active ? Icons.check_circle_rounded : Icons.circle_outlined, size: 15, color: active ? _accent : const Color(0xFFD8DEDA)),
+                ]),
+              ]),
+            ),
+          );
+        }),
+      ),
+      const SizedBox(height: 5),
+    ],
+  );
 }
 
 class _SettingsSection extends StatelessWidget {

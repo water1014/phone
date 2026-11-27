@@ -10,6 +10,9 @@ class ChatPreferences {
     this.compact = true,
     this.enterSend = true,
     this.showReasoning = true,
+    this.bubbleStyle = 0,
+    this.partnerName = '宋祁',
+    this.myName = '我',
     this.fontSize = 14,
   });
 
@@ -19,6 +22,9 @@ class ChatPreferences {
   final bool compact;
   final bool enterSend;
   final bool showReasoning;
+  final int bubbleStyle;
+  final String partnerName;
+  final String myName;
   final double fontSize;
 
   ChatPreferences copyWith({
@@ -28,6 +34,9 @@ class ChatPreferences {
     bool? compact,
     bool? enterSend,
     bool? showReasoning,
+    int? bubbleStyle,
+    String? partnerName,
+    String? myName,
     double? fontSize,
   }) => ChatPreferences(
     showAvatar: showAvatar ?? this.showAvatar,
@@ -36,6 +45,9 @@ class ChatPreferences {
     compact: compact ?? this.compact,
     enterSend: enterSend ?? this.enterSend,
     showReasoning: showReasoning ?? this.showReasoning,
+    bubbleStyle: bubbleStyle ?? this.bubbleStyle,
+    partnerName: partnerName ?? this.partnerName,
+    myName: myName ?? this.myName,
     fontSize: fontSize ?? this.fontSize,
   );
 }
@@ -53,6 +65,9 @@ abstract final class ChatPreferenceStore {
       compact: prefs.getBool('chat.compact') ?? true,
       enterSend: prefs.getBool('chat.enterSend') ?? true,
       showReasoning: prefs.getBool('chat.showReasoning') ?? true,
+      bubbleStyle: prefs.getInt('chat.bubbleStyle') ?? 0,
+      partnerName: prefs.getString('chat.partnerName') ?? '宋祁',
+      myName: prefs.getString('chat.myName') ?? '我',
       fontSize: prefs.getDouble('chat.fontSize') ?? 14,
     );
   }
@@ -67,6 +82,9 @@ abstract final class ChatPreferenceStore {
       prefs.setBool('chat.compact', next.compact),
       prefs.setBool('chat.enterSend', next.enterSend),
       prefs.setBool('chat.showReasoning', next.showReasoning),
+      prefs.setInt('chat.bubbleStyle', next.bubbleStyle),
+      prefs.setString('chat.partnerName', next.partnerName),
+      prefs.setString('chat.myName', next.myName),
       prefs.setDouble('chat.fontSize', next.fontSize),
     ]);
   }

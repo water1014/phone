@@ -38,6 +38,20 @@ class _ChatMessage {
   final String? imagePath;
 }
 
+Color _mineBubbleColor(int style) => switch (style) {
+  1 => const Color(0xFF52776B),
+  2 => const Color(0xFF526A7C),
+  3 => const Color(0xFF9A6D78),
+  _ => const Color(0xFF111111),
+};
+
+Color _partnerBubbleColor(int style) => switch (style) {
+  1 => const Color(0xFFE9F0EB),
+  2 => const Color(0xFFEAF0F5),
+  3 => const Color(0xFFF5ECEF),
+  _ => const Color(0xFFECEEF0),
+};
+
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
   @override
@@ -519,6 +533,11 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _messageRow(_ChatMessage message, ChatPreferences prefs, bool compact) {
     final mine = message.mine;
+    final myLabel = prefs.myName.trim().isEmpty ? '我' : prefs.myName.trim();
+    final partnerLabel = prefs.partnerName.trim().isEmpty ? '宋祁' : prefs.partnerName.trim();
+    final avatarLabel = mine ? myLabel.substring(0, 1) : partnerLabel.substring(0, 1);
+    final mineBubble = _mineBubbleColor(prefs.bubbleStyle);
+    final partnerBubble = _partnerBubbleColor(prefs.bubbleStyle);
     final avatar = Container(
       width: 40,
       height: 40,
@@ -528,7 +547,7 @@ class _ChatPageState extends State<ChatPage> {
         borderRadius: BorderRadius.circular(15),
       ),
       child: Text(
-        mine ? '我' : '祁',
+        avatarLabel,
         style: const TextStyle(fontSize: 15, color: Color(0xFF6B7480)),
       ),
     );
@@ -550,16 +569,16 @@ class _ChatPageState extends State<ChatPage> {
                 crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
                   if (!mine && prefs.showName && !compact)
-                    const Padding(
-                      padding: EdgeInsets.only(left: 1, bottom: 1),
-                      child: Text('宋祁', style: TextStyle(fontSize: 13, color: Color(0xFF333333))),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 1, bottom: 1),
+                      child: Text(partnerLabel, style: const TextStyle(fontSize: 13, color: Color(0xFF333333))),
                     ),
                   GestureDetector(
                     onLongPress: () => _showMessageActions(message),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
                       decoration: BoxDecoration(
-                        color: mine ? const Color(0xFF111111) : const Color(0xFFECEEF0),
+                        color: mine ? mineBubble : partnerBubble,
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(!mine && !compact ? 4 : 16),
                           topRight: Radius.circular(mine && !compact ? 4 : 16),
