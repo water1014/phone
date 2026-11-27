@@ -291,7 +291,7 @@ class _DaysCardState extends State<_DaysCard> {
               ? Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                   const Text('SINCE 2026.10.28', style: _dayLabel),
                   const SizedBox(height: 12),
-                  Text('${next}', style: const TextStyle(fontSize: 43, height: 1, color: _HomePageState._ink, fontWeight: FontWeight.w400)),
+                  Text('$next', style: const TextStyle(fontSize: 43, height: 1, color: _HomePageState._ink, fontWeight: FontWeight.w400)),
                   const SizedBox(height: 5),
                   const Text('NEXT MILESTONE', style: _dayLabel),
                   const SizedBox(height: 12),
@@ -306,7 +306,7 @@ class _DaysCardState extends State<_DaysCard> {
                     _person('宋', '宋祁'),
                     const SizedBox(width: 17),
                     Column(children: [
-                      Text('${days}', style: const TextStyle(fontSize: 45, height: .98, color: _HomePageState._ink, fontWeight: FontWeight.w400, letterSpacing: -1.2)),
+                      Text('$days', style: const TextStyle(fontSize: 45, height: .98, color: _HomePageState._ink, fontWeight: FontWeight.w400, letterSpacing: -1.2)),
                       const Text('D A Y S', style: _dayLabel),
                     ]),
                     const SizedBox(width: 17),
