@@ -37,25 +37,70 @@ jobs:
           cache: true
       - name: Generate Android host project
         run: flutter create --platforms=android --org com.water1014 --project-name xiaowo .
-      - name: Set Android compile SDK
+      - name: Set Android compile SDK for all modules
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          candidates = [Path("android/app/build.gradle"), Path("android/app/build.gradle.kts")]
-          for path in candidates:
-              if not path.exists():
-                  continue
-              source = path.read_text()
-              updated = source.replace("compileSdk = flutter.compileSdkVersion", "compileSdk = 36")
-              updated = updated.replace("compileSdkVersion flutter.compileSdkVersion", "compileSdkVersion 36")
-              updated = updated.replace("compileSdk flutter.compileSdkVersion", "compileSdk 36")
-              if updated == source and "compileSdk" in source:
-                  print(f"compileSdk declaration already explicit in {path}; leaving it unchanged")
-              else:
-                  path.write_text(updated)
-                  print(f"Configured compileSdk 36 in {path}")
-          if not any(path.exists() for path in candidates):
+
+          app_candidates = [Path("android/app/build.gradle"), Path("android/app/build.gradle.kts")]
+          app_file = next((path for path in app_candidates if path.exists()), None)
+          if app_file is None:
               raise SystemExit("Android app Gradle file was not generated")
+
+          source = app_file.read_text()
+          replacements = {
+              "compileSdk = flutter.compileSdkVersion": "compileSdk = 36",
+              "compileSdkVersion flutter.compileSdkVersion": "compileSdkVersion 36",
+              "compileSdk flutter.compileSdkVersion": "compileSdk 36",
+          }
+          for old, new in replacements.items():
+              source = source.replace(old, new)
+          app_file.write_text(source)
+          print(f"Configured app compileSdk 36 in {app_file}")
+
+          root_candidates = [Path("android/build.gradle"), Path("android/build.gradle.kts")]
+          root_file = next((path for path in root_candidates if path.exists()), None)
+          if root_file is None:
+              raise SystemExit("Android root Gradle file was not generated")
+
+          if root_file.suffix == ".kts":
+              override = """
+          // Keep every Android plugin module aligned with the app compile SDK.
+          subprojects {
+              afterEvaluate {
+                  val androidExtension = extensions.findByName("android")
+                  if (androidExtension != null) {
+                      val setter = androidExtension.javaClass.methods.firstOrNull {
+                          it.name == "setCompileSdk" && it.parameterCount == 1
+                      } ?: error("Unable to set compileSdk for $name")
+                      setter.invoke(androidExtension, 36)
+                      println("Configured compileSdk 36 for Android module: $name")
+                  }
+              }
+          }
+          """
+          else:
+              override = """
+          // Keep every Android plugin module aligned with the app compile SDK.
+          subprojects {
+              afterEvaluate {
+                  def androidExtension = extensions.findByName("android")
+                  if (androidExtension != null) {
+                      androidExtension.compileSdkVersion(36)
+                      println("Configured compileSdk 36 for Android module: ${project.name}")
+                  }
+              }
+          }
+          """
+          marker = "tasks.register<Delete>(\"clean\")"
+          if marker in root_file.read_text():
+              root_source = root_file.read_text().replace(marker, override + "\n" + marker, 1)
+          elif "tasks.register('clean'" in root_file.read_text():
+              root_source = root_file.read_text().replace("tasks.register('clean'", override + "\ntasks.register('clean'", 1)
+          else:
+              root_source = root_file.read_text() + "\n" + override
+          root_file.write_text(root_source)
+          print(f"Added all-module compileSdk override to {root_file}")
           PY
       - name: Configure stable Android debug signing
         env:
