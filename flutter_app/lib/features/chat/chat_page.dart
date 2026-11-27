@@ -219,7 +219,7 @@ class _ChatPageState extends State<ChatPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
     } catch (error) {
       if (!mounted) return;
-      final cancelled = CancelToken.isCancel(error) || cancelToken.isCancelled;
+      final cancelled = (error is DioException && CancelToken.isCancel(error)) || cancelToken.isCancelled;
       setState(() {
         final typingIndex = _messages.lastIndexWhere((message) => message.isTyping);
         if (typingIndex >= 0) {
@@ -252,6 +252,20 @@ class _ChatPageState extends State<ChatPage> {
       _activeCancelToken = null;
       if (mounted) setState(() => _sending = false);
     }
+  }
+
+  Future<void> _retryLastUserMessage() async {
+    if (_sending) return;
+    final userIndex = _messages.lastIndexWhere((message) => message.mine && !message.isSystem);
+    if (userIndex < 0) return;
+    final text = _messages[userIndex].text;
+    setState(() {
+      _messages.removeWhere((message) => message.isSystem && message.text.startsWith('连接没有成功：'));
+      _messages.removeAt(userIndex);
+      _input.text = text;
+    });
+    await _saveDraft(text);
+    await _send();
   }
 
   void _stopGeneration() {
@@ -422,7 +436,16 @@ class _ChatPageState extends State<ChatPage> {
           message.isSystem
               ? Padding(
                   padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 18),
-                  child: Text(message.text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, height: 1.5, color: AppColors.muted)),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Text(message.text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, height: 1.5, color: AppColors.muted)),
+                    if (message.text.startsWith('连接没有成功：'))
+                      TextButton.icon(
+                        onPressed: _retryLastUserMessage,
+                        icon: const Icon(Icons.refresh_rounded, size: 15),
+                        label: const Text('重试这条消息', style: TextStyle(fontSize: 11)),
+                        style: TextButton.styleFrom(foregroundColor: AppColors.secondary, visualDensity: VisualDensity.compact),
+                      ),
+                  ]),
                 )
               : _messageRow(message, prefs, sameGroup),
         ]);
