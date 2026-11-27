@@ -409,14 +409,14 @@
       if (!w || w.enabled === false || w.on === false || !String(w.content || '').trim()) return false;
       if (w.scope === 'contact' && (!activeContact || !(Array.isArray(w.contacts) ? w.contacts : []).includes(activeContact))) return false;
       if (w.trigger === 'keyword') {
-        const keys = String(w.keys || '').split(/[,，\\n]/).map(function (k) { return k.trim().toLowerCase(); }).filter(Boolean);
+        const keys = String(w.keys || '').split(/[,，\n]/).map(function (k) { return k.trim().toLowerCase(); }).filter(Boolean);
         return keys.some(function (k) { return latestText.includes(k); });
       }
       return true;
     });
-    const wbBefore = books.filter(function (w) { return w.position === 'before'; }).map(function (w) { return '【世界书：' + (w.title || '未命名') + '】\\n' + w.content; }).join('\\n\\n');
-    const wbAfter = books.filter(function (w) { return w.position !== 'before'; }).map(function (w) { return '【世界书：' + (w.title || '未命名') + '】\\n' + w.content; }).join('\\n\\n');
-    const system = baseSystem + (wbBefore ? '\\n\\n【已启用世界书（提示词前）】\\n' + wbBefore : '') + (wbAfter ? '\\n\\n【已启用世界书（提示词后）】\\n' + wbAfter : '');
+    const wbBefore = books.filter(function (w) { return w.position === 'before'; }).map(function (w) { return '【世界书：' + (w.title || '未命名') + '】\n' + w.content; }).join('\n\n');
+    const wbAfter = books.filter(function (w) { return w.position !== 'before'; }).map(function (w) { return '【世界书：' + (w.title || '未命名') + '】\n' + w.content; }).join('\n\n');
+    const system = baseSystem + (wbBefore ? '\n\n【已启用世界书（提示词前）】\n' + wbBefore : '') + (wbAfter ? '\n\n【已启用世界书（提示词后）】\n' + wbAfter : '');
 
     const body = JSON.stringify({
       model: model,
