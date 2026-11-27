@@ -16,7 +16,8 @@
       content: String(item.content || item.description || item.text || ''),
       scope: item.scope === 'contact' || fallbackScope === 'contact' ? 'contact' : 'global',
       category: String(item.category || item.cat || ''), enabled: item.enabled !== false && item.on !== false,
-      position: String(item.position || 'after')
+      trigger: String(item.trigger || 'global'), position: String(item.position || 'after'),
+      contacts: Array.isArray(item.contacts) ? item.contacts.map(String) : []
     };
   }
   function importPayload(data) {
@@ -55,7 +56,18 @@
     if (content === null) return;
     const category = prompt('分类（可留空）', item ? item.category : '');
     if (category === null) return;
-    const next = normalize(Object.assign({}, item || {}, { id: item ? item.id : uid(), title: title.trim() || '未命名世界书', keys, content, category, scope }), scope);
+    const trigger = prompt('触发方式：global=常驻，keyword=关键词触发', item ? item.trigger : 'global');
+    if (trigger === null) return;
+    const position = prompt('注入位置：before=角色提示词前，after=角色提示词后', item ? item.position : 'after');
+    if (position === null) return;
+    const contacts = prompt('关联联系人 ID（逗号分隔；局部世界书必填）', item ? item.contacts.join(', ') : '');
+    if (contacts === null) return;
+    const next = normalize(Object.assign({}, item || {}, {
+      id: item ? item.id : uid(), title: title.trim() || '未命名世界书', keys, content, category, scope,
+      trigger: trigger.trim() === 'keyword' ? 'keyword' : 'global',
+      position: position.trim() === 'before' ? 'before' : 'after',
+      contacts: contacts.split(',').map(x => x.trim()).filter(Boolean)
+    }), scope);
     const list = all(); const index = list.findIndex(x => x.id === next.id);
     if (index >= 0) list[index] = next; else list.push(next);
     persist(); window.Router.reopen('worldbook');
