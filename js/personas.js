@@ -51,7 +51,30 @@
     mask.addEventListener('click', e => { if (e.target === mask || e.target.closest('[data-cancel]')) close(); });
     const file = q('#persona-file'), ava = q('#persona-avatar'), group = q('#persona-group');
     ava.addEventListener('click', () => file.click());
-    file.addEventListener('change', () => { const f = file.files && file.files[0]; if (!f) return; if (f.size > 5*1024*1024) return UI.toast('头像图片请小于 5MB'); const reader = new FileReader(); reader.onload = () => { c.avatar = reader.result; ava.innerHTML = avatar(c); }; reader.readAsDataURL(f); });
+    file.addEventListener('change', () => {
+      const f = file.files && file.files[0]; if (!f) return;
+      if (!/^image\//.test(f.type)) return UI.toast('请选择图片文件');
+      if (f.size > 12*1024*1024) return UI.toast('头像原图请小于 12MB');
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, 320 / Math.max(img.width, img.height));
+          const canvas = D.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(img.width * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return UI.toast('头像处理失败');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          c.avatar = canvas.toDataURL('image/jpeg', 0.78);
+          ava.innerHTML = avatar(c);
+        };
+        img.onerror = () => UI.toast('无法读取这张图片');
+        img.src = reader.result;
+      };
+      reader.onerror = () => UI.toast('头像读取失败');
+      reader.readAsDataURL(f);
+    });
     group.addEventListener('change', () => { if (group.value !== '__new') return; const name = (prompt('新分组名称') || '').trim(); if (!name) { group.value = c.group || ''; return; } if (!groups().includes(name)) { groups().push(name); save(); const opt = D.createElement('option'); opt.value = name; opt.textContent = name; group.insertBefore(opt, group.lastElementChild); } group.value = name; });
     q('[data-save]').addEventListener('click', () => {
       const name = q('#persona-name').value.trim(); if (!name) return UI.toast('先填写联系人名字');
@@ -105,7 +128,18 @@
     body.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); modal(list().find(x => x.id === b.dataset.edit)); }));
     body.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const c = list().find(x => x.id === b.dataset.del); if (!c || !confirm('确定删除联系人「' + c.name + '」吗？')) return; XW.S.contacts = list().filter(x => x.id !== c.id); if (XW.S.activeContactId === c.id) { XW.S.activeContactId = ''; XW.save('activeContactId'); } save(); window.Router.reopen('personas'); UI.toast('联系人已删除'); }));
     body.querySelectorAll('[data-chat]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); XW.S.activeContactId = b.dataset.chat; XW.save('activeContactId'); window.Router.open('chat'); }));
-    body.querySelectorAll('[data-contact]').forEach(card => card.addEventListener('click', e => { if (e.target.closest('button')) return; XW.S.activeContactId = card.dataset.contact; XW.save('activeContactId'); window.Router.reopen('personas'); UI.toast('已设为当前联系人'); }));
+    body.querySelectorAll('[data-contact]').forEach(card => {
+      card.addEventListener('click', e => { if (e.target.closest('button') || card.classList.contains('swiped') || main && main.dataset.swipeMoved) return; XW.S.activeContactId = card.dataset.contact; XW.save('activeContactId'); window.Router.reopen('personas'); UI.toast('已设为当前联系人'); });
+      let sx = 0, sy = 0, moved = false;
+      const main = card.querySelector('.ctc-person-main');
+      if (!main) return;
+      main.addEventListener('touchstart', e => { const t=e.touches[0]; sx=t.clientX; sy=t.clientY; moved=false; }, {passive:true});
+      main.addEventListener('touchmove', e => {
+        const t=e.touches[0], dx=t.clientX-sx, dy=t.clientY-sy;
+        if (Math.abs(dx)>12 && Math.abs(dx)>Math.abs(dy)*1.25) { moved=true; if(dx < -24) card.classList.add('swiped'); else if(dx > 24) card.classList.remove('swiped'); }
+      }, {passive:true});
+      main.addEventListener('touchend', () => { if(moved) { const clear=()=>{main.dataset.swipeMoved='1'; setTimeout(()=>delete main.dataset.swipeMoved,250);}; clear(); } }, {passive:true});
+    });
     const exp = body.querySelector('#persona-export'); if (exp) exp.addEventListener('click', exportContacts);
     const imp = body.querySelector('#persona-import'), inp = body.querySelector('#persona-import-file');
     if (imp && inp) { imp.addEventListener('click', () => inp.click()); inp.addEventListener('change', () => { const f = inp.files && inp.files[0]; if (f) importContacts(f); inp.value = ''; }); }
