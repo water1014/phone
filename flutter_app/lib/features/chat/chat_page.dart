@@ -1544,8 +1544,36 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     } else if (action == 'save_code') {
       await _saveCodeBlockAsFile(message);
     } else if (action == 'delete') {
-      setState(() => _messages.remove(message));
-      await _persistChat();
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('删除这条消息？'),
+          content: const Text('删除后会从本机聊天记录中移除，且无法直接撤销。'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: TextButton.styleFrom(foregroundColor: const Color(0xFFB04444)),
+              child: const Text('删除'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed == true && mounted) {
+        setState(() {
+          _messages.remove(message);
+          if (identical(_replyingTo, message)) _replyingTo = null;
+        });
+        await _persistChat();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('消息已删除')),
+          );
+        }
+      }
     } else if (action == 'edit' && message.mine) {
       final controller = TextEditingController(text: message.text);
       final edited = await showDialog<String>(
