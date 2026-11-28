@@ -86,13 +86,15 @@ class MusicApiClient {
   String _encryptEapi(String path, Map<String, dynamic> payload) {
     final json = jsonEncode(payload);
     final digest = md5.convert(utf8.encode('nobody$path' + 'use$json' + 'md5forencrypt')).toString();
-    final plain = '$path-36cd479b6b5-$digest-$json';
+    // EAPI signs the compact JSON first, then appends the MD5 digest.
+    // The order is: path + separator + JSON + separator + digest.
+    final plain = '$path-36cd479b6b5-$json-36cd479b6b5-$digest';
     final encrypter = encryption.Encrypter(encryption.AES(
       encryption.Key.fromUtf8(_eapiKey),
       mode: encryption.AESMode.ecb,
       padding: 'PKCS7',
     ));
-    return encrypter.encrypt(plain).base16.toLowerCase();
+    return encrypter.encrypt(plain).base16.toUpperCase();
   }
 
   Future<Map<String, dynamic>> _eapiPost({
