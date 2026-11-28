@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../features/home/home_page.dart';
 import '../features/chat/chat_page.dart';
 import '../features/chat/chat_settings_page.dart';
+import '../features/chat/chat_beautify_page.dart';
 import '../features/chat/chat_connection_settings_page.dart';
 import '../features/music/music_page.dart';
 import '../features/diary/diary_page.dart';
@@ -26,6 +27,10 @@ class XiaowoApp extends StatelessWidget {
             path: 'settings',
             builder: (context, state) => const ChatSettingsPage(),
             routes: [
+              GoRoute(
+                path: 'beautify',
+                builder: (context, state) => const ChatBeautifyPage(),
+              ),
               GoRoute(
                 path: 'connection',
                 builder: (context, state) => const ChatConnectionSettingsPage(),

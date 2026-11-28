@@ -49,6 +49,20 @@ class ChatSettingsPage extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
               children: [
                 _SettingsSection(
+                  icon: Icons.auto_awesome_rounded,
+                  title: '聊天美化工作台',
+                  subtitle: '实时预览、自由配色，支持导入糯米机聊天装扮 JSON',
+                  children: [
+                    _SettingsAction(
+                      icon: Icons.palette_outlined,
+                      title: '打开美化工作台',
+                      value: '当前 · ${prefs.chatThemeName}',
+                      onTap: () => context.push('/chat/settings/beautify'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 13),
+                _SettingsSection(
                   icon: Icons.chat_bubble_outline_rounded,
                   title: '消息外观',
                   subtitle: '对话中的头像、昵称与排版',

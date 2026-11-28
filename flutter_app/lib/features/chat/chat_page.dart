@@ -274,6 +274,15 @@ List<String> _chatReplySegments(String text, bool splitMode) {
 
   return result.isEmpty ? [text] : result;
 }
+Color _chatColor(String value, Color fallback) {
+  final raw = value.trim().replaceAll('#', '');
+  try {
+    if (raw.length == 6) return Color(0xFF000000 | int.parse(raw, radix: 16));
+    if (raw.length == 8) return Color(int.parse(raw, radix: 16));
+  } catch (_) {}
+  return fallback;
+}
+
 Color _mineBubbleColor(int style) => style == 1 ? const Color(0xFF202020) : const Color(0xFF171717);
 
 Color _partnerBubbleColor(int style) => style == 1 ? const Color(0xFFF0F0F0) : const Color(0xFFF4F4F4);
@@ -882,7 +891,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         resizeToAvoidBottomInset: false,
         drawer: const AppSideDrawer(active: 'chat'),
         drawerEnableOpenDragGesture: false,
-        backgroundColor: const Color(0xFFFAFAFA),
+        backgroundColor: _chatColor(prefs.chatPageColor, const Color(0xFFFAFAFA)),
         body: Stack(
           children: [
             Positioned.fill(child: _buildWallpaper(prefs)),
@@ -912,9 +921,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   Widget _buildHeader(ChatPreferences prefs) => Builder(builder: (scaffoldContext) => Container(
     height: 66,
     padding: const EdgeInsets.symmetric(horizontal: 12),
-    decoration: const BoxDecoration(
-      color: Color(0xFFFAFAFA),
-      border: Border(bottom: BorderSide(color: Color(0xFFE7E7E7))),
+    decoration: BoxDecoration(
+      color: _chatColor(prefs.chatHeaderColor, const Color(0xFFFAFAFA)),
+      border: Border(bottom: BorderSide(color: _chatColor(prefs.chatBorderColor, const Color(0xFFE7E7E7)))),
     ),
     child: Row(children: [
       Material(
@@ -1100,7 +1109,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   Widget _buildWallpaper(ChatPreferences prefs) {
     final path = prefs.chatWallpaperPath;
     if (path == null || path.isEmpty) {
-      return const ColoredBox(color: Color(0xFFFAFAFA));
+      return ColoredBox(color: _chatColor(prefs.chatPageColor, const Color(0xFFFAFAFA)));
     }
     final file = File(path);
     if (!file.existsSync()) {
@@ -1125,7 +1134,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             ),
           ),
         ),
-        ColoredBox(color: Colors.white.withValues(alpha: .38)),
+        ColoredBox(color: Colors.white.withValues(alpha: prefs.chatWallpaperShade.clamp(0, .85).toDouble())),
       ],
     );
   }
@@ -1223,8 +1232,16 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     final myLabel = prefs.myName.trim().isEmpty ? '我' : prefs.myName.trim();
     final partnerLabel = prefs.partnerName.trim().isEmpty ? '宋祁' : prefs.partnerName.trim();
     final avatarLabel = mine ? myLabel.substring(0, 1) : partnerLabel.substring(0, 1);
-    final mineBubble = _mineBubbleColor(prefs.bubbleStyle);
-    final partnerBubble = _partnerBubbleColor(prefs.bubbleStyle);
+    final mineBubbleBase = _chatColor(prefs.myBubbleColor, _mineBubbleColor(prefs.bubbleStyle));
+    final partnerBubbleBase = _chatColor(prefs.partnerBubbleColor, _partnerBubbleColor(prefs.bubbleStyle));
+    final mineBubble = mineBubbleBase.withValues(alpha: mineBubbleBase.a * prefs.myBubbleOpacity.clamp(0, 1).toDouble());
+    final partnerBubble = partnerBubbleBase.withValues(alpha: partnerBubbleBase.a * prefs.partnerBubbleOpacity.clamp(0, 1).toDouble());
+    final myBubbleImage = prefs.myBubbleImagePath.isNotEmpty && File(prefs.myBubbleImagePath).existsSync()
+        ? DecorationImage(image: FileImage(File(prefs.myBubbleImagePath)), fit: BoxFit.cover)
+        : null;
+    final partnerBubbleImage = prefs.partnerBubbleImagePath.isNotEmpty && File(prefs.partnerBubbleImagePath).existsSync()
+        ? DecorationImage(image: FileImage(File(prefs.partnerBubbleImagePath)), fit: BoxFit.cover)
+        : null;
     final isHelloTalk = prefs.bubbleStyle == 0;
     final effectiveReplyLayout = message.replyLayoutOverride ?? prefs.replyLayout;
     final replyParts = _chatReplySegments(message.text, !mine && effectiveReplyLayout == 1);
@@ -1374,18 +1391,19 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                     if (message.isTyping && message.text.isEmpty)
                       Container(
                         padding: prefs.showBubbles ? const EdgeInsets.symmetric(horizontal: 15, vertical: 11) : EdgeInsets.zero,
-                        decoration: prefs.showBubbles ? BoxDecoration(color: mine ? mineBubble : partnerBubble, borderRadius: bubbleRadius) : null,
+                        decoration: prefs.showBubbles ? BoxDecoration(color: mine ? mineBubble : partnerBubble, image: mine ? myBubbleImage : partnerBubbleImage, borderRadius: bubbleRadius) : null,
                         child: const SizedBox(width: 34, height: 17, child: Center(child: Text('···', style: TextStyle(fontSize: 20, letterSpacing: 2, color: Color(0xFF777777)))),),
                       )
                     else
                       ...replyParts.asMap().entries.map((entry) {
                         final isFirst = entry.key == 0;
-                        final textColor = prefs.showBubbles && mine ? Colors.white : const Color(0xFF222222);
+                        final textColor = _chatColor(mine ? prefs.myTextColor : prefs.partnerTextColor, prefs.showBubbles && mine ? Colors.white : const Color(0xFF222222));
                         return Container(
                           margin: EdgeInsets.only(bottom: entry.key == replyParts.length - 1 ? 0 : 5),
                           padding: prefs.showBubbles ? const EdgeInsets.symmetric(horizontal: 15, vertical: 11) : EdgeInsets.zero,
                           decoration: prefs.showBubbles ? BoxDecoration(
                             color: mine ? mineBubble : partnerBubble,
+                            image: mine ? myBubbleImage : partnerBubbleImage,
                             borderRadius: bubbleRadius,
                             border: !mine && isHelloTalk ? Border.all(color: const Color(0xFFE8E8E8), width: .7) : null,
                             boxShadow: isHelloTalk ? [BoxShadow(color: Colors.black.withValues(alpha: .035), blurRadius: 8, offset: const Offset(0, 2))] : null,
@@ -1452,7 +1470,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     );
 
     return Padding(
-      padding: EdgeInsets.only(top: compact ? 1 : 9, bottom: compact ? 2 : 7),
+      padding: EdgeInsets.only(top: compact ? 1 : prefs.chatSpacing.clamp(2, 22).toDouble(), bottom: compact ? 2 : prefs.chatSpacing.clamp(2, 22).toDouble() * .75),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: mine ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -1689,9 +1707,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   Widget _buildComposer(ChatPreferences prefs) => Container(
     padding: EdgeInsets.fromLTRB(14, 11, 14, 10 + (MediaQuery.viewInsetsOf(context).bottom > 0 ? 0 : MediaQuery.paddingOf(context).bottom)),
-    decoration: const BoxDecoration(
-      color: Color(0xFFFAFAFA),
-      border: Border(top: BorderSide(color: Color(0xFFE7E7E7))),
+    decoration: BoxDecoration(
+      color: _chatColor(prefs.chatComposerColor, const Color(0xFFFAFAFA)),
+      border: Border(top: BorderSide(color: _chatColor(prefs.chatBorderColor, const Color(0xFFE7E7E7)))),
     ),
     child: Column(mainAxisSize: MainAxisSize.min, children: [
       if (_replyingTo != null)
@@ -1784,9 +1802,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       Container(
         padding: const EdgeInsets.fromLTRB(7, 7, 7, 7),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(23),
-          border: Border.all(color: const Color(0xFFE7E7E7)),
+          color: _chatColor(prefs.chatInputColor, Colors.white),
+          borderRadius: BorderRadius.circular(prefs.chatInputRadius.clamp(10, 32).toDouble()),
+          border: Border.all(color: _chatColor(prefs.chatBorderColor, const Color(0xFFE7E7E7))),
           boxShadow: [BoxShadow(color: const Color(0xFF666666).withValues(alpha: .045), blurRadius: 18, offset: const Offset(0, 5))],
         ),
         child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
@@ -1813,7 +1831,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                 onSubmitted: prefs.enterSend ? (_) => _send() : null,
                 decoration: const InputDecoration(
                   hintText: '说点什么吧…',
-                  hintStyle: TextStyle(color: Color(0xFF999999), fontSize: 14),
+                  hintStyle: TextStyle(color: _chatColor(prefs.partnerTextColor, const Color(0xFF999999)).withValues(alpha: .55), fontSize: 14),
                   isDense: true,
                   contentPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 11),
                   border: InputBorder.none,

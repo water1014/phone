@@ -27,6 +27,23 @@ class ChatPreferences {
     this.wallpaperPositionY = 0,
     this.fontSize = 14,
     this.bubbleRadius = 19,
+    this.chatPageColor = '#FAFAFA',
+    this.chatHeaderColor = '#FAFAFA',
+    this.chatComposerColor = '#FAFAFA',
+    this.chatInputColor = '#FFFFFF',
+    this.chatBorderColor = '#E7E7E7',
+    this.myBubbleColor = '#333333',
+    this.partnerBubbleColor = '#FFFFFF',
+    this.myTextColor = '#FFFFFF',
+    this.partnerTextColor = '#222222',
+    this.myBubbleOpacity = 1,
+    this.partnerBubbleOpacity = 1,
+    this.myBubbleImagePath = '',
+    this.partnerBubbleImagePath = '',
+    this.chatInputRadius = 23,
+    this.chatSpacing = 9,
+    this.chatWallpaperShade = .38,
+    this.chatThemeName = '雾白',
     this.quickReplies = const ['在吗', '抱抱', '晚安'],
   });
 
@@ -53,6 +70,23 @@ class ChatPreferences {
   final double wallpaperPositionY;
   final double fontSize;
   final double bubbleRadius;
+  final String chatPageColor;
+  final String chatHeaderColor;
+  final String chatComposerColor;
+  final String chatInputColor;
+  final String chatBorderColor;
+  final String myBubbleColor;
+  final String partnerBubbleColor;
+  final String myTextColor;
+  final String partnerTextColor;
+  final double myBubbleOpacity;
+  final double partnerBubbleOpacity;
+  final String myBubbleImagePath;
+  final String partnerBubbleImagePath;
+  final double chatInputRadius;
+  final double chatSpacing;
+  final double chatWallpaperShade;
+  final String chatThemeName;
   final List<String> quickReplies;
 
   ChatPreferences copyWith({
@@ -79,6 +113,23 @@ class ChatPreferences {
     double? wallpaperPositionY,
     double? fontSize,
     double? bubbleRadius,
+    String? chatPageColor,
+    String? chatHeaderColor,
+    String? chatComposerColor,
+    String? chatInputColor,
+    String? chatBorderColor,
+    String? myBubbleColor,
+    String? partnerBubbleColor,
+    String? myTextColor,
+    String? partnerTextColor,
+    double? myBubbleOpacity,
+    double? partnerBubbleOpacity,
+    String? myBubbleImagePath,
+    String? partnerBubbleImagePath,
+    double? chatInputRadius,
+    double? chatSpacing,
+    double? chatWallpaperShade,
+    String? chatThemeName,
     List<String>? quickReplies,
   }) => ChatPreferences(
     showAvatar: showAvatar ?? this.showAvatar,
@@ -104,6 +155,23 @@ class ChatPreferences {
     wallpaperPositionY: wallpaperPositionY ?? this.wallpaperPositionY,
     fontSize: fontSize ?? this.fontSize,
     bubbleRadius: bubbleRadius ?? this.bubbleRadius,
+    chatPageColor: chatPageColor ?? this.chatPageColor,
+    chatHeaderColor: chatHeaderColor ?? this.chatHeaderColor,
+    chatComposerColor: chatComposerColor ?? this.chatComposerColor,
+    chatInputColor: chatInputColor ?? this.chatInputColor,
+    chatBorderColor: chatBorderColor ?? this.chatBorderColor,
+    myBubbleColor: myBubbleColor ?? this.myBubbleColor,
+    partnerBubbleColor: partnerBubbleColor ?? this.partnerBubbleColor,
+    myTextColor: myTextColor ?? this.myTextColor,
+    partnerTextColor: partnerTextColor ?? this.partnerTextColor,
+    myBubbleOpacity: myBubbleOpacity ?? this.myBubbleOpacity,
+    partnerBubbleOpacity: partnerBubbleOpacity ?? this.partnerBubbleOpacity,
+    myBubbleImagePath: myBubbleImagePath ?? this.myBubbleImagePath,
+    partnerBubbleImagePath: partnerBubbleImagePath ?? this.partnerBubbleImagePath,
+    chatInputRadius: chatInputRadius ?? this.chatInputRadius,
+    chatSpacing: chatSpacing ?? this.chatSpacing,
+    chatWallpaperShade: chatWallpaperShade ?? this.chatWallpaperShade,
+    chatThemeName: chatThemeName ?? this.chatThemeName,
     quickReplies: quickReplies ?? this.quickReplies,
   );
 }
@@ -144,6 +212,23 @@ abstract final class ChatPreferenceStore {
       wallpaperPositionY: prefs.getDouble('chat.wallpaperPositionY') ?? 0,
       fontSize: prefs.getDouble('chat.fontSize') ?? 14,
       bubbleRadius: prefs.getDouble('chat.bubbleRadius') ?? 19,
+      chatPageColor: prefs.getString('chat.beauty.pageColor') ?? '#FAFAFA',
+      chatHeaderColor: prefs.getString('chat.beauty.headerColor') ?? '#FAFAFA',
+      chatComposerColor: prefs.getString('chat.beauty.composerColor') ?? '#FAFAFA',
+      chatInputColor: prefs.getString('chat.beauty.inputColor') ?? '#FFFFFF',
+      chatBorderColor: prefs.getString('chat.beauty.borderColor') ?? '#E7E7E7',
+      myBubbleColor: prefs.getString('chat.beauty.myBubbleColor') ?? '#333333',
+      partnerBubbleColor: prefs.getString('chat.beauty.partnerBubbleColor') ?? '#FFFFFF',
+      myTextColor: prefs.getString('chat.beauty.myTextColor') ?? '#FFFFFF',
+      partnerTextColor: prefs.getString('chat.beauty.partnerTextColor') ?? '#222222',
+      myBubbleOpacity: prefs.getDouble('chat.beauty.myBubbleOpacity') ?? 1,
+      partnerBubbleOpacity: prefs.getDouble('chat.beauty.partnerBubbleOpacity') ?? 1,
+      myBubbleImagePath: prefs.getString('chat.beauty.myBubbleImagePath') ?? '',
+      partnerBubbleImagePath: prefs.getString('chat.beauty.partnerBubbleImagePath') ?? '',
+      chatInputRadius: prefs.getDouble('chat.beauty.inputRadius') ?? 23,
+      chatSpacing: prefs.getDouble('chat.beauty.spacing') ?? 9,
+      chatWallpaperShade: prefs.getDouble('chat.beauty.wallpaperShade') ?? .38,
+      chatThemeName: prefs.getString('chat.beauty.themeName') ?? '雾白',
       quickReplies: prefs.getStringList('chat.quickReplies') ?? const ['在吗', '抱抱', '晚安'],
     );
   }
@@ -175,6 +260,23 @@ abstract final class ChatPreferenceStore {
       prefs.setDouble('chat.wallpaperPositionY', next.wallpaperPositionY),
       prefs.setDouble('chat.fontSize', next.fontSize),
       prefs.setDouble('chat.bubbleRadius', next.bubbleRadius),
+      prefs.setString('chat.beauty.pageColor', next.chatPageColor),
+      prefs.setString('chat.beauty.headerColor', next.chatHeaderColor),
+      prefs.setString('chat.beauty.composerColor', next.chatComposerColor),
+      prefs.setString('chat.beauty.inputColor', next.chatInputColor),
+      prefs.setString('chat.beauty.borderColor', next.chatBorderColor),
+      prefs.setString('chat.beauty.myBubbleColor', next.myBubbleColor),
+      prefs.setString('chat.beauty.partnerBubbleColor', next.partnerBubbleColor),
+      prefs.setString('chat.beauty.myTextColor', next.myTextColor),
+      prefs.setString('chat.beauty.partnerTextColor', next.partnerTextColor),
+      prefs.setDouble('chat.beauty.myBubbleOpacity', next.myBubbleOpacity),
+      prefs.setDouble('chat.beauty.partnerBubbleOpacity', next.partnerBubbleOpacity),
+      prefs.setString('chat.beauty.myBubbleImagePath', next.myBubbleImagePath),
+      prefs.setString('chat.beauty.partnerBubbleImagePath', next.partnerBubbleImagePath),
+      prefs.setDouble('chat.beauty.inputRadius', next.chatInputRadius),
+      prefs.setDouble('chat.beauty.spacing', next.chatSpacing),
+      prefs.setDouble('chat.beauty.wallpaperShade', next.chatWallpaperShade),
+      prefs.setString('chat.beauty.themeName', next.chatThemeName),
       prefs.setStringList('chat.quickReplies', next.quickReplies),
     ]);
   }
