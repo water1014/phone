@@ -40,6 +40,8 @@ class AppSideDrawer extends StatelessWidget {
     Navigator.of(context).pop();
     if (entry.id == 'chat') {
       context.go('/chat');
+    } else if (entry.id == 'diary') {
+      context.push('/diary');
     } else if (entry.id == 'music') {
       // Keep the home route underneath music so Android's edge-back gesture returns home.
       context.push('/music');
