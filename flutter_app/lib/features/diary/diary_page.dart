@@ -493,6 +493,7 @@ class _DiaryEntry {
   final DateTime date;
   final DateTime updatedAt;
   final List<String> tags;
+  final String city;
   bool locked;
 
   String get dateLabel => '${date.year.toString().padLeft(4, '0')} / ${date.month.toString().padLeft(2, '0')} / ${date.day.toString().padLeft(2, '0')}';
