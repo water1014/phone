@@ -537,6 +537,20 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     try {
       final config = await ChatApiConfigStore.load();
       if (!mounted) return;
+      final currentModelKey = '${config.provider}:${config.model}';
+      if (currentModelKey != _contextModelKey) {
+        final newLimit = await ChatConversationStore.loadContextLimit(currentModelKey);
+        final newCacheUsage = await ChatConversationStore.loadCacheUsage(currentModelKey);
+        if (!mounted) return;
+        setState(() {
+          _contextModelKey = currentModelKey;
+          _contextWindowLimit = newLimit;
+          _cacheHitTokensTotal = newCacheUsage['hits'] ?? 0;
+          _cacheMissTokensTotal = newCacheUsage['misses'] ?? 0;
+          _cacheCreationTokensTotal = newCacheUsage['creations'] ?? 0;
+          _hasCacheMetrics = (newCacheUsage['reported'] ?? 0) > 0;
+        });
+      }
       if (config.apiKey.trim().isEmpty || config.baseUrl.trim().isEmpty || config.model.trim().isEmpty) {
         setState(() {
           _messages.add(_ChatMessage(
@@ -948,12 +962,14 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         for (final part in content) {
           if (part is Map && part['text'] is String) {
             characters += (part['text'] as String).runes.length;
+          } else if (part is Map && part.containsKey('image_url')) {
+            characters += 1000;
           }
         }
       }
     }
     // A conservative local estimate. Provider-reported prompt_tokens take priority.
-    return (characters / 1.7).ceil() + messages.length * 6;
+    return characters + messages.length * 6;
   }
 
   Future<void> _showContextUsageSettings() async {
@@ -1075,12 +1091,13 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     for (final item in conversations) {
       if (item.id == id) selected = item;
     }
-    if (selected == null) return;
+    final selectedConversation = selected;
+    if (selectedConversation == null) return;
     final saved = await ChatConversationStore.loadMessages(id);
     if (!mounted) return;
     setState(() {
-      _activeConversationId = selected!.id;
-      _activeConversationSummary = selected!.summary;
+      _activeConversationId = selectedConversation.id;
+      _activeConversationSummary = selectedConversation.summary;
       _conversations = conversations;
       _messages
         ..clear()
