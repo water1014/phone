@@ -142,8 +142,8 @@ class _ChatBeautifyPageState extends State<ChatBeautifyPage> {
           height: 48,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(color: header, border: Border(bottom: BorderSide(color: _beautyColor(p.chatBorderColor, _line)))),
-          child: Row(children: [
-            const Icon(Icons.menu_rounded, size: 18, color: _muted),
+          child: const Row(children: [
+            Icon(Icons.menu_rounded, size: 18, color: _muted),
             const Spacer(),
             const Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Text('宋祁', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _ink)),
@@ -301,6 +301,8 @@ class _ChatBeautifyPageState extends State<ChatBeautifyPage> {
   }
 
   Future<void> _importDecoration() async {
+    if (_busy) return;
+    setState(() => _busy = true);
     try {
       final picked = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: const ['json'], withData: true);
       if (picked == null || picked.files.isEmpty) return;
@@ -378,10 +380,14 @@ class _ChatBeautifyPageState extends State<ChatBeautifyPage> {
       if (mounted) setState(() => _notice = unsupported.isEmpty ? '导入完成，已应用可兼容的布局、背景与气泡样式。' : '已导入并应用可兼容部分；暂未适配：${unsupported.join("、")}。');
     } catch (error) {
       if (mounted) setState(() => _notice = '导入失败：$error');
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
   Future<void> _exportDecoration(ChatPreferences p) async {
+    if (_busy) return;
+    setState(() => _busy = true);
     try {
       final userImage = await _fileToDataUrl(p.myBubbleImagePath);
       final aiImage = await _fileToDataUrl(p.partnerBubbleImagePath);
@@ -423,6 +429,8 @@ class _ChatBeautifyPageState extends State<ChatBeautifyPage> {
       if (mounted) setState(() => _notice = '已生成糯米机兼容 JSON 文件。');
     } catch (error) {
       if (mounted) setState(() => _notice = '导出失败：$error');
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 

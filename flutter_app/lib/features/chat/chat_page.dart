@@ -1833,7 +1833,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                   hintText: '说点什么吧…',
                   hintStyle: TextStyle(color: _chatColor(prefs.partnerTextColor, const Color(0xFF999999)).withValues(alpha: .55), fontSize: 14),
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 11),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 11),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
