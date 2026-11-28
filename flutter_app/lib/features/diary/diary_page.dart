@@ -507,6 +507,15 @@ class _Entry {
   final DateTime date,time;
   final Map<String,dynamic> extra;
   String comment;
+  String get displayBody {
+    final lines=body.split('\\n').toList();
+    var first=0;
+    while(first<lines.length&&lines[first].trim().isEmpty){first++;}
+    String norm(String value)=>value.replaceAll(RegExp(r'\\[\\[(?:红|蓝)[:：]([\\s\\S]*?)\\]\\]'),'\\$1').replaceAll(RegExp(r'[\\s\\p{P}\\p{S}]',unicode:true),'').toLowerCase();
+    if(title.isNotEmpty&&first<lines.length&&norm(lines[first])==norm(title))lines.removeAt(first);
+    while(lines.isNotEmpty&&lines.first.trim().isEmpty){lines.removeAt(0);}
+    return lines.join('\\n');
+  }
   Map<String,dynamic> toMap()=>{...extra,'id':id,'type':type,'owner':owner,'title':title,'body':body,'content':body,'date':date.toIso8601String(),'time':time.toIso8601String(),'updatedAt':time.toIso8601String(),'imagePath':image,'image':image,'comment':comment};
   factory _Entry.fromMap(Map m){
     DateTime? parseDate(dynamic value) {
