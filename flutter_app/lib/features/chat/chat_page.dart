@@ -1821,12 +1821,13 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                                         title: const Text('重命名分类'),
                                         onTap: () => Navigator.pop(menuContext, 'rename'),
                                       ),
-                                      ListTile(
-                                        leading: const Icon(Icons.delete_outline_rounded),
-                                        title: const Text('删除分类'),
-                                        subtitle: const Text('分类中的表情包会移动到「常用」'),
-                                        onTap: () => Navigator.pop(menuContext, 'delete'),
-                                      ),
+                                      if (category != '常用')
+                                        ListTile(
+                                          leading: const Icon(Icons.delete_outline_rounded),
+                                          title: const Text('删除分类'),
+                                          subtitle: const Text('分类中的表情包会移动到「常用」'),
+                                          onTap: () => Navigator.pop(menuContext, 'delete'),
+                                        ),
                                     ]),
                                   ),
                                 );
