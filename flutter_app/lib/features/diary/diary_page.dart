@@ -412,64 +412,6 @@ class _DiaryPageState extends State<DiaryPage> {
   }
 }
 
-class _DiaryCard extends StatelessWidget {
-  const _DiaryCard({required this.entry, required this.onTap, required this.onLock, required this.onDelete});
-  final _DiaryEntry entry;
-  final VoidCallback onTap;
-  final VoidCallback onLock;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context) => Material(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(15),
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(15),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 15, 13, 14),
-        decoration: BoxDecoration(border: Border.all(color: const Color(0xFFE7E7E7)), borderRadius: BorderRadius.circular(15)),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Expanded(child: Text(entry.dateLabel, style: const TextStyle(fontSize: 10, letterSpacing: 1.1, color: Color(0xFF999999)))),
-            if (entry.city.isNotEmpty) ...[
-              const Icon(Icons.location_on_outlined, size: 13, color: Color(0xFF999999)),
-              const SizedBox(width: 3),
-              Text(entry.city, style: const TextStyle(fontSize: 10, color: Color(0xFF888888))),
-              const SizedBox(width: 7),
-            ],
-            if (entry.locked) const Icon(Icons.lock_outline_rounded, size: 14, color: Color(0xFF999999)),
-            PopupMenuButton<String>(
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 130),
-              icon: const Icon(Icons.more_horiz_rounded, size: 19, color: Color(0xFF999999)),
-              onSelected: (value) => value == 'lock' ? onLock() : onDelete(),
-              itemBuilder: (_) => [
-                PopupMenuItem(value: 'lock', child: Text(entry.locked ? '解除锁定' : '锁定日记')),
-                const PopupMenuItem(value: 'delete', child: Text('删除')),
-              ],
-            ),
-          ]),
-          if (entry.title.isNotEmpty) ...[
-            const SizedBox(height: 3),
-            Text(entry.title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF222222))),
-          ],
-          const SizedBox(height: 7),
-          Text(entry.locked ? '这篇日记已锁定' : entry.body, maxLines: 5, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12.5, height: 1.85, color: Color(0xFF444444))),
-          if (entry.tags.isNotEmpty) ...[
-            const SizedBox(height: 11),
-            Wrap(spacing: 6, runSpacing: 5, children: entry.tags.map((tag) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-              decoration: BoxDecoration(color: const Color(0xFFF5F5F5), borderRadius: BorderRadius.circular(20)),
-              child: Text('#$tag', style: const TextStyle(fontSize: 10, color: Color(0xFF777777))),
-            )).toList()),
-          ],
-        ]),
-      ),
-    ),
-  );
-}
-
 class _DiaryEditor extends StatefulWidget {
   const _DiaryEditor({this.entry});
   final _DiaryEntry? entry;
