@@ -15,6 +15,7 @@ class ChatMemoryRecord {
     required this.createdAt,
     this.locked = false,
     this.origin = 'auto',
+    this.pending = false,
   });
 
   final String id;
@@ -26,11 +27,13 @@ class ChatMemoryRecord {
   final DateTime createdAt;
   final bool locked;
   final String origin;
+  final bool pending;
 
   ChatMemoryRecord copyWith({
     String? content,
     String? category,
     bool? locked,
+    bool? pending,
   }) => ChatMemoryRecord(
     id: id,
     content: content ?? this.content,
@@ -41,6 +44,7 @@ class ChatMemoryRecord {
     createdAt: createdAt,
     locked: locked ?? this.locked,
     origin: origin,
+    pending: pending ?? this.pending,
   );
 
   Map<String, dynamic> toJson() => {
@@ -53,6 +57,7 @@ class ChatMemoryRecord {
     'createdAt': createdAt.toIso8601String(),
     'locked': locked,
     'origin': origin,
+    'pending': pending,
   };
 
   factory ChatMemoryRecord.fromJson(Map<String, dynamic> json) {
@@ -67,6 +72,7 @@ class ChatMemoryRecord {
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? now,
       locked: json['locked'] as bool? ?? false,
       origin: json['origin'] as String? ?? 'auto',
+      pending: json['pending'] as bool? ?? false,
     );
   }
 }
@@ -114,6 +120,10 @@ abstract final class ChatMemoryStore {
       jsonEncode(records.map((item) => item.toJson()).toList()),
     );
   }
+
+  static bool _isExplicitMemoryRequest(String text) => RegExp(
+    r'^(?:请)?(?:帮我)?(?:记住|记一下|记下来|记得)：?\\s*',
+  ).hasMatch(text.trim());
 
   static String? _memoryCandidate(String text) {
     final value = text.trim();
@@ -170,6 +180,7 @@ abstract final class ChatMemoryStore {
           sourceCreatedAt: message.createdAt,
           sourceText: message.text,
           createdAt: DateTime.now(),
+          pending: !_isExplicitMemoryRequest(message.text),
         ));
         knownSources.add(sourceKey);
       }
@@ -201,6 +212,7 @@ abstract final class ChatMemoryStore {
       sourceCreatedAt: createdAt,
       sourceText: text,
       createdAt: DateTime.now(),
+      pending: !_isExplicitMemoryRequest(text),
     ));
     await _save(records);
   }
@@ -270,6 +282,7 @@ abstract final class ChatMemoryStore {
     final terms = _queryTerms(query);
     final records = await load();
     final ranked = records
+        .where((item) => !item.pending)
         .map((item) {
           // Search both the editable memory and its untouched source message.
           // This lets a short memory remain discoverable through the wording
