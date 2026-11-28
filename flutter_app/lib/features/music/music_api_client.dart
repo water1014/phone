@@ -85,7 +85,7 @@ class MusicApiClient {
 
   String _encryptEapi(String path, Map<String, dynamic> payload) {
     final json = jsonEncode(payload);
-    final digest = md5.convert(utf8.encode('nobody$path' + 'use$json' + 'md5forencrypt')).toString();
+    final digest = md5.convert(utf8.encode('nobody${path}use${json}md5forencrypt')).toString();
     // EAPI signs the compact JSON first, then appends the MD5 digest.
     // The order is: path + separator + JSON + separator + digest.
     final plain = '$path-36cd479b6b5-$json-36cd479b6b5-$digest';
@@ -152,7 +152,7 @@ class MusicApiClient {
       return cached['url'] as String;
     }
 
-    final levels = <String>[quality, 'higher', 'standard'].toSet().toList();
+    final levels = {quality, 'higher', 'standard'}.toList();
     Object? lastError;
     for (final level in levels) {
       try {
