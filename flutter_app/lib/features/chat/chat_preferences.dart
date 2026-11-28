@@ -10,6 +10,8 @@ class ChatPreferences {
     this.compact = true,
     this.enterSend = true,
     this.showReasoning = true,
+    this.narratorEnabled = true,
+    this.additionalSystemPrompt = '',
     this.bubbleStyle = 0,
     this.partnerName = '宋祁',
     this.myName = '我',
@@ -27,6 +29,8 @@ class ChatPreferences {
   final bool compact;
   final bool enterSend;
   final bool showReasoning;
+  final bool narratorEnabled;
+  final String additionalSystemPrompt;
   final int bubbleStyle;
   final String partnerName;
   final String myName;
@@ -44,6 +48,8 @@ class ChatPreferences {
     bool? compact,
     bool? enterSend,
     bool? showReasoning,
+    bool? narratorEnabled,
+    String? additionalSystemPrompt,
     int? bubbleStyle,
     String? partnerName,
     String? myName,
@@ -60,6 +66,8 @@ class ChatPreferences {
     compact: compact ?? this.compact,
     enterSend: enterSend ?? this.enterSend,
     showReasoning: showReasoning ?? this.showReasoning,
+    narratorEnabled: narratorEnabled ?? this.narratorEnabled,
+    additionalSystemPrompt: additionalSystemPrompt ?? this.additionalSystemPrompt,
     bubbleStyle: bubbleStyle ?? this.bubbleStyle,
     partnerName: partnerName ?? this.partnerName,
     myName: myName ?? this.myName,
@@ -91,6 +99,8 @@ abstract final class ChatPreferenceStore {
       compact: prefs.getBool('chat.compact') ?? true,
       enterSend: prefs.getBool('chat.enterSend') ?? true,
       showReasoning: prefs.getBool('chat.showReasoning') ?? true,
+      narratorEnabled: prefs.getBool('chat.narratorEnabled') ?? true,
+      additionalSystemPrompt: prefs.getString('chat.additionalSystemPrompt') ?? '',
       bubbleStyle: (prefs.getInt('chat.bubbleStyle') ?? 0).clamp(0, 1),
       partnerName: prefs.getString('chat.partnerName') ?? '宋祁',
       myName: prefs.getString('chat.myName') ?? '我',
@@ -113,6 +123,8 @@ abstract final class ChatPreferenceStore {
       prefs.setBool('chat.compact', next.compact),
       prefs.setBool('chat.enterSend', next.enterSend),
       prefs.setBool('chat.showReasoning', next.showReasoning),
+      prefs.setBool('chat.narratorEnabled', next.narratorEnabled),
+      prefs.setString('chat.additionalSystemPrompt', next.additionalSystemPrompt),
       prefs.setInt('chat.bubbleStyle', next.bubbleStyle),
       prefs.setString('chat.partnerName', next.partnerName),
       prefs.setString('chat.myName', next.myName),
