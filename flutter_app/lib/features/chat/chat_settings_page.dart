@@ -96,6 +96,17 @@ class ChatSettingsPage extends StatelessWidget {
                     selected: prefs.bubbleStyle,
                     onChanged: (v) => _update(prefs.copyWith(bubbleStyle: v)),
                   ),
+                  _PreferenceSwitch(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    title: '显示聊天气泡',
+                    subtitle: '关闭后保留左右聊天排版，但文字不再放在色块气泡里',
+                    value: prefs.showBubbles,
+                    onChanged: (v) => _update(prefs.copyWith(showBubbles: v)),
+                  ),
+                  _ReplyLayoutPicker(
+                    selected: prefs.replyLayout,
+                    onChanged: (v) => _update(prefs.copyWith(replyLayout: v)),
+                  ),
                   _SettingsAction(
                     icon: Icons.flash_on_outlined,
                     title: '常用语',
@@ -541,6 +552,63 @@ class _SettingsAction extends StatelessWidget {
       ]),
     ),
   );
+}
+
+class _ReplyLayoutPicker extends StatelessWidget {
+  const _ReplyLayoutPicker({required this.selected, required this.onChanged});
+  final int selected;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final options = [
+      (value: 0, icon: Icons.notes_rounded, title: '完整长段', subtitle: '保留连贯的大段回复，适合沉浸阅读'),
+      (value: 1, icon: Icons.forum_outlined, title: '聊天分句', subtitle: '按自然语意拆成多个小气泡，更像即时聊天'),
+    ];
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 7),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(bottom: 9),
+            child: Text('对方回复排版', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _ink)),
+          ),
+          ...options.map((option) {
+            final active = selected == option.value;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: InkWell(
+                onTap: () => onChanged(option.value),
+                borderRadius: BorderRadius.circular(13),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: active ? const Color(0xFFF2F2F2) : Colors.white,
+                    borderRadius: BorderRadius.circular(13),
+                    border: Border.all(color: active ? _accent : _line, width: active ? 1.3 : 1),
+                  ),
+                  child: Row(children: [
+                    _SettingIcon(icon: option.icon),
+                    const SizedBox(width: 10),
+                    Expanded(child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(option.title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _ink)),
+                        const SizedBox(height: 3),
+                        Text(option.subtitle, style: const TextStyle(fontSize: 10, color: _muted)),
+                      ],
+                    )),
+                    Icon(active ? Icons.check_circle_rounded : Icons.circle_outlined, size: 18, color: active ? _accent : const Color(0xFFD0D0D0)),
+                  ]),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
 }
 
 class _BubbleStylePicker extends StatelessWidget {
