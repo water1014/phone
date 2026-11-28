@@ -81,6 +81,7 @@ abstract final class ChatConversationStore {
       'hits': 0,
       'misses': 0,
       'creations': 0,
+      'reported': 0,
     };
     try {
       final decoded = jsonDecode(raw) as Map<String, dynamic>;
@@ -88,9 +89,10 @@ abstract final class ChatConversationStore {
         'hits': (decoded['hits'] as num?)?.toInt() ?? 0,
         'misses': (decoded['misses'] as num?)?.toInt() ?? 0,
         'creations': (decoded['creations'] as num?)?.toInt() ?? 0,
+        'reported': (decoded['reported'] as num?)?.toInt() ?? 0,
       };
     } catch (_) {
-      return const {'hits': 0, 'misses': 0, 'creations': 0};
+      return const {'hits': 0, 'misses': 0, 'creations': 0, 'reported': 0};
     }
   }
 
@@ -106,6 +108,7 @@ abstract final class ChatConversationStore {
       'hits': current['hits']! + (hits ?? 0),
       'misses': current['misses']! + (misses ?? 0),
       'creations': current['creations']! + (creations ?? 0),
+      'reported': 1,
     }));
   }
 
