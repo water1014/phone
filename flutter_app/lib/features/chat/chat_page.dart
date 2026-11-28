@@ -68,6 +68,55 @@ Future<String> _encodeImageFileForRequest(String path) async {
   return base64Encode(bytes);
 }
 
+class _GeneratedTextArtifact {
+  const _GeneratedTextArtifact({
+    required this.fileName,
+    required this.content,
+    required this.message,
+  });
+
+  final String fileName;
+  final String content;
+  final String message;
+}
+
+_GeneratedTextArtifact? _extractGeneratedTextArtifact(String response) {
+  // Only accept explicitly named, UTF-8 text artifacts. Binary Office/PDF
+  // formats need real format encoders and must never be faked with text files.
+  const supportedExtensions = {
+    'html', 'htm', 'txt', 'md', 'markdown', 'csv', 'json', 'xml',
+    'yaml', 'yml', 'log', 'css', 'js', 'mjs', 'ts', 'tsx', 'jsx',
+    'dart', 'py', 'java', 'kt', 'kts', 'swift', 'c', 'h', 'cpp',
+    'hpp', 'rs', 'go', 'php', 'rb', 'sh', 'bash', 'sql', 'toml',
+    'ini', 'conf', 'properties', 'gradle', 'svg',
+  };
+  final pattern = RegExp(
+    r"""\x60\x60\x60([A-Za-z0-9_+#.-]*)[ \t]+(?:filename|file)=["']([^"']+)["'][^\r\n]*\r?\n([\s\S]*?)\x60\x60\x60""",
+  );
+  final match = pattern.firstMatch(response);
+  if (match == null) return null;
+  final requestedName = match.group(2)?.trim() ?? '';
+  if (requestedName.isEmpty) return null;
+  final fileName = requestedName
+      .split(RegExp(r'[/\\\\]'))
+      .last
+      .replaceAll(RegExp(r'[^\\p{L}\\p{N}._ -]', unicode: true), '_')
+      .trim();
+  if (fileName.isEmpty || !fileName.contains('.')) return null;
+  final extension = fileName.split('.').last.toLowerCase();
+  if (!supportedExtensions.contains(extension)) return null;
+  final content = match.group(3) ?? '';
+  if (content.trim().isEmpty) return null;
+  final message = (response.substring(0, match.start) +
+          response.substring(match.end))
+      .trim();
+  return _GeneratedTextArtifact(
+    fileName: fileName,
+    content: content,
+    message: message,
+  );
+}
+
 Color _mineBubbleColor(int style) => style == 1 ? const Color(0xFF202020) : const Color(0xFF171717);
 
 Color _partnerBubbleColor(int style) => style == 1 ? const Color(0xFFF0F0F0) : const Color(0xFFF4F4F4);
@@ -339,7 +388,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         }
       }
 
-      const systemPrompt = '你在「小窝」这个私人空间里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。可以用（括号）写神情和动作当旁白，也可以直接说话，不要列条目。';
+      const systemPrompt = '你在「小窝」这个私人空间里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。可以用（括号）写神情和动作当旁白，也可以直接说话，不要列条目。用户要求制作文件时：对于 HTML、CSS、JS、TXT、Markdown、CSV、JSON、XML、SVG、代码等 UTF-8 文本格式，必须把完整成品放进一个带明确文件名的代码围栏，例如 ```html filename="作品.html"，围栏外只写简短交付说明，不要把源码散落在聊天气泡。不要把 DOCX、PPTX、XLSX、PDF 等二进制格式伪装成文本文件或声称已经生成；若当前客户端无法生成该二进制格式，要如实说明。';
       final requestMessages = <Map<String, dynamic>>[
         {'role': 'system', 'content': systemPrompt},
         ...history,
@@ -453,6 +502,33 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             attachmentPath: current.attachmentPath,
             attachmentName: current.attachmentName,
             attachmentSize: current.attachmentSize,
+            alternateReplies: current.alternateReplies,
+            selectedAlternative: current.selectedAlternative,
+          );
+        });
+      }
+      final artifact = _extractGeneratedTextArtifact(_messages[replyIndex].text);
+      if (artifact != null) {
+        final appDir = await getApplicationDocumentsDirectory();
+        final outputDir = Directory('${appDir.path}/chat_generated');
+        if (!await outputDir.exists()) {
+          await outputDir.create(recursive: true);
+        }
+        final safeName = '${DateTime.now().microsecondsSinceEpoch}_${artifact.fileName}';
+        final outputFile = File('${outputDir.path}/$safeName');
+        await outputFile.writeAsString(artifact.content, flush: true);
+        final current = _messages[replyIndex];
+        setState(() {
+          _messages[replyIndex] = _ChatMessage(
+            text: artifact.message,
+            mine: current.mine,
+            time: current.time,
+            reasoning: current.reasoning,
+            inputTokens: current.inputTokens,
+            outputTokens: current.outputTokens,
+            attachmentPath: outputFile.path,
+            attachmentName: artifact.fileName,
+            attachmentSize: await outputFile.length(),
             alternateReplies: current.alternateReplies,
             selectedAlternative: current.selectedAlternative,
           );
