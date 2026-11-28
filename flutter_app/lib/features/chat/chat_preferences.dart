@@ -12,6 +12,8 @@ class ChatPreferences {
     this.showReasoning = true,
     this.narratorEnabled = true,
     this.additionalSystemPrompt = '',
+    this.worldbookEnabled = false,
+    this.worldbookJson = '',
     this.bubbleStyle = 0,
     this.partnerName = '宋祁',
     this.myName = '我',
@@ -31,6 +33,8 @@ class ChatPreferences {
   final bool showReasoning;
   final bool narratorEnabled;
   final String additionalSystemPrompt;
+  final bool worldbookEnabled;
+  final String worldbookJson;
   final int bubbleStyle;
   final String partnerName;
   final String myName;
@@ -50,6 +54,8 @@ class ChatPreferences {
     bool? showReasoning,
     bool? narratorEnabled,
     String? additionalSystemPrompt,
+    bool? worldbookEnabled,
+    String? worldbookJson,
     int? bubbleStyle,
     String? partnerName,
     String? myName,
@@ -68,6 +74,8 @@ class ChatPreferences {
     showReasoning: showReasoning ?? this.showReasoning,
     narratorEnabled: narratorEnabled ?? this.narratorEnabled,
     additionalSystemPrompt: additionalSystemPrompt ?? this.additionalSystemPrompt,
+    worldbookEnabled: worldbookEnabled ?? this.worldbookEnabled,
+    worldbookJson: worldbookJson ?? this.worldbookJson,
     bubbleStyle: bubbleStyle ?? this.bubbleStyle,
     partnerName: partnerName ?? this.partnerName,
     myName: myName ?? this.myName,
@@ -101,6 +109,8 @@ abstract final class ChatPreferenceStore {
       showReasoning: prefs.getBool('chat.showReasoning') ?? true,
       narratorEnabled: prefs.getBool('chat.narratorEnabled') ?? true,
       additionalSystemPrompt: prefs.getString('chat.additionalSystemPrompt') ?? '',
+      worldbookEnabled: prefs.getBool('chat.worldbookEnabled') ?? false,
+      worldbookJson: prefs.getString('chat.worldbookJson') ?? '',
       bubbleStyle: (prefs.getInt('chat.bubbleStyle') ?? 0).clamp(0, 1),
       partnerName: prefs.getString('chat.partnerName') ?? '宋祁',
       myName: prefs.getString('chat.myName') ?? '我',
@@ -125,6 +135,8 @@ abstract final class ChatPreferenceStore {
       prefs.setBool('chat.showReasoning', next.showReasoning),
       prefs.setBool('chat.narratorEnabled', next.narratorEnabled),
       prefs.setString('chat.additionalSystemPrompt', next.additionalSystemPrompt),
+      prefs.setBool('chat.worldbookEnabled', next.worldbookEnabled),
+      prefs.setString('chat.worldbookJson', next.worldbookJson),
       prefs.setInt('chat.bubbleStyle', next.bubbleStyle),
       prefs.setString('chat.partnerName', next.partnerName),
       prefs.setString('chat.myName', next.myName),
