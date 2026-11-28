@@ -30,20 +30,16 @@ class _MusicPageState extends State<MusicPage> {
   static _MusicPageState? _activePage;
   static List<MusicSong> _backgroundQueue = [];
   static int _backgroundCurrentId = 0;
-  static String _backgroundWorker = MusicApiClient.defaultWorker;
   static String _backgroundCookie = '';
   static bool _backgroundAdvancing = false;
   static const _queueKey = 'phone.music.queue.v1';
   static const _currentKey = 'phone.music.currentId.v1';
   static const _cookieKey = 'phone.music.netease.cookie';
-  static const _workerKey = 'phone.music.worker';
   static const _playbackErrorKey = 'phone.music.playbackError.v1';
   static String _backgroundPlaybackError = '';
   final _api = MusicApiClient();
   final _searchController = TextEditingController();
-  final _workerController = TextEditingController();
 
-  String _worker = MusicApiClient.defaultWorker;
   String _cookie = '';
   String _accountName = '';
   String _message = '';
@@ -79,7 +75,6 @@ class _MusicPageState extends State<MusicPage> {
   void dispose() {
     if (identical(_activePage, this)) _activePage = null;
     _searchController.dispose();
-    _workerController.dispose();
     super.dispose();
   }
 
@@ -117,7 +112,7 @@ class _MusicPageState extends State<MusicPage> {
       final nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % _backgroundQueue.length;
       final song = _backgroundQueue[nextIndex];
       final url = await _backgroundApi.songUrl(
-        _backgroundWorker,
+        '',
         song.id,
         cookie: _backgroundCookie,
       );
@@ -181,19 +176,15 @@ class _MusicPageState extends State<MusicPage> {
 
   Future<void> _restore() async {
     final prefs = await SharedPreferences.getInstance();
-    final worker = prefs.getString(_workerKey) ?? MusicApiClient.defaultWorker;
     final cookie = await _secure.read(key: _cookieKey) ?? '';
     final restoredQueue = _decodeQueue(prefs.getString(_queueKey));
     final restoredCurrentId = prefs.getInt(_currentKey) ?? 0;
     final playbackError = prefs.getString(_playbackErrorKey) ?? _backgroundPlaybackError;
     if (!mounted) return;
-    _backgroundWorker = _api.worker(worker);
     _backgroundCookie = cookie;
     if (restoredQueue.isNotEmpty) _backgroundQueue = restoredQueue;
     if (restoredCurrentId > 0) _backgroundCurrentId = restoredCurrentId;
     setState(() {
-      _worker = _backgroundWorker;
-      _workerController.text = _worker;
       _cookie = cookie;
       if (playbackError.isNotEmpty) _message = playbackError;
       if (_queue.isEmpty) _queue = _backgroundQueue;
@@ -209,30 +200,16 @@ class _MusicPageState extends State<MusicPage> {
     if (cookie.isNotEmpty) await _loadAccount(showError: false);
   }
 
-  Future<void> _saveWorker(String value) async {
-    final normalized = _api.worker(value);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_workerKey, normalized);
-    if (!mounted) return;
-    setState(() {
-      _worker = normalized;
-      _backgroundWorker = normalized;
-      _workerController.text = normalized;
-    });
-    if (_cookie.isNotEmpty) await _loadAccount(showError: false);
-    _toast('音乐服务地址已保存');
-  }
-
   Future<void> _loadAccount({bool showError = true}) async {
     if (_cookie.isEmpty) return;
     try {
-      final status = await _api.loginStatus(_worker, _cookie);
+      final status = await _api.loginStatus('', _cookie);
       final uid = MusicApiClient.userId(status);
       final data = status['data'];
       final profile = data is Map ? data['profile'] : null;
       final nickname = profile is Map ? (profile['nickname'] ?? '').toString() : '';
       if (uid == null) throw Exception('登录状态未通过验证，请重新扫码');
-      final playlists = await _api.playlists(_worker, _cookie, uid);
+      final playlists = await _api.playlists('', _cookie, uid);
       if (!mounted) return;
       setState(() {
         _loggedIn = true;
@@ -260,7 +237,7 @@ class _MusicPageState extends State<MusicPage> {
     var dialogActive = true;
 
     try {
-      final keyResponse = await _api.qrKey(_worker);
+      final keyResponse = await _api.qrKey('');
       qrKey = MusicApiClient.qrKeyValue(keyResponse);
       if (qrKey == null || qrKey.isEmpty) throw Exception('无法获取登录二维码');
     } catch (e) {
@@ -281,7 +258,7 @@ class _MusicPageState extends State<MusicPage> {
             if (!dialogActive || checking || finished || qrKey == null) return;
             checking = true;
             try {
-              final response = await _api.qrCheck(_worker, qrKey);
+              final response = await _api.qrCheck('', qrKey);
               if (!dialogActive || !dialogContext.mounted) return;
               final code = MusicApiClient.qrCode(response);
               if (code == 800) {
@@ -401,7 +378,7 @@ class _MusicPageState extends State<MusicPage> {
       _tab = 0;
     });
     try {
-      final songs = await _api.search(_worker, keyword, cookie: _cookie);
+      final songs = await _api.search('', keyword, cookie: _cookie);
       if (!mounted) return;
       setState(() {
         _results = songs;
@@ -427,7 +404,6 @@ class _MusicPageState extends State<MusicPage> {
       if (source != null) _queue = source;
       if (!_queue.any((item) => item.id == song.id)) _queue = [..._queue, song];
     });
-    _backgroundWorker = _worker;
     _backgroundCookie = _cookie;
     _backgroundQueue = List<MusicSong>.unmodifiable(_queue);
     _backgroundCurrentId = song.id;
@@ -439,7 +415,7 @@ class _MusicPageState extends State<MusicPage> {
     try {
       // Fetch the playable URL first. Lyrics are deliberately loaded after
       // playback starts so a slow lyric endpoint cannot hold up the music.
-      final url = await _api.songUrl(_worker, song.id, cookie: _cookie);
+      final url = await _api.songUrl('', song.id, cookie: _cookie);
       if (!mounted || request != _playRequest) return;
       await _audio.setAudioSource(
         AudioSource.uri(
@@ -462,7 +438,7 @@ class _MusicPageState extends State<MusicPage> {
 
       // Lyrics load independently and only update the lyric panel if this is
       // still the currently requested track.
-      unawaited(_api.lyric(_worker, song.id, cookie: _cookie).then((response) {
+      unawaited(_api.lyric('', song.id, cookie: _cookie).then((response) {
         if (!mounted || request != _playRequest) return;
         final raw = MusicApiClient.lyricText(response) ?? '';
         setState(() => _lyrics = _parseLyrics(raw));
@@ -515,7 +491,7 @@ class _MusicPageState extends State<MusicPage> {
   Future<void> _openPlaylist(MusicPlaylist playlist) async {
     setState(() => _busy = true);
     try {
-      final songs = await _api.playlistSongs(_worker, _cookie, playlist.id);
+      final songs = await _api.playlistSongs('', _cookie, playlist.id);
       if (!mounted) return;
       await showModalBottomSheet<void>(
         context: context,
@@ -1115,44 +1091,23 @@ class _MusicPageState extends State<MusicPage> {
   }
 
   Future<void> _showSettings() async {
-    _workerController.text = _worker;
     await showModalBottomSheet<void>(
       context: context,
-      isScrollControlled: true,
       backgroundColor: _paper,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
       builder: (context) => SafeArea(
         child: Padding(
-          padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 22),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Text('音乐连接设置', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _ink)),
-            const SizedBox(height: 7),
-            const Text('默认使用糯米机音乐模块的公共代理，无需你部署服务器。也可以填写自己的兼容 Worker 地址。', style: TextStyle(fontSize: 11, height: 1.6, color: _muted)),
-            const SizedBox(height: 14),
-            TextField(
-              controller: _workerController,
-              keyboardType: TextInputType.url,
-              autocorrect: false,
-              decoration: InputDecoration(
-                hintText: MusicApiClient.defaultWorker,
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: _line)),
-              ),
-            ),
-            const SizedBox(height: 13),
-            Row(children: [
-              Expanded(child: OutlinedButton(onPressed: () => Navigator.pop(context), child: const Text('取消'))),
-              const SizedBox(width: 9),
-              Expanded(child: FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: _ink, foregroundColor: Colors.white),
-                onPressed: () async {
-                  await _saveWorker(_workerController.text);
-                  if (context.mounted) Navigator.pop(context);
-                },
-                child: const Text('保存地址'),
-              )),
-            ]),
+            const SizedBox(height: 10),
+            const Text('音乐搜索、登录、歌单、歌词和播放地址均由手机直接连接网易云音乐，不需要填写服务器或代理地址。实际可播放内容仍受歌曲版权、会员权限和网络环境影响。', style: TextStyle(fontSize: 12, height: 1.7, color: _muted)),
+            const SizedBox(height: 16),
+            SizedBox(width: double.infinity, child: FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: _ink, foregroundColor: Colors.white),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('知道了'),
+            )),
           ]),
         ),
       ),
