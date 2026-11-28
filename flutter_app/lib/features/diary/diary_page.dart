@@ -72,7 +72,7 @@ class _DiaryPageState extends State<DiaryPage> {
     final folder = Directory('${dir.path}/mio_diary_photos');
     if (!await folder.exists()) await folder.create(recursive:true);
     final ext = x.path.contains('.') ? x.path.substring(x.path.lastIndexOf('.')) : '.jpg';
-    final path = '${folder.path}/${DateTime.now().microsecondsSinceEpoch}${ext}';
+    final path = '${folder.path}/${DateTime.now().microsecondsSinceEpoch}$ext';
     return (await File(x.path).copy(path)).path;
   }
 
