@@ -139,7 +139,7 @@ class _HomePageState extends State<HomePage> {
         context.push('/chat');
         break;
       case 'diary':
-        _showComingSoon('日记');
+        context.push('/diary');
         break;
       case 'settings':
         _showComingSoon('设置');
