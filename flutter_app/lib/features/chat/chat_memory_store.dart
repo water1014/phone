@@ -304,6 +304,65 @@ abstract final class ChatMemoryStore {
     return ranked.take(limit).map((entry) => entry.item).toList();
   }
 
+  static const _originalIndexKey = 'chat.originalMessageIndex.v1';
+  static const _originalIndexBuiltKey = 'chat.originalMessageIndex.built.v1';
+
+  static Map<String, dynamic> _buildConversationIndex(
+    String title,
+    List<ChatMessageRecord> messages,
+  ) {
+    final postings = <String, List<int>>{};
+    for (var index = 0; index < messages.length; index++) {
+      final message = messages[index];
+      if (message.isSystem || message.isTyping || message.text.trim().isEmpty) continue;
+      for (final term in _queryTerms(message.text)) {
+        (postings[term] ??= <int>[]).add(index);
+      }
+    }
+    return {
+      'title': title,
+      'messageCount': messages.length,
+      'postings': postings,
+    };
+  }
+
+  /// Builds a lightweight inverted index once for existing archives.
+  /// The index stores term-to-position mappings only, never a second copy
+  /// of message text. Original messages remain in ChatConversationStore.
+  static Future<void> ensureOriginalMessageIndex() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_originalIndexBuiltKey) == true) return;
+    final conversations = await ChatConversationStore.loadConversations();
+    final index = <String, dynamic>{};
+    for (final conversation in conversations) {
+      final messages = await ChatConversationStore.loadMessages(conversation.id);
+      index[conversation.id] = _buildConversationIndex(conversation.title, messages);
+    }
+    await prefs.setString(_originalIndexKey, jsonEncode(index));
+    await prefs.setBool(_originalIndexBuiltKey, true);
+  }
+
+  /// Refreshes only the conversation that was just persisted.
+  static Future<void> updateOriginalMessageIndex({
+    required String conversationId,
+    required String title,
+    required List<ChatMessageRecord> messages,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await ensureOriginalMessageIndex();
+    final raw = prefs.getString(_originalIndexKey);
+    Map<String, dynamic> index;
+    try {
+      index = raw == null
+          ? <String, dynamic>{}
+          : Map<String, dynamic>.from(jsonDecode(raw) as Map);
+    } catch (_) {
+      index = <String, dynamic>{};
+    }
+    index[conversationId] = _buildConversationIndex(title, messages);
+    await prefs.setString(_originalIndexKey, jsonEncode(index));
+  }
+
   static Future<List<ChatHistoryMatch>> searchOriginalMessages({
     required String query,
     required String activeConversationId,
@@ -311,12 +370,38 @@ abstract final class ChatMemoryStore {
     int limit = 4,
   }) async {
     if (query.trim().length < 2) return const [];
+    await ensureOriginalMessageIndex();
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_originalIndexKey);
+    if (raw == null || raw.isEmpty) return const [];
+    Map<String, dynamic> index;
+    try {
+      index = Map<String, dynamic>.from(jsonDecode(raw) as Map);
+    } catch (_) {
+      return const [];
+    }
+
     final terms = _queryTerms(query);
     final conversations = await ChatConversationStore.loadConversations();
     final matches = <ChatHistoryMatch>[];
     for (final conversation in conversations) {
+      final indexed = index[conversation.id];
+      if (indexed is! Map) continue;
+      final rawPostings = indexed['postings'];
+      if (rawPostings is! Map) continue;
+      final candidatePositions = <int>{};
+      for (final term in terms) {
+        final positions = rawPostings[term];
+        if (positions is List) {
+          candidatePositions.addAll(positions.whereType<num>().map((value) => value.toInt()));
+        }
+      }
+      if (candidatePositions.isEmpty) continue;
+
       final messages = await ChatConversationStore.loadMessages(conversation.id);
-      for (final message in messages) {
+      for (final position in candidatePositions) {
+        if (position < 0 || position >= messages.length) continue;
+        final message = messages[position];
         if (message.isSystem || message.isTyping || message.text.trim().isEmpty) continue;
         final key = '${message.createdAt.microsecondsSinceEpoch}:${message.mine}:${message.text}';
         if (conversation.id == activeConversationId && recentMessageKeys.contains(key)) continue;
