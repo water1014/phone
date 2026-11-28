@@ -414,10 +414,10 @@ class _SwipeDiaryCardState extends State<_SwipeDiaryCard> {
                   padding:const EdgeInsets.symmetric(vertical:16,horizontal:2),
                   decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFECECEC)))),
                   child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[
-                    SizedBox(width:44,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-                      Text('\${e.date.day}',style:const TextStyle(fontSize:26,height:1.05,fontWeight:FontWeight.w500)),
+                    const SizedBox(width:44,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                      Text('${e.date.day}',style:const TextStyle(fontSize:26,height:1.05,fontWeight:FontWeight.w500)),
                       const SizedBox(height:3),
-                      Text('\${e.date.year}.\${e.date.month}',style:const TextStyle(fontSize:10,color:Color(0xFF8A8A8A)))
+                      Text('${e.date.year}.${e.date.month}',style:const TextStyle(fontSize:10,color:Color(0xFF8A8A8A)))
                     ])),
                     const SizedBox(width:13),
                     Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
@@ -519,7 +519,7 @@ class _ReaderState extends State<_Reader>{
                 Row(children:[CircleAvatar(radius:18,backgroundColor:const Color(0xFFF0F0F0),child:Text(widget.ownerName=='我'?'我':'T',style:const TextStyle(color:Color(0xFF111111),fontSize:12))),const SizedBox(width:10),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(widget.ownerName,style:const TextStyle(fontSize:14,fontWeight:FontWeight.w600)),Text(widget.ownerName=='我'?'@me':'@companion',style:const TextStyle(fontSize:10,color:Color(0xFF999999)))])),Text('${e.date.year}/${e.date.month}/${e.date.day}  ${e.time.hour.toString().padLeft(2,'0')}:${e.time.minute.toString().padLeft(2,'0')}',style:const TextStyle(fontSize:10,color:Color(0xFF999999)))]),
                 const SizedBox(height:17),
                 if(widget.decorText.isNotEmpty)Padding(padding:const EdgeInsets.only(bottom:18),child:Text(widget.decorText,style:const TextStyle(fontSize:13,height:1.6,color:Color(0xFF777777)))),
-                Row(children:[const Icon(Icons.chat_bubble_outline_rounded,size:15,color:Color(0xFF999999)),const SizedBox(width:7),const Text('写于 Mio Diary',style:TextStyle(fontSize:11,color:Color(0xFF999999),fontStyle:FontStyle.italic))]),
+                const Row(children:[const Icon(Icons.chat_bubble_outline_rounded,size:15,color:Color(0xFF999999)),const SizedBox(width:7),const Text('写于 Mio Diary',style:TextStyle(fontSize:11,color:Color(0xFF999999),fontStyle:FontStyle.italic))]),
                 const SizedBox(height:24),
                 if(e.title.isNotEmpty)GestureDetector(onTap:trTitle.isEmpty?null:()=>setState(()=>translated=!translated),child:Text(translated&&trTitle.isNotEmpty?trTitle:e.title,style:const TextStyle(fontSize:23,height:1.4,fontWeight:FontWeight.w600))),
                 if(e.title.isNotEmpty)const SizedBox(height:18),
@@ -552,7 +552,7 @@ class _Entry {
     final lines=body.split('\n').toList();
     var first=0;
     while(first<lines.length&&lines[first].trim().isEmpty){first++;}
-    final norm=(String value)=>value
+    String norm(String value)=>value
       .replaceAll(RegExp(r'\[\[(?:红|蓝)[:：]([\s\S]*?)\]\]'),r'$1')
       .replaceAll(RegExp(r'[\s\p{P}\p{S}]',unicode:true),'')
       .toLowerCase();
