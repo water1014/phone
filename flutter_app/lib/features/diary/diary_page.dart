@@ -130,7 +130,7 @@ class _DiaryPageState extends State<DiaryPage> {
                   Positioned(top:57,right:27,child:Container(width:8,height:8,decoration:BoxDecoration(color:printing?Colors.white:const Color(0xFF8FD6A3),shape:BoxShape.circle))),
                   AnimatedPositioned(duration:const Duration(milliseconds:850),curve:Curves.easeOutCubic,
                     top:printing?54:82,left:35,right:35,
-                    child:AnimatedOpacity(duration:const Duration(milliseconds:500),opacity:printing?.0:1,
+                    child:AnimatedOpacity(duration:const Duration(milliseconds:500),opacity:printing ? 0.0 : 1.0,
                       child:Container(padding:const EdgeInsets.fromLTRB(6,6,6,0),color:Colors.white,
                         child:Column(mainAxisSize:MainAxisSize.min,children:[
                           AspectRatio(aspectRatio:1,child:file.existsSync()?Image.file(file,fit:BoxFit.cover):const ColoredBox(color:Color(0xFFE6E6E6))),
