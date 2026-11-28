@@ -188,7 +188,7 @@ class ChatSettingsPage extends StatelessWidget {
                         ]),
                       ),
                       Slider(
-                        value: prefs.wallpaperScale.clamp(1, 2.5),
+                        value: prefs.wallpaperScale.clamp(1, 2.5).toDouble(),
                         min: 1,
                         max: 2.5,
                         divisions: 30,
@@ -205,7 +205,7 @@ class ChatSettingsPage extends StatelessWidget {
                         ]),
                       ),
                       Slider(
-                        value: prefs.wallpaperPositionX.clamp(-1, 1),
+                        value: prefs.wallpaperPositionX.clamp(-1, 1).toDouble(),
                         min: -1,
                         max: 1,
                         divisions: 40,
@@ -222,7 +222,7 @@ class ChatSettingsPage extends StatelessWidget {
                         ]),
                       ),
                       Slider(
-                        value: prefs.wallpaperPositionY.clamp(-1, 1),
+                        value: prefs.wallpaperPositionY.clamp(-1, 1).toDouble(),
                         min: -1,
                         max: 1,
                         divisions: 40,
