@@ -436,9 +436,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   @override
   void didChangeMetrics() {
-    if (!_stickToLatestOnViewportChange) return;
+    final shouldStick = _stickToLatestOnViewportChange;
+    if (!shouldStick) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _stickToLatestOnViewportChange) _scrollToLatest(immediate: true);
+      if (mounted && shouldStick) _scrollToLatest(immediate: true);
     });
   }
 
@@ -2269,6 +2270,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   }
 
   void _scrollToLatest({bool immediate = false}) {
+    _stickToLatestOnViewportChange = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_messagesScroll.hasClients) return;
       final position = _messagesScroll.position;

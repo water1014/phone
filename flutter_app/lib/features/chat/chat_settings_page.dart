@@ -465,404 +465,7 @@ class ChatSettingsPage extends StatelessWidget {
         await wallpaperDirectory.create(recursive: true);
       }
       final extension = picked.path.split('.').last.toLowerCase();
-      final safeExtension = RegExp(r'^[a-z0-9]{2,5}
-  Future<void> _pickAvatar(BuildContext context, ChatPreferences prefs, {required bool partner}) async {
-    try {
-      final picked = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 88,
-        maxWidth: 1024,
-        maxHeight: 1024,
-      );
-      if (picked == null) return;
-      final directory = await getApplicationDocumentsDirectory();
-      final avatarDirectory = Directory('${directory.path}/chat_avatars');
-      if (!await avatarDirectory.exists()) await avatarDirectory.create(recursive: true);
-      final target = File('${avatarDirectory.path}/${partner ? 'partner' : 'me'}_avatar.jpg');
-      await File(picked.path).copy(target.path);
-      final next = partner
-          ? prefs.copyWith(partnerAvatarPath: target.path)
-          : prefs.copyWith(myAvatarPath: target.path);
-      await _update(next);
-    } catch (error) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('设置头像失败：$error')));
-      }
-    }
-  }
-
-  Future<void> _editName(BuildContext context, ChatPreferences prefs, {required bool partner}) async {
-    final controller = TextEditingController(text: partner ? prefs.partnerName : prefs.myName);
-    final value = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        title: Text(partner ? '修改对方昵称' : '修改我的昵称', style: const TextStyle(fontSize: 17, color: _ink)),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLength: 16,
-          decoration: InputDecoration(
-            hintText: '输入显示昵称',
-            filled: true,
-            fillColor: _soft,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: BorderSide.none),
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
-          TextButton(onPressed: () => Navigator.pop(dialogContext, controller.text.trim()), child: const Text('保存')),
-        ],
-      ),
-    );
-    controller.dispose();
-    if (value == null || value.trim().isEmpty) return;
-    await _update(partner ? prefs.copyWith(partnerName: value.trim()) : prefs.copyWith(myName: value.trim()));
-  }
-
-  Future<void> _editQuickReplies(BuildContext context, ChatPreferences prefs) async {
-    final values = List.generate(
-      4,
-      (index) => TextEditingController(
-        text: index < prefs.quickReplies.length ? prefs.quickReplies[index] : '',
-      ),
-    );
-    final result = await showDialog<List<String>>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        title: const Text('编辑常用语', style: TextStyle(fontSize: 17, color: _ink)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var index = 0; index < values.length; index++)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 9),
-                  child: TextField(
-                    controller: values[index],
-                    maxLength: 18,
-                    decoration: InputDecoration(
-                      counterText: '',
-                      labelText: '常用语 ${index + 1}',
-                      filled: true,
-                      fillColor: _soft,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(13),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                ),
-              const Text(
-                '这些短句会出现在输入框上方，点击后填入输入框，不会直接发送。',
-                style: TextStyle(fontSize: 10, height: 1.5, color: _muted),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(
-              dialogContext,
-              values.map((item) => item.text.trim()).where((item) => item.isNotEmpty).toList(),
-            ),
-            child: const Text('保存'),
-          ),
-        ],
-      ),
-    );
-    for (final controller in values) {
-      controller.dispose();
-    }
-    if (result != null) {
-      await _update(prefs.copyWith(quickReplies: result));
-    }
-  }
-
-  Future<void> _update(ChatPreferences next) => ChatPreferenceStore.update(next);
-}
-
-class _SettingsAction extends StatelessWidget {
-  const _SettingsAction({required this.icon, required this.title, required this.value, required this.onTap});
-  final IconData icon;
-  final String title;
-  final String value;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(12),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(children: [
-        _SettingIcon(icon: icon),
-        const SizedBox(width: 11),
-        Expanded(child: Text(title, style: const TextStyle(fontSize: 12, color: _ink))),
-        Text(value, style: const TextStyle(fontSize: 11, color: _muted)),
-        const SizedBox(width: 4),
-        const Icon(Icons.chevron_right_rounded, size: 18, color: _muted),
-      ]),
-    ),
-  );
-}
-
-class _ReplyLayoutPicker extends StatelessWidget {
-  const _ReplyLayoutPicker({required this.selected, required this.onChanged});
-  final int selected;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final options = [
-      (value: 0, icon: Icons.notes_rounded, title: '完整长段', subtitle: '保留连贯的大段回复，适合沉浸阅读'),
-      (value: 1, icon: Icons.forum_outlined, title: '聊天分句', subtitle: '每个完整句子独立成泡，短句自然合并，长句按语意停顿'),
-    ];
-    return Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 7),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(bottom: 9),
-            child: Text('对方回复排版', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _ink)),
-          ),
-          ...options.map((option) {
-            final active = selected == option.value;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: InkWell(
-                onTap: () => onChanged(option.value),
-                borderRadius: BorderRadius.circular(13),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: active ? const Color(0xFFF2F2F2) : Colors.white,
-                    borderRadius: BorderRadius.circular(13),
-                    border: Border.all(color: active ? _accent : _line, width: active ? 1.3 : 1),
-                  ),
-                  child: Row(children: [
-                    _SettingIcon(icon: option.icon),
-                    const SizedBox(width: 10),
-                    Expanded(child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(option.title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _ink)),
-                        const SizedBox(height: 3),
-                        Text(option.subtitle, style: const TextStyle(fontSize: 10, color: _muted)),
-                      ],
-                    )),
-                    Icon(active ? Icons.check_circle_rounded : Icons.circle_outlined, size: 18, color: active ? _accent : const Color(0xFFD0D0D0)),
-                  ]),
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-}
-
-class _BubbleStylePicker extends StatelessWidget {
-  const _BubbleStylePicker({required this.selected, required this.onChanged});
-  final int selected;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final options = [
-      (title: 'HelloTalk', subtitle: '头像在消息旁 · 圆润气泡', value: 0),
-      (title: 'iMessage', subtitle: '经典左右对话 · 简洁气泡', value: 1),
-    ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.only(top: 8, bottom: 9),
-          child: Text('聊天气泡样式', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _ink)),
-        ),
-        ...options.map((option) {
-          final active = selected == option.value;
-          final hello = option.value == 0;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 9),
-            child: InkWell(
-              onTap: () => onChanged(option.value),
-              borderRadius: BorderRadius.circular(15),
-              child: Container(
-                padding: const EdgeInsets.all(11),
-                decoration: BoxDecoration(
-                  color: active ? const Color(0xFFF2F2F2) : Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: active ? _accent : _line, width: active ? 1.4 : 1),
-                ),
-                child: Row(children: [
-                  SizedBox(
-                    width: 116,
-                    child: Column(children: [
-                      Row(
-                        children: [
-                          Container(width: 20, height: 20, decoration: const BoxDecoration(color: Color(0xFFE6E6E6), shape: BoxShape.circle), child: const Center(child: Text('祁', style: TextStyle(fontSize: 9, color: _ink)))),
-                          const SizedBox(width: 5),
-                          Container(width: 62, height: 24, decoration: BoxDecoration(color: const Color(0xFFF0F0F0), border: Border.all(color: const Color(0xFFE6E6E6)), borderRadius: BorderRadius.only(topLeft: Radius.circular(hello ? 5 : 14), topRight: const Radius.circular(14), bottomLeft: const Radius.circular(14), bottomRight: const Radius.circular(14)))),
-                        ],
-                      ),
-                      const SizedBox(height: 7),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Container(width: 57, height: 24, decoration: BoxDecoration(color: const Color(0xFF222222), borderRadius: BorderRadius.only(topLeft: const Radius.circular(14), topRight: Radius.circular(hello ? 5 : 14), bottomLeft: const Radius.circular(14), bottomRight: const Radius.circular(14)))),
-                          const SizedBox(width: 5),
-                          Container(width: 20, height: 20, decoration: const BoxDecoration(color: Color(0xFFE6E6E6), shape: BoxShape.circle), child: const Center(child: Text('我', style: TextStyle(fontSize: 9, color: _ink)))),
-                        ],
-                      ),
-                    ]),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(option.title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _ink)),
-                    const SizedBox(height: 4),
-                    Text(option.subtitle, style: const TextStyle(fontSize: 10, color: _muted)),
-                  ])),
-                  Icon(active ? Icons.check_circle_rounded : Icons.circle_outlined, size: 18, color: active ? _accent : const Color(0xFFD0D0D0)),
-                ]),
-              ),
-            ),
-          );
-        }),
-        const Padding(
-          padding: EdgeInsets.only(bottom: 4),
-          child: Text('头像可单独关闭；照片、表情包和文件仍以独立内容展示。', style: TextStyle(fontSize: 10, height: 1.5, color: _muted)),
-        ),
-      ],
-    );
-  }
-}
-
-class _SettingsSection extends StatelessWidget {
-  const _SettingsSection({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.children,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(21),
-      border: Border.all(color: _line),
-      boxShadow: [BoxShadow(color: const Color(0xFF27332D).withValues(alpha: .025), blurRadius: 16, offset: const Offset(0, 4))],
-    ),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(children: [
-        _SettingIcon(icon: icon, color: _accent),
-        const SizedBox(width: 10),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
-          const SizedBox(height: 3),
-          Text(subtitle, style: const TextStyle(fontSize: 10, color: _muted)),
-        ])),
-      ]),
-      const SizedBox(height: 7),
-      ...children,
-    ]),
-  );
-}
-
-int _countWorldbookEntries(String raw) {
-  try {
-    final decoded = jsonDecode(raw);
-    dynamic entries;
-    if (decoded is Map) {
-      entries = decoded['entries'] ?? decoded['worldbook'] ?? decoded['data']?['entries'];
-    } else if (decoded is List) {
-      entries = decoded;
-    }
-    if (entries is Map) return entries.values.where((entry) => entry is Map && (entry['content'] ?? '').toString().trim().isNotEmpty).length;
-    if (entries is List) return entries.where((entry) => entry is Map && (entry['content'] ?? '').toString().trim().isNotEmpty).length;
-  } catch (_) {}
-  return 0;
-}
-
-class _SettingIcon extends StatelessWidget {
-  const _SettingIcon({required this.icon, this.color = _muted});
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 34,
-    height: 34,
-    decoration: BoxDecoration(color: _soft, borderRadius: BorderRadius.circular(11)),
-    child: Icon(icon, size: 17, color: color),
-  );
-}
-
-class _PreferenceSwitch extends StatelessWidget {
-  const _PreferenceSwitch({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-    this.last = false,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-  final bool last;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    constraints: const BoxConstraints(minHeight: 65),
-    padding: const EdgeInsets.symmetric(vertical: 8),
-    decoration: BoxDecoration(
-      border: last ? null : const Border(bottom: BorderSide(color: Color(0xFFF0F2F0))),
-    ),
-    child: Row(children: [
-      _SettingIcon(icon: icon),
-      const SizedBox(width: 11),
-      Expanded(child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _ink)),
-          const SizedBox(height: 4),
-          Text(subtitle, style: const TextStyle(fontSize: 10, height: 1.4, color: _muted)),
-        ],
-      )),
-      const SizedBox(width: 7),
-      Switch.adaptive(
-        value: value,
-        activeColor: Colors.white,
-        activeTrackColor: _accent,
-        inactiveTrackColor: const Color(0xFFE8ECE9),
-        inactiveThumbColor: Colors.white,
-        onChanged: onChanged,
-      ),
-    ]),
-  );
-}
-).hasMatch(extension) ? extension : 'jpg';
+      final safeExtension = RegExp(r'^[a-z0-9]{2,5}$').hasMatch(extension) ? extension : 'jpg';
       final target = File('${wallpaperDirectory.path}/chat_wallpaper_${DateTime.now().microsecondsSinceEpoch}.$safeExtension');
       await File(picked.path).copy(target.path);
       await _update(prefs.copyWith(
@@ -1274,7 +877,6 @@ class _PreferenceSwitch extends StatelessWidget {
   );
 }
 
-
 class _WallpaperCropResult {
   const _WallpaperCropResult(this.scale, this.x, this.y);
   final double scale;
@@ -1321,13 +923,13 @@ class _WallpaperCropDialogState extends State<_WallpaperCropDialog> {
           ]),
         ),
         const Padding(
-          padding: EdgeInsets.fromLTRB(22, 0, 22, 14),
+          padding: EdgeInsets.fromLTRB(22, 0, 22, 12),
           child: Text('拖动图片调整取景，双指缩放。下面会预览聊天里的实际显示效果。', style: TextStyle(fontSize: 11, color: _muted), textAlign: TextAlign.center),
         ),
         Expanded(
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 6),
               child: LayoutBuilder(builder: (context, constraints) {
                 final frameHeight = constraints.maxHeight;
                 final frameWidth = constraints.maxWidth;
@@ -1354,16 +956,11 @@ class _WallpaperCropDialogState extends State<_WallpaperCropDialog> {
                         Transform.scale(
                           scale: _scale,
                           alignment: Alignment(_x, _y),
-                          child: Image.file(
-                            File(widget.imagePath),
-                            fit: BoxFit.cover,
-                            alignment: Alignment(_x, _y),
-                          ),
+                          child: Image.file(File(widget.imagePath), fit: BoxFit.cover, alignment: Alignment(_x, _y)),
                         ),
                         ColoredBox(color: Colors.white.withValues(alpha: .16)),
                         Positioned(left: 14, top: 18, child: _previewBubble('今天过得怎么样？', false)),
                         Positioned(right: 14, bottom: 20, child: _previewBubble('想和你分享一件事。', true)),
-                        Positioned(left: 0, right: 0, top: 0, child: Container(height: 1, color: Colors.white.withValues(alpha: .65))),
                       ]),
                     ),
                   ),
@@ -1373,7 +970,7 @@ class _WallpaperCropDialogState extends State<_WallpaperCropDialog> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 10, 24, 4),
+          padding: const EdgeInsets.fromLTRB(24, 6, 24, 0),
           child: Row(children: [
             const Icon(Icons.zoom_in_rounded, size: 17, color: _muted),
             const SizedBox(width: 8),
@@ -1386,7 +983,7 @@ class _WallpaperCropDialogState extends State<_WallpaperCropDialog> {
           child: Slider(value: _scale, min: 1, max: 2.5, divisions: 30, activeColor: _accent, onChanged: (v) => setState(() => _scale = v)),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 4),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
           child: Row(children: [
             const Icon(Icons.swap_horiz_rounded, size: 17, color: _muted),
             const SizedBox(width: 8),
@@ -1399,7 +996,7 @@ class _WallpaperCropDialogState extends State<_WallpaperCropDialog> {
           child: Slider(value: _x, min: -1, max: 1, divisions: 40, activeColor: _accent, onChanged: (v) => setState(() => _x = v)),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 4),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
           child: Row(children: [
             const Icon(Icons.swap_vert_rounded, size: 17, color: _muted),
             const SizedBox(width: 8),
@@ -1412,11 +1009,11 @@ class _WallpaperCropDialogState extends State<_WallpaperCropDialog> {
           child: Slider(value: _y, min: -1, max: 1, divisions: 40, activeColor: _accent, onChanged: (v) => setState(() => _y = v)),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(22, 5, 22, 18),
+          padding: const EdgeInsets.fromLTRB(22, 2, 22, 16),
           child: SizedBox(
             width: double.infinity,
             child: FilledButton(
-              style: FilledButton.styleFrom(backgroundColor: _accent, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14)),
+              style: FilledButton.styleFrom(backgroundColor: _accent, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 13)),
               onPressed: () => Navigator.pop(context, _WallpaperCropResult(_scale, _x, _y)),
               child: const Text('应用这张背景'),
             ),
