@@ -334,6 +334,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   String _activeConversationId = '';
   String _activeConversationSummary = '';
   List<ChatConversationRecord> _conversations = [];
+  int _contextWindowLimit = 32768;
+  int _lastPromptTokens = 0;
+  bool _pendingAutoRollover = false;
   bool _searching = false;
   bool _loadingHistory = true;
   bool _sending = false;
@@ -382,11 +385,13 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     final active = await ChatConversationStore.ensureActive();
     final saved = await ChatConversationStore.loadMessages(active.id);
     final conversations = await ChatConversationStore.loadConversations();
+    final contextLimit = await ChatConversationStore.loadContextLimit();
     if (!mounted) return;
     setState(() {
       _activeConversationId = active.id;
       _activeConversationSummary = active.summary;
       _conversations = conversations;
+      _contextWindowLimit = contextLimit;
       _messages
         ..clear()
         ..addAll(saved.map((message) => _ChatMessage(
@@ -489,6 +494,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   Future<void> _send([String? quickText, String? voicePath, int? voiceDurationMs, String? stickerPath, String? stickerUrl]) async {
     if (_sending) return;
+    _pendingAutoRollover = false;
     final value = (quickText ?? _input.text).trim();
     final imagePath = quickText == null ? _pendingImagePath : stickerPath;
     final attachmentPath = quickText == null ? _pendingFilePath : null;
@@ -769,6 +775,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           );
         });
       }
+      _lastPromptTokens = pendingInputTokens ?? _estimatePromptTokens(requestMessages);
+      _pendingAutoRollover = _lastPromptTokens >= (_contextWindowLimit * 0.8).ceil();
       await _persistChat();
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
     } catch (error) {
@@ -806,7 +814,17 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
     } finally {
       _activeCancelToken = null;
+      final shouldRollover = _pendingAutoRollover;
+      _pendingAutoRollover = false;
       if (mounted) setState(() => _sending = false);
+      if (shouldRollover && mounted) {
+        await _createNewConversation();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('当前窗口接近上下文上限，已自动开启新窗口并保留交接资料')),
+          );
+        }
+      }
     }
   }
 
@@ -881,6 +899,69 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       });
       await _persistChat();
     }
+  }
+
+  int _estimatePromptTokens(List<Map<String, dynamic>> messages) {
+    var characters = 0;
+    for (final message in messages) {
+      final content = message['content'];
+      if (content is String) {
+        characters += content.runes.length;
+      } else if (content is List) {
+        for (final part in content) {
+          if (part is Map && part['text'] is String) {
+            characters += (part['text'] as String).runes.length;
+          }
+        }
+      }
+    }
+    // A conservative local estimate. Provider-reported prompt_tokens take priority.
+    return (characters / 1.7).ceil() + messages.length * 6;
+  }
+
+  Future<void> _showContextUsageSettings() async {
+    final controller = TextEditingController(text: _contextWindowLimit.toString());
+    final updatedLimit = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('上下文容量与自动换窗'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('当前窗口上限：$_contextWindowLimit tokens'),
+            const SizedBox(height: 8),
+            Text('最近一次请求：${_lastPromptTokens == 0 ? '尚无统计' : '约 $_lastPromptTokens tokens'}'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: '当前模型的上下文容量',
+                helperText: '请按模型说明填写。达到容量的 80% 后自动换窗。',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text('接口返回实际 Token 用量时优先采用实际值；没有用量数据时使用本地估算。估算并非精确 tokenizer。', style: TextStyle(fontSize: 11, color: Color(0xFF777777))),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
+          TextButton(
+            onPressed: () {
+              final value = int.tryParse(controller.text.trim());
+              if (value != null && value >= 1024) Navigator.pop(dialogContext, value);
+            },
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (updatedLimit == null) return;
+    await ChatConversationStore.saveContextLimit(updatedLimit);
+    if (mounted) setState(() => _contextWindowLimit = updatedLimit);
   }
 
   String _buildHandoffSummary() {
@@ -1153,6 +1234,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           if (value == 'settings') context.push('/chat/settings');
           if (value == 'new_window') unawaited(_createNewConversation());
           if (value == 'switch_window') unawaited(_showConversationPicker());
+          if (value == 'context_usage') unawaited(_showContextUsageSettings());
           if (value == 'latest') {
             FocusScope.of(context).unfocus();
             _scrollToLatest();
@@ -1168,6 +1250,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           PopupMenuItem(value: 'all', child: Text('显示全部消息')),
           PopupMenuItem(value: 'new_window', child: Text('新建聊天窗口')),
           PopupMenuItem(value: 'switch_window', child: Text('切换聊天窗口')),
+          PopupMenuItem(value: 'context_usage', child: Text('上下文用量与自动换窗')),
           PopupMenuItem(value: 'settings', child: Text('聊天设置')),
           PopupMenuItem(value: 'latest', child: Text('回到最新消息')),
           PopupMenuItem(value: 'clear', child: Text('清空对话')),
