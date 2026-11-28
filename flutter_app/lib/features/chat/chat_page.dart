@@ -898,8 +898,25 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     if (visibleCount == 0) {
       return Center(child: Text(_selectedDay != null ? '这一天还没有聊天记录' : (_query.isEmpty ? '还没有消息，在下面写一句吧。' : '没有找到相关消息'), style: const TextStyle(color: AppColors.muted, fontSize: 13)));
     }
+    final wallpaperPath = prefs.chatWallpaperPath;
+    final wallpaperFile = wallpaperPath == null || wallpaperPath.isEmpty
+        ? null
+        : File(wallpaperPath);
+    final hasWallpaper = wallpaperFile != null && wallpaperFile.existsSync();
     return Stack(
       children: [
+        if (hasWallpaper)
+          Positioned.fill(
+            child: Image.file(
+              wallpaperFile,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFFFAFAFA)),
+            ),
+          ),
+        if (hasWallpaper)
+          Positioned.fill(
+            child: ColoredBox(color: Colors.white.withValues(alpha: .38)),
+          ),
         ListView.builder(
       reverse: false,
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
