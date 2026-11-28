@@ -1084,7 +1084,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   Widget _messageRow(_ChatMessage message, ChatPreferences prefs, bool compact) {
     final mine = message.mine;
-    final mediaOnly = (message.imagePath != null || message.stickerUrl != null || message.audioPath != null || message.attachmentPath != null) && message.text.trim().isEmpty;
     final myLabel = prefs.myName.trim().isEmpty ? '我' : prefs.myName.trim();
     final partnerLabel = prefs.partnerName.trim().isEmpty ? '宋祁' : prefs.partnerName.trim();
     final avatarLabel = mine ? myLabel.substring(0, 1) : partnerLabel.substring(0, 1);
