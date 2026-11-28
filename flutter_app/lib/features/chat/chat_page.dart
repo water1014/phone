@@ -263,31 +263,13 @@ List<String> _chatReplySegments(String text, bool splitMode) {
       if (clauses.length > 1) units = clauses;
     }
 
-    if (units.length == 1 && units.first.length <= 42) {
+    // In chat mode, each complete sentence is its own bubble.
+    // A long sentence is only split above when it contains natural pause marks.
+    if (units.length == 1) {
       result.add(units.first);
-      continue;
+    } else {
+      result.addAll(units);
     }
-
-    var chunk = '';
-    for (final unit in units) {
-      final lastCode = chunk.isEmpty ? 0 : chunk.codeUnitAt(chunk.length - 1);
-      final firstCode = unit.isEmpty ? 0 : unit.codeUnitAt(0);
-      final lastIsAsciiWord = (lastCode >= 48 && lastCode <= 57) ||
-          (lastCode >= 65 && lastCode <= 90) ||
-          (lastCode >= 97 && lastCode <= 122);
-      final firstIsAsciiWord = (firstCode >= 48 && firstCode <= 57) ||
-          (firstCode >= 65 && firstCode <= 90) ||
-          (firstCode >= 97 && firstCode <= 122);
-      final separator = chunk.isNotEmpty && lastIsAsciiWord && firstIsAsciiWord ? ' ' : '';
-      final candidate = chunk.isEmpty ? unit : '$chunk$separator$unit';
-      if (chunk.isNotEmpty && chunk.length >= 12 && candidate.length > 38) {
-        result.add(chunk);
-        chunk = unit;
-      } else {
-        chunk = candidate;
-      }
-    }
-    if (chunk.isNotEmpty) result.add(chunk);
   }
 
   return result.isEmpty ? [text] : result;
