@@ -2503,7 +2503,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     );
     if (confirmed == true) {
       setState(_messages.clear);
-      await ChatMessageStore.clear();
+      await _persistChat();
     }
   }
 
