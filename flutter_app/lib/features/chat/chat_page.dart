@@ -333,7 +333,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   int? _pendingFileSize;
   final List<_ChatMessage> _messages = [];
   String _activeConversationId = '';
-  String _activeConversationSummary = '';
   int _contextWindowLimit = 32768;
   String _contextModelKey = 'deepseek:deepseek-reasoner';
   int _lastPromptTokens = 0;
@@ -395,7 +394,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     if (!mounted) return;
     setState(() {
       _activeConversationId = active.id;
-      _activeConversationSummary = active.summary;
       _contextWindowLimit = contextLimit;
       _contextModelKey = contextModelKey;
       _cacheHitTokensTotal = cacheUsage['hits'] ?? 0;
@@ -527,11 +525,15 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     FocusScope.of(context).unfocus();
     unawaited(_saveDraft(''));
     await _persistChat();
-    await ChatMemoryStore.captureUserMessage(
-      text: value,
-      conversationId: _activeConversationId,
-      createdAt: userMessageTime,
-    );
+    try {
+      await ChatMemoryStore.captureUserMessage(
+        text: value,
+        conversationId: _activeConversationId,
+        createdAt: userMessageTime,
+      );
+    } catch (_) {
+      // Memory capture must never block sending or saving the original message.
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
 
     final cancelToken = CancelToken();
@@ -659,15 +661,15 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       final originalHistoryContext = originalMatches.isEmpty ? '' : originalMatches.map((item) {
         final date = item.createdAt;
         final timestamp = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-        return '[原始聊天记录｜${item.conversationTitle}｜$timestamp｜${item.mine ? '用户' : '宋祁'}]\\n${item.text}';
-      }).join('\\n\\n');
+        return '[原始聊天记录｜${item.conversationTitle}｜$timestamp｜${item.mine ? '用户' : '宋祁'}]\n${item.text}';
+      }).join('\n\n');
 
       final requestMessages = <Map<String, dynamic>>[
         {'role': 'system', 'content': systemPrompt},
         if (memoryContext.isNotEmpty)
-          {'role': 'system', 'content': '以下是从独立长期记忆库中检索到的记忆。它们是辅助背景，不得覆盖用户当前表达；必要时可结合来源原文理解：\\n$memoryContext'},
+          {'role': 'system', 'content': '以下是从独立长期记忆库中检索到的记忆。它们是辅助背景，不得覆盖用户当前表达；必要时可结合来源原文理解：\n$memoryContext'},
         if (originalHistoryContext.isNotEmpty)
-          {'role': 'system', 'content': '以下是从本地完整聊天档案中按当前话题检索到的原始消息。内容保持原文，不是摘要；请将其作为真实历史参考：\\n$originalHistoryContext'},
+          {'role': 'system', 'content': '以下是从本地完整聊天档案中按当前话题检索到的原始消息。内容保持原文，不是摘要；请将其作为真实历史参考：\n$originalHistoryContext'},
         if (chatPrefs.additionalSystemPrompt.trim().isNotEmpty)
           {'role': 'system', 'content': chatPrefs.additionalSystemPrompt.trim()},
         if (worldbookContext.isNotEmpty)
@@ -969,20 +971,20 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _editHandoffSummary() async {
-    final controller = TextEditingController(text: _activeConversationSummary);
-    final updated = await showDialog<String>(
+  Future<String?> _promptMemoryText({String initial = '', String title = '添加长期记忆'}) async {
+    final controller = TextEditingController(text: initial);
+    final result = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('窗口交接资料'),
+        title: Text(title),
         content: SizedBox(
           width: 420,
           child: TextField(
             controller: controller,
-            minLines: 5,
-            maxLines: 12,
+            minLines: 3,
+            maxLines: 8,
             decoration: const InputDecoration(
-              hintText: '可以补充重要约定、未完成事项或需要延续的内容',
+              hintText: '写下希望宋祁长期记住的内容',
               border: OutlineInputBorder(),
             ),
           ),
@@ -994,9 +996,146 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       ),
     );
     controller.dispose();
-    if (updated == null) return;
-    await ChatConversationStore.updateSummary(_activeConversationId, updated);
-    if (mounted) setState(() => _activeConversationSummary = updated.trim());
+    return result;
+  }
+
+  Future<void> _showMemoryDetails(ChatMemoryRecord memory) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(memory.category),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(memory.content),
+              if (memory.sourceText.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                const Text('来源原文', style: TextStyle(fontWeight: FontWeight.w600)),
+                const SizedBox(height: 5),
+                Text(memory.sourceText, style: const TextStyle(color: Color(0xFF777777))),
+              ],
+              const SizedBox(height: 10),
+              Text(memory.origin == 'manual' ? '手动添加' : '从聊天中自动捕捉',
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF888888))),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('关闭')),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showMemoryManager() async {
+    var records = await ChatMemoryStore.load();
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheetState) => SafeArea(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * .78,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 2, 12, 12),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('长期记忆库', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                            SizedBox(height: 4),
+                            Text('独立保存，不会覆盖或替代原始聊天记录', style: TextStyle(fontSize: 11, color: Color(0xFF888888))),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: '手动添加记忆',
+                        onPressed: () async {
+                          final value = await _promptMemoryText();
+                          if (value == null || value.trim().isEmpty) return;
+                          await ChatMemoryStore.addManual(content: value);
+                          records = await ChatMemoryStore.load();
+                          setSheetState(() {});
+                        },
+                        icon: const Icon(Icons.add_circle_outline_rounded),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: records.isEmpty
+                      ? const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(28),
+                            child: Text('还没有长期记忆。\n聊天中明确说“记住……”或表达稳定偏好时，会尝试自动收录。', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFF888888))),
+                          ),
+                        )
+                      : ListView.separated(
+                          itemCount: records.length,
+                          separatorBuilder: (_, __) => const Divider(height: 1, indent: 18),
+                          itemBuilder: (context, index) {
+                            final memory = records[index];
+                            return ListTile(
+                              onTap: () => _showMemoryDetails(memory),
+                              title: Text(memory.content, maxLines: 3, overflow: TextOverflow.ellipsis),
+                              subtitle: Text('${memory.category} · ${memory.origin == 'manual' ? '手动添加' : '来自聊天'}'),
+                              trailing: Wrap(
+                                spacing: 0,
+                                children: [
+                                  IconButton(
+                                    tooltip: memory.locked ? '解除锁定' : '锁定记忆',
+                                    visualDensity: VisualDensity.compact,
+                                    onPressed: () async {
+                                      await ChatMemoryStore.update(memory.copyWith(locked: !memory.locked));
+                                      records = await ChatMemoryStore.load();
+                                      setSheetState(() {});
+                                    },
+                                    icon: Icon(memory.locked ? Icons.lock_rounded : Icons.lock_open_rounded, size: 19),
+                                  ),
+                                  IconButton(
+                                    tooltip: '编辑',
+                                    visualDensity: VisualDensity.compact,
+                                    onPressed: () async {
+                                      final value = await _promptMemoryText(initial: memory.content, title: '编辑长期记忆');
+                                      if (value == null || value.trim().isEmpty) return;
+                                      await ChatMemoryStore.update(memory.copyWith(content: value.trim()));
+                                      records = await ChatMemoryStore.load();
+                                      setSheetState(() {});
+                                    },
+                                    icon: const Icon(Icons.edit_outlined, size: 19),
+                                  ),
+                                  IconButton(
+                                    tooltip: memory.locked ? '已锁定，不能删除' : '删除记忆',
+                                    visualDensity: VisualDensity.compact,
+                                    onPressed: memory.locked ? null : () async {
+                                      await ChatMemoryStore.delete(memory.id);
+                                      records = await ChatMemoryStore.load();
+                                      setSheetState(() {});
+                                    },
+                                    icon: const Icon(Icons.delete_outline_rounded, size: 19),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   int _estimatePromptTokens(List<Map<String, dynamic>> messages) {
@@ -1073,34 +1212,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     if (mounted) setState(() => _contextWindowLimit = updatedLimit);
   }
 
-  String _buildHandoffSummary() {
-    final recent = _messages
-        .where((message) => !message.isSystem && !message.isTyping && message.text.trim().isNotEmpty)
-        .toList()
-        .reversed
-        .take(12)
-        .toList()
-        .reversed;
-    if (recent.isEmpty) return '';
-    final lines = recent.map((message) {
-      final speaker = message.mine ? '用户' : '家机';
-      return '$speaker：${message.text.trim()}';
-    }).toList();
-    var recentSummary = lines.join('\n');
-    if (recentSummary.length > 2200) {
-      recentSummary = recentSummary.substring(recentSummary.length - 2200);
-    }
-    var previousSummary = _activeConversationSummary.trim();
-    if (previousSummary.length > 1600) {
-      previousSummary = previousSummary.substring(previousSummary.length - 1600);
-    }
-    final sections = <String>[
-      if (previousSummary.isNotEmpty) previousSummary,
-      '本窗口最近对话（本地摘录）：\n$recentSummary',
-    ];
-    return sections.join('\n\n');
-  }
-
   Future<void> _createNewConversation() async {
     if (_sending) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1113,7 +1224,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     if (!mounted) return;
     setState(() {
       _activeConversationId = created.id;
-      _activeConversationSummary = created.summary;
       _messages.clear();
       _searching = false;
       _query = '';
@@ -1141,7 +1251,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     if (!mounted) return;
     setState(() {
       _activeConversationId = selectedConversation.id;
-      _activeConversationSummary = selectedConversation.summary;
       _messages
         ..clear()
         ..addAll(saved.map((message) => _ChatMessage(
@@ -1355,7 +1464,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             FocusScope.of(context).unfocus();
             _scrollToLatest();
           }
-          if (value == 'clear') _confirmClear();
           if (value == 'search') setState(() => _searching = true);
           if (value == 'date') _chooseChatDate();
           if (value == 'all') setState(() => _selectedDay = null);
@@ -1370,7 +1478,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           PopupMenuItem(value: 'memory', child: Text('长期记忆库')),
           PopupMenuItem(value: 'settings', child: Text('聊天设置')),
           PopupMenuItem(value: 'latest', child: Text('回到最新消息')),
-          PopupMenuItem(value: 'clear', child: Text('清空对话')),
         ],
       ),
     ]),
@@ -2682,28 +2789,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       if (!mounted || _showJumpLatest || !_messagesScroll.hasClients) return;
       _messagesScroll.jumpTo(_messagesScroll.position.maxScrollExtent);
     });
-  }
-
-  Future<void> _confirmClear() async {
-    if (_sending) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('回复完成后再清空聊天记录')));
-      return;
-    }
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('清空聊天记录？'),
-        content: const Text('这会删除本机保存的聊天记录，无法撤销。'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('清空')),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      setState(_messages.clear);
-      await _persistChat();
-    }
   }
 
   void _showAttachmentHint() {
