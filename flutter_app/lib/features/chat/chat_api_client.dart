@@ -305,9 +305,9 @@ class ChatApiClient {
             reasoningDelta: reasoning.toString(),
             inputTokens: (usage?['prompt_tokens'] as num?)?.toInt(),
             outputTokens: (usage?['completion_tokens'] as num?)?.toInt(),
-          cacheHitTokens: _cacheHitTokens(usage),
-          cacheMissTokens: _cacheMissTokens(usage),
-          cacheCreationTokens: _cacheCreationTokens(usage),
+            cacheHitTokens: _cacheHitTokens(usage),
+            cacheMissTokens: _cacheMissTokens(usage),
+            cacheCreationTokens: _cacheCreationTokens(usage),
           );
         } on FormatException {
           continue;
@@ -437,9 +437,6 @@ class ChatApiClient {
           reasoningDelta: reasoning.toString(),
           inputTokens: (usage?['prompt_tokens'] as num?)?.toInt(),
           outputTokens: (usage?['completion_tokens'] as num?)?.toInt(),
-          cacheHitTokens: _cacheHitTokens(usage),
-          cacheMissTokens: _cacheMissTokens(usage),
-          cacheCreationTokens: _cacheCreationTokens(usage),
         );
         yield const ChatStreamEvent(finished: true);
         return;
@@ -474,9 +471,6 @@ class ChatApiClient {
             reasoningDelta: reasoning.toString(),
             inputTokens: (usage?['prompt_tokens'] as num?)?.toInt(),
             outputTokens: (usage?['completion_tokens'] as num?)?.toInt(),
-          cacheHitTokens: _cacheHitTokens(usage),
-          cacheMissTokens: _cacheMissTokens(usage),
-          cacheCreationTokens: _cacheCreationTokens(usage),
           );
         } on FormatException {
           continue;
