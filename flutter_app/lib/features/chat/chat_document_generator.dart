@@ -72,21 +72,6 @@ abstract final class ChatDocumentGenerator {
     });
   }
 
-  static List<String> _csv(String line) {
-    final cells = <String>[];
-    final cell = StringBuffer();
-    var quoted = false;
-    for (var i = 0; i < line.length; i++) {
-      final c = line[i];
-      if (c == '"') {
-        if (quoted && i + 1 < line.length && line[i + 1] == '"') { cell.write('"'); i++; }
-        else { quoted = !quoted; }
-      } else if (c == ',' && !quoted) { cells.add(cell.toString()); cell.clear(); }
-      else { cell.write(c); }
-    }
-    cells.add(cell.toString());
-    return cells;
-  }
   static List<List<String>> _parseCsv(String source) {
     final rows = <List<String>>[];
     var row = <String>[];
