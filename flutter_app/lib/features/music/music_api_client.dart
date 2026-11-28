@@ -250,8 +250,8 @@ class MusicApiClient {
     payload: {'key': key, 'type': 3},
   );
   Future<Map<String, dynamic>> loginStatus(String base, String cookie) => _eapiPost(
-    path: '/api/nuser/account/get',
-    endpoint: 'https://interface.music.163.com/eapi/nuser/account/get',
+    path: '/api/v1/user/info',
+    endpoint: 'https://music.163.com/eapi/v1/user/info',
     payload: const {},
     cookie: cookie,
   );
@@ -259,7 +259,7 @@ class MusicApiClient {
   Future<List<MusicPlaylist>> playlists(String base, String cookie, int uid) async {
     final r = await _eapiPost(
       path: '/api/user/playlist',
-      endpoint: 'https://interface.music.163.com/eapi/user/playlist',
+      endpoint: 'https://music.163.com/eapi/user/playlist',
       payload: {
         'uid': uid,
         'limit': 60,
@@ -312,9 +312,14 @@ class MusicApiClient {
   static int? qrCode(Map<String, dynamic> r) => (r['code'] as num?)?.toInt();
   static int? userId(Map<String, dynamic> r) {
     final d = r['data'];
-    final account = d is Map ? d['account'] : null;
-    final profile = d is Map ? d['profile'] : null;
-    final id = account is Map ? account['id'] : (profile is Map ? profile['userId'] : null);
+    final account = d is Map ? d['account'] : r['account'];
+    final profile = d is Map ? d['profile'] : r['profile'];
+    final userPoint = d is Map ? d['userPoint'] : r['userPoint'];
+    final id = account is Map
+        ? account['id']
+        : (profile is Map
+            ? profile['userId']
+            : (userPoint is Map ? userPoint['userId'] : null));
     return (id as num?)?.toInt();
   }
   static String prettyError(Object error) {
