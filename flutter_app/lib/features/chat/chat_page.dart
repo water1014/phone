@@ -1532,13 +1532,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已复制')));
     } else if (action == 'reroll') {
       await _rerollReply(message);
-    } else if (action == 'save_image' && message.imagePath != null) {
-      try {
-        await Gal.putImage(message.imagePath!, album: 'Phone聊天');
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('照片已保存到相册')));
-      } catch (error) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存照片失败：$error')));
-      }
+    } else if (action == 'save_image') {
+      await _saveChatImage(message);
     } else if (action == 'save_attachment') {
       await _saveAttachmentToDevice(message);
     } else if (action == 'save_code') {
@@ -2460,6 +2455,69 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     final minutes = value.inMinutes.toString().padLeft(2, '0');
     final seconds = (value.inSeconds % 60).toString().padLeft(2, '0');
     return '$minutes:$seconds';
+  }
+
+  Future<void> _saveChatImage(_ChatMessage message) async {
+    String? imagePath = message.imagePath;
+    File? downloadedFile;
+    try {
+      if (imagePath == null && message.stickerUrl != null) {
+        final uri = Uri.tryParse(message.stickerUrl!);
+        if (uri == null || !{'http', 'https'}.contains(uri.scheme)) {
+          throw Exception('图片链接无效');
+        }
+        final response = await Dio().get<List<int>>(
+          message.stickerUrl!,
+          options: Options(
+            responseType: ResponseType.bytes,
+            followRedirects: true,
+            receiveTimeout: const Duration(seconds: 25),
+            headers: const {'Accept': 'image/*'},
+          ),
+        );
+        final bytes = response.data;
+        if (bytes == null || bytes.isEmpty) throw Exception('没有获取到图片内容');
+        if (bytes.length > 20 * 1024 * 1024) throw Exception('图片超过 20 MB，暂不支持保存');
+        final contentType = response.headers.value(Headers.contentTypeHeader) ?? '';
+        if (!contentType.toLowerCase().startsWith('image/')) {
+          throw Exception('链接返回的内容不是图片');
+        }
+        final rawExtension = uri.pathSegments.isEmpty
+            ? ''
+            : uri.pathSegments.last.split('.').last.toLowerCase();
+        final extension = const {'jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'}
+                .contains(rawExtension)
+            ? rawExtension
+            : (contentType.toLowerCase().contains('png') ? 'png' : 'jpg');
+        final tempDir = await getTemporaryDirectory();
+        downloadedFile = File(
+          '${tempDir.path}/chat_sticker_${DateTime.now().microsecondsSinceEpoch}.$extension',
+        );
+        await downloadedFile.writeAsBytes(bytes, flush: true);
+        imagePath = downloadedFile.path;
+      }
+      if (imagePath == null || !await File(imagePath).exists()) {
+        throw Exception('图片文件不存在');
+      }
+      await Gal.putImage(imagePath, album: 'Phone聊天');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('照片已保存到相册')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('保存照片失败：$error')),
+        );
+      }
+    } finally {
+      if (downloadedFile != null && await downloadedFile.exists()) {
+        try {
+          await downloadedFile.delete();
+        } catch (_) {}
+      }
+    }
   }
 
   Future<void> _saveAttachmentToDevice(_ChatMessage message) async {
