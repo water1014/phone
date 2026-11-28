@@ -142,7 +142,7 @@ class ChatApiClient {
     if (direct != null) return direct;
     final prompt = _usageValue(usage, const ['prompt_tokens', 'input_tokens']);
     final cached = _cacheHitTokens(usage);
-    if (prompt != null && cached != null) return (prompt - cached).clamp(0, prompt);
+    if (prompt != null && cached != null) return (prompt - cached).clamp(0, prompt).toInt();
     return null;
   }
 
