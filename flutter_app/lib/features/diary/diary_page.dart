@@ -463,7 +463,7 @@ class _EditorState extends State<_Editor> {
     if(selection.text.contains('\n')){ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('标记请在同一段文字内使用')));return;}
     final selected=body.text.substring(selection.start,selection.end).replaceAllMapped(RegExp(r'\[\[(?:红|蓝)[:：]([\s\S]*?)\]\]'),(m)=>m[1]??'');
     final value=color=='x'?selected:'[[${color}:\$selected]]';
-    body.value=body.value.replaced(selection,value);
+    final next=body.text.replaceRange(selection.start,selection.end,value);\n    body.value=TextEditingValue(text:next,selection:TextSelection.collapsed(offset:selection.start.toInt()+value.length));
     body.selection=TextSelection.collapsed(offset:selection.start.toInt()+value.length);
   }
   void _save(){
