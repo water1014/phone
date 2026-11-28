@@ -21,6 +21,7 @@ import 'chat_preferences.dart';
 import 'chat_api_client.dart';
 import 'chat_message.dart';
 import 'chat_message_store.dart';
+import 'chat_document_generator.dart';
 
 String _resolveWorldbookContext(String raw, String conversationContext) {
   try {
@@ -152,7 +153,7 @@ _GeneratedTextArtifact? _extractGeneratedTextArtifact(String response) {
     'yaml', 'yml', 'log', 'css', 'js', 'mjs', 'ts', 'tsx', 'jsx',
     'dart', 'py', 'java', 'kt', 'kts', 'swift', 'c', 'h', 'cpp',
     'hpp', 'rs', 'go', 'php', 'rb', 'sh', 'bash', 'sql', 'toml',
-    'ini', 'conf', 'properties', 'gradle', 'svg',
+    'ini', 'conf', 'properties', 'gradle', 'svg', 'pdf', 'docx', 'pptx', 'xlsx',
   };
   final pattern = RegExp(
     r"""\x60\x60\x60([A-Za-z0-9_+#.-]*)[ \t]+(?:filename|file)=["']([^"']+)["'][^\r\n]*\r?\n([\s\S]*?)\x60\x60\x60""",
@@ -521,7 +522,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       final replyLayoutInstruction = chatPrefs.replyLayout == 1
           ? '回复时采用即时聊天分句模式：把自然的短句或一个完整意思作为一条独立消息，每条消息单独换行，不要加编号或项目符号；长回复分成数条短消息，节奏自然，不要把每句话挤成一整堵文字。代码、表格和文件内容必须保持原样，不要拆坏。'
           : '回复时采用完整长段模式：允许根据情境写连贯、完整的长段落，不要为了短而刻意拆成多条消息。';
-      final systemPrompt = '你在「小窝」这个私人空间里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。$narratorInstruction $replyLayoutInstruction 不要列条目。用户要求制作文件时：对于 HTML、CSS、JS、TXT、Markdown、CSV、JSON、XML、SVG、代码等 UTF-8 文本格式，必须把完整成品放进一个带明确文件名的代码围栏，例如 ```html filename="作品.html"，围栏外只写简短交付说明，不要把源码散落在聊天气泡。不要把 DOCX、PPTX、XLSX、PDF 等二进制格式伪装成文本文件或声称已经生成；若当前客户端无法生成该二进制格式，要如实说明。';
+      final systemPrompt = '你在「小窝」这个私人空间里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。$narratorInstruction $replyLayoutInstruction 不要列条目。用户要求制作文件时，必须把完整成品放进一个带明确文件名的代码围栏，围栏外只写简短交付说明，不要把源码散落在聊天气泡。格式要求：HTML/CSS/JS/TXT/Markdown/CSV/JSON/XML/SVG/代码等文本文件使用对应语言围栏并写 filename="作品.扩展名"；DOCX 使用 ```docx filename="作品.docx"，正文用 Markdown 标题、段落和表格；XLSX 使用 ```xlsx filename="作品.xlsx"，正文优先输出 CSV，每行一条记录，字段用逗号分隔，含逗号的字段用双引号包裹，或输出 Markdown 表格；PPTX 使用 ```pptx filename="作品.pptx"，每页以单独的 Markdown 标题开头，页面之间用单独一行 --- 分隔，正文使用短段落和项目符号；PDF 使用 ```pdf filename="作品.pdf"，正文使用 Markdown 标题和段落。DOCX/PPTX/XLSX/PDF 会由客户端生成真实二进制文件，不要输出 Base64，也不要只给伪代码。';
       final worldbookContext = chatPrefs.worldbookEnabled
           ? _resolveWorldbookContext(
               chatPrefs.worldbookJson,
@@ -660,7 +661,13 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         }
         final safeName = '${DateTime.now().microsecondsSinceEpoch}_${artifact.fileName}';
         final outputFile = File('${outputDir.path}/$safeName');
-        await outputFile.writeAsString(artifact.content, flush: true);
+        final extension = artifact.fileName.split('.').last.toLowerCase();
+        if (const {'pdf', 'docx', 'pptx', 'xlsx'}.contains(extension)) {
+          final bytes = await ChatDocumentGenerator.generate(artifact.fileName, artifact.content);
+          await outputFile.writeAsBytes(bytes, flush: true);
+        } else {
+          await outputFile.writeAsString(artifact.content, flush: true);
+        }
         final outputSize = await outputFile.length();
         final current = _messages[replyIndex];
         setState(() {
@@ -2351,6 +2358,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     final extension = path.split('.').last.toLowerCase();
     if (extension == 'html' || extension == 'htm') {
       await _previewHtml(path);
+    } else if (extension == 'pdf') {
+      await OpenFilex.open(path);
     } else if ({'mp3', 'm4a', 'aac', 'wav', 'ogg', 'flac'}.contains(extension)) {
       await _playAudio(path);
     } else {
