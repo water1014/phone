@@ -1264,6 +1264,13 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                 subtitle: const Text('保留当前回复，生成另一个版本'),
                 onTap: () => Navigator.pop(sheetContext, 'reroll'),
               ),
+            if (message.attachmentPath != null)
+              ListTile(
+                leading: const Icon(Icons.download_for_offline_outlined),
+                title: const Text('保存附件到手机'),
+                subtitle: Text(message.attachmentName ?? '文件'),
+                onTap: () => Navigator.pop(sheetContext, 'save_attachment'),
+              ),
             if (message.imagePath != null || message.stickerUrl != null)
               ListTile(
                 leading: const Icon(Icons.save_alt_rounded),
@@ -1299,6 +1306,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       } catch (error) {
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存照片失败：$error')));
       }
+    } else if (action == 'save_attachment') {
+      await _saveAttachmentToDevice(message);
     } else if (action == 'save_code') {
       await _saveCodeBlockAsFile(message);
     } else if (action == 'delete') {
@@ -2059,6 +2068,37 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     final minutes = value.inMinutes.toString().padLeft(2, '0');
     final seconds = (value.inSeconds % 60).toString().padLeft(2, '0');
     return '$minutes:$seconds';
+  }
+
+  Future<void> _saveAttachmentToDevice(_ChatMessage message) async {
+    final sourcePath = message.attachmentPath;
+    if (sourcePath == null) return;
+    final source = File(sourcePath);
+    if (!await source.exists()) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('附件文件不存在，可能已被系统清理')),
+        );
+      }
+      return;
+    }
+    try {
+      final bytes = await source.readAsBytes();
+      final savedPath = await FilePicker.platform.saveFile(
+        dialogTitle: '保存聊天附件',
+        fileName: message.attachmentName ?? source.uri.pathSegments.last,
+        bytes: bytes,
+      );
+      if (!mounted || savedPath == null) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('附件已保存到你选择的位置')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('保存附件失败：$error')),
+      );
+    }
   }
 
   Future<void> _saveCodeBlockAsFile(_ChatMessage message) async {
