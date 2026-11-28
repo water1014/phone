@@ -253,9 +253,6 @@ class MusicApiClient {
     payload: {'type': 3},
   );
 
-  Future<Map<String, dynamic>> qrCreate(String base, String key) =>
-      call(base, 'login/qr/create', body: {'key': key, 'qrimg': true});
-
   Future<Map<String, dynamic>> qrCheck(String base, String key) => _eapiPost(
     path: '/api/login/qrcode/client/login',
     endpoint: 'https://interface.music.163.com/eapi/login/qrcode/client/login',
