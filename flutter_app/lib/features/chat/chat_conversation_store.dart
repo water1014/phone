@@ -207,6 +207,18 @@ abstract final class ChatConversationStore {
     await prefs.setString(_activeKey, id);
   }
 
+  static Future<void> updateSummary(String id, String summary) async {
+    final prefs = await SharedPreferences.getInstance();
+    final conversations = await loadConversations();
+    final index = conversations.indexWhere((item) => item.id == id);
+    if (index < 0) return;
+    conversations[index] = conversations[index].copyWith(
+      summary: summary.trim(),
+      updatedAt: DateTime.now(),
+    );
+    await _writeIndex(prefs, conversations);
+  }
+
   static String _titleFrom(String text) {
     final compact = text.replaceAll(RegExp(r'\s+'), ' ').trim();
     if (compact.length <= 22) return compact;
