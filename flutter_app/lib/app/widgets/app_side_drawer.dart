@@ -25,6 +25,7 @@ class AppSideDrawer extends StatelessWidget {
     _DrawerGroup('内容与收藏', [
       _DrawerEntry('相册', Icons.photo_library_outlined, 'album'),
       _DrawerEntry('一起听', Icons.music_note_rounded, 'music'),
+      _DrawerEntry('工作区', Icons.workspaces_outline_rounded, 'workspace'),
       _DrawerEntry('收藏', Icons.bookmark_border_rounded, 'favorite'),
       _DrawerEntry('游戏', Icons.sports_esports_outlined, 'game'),
       _DrawerEntry('生图室', Icons.image_outlined, 'imageStudio'),
@@ -45,6 +46,8 @@ class AppSideDrawer extends StatelessWidget {
     } else if (entry.id == 'music') {
       // Keep the home route underneath music so Android's edge-back gesture returns home.
       context.push('/music');
+    } else if (entry.id == 'workspace') {
+      context.push('/workspace');
     } else if (entry.id == 'home') {
       context.go('/');
     } else {

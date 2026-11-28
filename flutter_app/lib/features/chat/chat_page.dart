@@ -326,6 +326,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   bool _loadingHistory = true;
   bool _sending = false;
   bool _showJumpLatest = false;
+  bool _stickToLatestOnViewportChange = true;
   CancelToken? _activeCancelToken;
   Timer? _draftSaveTimer;
   String _query = '';
@@ -395,6 +396,11 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       _loadingHistory = false;
     });
     _scrollToLatest(immediate: true);
+    for (final delay in [100, 260]) {
+      unawaited(Future<void>.delayed(Duration(milliseconds: delay), () {
+        if (mounted) _scrollToLatest(immediate: true);
+      }));
+    }
   }
 
   Future<void> _persistChat() => ChatMessageStore.save(
@@ -424,7 +430,16 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   void _handleScroll() {
     if (!_messagesScroll.hasClients) return;
     final shouldShow = _messagesScroll.position.pixels < _messagesScroll.position.maxScrollExtent - 180;
+    _stickToLatestOnViewportChange = !shouldShow;
     if (shouldShow != _showJumpLatest && mounted) setState(() => _showJumpLatest = shouldShow);
+  }
+
+  @override
+  void didChangeMetrics() {
+    if (!_stickToLatestOnViewportChange) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _stickToLatestOnViewportChange) _scrollToLatest(immediate: true);
+    });
   }
 
   @override
@@ -863,20 +878,31 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     return ValueListenableBuilder<ChatPreferences>(
       valueListenable: ChatPreferenceStore.value,
       builder: (context, prefs, _) => Scaffold(
+        resizeToAvoidBottomInset: false,
         drawer: const AppSideDrawer(active: 'chat'),
         drawerEnableOpenDragGesture: false,
         backgroundColor: const Color(0xFFFAFAFA),
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              _buildHeader(prefs),
-              if (_searching) _buildSearchBar(),
-              if (_selectedDay != null) _buildDayFilterBar(),
-              Expanded(child: _buildMessages(prefs)),
-              _buildComposer(prefs),
-            ],
-          ),
+        body: Stack(
+          children: [
+            Positioned.fill(child: _buildWallpaper(prefs)),
+            SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  _buildHeader(prefs),
+                  if (_searching) _buildSearchBar(),
+                  if (_selectedDay != null) _buildDayFilterBar(),
+                  Expanded(child: _buildMessages(prefs)),
+                  AnimatedPadding(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOut,
+                    padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+                    child: _buildComposer(prefs),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1070,6 +1096,39 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     message.attachmentPath != null ? '文件 附件 file' : '',
   ].join(' ').toLowerCase();
 
+  Widget _buildWallpaper(ChatPreferences prefs) {
+    final path = prefs.chatWallpaperPath;
+    if (path == null || path.isEmpty) {
+      return const ColoredBox(color: Color(0xFFFAFAFA));
+    }
+    final file = File(path);
+    if (!file.existsSync()) {
+      return const ColoredBox(color: Color(0xFFFAFAFA));
+    }
+    final alignment = Alignment(
+      prefs.wallpaperPositionX.clamp(-1, 1).toDouble(),
+      prefs.wallpaperPositionY.clamp(-1, 1).toDouble(),
+    );
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ClipRect(
+          child: Transform.scale(
+            scale: prefs.wallpaperScale.clamp(1, 2.5).toDouble(),
+            alignment: alignment,
+            child: Image.file(
+              file,
+              fit: BoxFit.cover,
+              alignment: alignment,
+              errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFFFAFAFA)),
+            ),
+          ),
+        ),
+        ColoredBox(color: Colors.white.withValues(alpha: .38)),
+      ],
+    );
+  }
+
   Widget _buildMessages(ChatPreferences prefs) {
     if (_loadingHistory) {
       return const Center(child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)));
@@ -1092,38 +1151,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     if (visibleCount == 0) {
       return Center(child: Text(_selectedDay != null ? '这一天还没有聊天记录' : (_query.isEmpty ? '还没有消息，在下面写一句吧。' : '没有找到相关消息'), style: const TextStyle(color: AppColors.muted, fontSize: 13)));
     }
-    final wallpaperPath = prefs.chatWallpaperPath;
-    final wallpaperFile = wallpaperPath == null || wallpaperPath.isEmpty
-        ? null
-        : File(wallpaperPath);
-    final hasWallpaper = wallpaperFile != null && wallpaperFile.existsSync();
     return Stack(
       children: [
-        if (hasWallpaper)
-          Positioned.fill(
-            child: ClipRect(
-              child: Transform.scale(
-                scale: prefs.wallpaperScale.clamp(1, 2.5).toDouble(),
-                alignment: Alignment(
-                  prefs.wallpaperPositionX.clamp(-1, 1).toDouble(),
-                  prefs.wallpaperPositionY.clamp(-1, 1).toDouble(),
-                ),
-                child: Image.file(
-                  wallpaperFile,
-                  fit: BoxFit.contain,
-                  alignment: Alignment(
-                    prefs.wallpaperPositionX.clamp(-1, 1).toDouble(),
-                    prefs.wallpaperPositionY.clamp(-1, 1).toDouble(),
-                  ),
-                  errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFFFAFAFA)),
-                ),
-              ),
-            ),
-          ),
-        if (hasWallpaper)
-          Positioned.fill(
-            child: ColoredBox(color: Colors.white.withValues(alpha: .38)),
-          ),
         ListView.builder(
       reverse: false,
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
@@ -1658,7 +1687,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   }
 
   Widget _buildComposer(ChatPreferences prefs) => Container(
-    padding: EdgeInsets.fromLTRB(14, 11, 14, 10 + MediaQuery.paddingOf(context).bottom),
+    padding: EdgeInsets.fromLTRB(14, 11, 14, 10 + (MediaQuery.viewInsetsOf(context).bottom > 0 ? 0 : MediaQuery.paddingOf(context).bottom)),
     decoration: const BoxDecoration(
       color: Color(0xFFFAFAFA),
       border: Border(top: BorderSide(color: Color(0xFFE7E7E7))),
