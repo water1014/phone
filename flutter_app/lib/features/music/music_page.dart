@@ -133,7 +133,6 @@ class _MusicPageState extends State<MusicPage> {
             artUri: song.cover.isEmpty ? null : Uri.tryParse(song.cover),
           ),
         ),
-        preload: false,
       );
       await _clearBackgroundError();
       // Do not await play(): its future remains pending until playback
@@ -455,7 +454,6 @@ class _MusicPageState extends State<MusicPage> {
             artUri: song.cover.isEmpty ? null : Uri.tryParse(song.cover),
           ),
         ),
-        preload: false,
       );
       if (!mounted || request != _playRequest) return;
       await _clearBackgroundError();
