@@ -147,8 +147,21 @@ class MusicApiClient {
       final message = raw is Map ? raw['message'] ?? raw['msg'] : null;
       throw Exception(message ?? '网易云接口 HTTP ${response.statusCode}');
     }
-    if (raw is Map<String, dynamic>) return raw;
-    if (raw is Map) return Map<String, dynamic>.from(raw);
+    if (raw is Map<String, dynamic>) {
+      final cookies = response.headers.map['set-cookie'];
+      if (cookies != null && cookies.isNotEmpty) {
+        raw['cookie'] = cookies.map((value) => value.split(';').first).where((value) => value.contains('=')).join('; ');
+      }
+      return raw;
+    }
+    if (raw is Map) {
+      final result = Map<String, dynamic>.from(raw);
+      final cookies = response.headers.map['set-cookie'];
+      if (cookies != null && cookies.isNotEmpty) {
+        result['cookie'] = cookies.map((value) => value.split(';').first).where((value) => value.contains('=')).join('; ');
+      }
+      return result;
+    }
     throw Exception('网易云接口返回了无法识别的数据');
   }
 
@@ -258,20 +271,52 @@ class MusicApiClient {
     endpoint: 'https://interface.music.163.com/eapi/login/qrcode/client/login',
     payload: {'key': key, 'type': 3},
   );
-  Future<Map<String, dynamic>> loginStatus(String base, String cookie) => call(base, 'login/status', cookie: cookie);
+  Future<Map<String, dynamic>> loginStatus(String base, String cookie) => _eapiPost(
+    path: '/api/nuser/account/get',
+    endpoint: 'https://interface.music.163.com/eapi/nuser/account/get',
+    payload: const {},
+    cookie: cookie,
+  );
 
   Future<List<MusicPlaylist>> playlists(String base, String cookie, int uid) async {
-    final r = await call(base, 'user/playlist', cookie: cookie, body: {'uid': uid, 'limit': 60});
+    final r = await _eapiPost(
+      path: '/api/user/playlist',
+      endpoint: 'https://interface.music.163.com/eapi/user/playlist',
+      payload: {
+        'uid': uid,
+        'limit': 60,
+        'offset': 0,
+        'includeVideo': true,
+      },
+      cookie: cookie,
+    );
     final rows = r['playlist'] ?? (r['data'] is Map ? r['data']['playlist'] : null);
     if (rows is! List) return [];
-    return rows.whereType<Map>().map((e) => MusicPlaylist.fromJson(Map<String, dynamic>.from(e))).toList();
+    return rows
+        .whereType<Map>()
+        .map((e) => MusicPlaylist.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
   }
 
   Future<List<MusicSong>> playlistSongs(String base, String cookie, int id) async {
-    final r = await call(base, 'playlist/track/all', cookie: cookie, body: {'id': id, 'limit': 100, 'offset': 0});
-    final rows = r['songs'] ?? (r['data'] is Map ? r['data']['songs'] : null);
+    final r = await _eapiPost(
+      path: '/api/v6/playlist/detail',
+      endpoint: 'https://interface.music.163.com/eapi/v6/playlist/detail',
+      payload: {
+        'id': id,
+        'n': 100,
+        's': 8,
+      },
+      cookie: cookie,
+    );
+    final playlist = r['playlist'] ?? (r['data'] is Map ? r['data']['playlist'] : null);
+    final rows = playlist is Map ? playlist['tracks'] : (r['songs'] ?? r['tracks']);
     if (rows is! List) return [];
-    return rows.whereType<Map>().map((e) => MusicSong.fromJson(Map<String, dynamic>.from(e))).where((e) => e.id > 0).toList();
+    return rows
+        .whereType<Map>()
+        .map((e) => MusicSong.fromJson(Map<String, dynamic>.from(e)))
+        .where((e) => e.id > 0)
+        .toList();
   }
 
   static String? extractMusicCookie(String raw) {
