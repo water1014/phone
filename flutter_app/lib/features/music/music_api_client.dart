@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
+import 'package:encrypt/encrypt.dart' as encryption;
 
 class MusicSong {
   const MusicSong({required this.id, required this.name, required this.artist, required this.album, required this.cover, required this.durationMs, this.fee = 0});
@@ -83,33 +87,65 @@ class MusicApiClient {
     return rows.whereType<Map>().map((e) => MusicSong.fromJson(Map<String, dynamic>.from(e))).where((e) => e.id > 0).toList();
   }
 
+  static const _eapiKey = 'e82ckenh8dichen8';
+  static const _songUrlEndpoint =
+      'https://interface.music.163.com/eapi/song/enhance/player/url/v1';
+  static const _songUrlPath = '/api/song/enhance/player/url/v1';
+
+  String _encryptEapi(String path, Map<String, dynamic> payload) {
+    final json = jsonEncode(payload);
+    final digest = md5.convert(utf8.encode('nobody$path' + 'use$json' + 'md5forencrypt')).toString();
+    final plain = '$path-36cd479b6b5-$digest-$json';
+    final encrypter = encryption.Encrypter(encryption.AES(
+      encryption.Key.fromUtf8(_eapiKey),
+      mode: encryption.AESMode.ecb,
+      padding: 'PKCS7',
+    ));
+    return encrypter.encrypt(plain).base16.toLowerCase();
+  }
+
   Future<String> songUrl(String base, int id, {String cookie = '', String quality = 'exhigh'}) async {
-    // NetEase playback links are short-lived and depend on the account session.
-    // Keep the cache shorter than the upstream link lifetime and never share it
-    // between different login sessions.
+    // Direct NetEase request: no user-hosted server and no third-party proxy.
     final session = cookie.trim().hashCode;
-    final requested = ['hires', 'lossless', 'exhigh', 'higher', 'standard', '低音质'];
-    final start = requested.indexOf(quality);
-    final qualities = start < 0 ? ['exhigh', 'higher', 'standard'] : requested.skip(start).toList();
-    final key = '${worker(base)}|$id|$quality|$session';
+    final key = 'netease-direct|$id|$quality|$session';
     final cached = _songUrlCache[key];
     if (cached != null && DateTime.now().difference(cached['time'] as DateTime) < const Duration(minutes: 2)) {
       return cached['url'] as String;
     }
 
+    final levels = <String>[quality, 'higher', 'standard'].toSet().toList();
     Object? lastError;
-    for (final level in qualities) {
+    for (final level in levels) {
       try {
-        final r = await call(base, 'song/url', cookie: cookie, body: {'ids': [id], 'level': level});
-        final code = (r['code'] as num?)?.toInt();
-        if (code != null && code != 200) {
-          lastError = Exception('网易云返回状态码 $code');
-          if (code == -460 || code == -7) break;
-          continue;
+        final params = _encryptEapi(_songUrlPath, {
+          'ids': jsonEncode([id]),
+          'level': level,
+          'encodeType': 'flac',
+          'immerseType': 'c51',
+        });
+        final headers = <String, dynamic>{
+          'User-Agent': 'NeteaseMusic/8.10.05 (Linux; Android 14)',
+          'Referer': 'https://music.163.com/',
+          'Cookie': 'os=android; appver=8.10.05${cookie.trim().isEmpty ? '' : '; ${cookie.trim()}'}',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        };
+        final response = await _dio.post<dynamic>(
+          _songUrlEndpoint,
+          data: {'params': params},
+          options: Options(
+            headers: headers,
+            contentType: Headers.formUrlEncodedContentType,
+            responseType: ResponseType.json,
+            validateStatus: (status) => status != null && status < 500,
+          ),
+        );
+        final raw = response.data;
+        if ((response.statusCode ?? 0) < 200 || (response.statusCode ?? 0) >= 300) {
+          throw Exception('网易云直连接口 HTTP ${response.statusCode}');
         }
-        final rows = r['data'];
-        if (rows is List && rows.isNotEmpty && rows.first is Map) {
-          final row = rows.first as Map;
+        final data = raw is Map ? raw['data'] : null;
+        if (data is List && data.isNotEmpty && data.first is Map) {
+          final row = data.first as Map;
           final url = (row['url'] ?? '').toString().trim();
           final parsed = Uri.tryParse(url);
           if (parsed != null && (parsed.scheme == 'https' || parsed.scheme == 'http') && parsed.host.isNotEmpty) {
@@ -117,19 +153,24 @@ class MusicApiClient {
             _songUrlCache[key] = {'url': normalized, 'time': DateTime.now()};
             return normalized;
           }
-          lastError = Exception((row['message'] ?? row['msg'] ?? '当前音质没有可用播放地址').toString());
+          lastError = Exception((row['message'] ?? row['msg'] ?? '网易云没有返回可播放地址').toString());
+          final code = raw is Map ? raw['code'] : null;
+          if (code != null && code != 200) lastError = Exception('网易云返回状态码 $code');
         } else {
-          lastError = Exception('音乐服务没有返回播放地址');
+          lastError = Exception('网易云直连接口没有返回歌曲地址');
         }
       } catch (error) {
         lastError = error;
-        if (error is DioException) rethrow;
+        if (error is DioException &&
+            error.type != DioExceptionType.connectionTimeout &&
+            error.type != DioExceptionType.receiveTimeout &&
+            error.type != DioExceptionType.sendTimeout &&
+            error.type != DioExceptionType.connectionError) {
+          rethrow;
+        }
       }
     }
-    if (lastError != null) {
-      throw Exception('歌曲暂时无法播放：${prettyError(lastError)}。已尝试自动降低音质；若仍失败，可能是版权、会员或网易云风控限制。');
-    }
-    throw Exception('歌曲暂时没有可用播放地址，可能受版权或会员权限限制');
+    throw Exception('网易云直连获取音源失败：${lastError == null ? '没有可用音源' : prettyError(lastError)}。可能是版权、会员权限或接口风控限制。');
   }
 
   Future<Map<String, dynamic>> lyric(String base, int id, {String cookie = ''}) async {
