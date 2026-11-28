@@ -79,7 +79,8 @@ abstract final class ChatConversationStore {
     if (conversations.isEmpty) {
       final legacyMessages = await ChatMessageStore.load();
       final now = DateTime.now();
-      final firstUserMessage = legacyMessages.where((m) => m.mine && m.text.trim().isNotEmpty).firstOrNull;
+      final firstUserMessages = legacyMessages.where((m) => m.mine && m.text.trim().isNotEmpty).toList();
+      final firstUserMessage = firstUserMessages.isEmpty ? null : firstUserMessages.first;
       final title = firstUserMessage == null
           ? '旧聊天记录'
           : _titleFrom(firstUserMessage.text);
@@ -119,7 +120,8 @@ abstract final class ChatConversationStore {
     final current = conversations[index];
     var title = current.title;
     if (title == '新聊天') {
-      final firstUserMessage = messages.where((item) => item.mine && item.text.trim().isNotEmpty).firstOrNull;
+      final firstUserMessages = messages.where((item) => item.mine && item.text.trim().isNotEmpty).toList();
+      final firstUserMessage = firstUserMessages.isEmpty ? null : firstUserMessages.first;
       if (firstUserMessage != null) title = _titleFrom(firstUserMessage.text);
     }
     conversations[index] = current.copyWith(title: title, updatedAt: DateTime.now());
