@@ -80,11 +80,26 @@ class MusicApiClient {
   }
 
   Future<List<MusicSong>> search(String base, String keyword, {String cookie = ''}) async {
-    final r = await call(base, 'search', cookie: cookie, body: {'keyword': keyword, 'limit': 30, 'offset': 0, 'type': 1});
+    final r = await _eapiPost(
+      path: '/api/cloudsearch/pc',
+      endpoint: 'https://interface.music.163.com/eapi/cloudsearch/pc',
+      payload: {
+        's': keyword,
+        'type': 1,
+        'limit': 30,
+        'offset': 0,
+        'total': true,
+      },
+      cookie: cookie,
+    );
     final result = r['result'] ?? r['data'] ?? {};
     final rows = result is Map ? result['songs'] : null;
     if (rows is! List) return [];
-    return rows.whereType<Map>().map((e) => MusicSong.fromJson(Map<String, dynamic>.from(e))).where((e) => e.id > 0).toList();
+    return rows
+        .whereType<Map>()
+        .map((e) => MusicSong.fromJson(Map<String, dynamic>.from(e)))
+        .where((e) => e.id > 0)
+        .toList();
   }
 
   static const _eapiKey = 'e82ckenh8dichen8';
@@ -102,6 +117,39 @@ class MusicApiClient {
       padding: 'PKCS7',
     ));
     return encrypter.encrypt(plain).base16.toLowerCase();
+  }
+
+  Future<Map<String, dynamic>> _eapiPost({
+    required String path,
+    required String endpoint,
+    required Map<String, dynamic> payload,
+    String cookie = '',
+  }) async {
+    final params = _encryptEapi(path, payload);
+    final headers = <String, dynamic>{
+      'User-Agent': 'NeteaseMusic/8.10.05 (Linux; Android 14)',
+      'Referer': 'https://music.163.com/',
+      'Cookie': 'os=android; appver=8.10.05${cookie.trim().isEmpty ? '' : '; ${cookie.trim()}'}',
+      'Content-Type': 'application/x-www-form-urlencoded',
+    };
+    final response = await _dio.post<dynamic>(
+      endpoint,
+      data: {'params': params},
+      options: Options(
+        headers: headers,
+        contentType: Headers.formUrlEncodedContentType,
+        responseType: ResponseType.json,
+        validateStatus: (status) => status != null && status < 500,
+      ),
+    );
+    final raw = response.data;
+    if ((response.statusCode ?? 0) < 200 || (response.statusCode ?? 0) >= 300) {
+      final message = raw is Map ? raw['message'] ?? raw['msg'] : null;
+      throw Exception(message ?? '网易云接口 HTTP ${response.statusCode}');
+    }
+    if (raw is Map<String, dynamic>) return raw;
+    if (raw is Map) return Map<String, dynamic>.from(raw);
+    throw Exception('网易云接口返回了无法识别的数据');
   }
 
   Future<String> songUrl(String base, int id, {String cookie = '', String quality = 'exhigh'}) async {
@@ -174,19 +222,45 @@ class MusicApiClient {
   }
 
   Future<Map<String, dynamic>> lyric(String base, int id, {String cookie = ''}) async {
-    final key = '${worker(base)}|$id';
+    final key = 'netease-direct|$id|${cookie.trim().hashCode}';
     final cached = _lyricCache[key];
     if (cached != null && DateTime.now().difference(cached['time'] as DateTime) < const Duration(hours: 12)) {
       return Map<String, dynamic>.from(cached['value'] as Map);
     }
-    final value = await call(base, 'lyric', cookie: cookie, body: {'id': id});
+    final value = await _eapiPost(
+      path: '/api/song/lyric/v1',
+      endpoint: 'https://interface3.music.163.com/eapi/song/lyric/v1',
+      payload: {
+        'id': id,
+        'cp': false,
+        'tv': '0',
+        'lv': '0',
+        'rv': '0',
+        'kv': '0',
+        'yv': '0',
+        'ytv': '0',
+        'yrv': '0',
+      },
+      cookie: cookie,
+    );
     _lyricCache[key] = {'value': value, 'time': DateTime.now()};
     return value;
   }
 
-  Future<Map<String, dynamic>> qrKey(String base) => call(base, 'login/qr/key');
-  Future<Map<String, dynamic>> qrCreate(String base, String key) => call(base, 'login/qr/create', body: {'key': key, 'qrimg': true});
-  Future<Map<String, dynamic>> qrCheck(String base, String key) => call(base, 'login/qr/check', body: {'key': key});
+  Future<Map<String, dynamic>> qrKey(String base) => _eapiPost(
+    path: '/api/login/qrcode/unikey',
+    endpoint: 'https://interface.music.163.com/eapi/login/qrcode/unikey',
+    payload: {'type': 3},
+  );
+
+  Future<Map<String, dynamic>> qrCreate(String base, String key) =>
+      call(base, 'login/qr/create', body: {'key': key, 'qrimg': true});
+
+  Future<Map<String, dynamic>> qrCheck(String base, String key) => _eapiPost(
+    path: '/api/login/qrcode/client/login',
+    endpoint: 'https://interface.music.163.com/eapi/login/qrcode/client/login',
+    payload: {'key': key, 'type': 3},
+  );
   Future<Map<String, dynamic>> loginStatus(String base, String cookie) => call(base, 'login/status', cookie: cookie);
 
   Future<List<MusicPlaylist>> playlists(String base, String cookie, int uid) async {
