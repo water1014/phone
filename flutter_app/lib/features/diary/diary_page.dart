@@ -21,6 +21,8 @@ class _DiaryPageState extends State<DiaryPage> {
   List<_Entry> entries = [];
   bool loading = true;
   String tab = 'long', owner = 'me';
+  String _decorText = '';
+  bool _liked = false;
 
   List<_Entry> get longs => _sorted('long', owner);
   List<_Entry> get notes => _sorted('note', owner);
@@ -33,12 +35,13 @@ class _DiaryPageState extends State<DiaryPage> {
   Future<void> _load() async {
     final p = await SharedPreferences.getInstance();
     final raw = p.getString(key);
+    final decor = p.getString('mio_diary_decor_text') ?? '';
     final list = <_Entry>[];
     if (raw != null) {
       try { for (final x in jsonDecode(raw) as List) { if (x is Map) list.add(_Entry.fromMap(x)); } } catch (_) {}
     }
     if (!mounted) return;
-    setState(() { entries = list; loading = false; });
+    setState(() { entries = list; _decorText = decor; loading = false; });
   }
 
   Future<void> _save() async {
@@ -110,24 +113,70 @@ class _DiaryPageState extends State<DiaryPage> {
       child:Row(children:[CircleAvatar(radius:13,backgroundColor:on?Colors.white:const Color(0xFFF1F1F1),child:Text(id=='me'?'我':'T',style:TextStyle(fontSize:11,color:on?ink:muted))),const SizedBox(width:7),Text(label,style:TextStyle(fontSize:12,color:on?Colors.white:muted))])));
   }
 
-  Widget _profile() => Container(
-    decoration:BoxDecoration(border:Border.all(color:line),borderRadius:BorderRadius.circular(14)),
-    child:Column(children:[
-      Padding(padding:const EdgeInsets.fromLTRB(16,16,16,13),child:Row(children:[
-        CircleAvatar(radius:24,backgroundColor:const Color(0xFFF1F1F1),child:Text(owner=='me'?'我':'T',style:const TextStyle(fontSize:18,color:ink))),
-        const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-          Text(owner=='me'?'我':'TA',style:const TextStyle(fontSize:15,fontWeight:FontWeight.w600)),
-          Text(owner=='me'?'@my-diary':'@your-person',style:const TextStyle(fontSize:11,color:muted)),
-        ])),const Icon(Icons.more_horiz,color:muted)
-      ])),
-      const Padding(padding:EdgeInsets.fromLTRB(16,0,16,13),child:Align(alignment:Alignment.centerLeft,child:Text('点这里写一句装饰文案',style:TextStyle(fontSize:13,color:muted)))),
-      const Divider(height:1,color:line),
-      Padding(padding:const EdgeInsets.symmetric(horizontal:16,vertical:11),child:Row(children:[
-        Text('${longs.length+notes.length}',style:const TextStyle(fontSize:14,fontWeight:FontWeight.w600)),
-        const SizedBox(width:5),const Text('篇记录',style:TextStyle(fontSize:11,color:muted)),
-        const Spacer(),Text('${DateTime.now().year}',style:const TextStyle(fontSize:11,color:muted))
-      ]))
-    ]));
+  Widget _profile() {
+    final count=longs.length+notes.length;
+    final now=DateTime.now();
+    final stamp='${now.year}/${now.month}/${now.day}  ${now.hour.toString().padLeft(2,'0')}:${now.minute.toString().padLeft(2,'0')}';
+    return Container(
+      decoration:BoxDecoration(color:Colors.white,border:Border.all(color:line),borderRadius:BorderRadius.circular(14)),
+      clipBehavior:Clip.antiAlias,
+      child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
+        Padding(padding:const EdgeInsets.fromLTRB(14,14,14,0),child:Row(children:[
+          CircleAvatar(radius:19,backgroundColor:const Color(0xFFF0F0F0),child:Text(owner=='me'?'我':'T',style:const TextStyle(fontSize:15,color:ink))),
+          const SizedBox(width:10),
+          Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+            Text(owner=='me'?'我':'TA',style:const TextStyle(fontSize:14,fontWeight:FontWeight.w700,color:ink)),
+            Text(owner=='me'?'@me':'@companion',style:const TextStyle(fontSize:11.5,color:muted)),
+          ])),
+          IconButton(visualDensity:VisualDensity.compact,onPressed:_editHeaderText,icon:const Icon(Icons.more_horiz,color:muted))
+        ])),
+        Padding(padding:const EdgeInsets.fromLTRB(14,9,14,11),child:GestureDetector(
+          onTap:_editHeaderText,
+          child:Text(_decorText.isEmpty?'点这里写一句装饰文字':_decorText,
+            style:TextStyle(fontSize:13,height:1.55,color:_decorText.isEmpty?muted:ink)),
+        )),
+        Padding(padding:const EdgeInsets.fromLTRB(14,0,14,11),child:Row(children:[
+          const Icon(Icons.schedule_rounded,size:13,color:muted),
+          const SizedBox(width:5),
+          Text(stamp,style:const TextStyle(fontSize:10.5,color:muted)),
+          const Spacer(),
+          Text('$count 篇记录',style:const TextStyle(fontSize:10.5,color:muted)),
+        ])),
+        const Divider(height:1,color:line),
+        Row(children:[
+          Expanded(child:_postAction(Icons.favorite_border_rounded,_liked?'已喜欢':'喜欢',onTap:()=>setState(()=>_liked=!_liked),active:_liked)),
+          Container(width:1,height:18,color:line),
+          Expanded(child:_postAction(Icons.chat_bubble_outline_rounded,'留言板',onTap:()=>setState(()=>tab='note'))),
+          Container(width:1,height:18,color:line),
+          Expanded(child:_postAction(Icons.more_horiz_rounded,'装饰文案',onTap:_editHeaderText)),
+        ])
+      ])
+    );
+  }
+
+  Widget _postAction(IconData icon,String label,{required VoidCallback onTap,bool active=false})=>InkWell(
+    onTap:onTap,child:Padding(padding:const EdgeInsets.symmetric(vertical:11,horizontal:3),
+      child:Row(mainAxisAlignment:MainAxisAlignment.center,children:[
+        Icon(icon,size:16,color:active?ink:muted),const SizedBox(width:5),
+        Text(label,style:TextStyle(fontSize:11.5,color:active?ink:muted,fontWeight:active?FontWeight.w600:FontWeight.w400))
+      ])));
+
+  Future<void> _editHeaderText() async {
+    final controller=TextEditingController(text:_decorText);
+    final value=await showDialog<String>(context:context,builder:(context)=>AlertDialog(
+      title:const Text('装饰文案'),
+      content:TextField(controller:controller,maxLines:3,maxLength:100,decoration:const InputDecoration(hintText:'写一句留在日记主页的话')),
+      actions:[
+        TextButton(onPressed:()=>Navigator.pop(context),child:const Text('取消')),
+        TextButton(onPressed:()=>Navigator.pop(context,controller.text.trim()),child:const Text('保存')),
+      ],
+    ));
+    controller.dispose();
+    if(value==null)return;
+    final prefs=await SharedPreferences.getInstance();
+    await prefs.setString('mio_diary_decor_text',value);
+    if(mounted)setState(()=>_decorText=value);
+  }
 
   Widget _tabs() {
     final data=[('long','长日记',longs.length),('pola','拍立得',polas.length),('note','留言板',notes.length)];
