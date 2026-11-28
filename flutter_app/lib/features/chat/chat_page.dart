@@ -647,6 +647,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             )
           : '';
 
+      try {
+        await ChatMemoryStore.backfillFromArchive();
+      } catch (_) {}
       final recentMessageKeys = historyMessages.map((message) =>
         '${message.time.microsecondsSinceEpoch}:${message.mine}:${message.text}').toSet();
       final memoryMatches = await ChatMemoryStore.searchMemories(value, limit: 4);
@@ -1030,6 +1033,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   }
 
   Future<void> _showMemoryManager() async {
+    try {
+      await ChatMemoryStore.backfillFromArchive();
+    } catch (_) {}
     var records = await ChatMemoryStore.load();
     if (!mounted) return;
     await showModalBottomSheet<void>(
