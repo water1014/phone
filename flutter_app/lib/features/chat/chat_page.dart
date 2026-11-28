@@ -816,7 +816,7 @@ class _ChatPageState extends State<ChatPage> {
       children: [
         ListView.builder(
       reverse: false,
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
       controller: _messagesScroll,
       physics: const BouncingScrollPhysics(),
       itemCount: visibleCount,
@@ -905,7 +905,8 @@ class _ChatPageState extends State<ChatPage> {
       width: 40,
       child: Align(
         alignment: mine ? Alignment.topRight : Alignment.topLeft,
-        child: avatar,
+        // Match Mio: hide repeated avatars but keep their column so bubbles align.
+        child: compact ? const SizedBox(width: 34, height: 34) : avatar,
       ),
     );
     final bubbleRadius = isHelloTalk
@@ -924,7 +925,7 @@ class _ChatPageState extends State<ChatPage> {
 
     final content = Flexible(
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * .72),
+        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * .78),
         child: Column(
           crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
