@@ -657,7 +657,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         limit: 3,
       );
       final memoryContext = memoryMatches.isEmpty ? '' : memoryMatches.map((item) =>
-        '- [${item.category}] ${item.content}').join('\\n');
+        '- [${item.category}] ${item.content}').join('\n');
       final originalHistoryContext = originalMatches.isEmpty ? '' : originalMatches.map((item) {
         final date = item.createdAt;
         final timestamp = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
