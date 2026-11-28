@@ -335,6 +335,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   String _activeConversationSummary = '';
   List<ChatConversationRecord> _conversations = [];
   int _contextWindowLimit = 32768;
+  String _contextModelKey = 'deepseek:deepseek-reasoner';
   int _lastPromptTokens = 0;
   bool _pendingAutoRollover = false;
   bool _searching = false;
@@ -385,13 +386,16 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     final active = await ChatConversationStore.ensureActive();
     final saved = await ChatConversationStore.loadMessages(active.id);
     final conversations = await ChatConversationStore.loadConversations();
-    final contextLimit = await ChatConversationStore.loadContextLimit();
+    final apiConfig = await ChatApiConfigStore.load();
+    final contextModelKey = '${apiConfig.provider}:${apiConfig.model}';
+    final contextLimit = await ChatConversationStore.loadContextLimit(contextModelKey);
     if (!mounted) return;
     setState(() {
       _activeConversationId = active.id;
       _activeConversationSummary = active.summary;
       _conversations = conversations;
       _contextWindowLimit = contextLimit;
+      _contextModelKey = contextModelKey;
       _messages
         ..clear()
         ..addAll(saved.map((message) => _ChatMessage(
@@ -929,6 +933,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text('当前模型：$_contextModelKey'),
             Text('当前窗口上限：$_contextWindowLimit tokens'),
             const SizedBox(height: 8),
             Text('最近一次请求：${_lastPromptTokens == 0 ? '尚无统计' : '约 $_lastPromptTokens tokens'}'),
@@ -960,7 +965,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     );
     controller.dispose();
     if (updatedLimit == null) return;
-    await ChatConversationStore.saveContextLimit(updatedLimit);
+    await ChatConversationStore.saveContextLimit(_contextModelKey, updatedLimit);
     if (mounted) setState(() => _contextWindowLimit = updatedLimit);
   }
 
@@ -977,9 +982,19 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       final speaker = message.mine ? '用户' : '家机';
       return '$speaker：${message.text.trim()}';
     }).toList();
-    var summary = lines.join('\n');
-    if (summary.length > 3600) summary = summary.substring(summary.length - 3600);
-    return '最近对话交接摘录（本地从旧窗口提取，非 AI 总结）：\n$summary';
+    var recentSummary = lines.join('\n');
+    if (recentSummary.length > 2200) {
+      recentSummary = recentSummary.substring(recentSummary.length - 2200);
+    }
+    var previousSummary = _activeConversationSummary.trim();
+    if (previousSummary.length > 1600) {
+      previousSummary = previousSummary.substring(previousSummary.length - 1600);
+    }
+    final sections = <String>[
+      if (previousSummary.isNotEmpty) previousSummary,
+      '本窗口最近对话（本地摘录）：\n$recentSummary',
+    ];
+    return sections.join('\n\n');
   }
 
   Future<void> _createNewConversation() async {
