@@ -36,6 +36,8 @@ class _MusicPageState extends State<MusicPage> {
   static const _currentKey = 'phone.music.currentId.v1';
   static const _cookieKey = 'phone.music.netease.cookie';
   static const _workerKey = 'phone.music.worker';
+  static const _playbackErrorKey = 'phone.music.playbackError.v1';
+  static String _backgroundPlaybackError = '';
   final _api = MusicApiClient();
   final _searchController = TextEditingController();
   final _workerController = TextEditingController();
@@ -80,6 +82,32 @@ class _MusicPageState extends State<MusicPage> {
     super.dispose();
   }
 
+  static Future<void> _recordBackgroundError(Object error) async {
+    final message = MusicApiClient.prettyError(error);
+    _backgroundPlaybackError = message;
+    debugPrint('Music background playback failed: $error');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_playbackErrorKey, message);
+    } catch (storageError) {
+      debugPrint('Could not persist music playback error: $storageError');
+    }
+    final page = _activePage;
+    if (page != null && page.mounted) {
+      page.setState(() => page._message = message);
+    }
+  }
+
+  static Future<void> _clearBackgroundError() async {
+    _backgroundPlaybackError = '';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_playbackErrorKey);
+    } catch (error) {
+      debugPrint('Could not clear music playback error: $error');
+    }
+  }
+
   static Future<void> _advanceBackgroundQueue() async {
     if (_backgroundAdvancing || _backgroundQueue.isEmpty) return;
     _backgroundAdvancing = true;
@@ -107,11 +135,15 @@ class _MusicPageState extends State<MusicPage> {
         ),
         preload: false,
       );
+      await _clearBackgroundError();
       // Do not await play(): its future remains pending until playback
       // ends, which would keep the queue-advance guard locked for the whole song.
-      unawaited(_audio.play().catchError((Object _) {}));
-    } catch (_) {
-      // A temporary URL/worker failure must not tear down the media session.
+      unawaited(_audio.play().catchError((Object error) {
+        unawaited(_recordBackgroundError(error));
+      }));
+    } catch (error) {
+      // Keep the media session alive, but retain the reason for the next visit.
+      await _recordBackgroundError(error);
     } finally {
       _backgroundAdvancing = false;
     }
@@ -153,6 +185,7 @@ class _MusicPageState extends State<MusicPage> {
     final cookie = await _secure.read(key: _cookieKey) ?? '';
     final restoredQueue = _decodeQueue(prefs.getString(_queueKey));
     final restoredCurrentId = prefs.getInt(_currentKey) ?? 0;
+    final playbackError = prefs.getString(_playbackErrorKey) ?? _backgroundPlaybackError;
     if (!mounted) return;
     _backgroundWorker = _api.worker(worker);
     _backgroundCookie = cookie;
@@ -162,6 +195,7 @@ class _MusicPageState extends State<MusicPage> {
       _worker = _backgroundWorker;
       _workerController.text = _worker;
       _cookie = cookie;
+      if (playbackError.isNotEmpty) _message = playbackError;
       if (_queue.isEmpty) _queue = _backgroundQueue;
       if (_current == null) {
         for (final song in _queue) {
@@ -424,7 +458,9 @@ class _MusicPageState extends State<MusicPage> {
         preload: false,
       );
       if (!mounted || request != _playRequest) return;
+      await _clearBackgroundError();
       unawaited(_audio.play().catchError((Object error) {
+        unawaited(_recordBackgroundError(error));
         if (mounted && request == _playRequest) _toast(MusicApiClient.prettyError(error));
       }));
       if (mounted) setState(() => _busy = false);
@@ -438,7 +474,10 @@ class _MusicPageState extends State<MusicPage> {
         _playerRefresh?.call();
       }).catchError((_) {}));
     } catch (e) {
-      if (request == _playRequest) _toast(MusicApiClient.prettyError(e));
+      if (request == _playRequest) {
+        await _recordBackgroundError(e);
+        _toast(MusicApiClient.prettyError(e));
+      }
     } finally {
       if (mounted && request == _playRequest && _busy) {
         setState(() => _busy = false);
