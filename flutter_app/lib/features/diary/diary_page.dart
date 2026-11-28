@@ -101,6 +101,7 @@ class _DiaryPageState extends State<DiaryPage> {
 
   String _mode = 'daily';
   _DiaryEntry? _selectedEntry;
+  String? _selectedReviewKey;
 
   DateTime _weekStart(DateTime date) {
     final d = DateTime(date.year, date.month, date.day);
@@ -127,7 +128,7 @@ class _DiaryPageState extends State<DiaryPage> {
       decoration: BoxDecoration(color: const Color(0xFFF0F0F0), borderRadius: BorderRadius.circular(13)),
       child: Row(children: tabs.map((tab) => Expanded(
         child: GestureDetector(
-          onTap: () => setState(() { _mode = tab.$1; _selectedEntry = null; }),
+          onTap: () => setState(() { _mode = tab.$1; _selectedEntry = null; _selectedReviewKey = null; }),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
@@ -143,40 +144,129 @@ class _DiaryPageState extends State<DiaryPage> {
     final groups = _groupEntries(weekly);
     final keys = groups.keys.toList()..sort((a, b) => b.compareTo(a));
     if (keys.isEmpty) return _emptyState('还没有足够的记录', '写下第一篇日记后，这里会自动整理回顾。');
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(18, 0, 18, 28),
-      itemCount: keys.length,
-      itemBuilder: (context, index) {
-        final key = keys[index];
-        final items = groups[key]!;
-        final words = items.fold<int>(0, (sum, e) => sum + e.body.trim().length);
-        final tags = items.expand((e) => e.tags).toSet().take(5).toList();
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: Colors.white, border: Border.all(color: _line), borderRadius: BorderRadius.circular(16)),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(weekly ? '第 ${key.split('W').last} 周 · ${key.split('-W').first}' : '${key.replaceFirst('-', ' 年 ')} 月', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _ink)),
-            const SizedBox(height: 8),
-            Text('${items.length} 篇记录  ·  $words 字', style: const TextStyle(fontSize: 11, color: _muted)),
-            if (tags.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              Wrap(spacing: 6, children: tags.map((tag) => Chip(label: Text('#$tag', style: const TextStyle(fontSize: 10)), visualDensity: VisualDensity.compact, padding: EdgeInsets.zero, backgroundColor: const Color(0xFFF5F5F5), side: BorderSide.none)).toList()),
-            ],
-            const Divider(height: 20, color: _line),
-            ...items.take(3).map((e) => InkWell(
-              onTap: () => _edit(e),
-              child: Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: Row(children: [
-                SizedBox(width: 42, child: Text('${e.date.month}/${e.date.day}', style: const TextStyle(fontSize: 10, color: _muted))),
-                Expanded(child: Text(e.title.isEmpty ? e.body : e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xFF444444)))),
-                const Icon(Icons.chevron_right_rounded, size: 16, color: _muted),
-              ])),
-            )),
-            if (items.length > 3) Text('还有 ${items.length - 3} 篇记录', style: const TextStyle(fontSize: 10, color: _muted)),
+
+    final selectedKey = _selectedReviewKey;
+    final selectedItems = selectedKey == null ? null : groups[selectedKey];
+    if (selectedItems != null) {
+      final words = selectedItems.fold<int>(0, (sum, e) => sum + e.body.trim().length);
+      final tags = selectedItems.expand((e) => e.tags).toSet().toList();
+      final title = weekly
+          ? '第 ${selectedKey.split('W').last} 周 · ${selectedKey.split('-W').first}'
+          : '${selectedKey.replaceFirst('-', ' 年 ')} 月';
+      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(18, 2, 18, 14),
+          child: Row(children: [
+            IconButton(
+              onPressed: () => setState(() => _selectedReviewKey = null),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 17),
+              tooltip: '返回时间列表',
+            ),
+            const SizedBox(width: 4),
+            Expanded(child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _ink))),
+            Text('${selectedItems.length} 篇', style: const TextStyle(fontSize: 10, color: _muted)),
           ]),
-        );
-      },
-    );
+        ),
+        Expanded(child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+          children: [
+            Container(
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+              decoration: BoxDecoration(color: Colors.white, border: Border.all(color: _line), borderRadius: BorderRadius.circular(14)),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(weekly ? 'WEEKLY REVIEW' : 'MONTHLY REVIEW', style: const TextStyle(fontSize: 9, letterSpacing: 1.8, color: _muted)),
+                const SizedBox(height: 8),
+                Text(title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w600, color: _ink)),
+                const SizedBox(height: 12),
+                Row(children: [
+                  _stat('${selectedItems.length}', '日记篇数'),
+                  _stat('$words', '记录字数'),
+                  _stat('${selectedItems.map((e) => '${e.date.year}-${e.date.month}-${e.date.day}').toSet().length}', '记录天数'),
+                ]),
+                if (tags.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  Wrap(spacing: 6, runSpacing: 6, children: tags.take(8).map((tag) => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                    decoration: BoxDecoration(color: const Color(0xFFF2F2F2), borderRadius: BorderRadius.circular(20)),
+                    child: Text('#$tag', style: const TextStyle(fontSize: 10, color: Color(0xFF666666))),
+                  )).toList()),
+                ],
+              ]),
+            ),
+            const SizedBox(height: 16),
+            const Text('本期日记', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
+            const SizedBox(height: 8),
+            ...selectedItems.map((entry) => InkWell(
+              onTap: () => setState(() { _mode = 'daily'; _selectedEntry = entry; }),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: _line))),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  SizedBox(width: 52, child: Text('${entry.date.month}/${entry.date.day.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 11, color: _muted))),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(entry.title.isEmpty ? '无标题日记' : entry.title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _ink)),
+                    const SizedBox(height: 5),
+                    Text(entry.body, maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, height: 1.7, color: Color(0xFF777777))),
+                  ])),
+                  const Icon(Icons.chevron_right_rounded, size: 17, color: _muted),
+                ]),
+              ),
+            )),
+          ],
+        )),
+      ]);
+    }
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(20, 2, 20, 10),
+        child: Row(children: [
+          Text(weekly ? '全部周记' : '全部月记', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
+          const Spacer(),
+          Text('${keys.length} 期', style: const TextStyle(fontSize: 10, color: _muted)),
+        ]),
+      ),
+      Expanded(child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(18, 0, 18, 28),
+        itemCount: keys.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 0),
+        itemBuilder: (context, index) {
+          final key = keys[index];
+          final items = groups[key]!;
+          final words = items.fold<int>(0, (sum, e) => sum + e.body.trim().length);
+          final tags = items.expand((e) => e.tags).toSet().take(4).toList();
+          final title = weekly
+              ? '第 ${key.split('W').last} 周 · ${key.split('-W').first}'
+              : '${key.replaceFirst('-', ' 年 ')} 月';
+          return InkWell(
+            onTap: () => setState(() => _selectedReviewKey = key),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 13),
+              decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: _line))),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Container(
+                  width: 42, height: 42,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(color: const Color(0xFFF1F1F1), borderRadius: BorderRadius.circular(11)),
+                  child: Icon(weekly ? Icons.view_week_outlined : Icons.calendar_month_outlined, size: 19, color: const Color(0xFF777777)),
+                ),
+                const SizedBox(width: 13),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _ink)),
+                  const SizedBox(height: 6),
+                  Text('${items.length} 篇记录  ·  $words 字', style: const TextStyle(fontSize: 10, color: _muted)),
+                  if (tags.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(tags.map((tag) => '#$tag').join('   '), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: Color(0xFF888888))),
+                  ],
+                ])),
+                const Icon(Icons.chevron_right_rounded, size: 18, color: _muted),
+              ]),
+            ),
+          );
+        },
+      )),
+    ]);
   }
 
   Widget _emptyState(String title, String subtitle) => Center(child: Padding(
