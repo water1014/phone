@@ -100,6 +100,7 @@ class _DiaryPageState extends State<DiaryPage> {
     final visible = _entries.where((e) =>
       _filter.isEmpty || e.title.toLowerCase().contains(_filter.toLowerCase()) ||
       e.body.toLowerCase().contains(_filter.toLowerCase()) ||
+      e.city.toLowerCase().contains(_filter.toLowerCase()) ||
       e.tags.any((tag) => tag.contains(_filter))).toList();
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
@@ -222,7 +223,7 @@ class _DiaryCard extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Expanded(child: Text(entry.dateLabel, style: const TextStyle(fontSize: 10, letterSpacing: 1.1, color: Color(0xFF999999)))),
-            if (entry.locked) const Icon(Icons.lock_outline_rounded, size: 14, color: Color(0xFF999999)),
+            if (entry.city.isNotEmpty) ...[\n              const Icon(Icons.location_on_outlined, size: 13, color: Color(0xFF999999)),\n              const SizedBox(width: 3),\n              Text(entry.city, style: const TextStyle(fontSize: 10, color: Color(0xFF888888))),\n              const SizedBox(width: 7),\n            ],\n            if (entry.locked) const Icon(Icons.lock_outline_rounded, size: 14, color: Color(0xFF999999)),
             PopupMenuButton<String>(
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 130),
@@ -265,7 +266,7 @@ class _DiaryEditor extends StatefulWidget {
 class _DiaryEditorState extends State<_DiaryEditor> {
   late final TextEditingController _title;
   late final TextEditingController _body;
-  late final TextEditingController _tags;
+  late final TextEditingController _tags;\n  late final TextEditingController _city;
   late DateTime _date;
   late bool _locked;
 
@@ -275,7 +276,7 @@ class _DiaryEditorState extends State<_DiaryEditor> {
     final entry = widget.entry;
     _title = TextEditingController(text: entry?.title ?? '');
     _body = TextEditingController(text: entry?.body ?? '');
-    _tags = TextEditingController(text: entry?.tags.join(', ') ?? '');
+    _tags = TextEditingController(text: entry?.tags.join(', ') ?? '');\n    _city = TextEditingController(text: entry?.city ?? '');
     _date = entry?.date ?? DateTime.now();
     _locked = entry?.locked ?? false;
   }
@@ -284,7 +285,7 @@ class _DiaryEditorState extends State<_DiaryEditor> {
   void dispose() {
     _title.dispose();
     _body.dispose();
-    _tags.dispose();
+    _tags.dispose();\n    _city.dispose();
     super.dispose();
   }
 
@@ -350,7 +351,7 @@ class _DiaryEditorState extends State<_DiaryEditor> {
               const Divider(height: 1, color: Color(0xFFE7E7E7)),
               TextField(controller: _body, autofocus: true, minLines: 8, maxLines: null, keyboardType: TextInputType.multiline, textCapitalization: TextCapitalization.sentences, style: const TextStyle(fontSize: 14, height: 1.9, color: Color(0xFF333333)), decoration: const InputDecoration(hintText: '今天发生了什么？有什么想记住的？', border: InputBorder.none, hintStyle: TextStyle(color: Color(0xFFBBBBBB), fontSize: 13))),
               const SizedBox(height: 14),
-              TextField(controller: _tags, decoration: const InputDecoration(labelText: '标签', hintText: '用逗号分隔，例如：日常, 开心', prefixIcon: Icon(Icons.tag_rounded, size: 17), border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12)))), style: const TextStyle(fontSize: 12)),
+              TextField(controller: _city, decoration: const InputDecoration(labelText: '城市（选填）', hintText: '例如：米兰、南京', prefixIcon: Icon(Icons.location_on_outlined, size: 17), border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12)))), style: const TextStyle(fontSize: 12)),\n              const SizedBox(height: 10),\n              TextField(controller: _tags, decoration: const InputDecoration(labelText: '标签', hintText: '用逗号分隔，例如：日常, 开心', prefixIcon: Icon(Icons.tag_rounded, size: 17), border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12)))), style: const TextStyle(fontSize: 12)),
               const SizedBox(height: 12),
               SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
@@ -369,7 +370,7 @@ class _DiaryEditorState extends State<_DiaryEditor> {
 }
 
 class _DiaryEntry {
-  _DiaryEntry({required this.id, required this.title, required this.body, required this.date, required this.updatedAt, required this.tags, this.locked = false});
+  _DiaryEntry({required this.id, required this.title, required this.body, required this.date, required this.updatedAt, required this.tags, this.city = '', this.locked = false});
 
   final String id;
   final String title;
@@ -383,7 +384,7 @@ class _DiaryEntry {
 
   Map<String, dynamic> toMap() => {
     'id': id, 'title': title, 'body': body, 'date': date.toIso8601String(),
-    'updatedAt': updatedAt.toIso8601String(), 'tags': tags, 'locked': locked,
+    'updatedAt': updatedAt.toIso8601String(), 'tags': tags, 'city': city, 'locked': locked,
   };
 
   factory _DiaryEntry.fromMap(Map map) => _DiaryEntry(
