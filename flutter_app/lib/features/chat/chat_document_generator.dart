@@ -92,7 +92,7 @@ abstract final class ChatDocumentGenerator {
     var row = <String>[];
     final cell = StringBuffer();
     var quoted = false;
-    final input = source.replaceAll('\\r\\n', '\\n').replaceAll('\\r', '\\n');
+    final input = source.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
     for (var i = 0; i < input.length; i++) {
       final ch = input[i];
       if (ch == '"') {
@@ -105,7 +105,7 @@ abstract final class ChatDocumentGenerator {
       } else if (ch == ',' && !quoted) {
         row.add(cell.toString());
         cell.clear();
-      } else if (ch == '\\n' && !quoted) {
+      } else if (ch == '\n' && !quoted) {
         row.add(cell.toString());
         cell.clear();
         if (row.any((value) => value.isNotEmpty)) rows.add(row);
@@ -139,7 +139,7 @@ abstract final class ChatDocumentGenerator {
       for (var c = 0; c < rows[r].length; c++) {
         final value = rows[r][c];
         final ref = _col(c) + (r + 1).toString();
-        final numeric = RegExp(r'^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?
+        final numeric = RegExp(r'^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?
       sheet.write('</row>');
     }
     sheet.write('</sheetData></worksheet>');
