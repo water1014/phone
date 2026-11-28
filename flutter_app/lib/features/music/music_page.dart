@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
@@ -251,7 +252,6 @@ class _MusicPageState extends State<MusicPage> {
 
   Future<void> _showLogin() async {
     final manualController = TextEditingController();
-    String? qrImage;
     String? qrKey;
     String status = '正在生成二维码…';
     bool checking = false;
@@ -263,10 +263,6 @@ class _MusicPageState extends State<MusicPage> {
       final keyResponse = await _api.qrKey(_worker);
       qrKey = MusicApiClient.qrKeyValue(keyResponse);
       if (qrKey == null || qrKey.isEmpty) throw Exception('无法获取登录二维码');
-      final imageResponse = await _api.qrCreate(_worker, qrKey);
-      final image = MusicApiClient.qrImage(imageResponse);
-      if (image == null) throw Exception('二维码生成失败');
-      qrImage = image;
     } catch (e) {
       status = MusicApiClient.prettyError(e);
     }
@@ -328,16 +324,17 @@ class _MusicPageState extends State<MusicPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (qrImage != null)
+                  if (qrKey != null)
                     Container(
                       width: 190,
                       height: 190,
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(color: Colors.white, border: Border.all(color: _line), borderRadius: BorderRadius.circular(16)),
-                      child: Image.memory(
-                        base64Decode(qrImage.replaceFirst(RegExp(r'^data:image/[^;]+;base64,'), '')),
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const Center(child: Text('二维码无法显示')),
+                      child: QrImageView(
+                        data: 'https://music.163.com/login?codekey=$qrKey',
+                        version: QrVersions.auto,
+                        size: 174,
+                        backgroundColor: Colors.white,
                       ),
                     )
                   else
