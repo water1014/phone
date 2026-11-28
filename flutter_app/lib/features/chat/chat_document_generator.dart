@@ -1,3 +1,6 @@
+// The XML builders intentionally concatenate OOXML fragments; keep these local style lints quiet.
+// ignore_for_file: prefer_interpolation_to_compose_strings, curly_braces_in_flow_control_structures
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -6,8 +9,6 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-// The XML builders intentionally concatenate OOXML fragments; keep these local style lints quiet.
-// ignore_for_file: prefer_interpolation_to_compose_strings, curly_braces_in_flow_control_structures
 
 abstract final class ChatDocumentGenerator {
   static Future<Uint8List> generate(String name, String content) async {
