@@ -335,31 +335,46 @@ class _Editor extends StatefulWidget {
   @override State<_Editor> createState()=>_EditorState();
 }
 class _EditorState extends State<_Editor> {
-  late final TextEditingController title,body;
+  late final TextEditingController title,body,trTitle,trBody;
   late DateTime date;
-  @override void initState(){super.initState();title=TextEditingController(text:widget.entry?.title??'');body=TextEditingController(text:widget.entry?.body??'');date=widget.entry?.date??DateTime.now();}
-  @override void dispose(){title.dispose();body.dispose();super.dispose();}
+  @override void initState(){super.initState();title=TextEditingController(text:widget.entry?.title??'');body=TextEditingController(text:widget.entry?.body??'');trTitle=TextEditingController(text:(widget.entry?.extra['trTitle']??'').toString());trBody=TextEditingController(text:(widget.entry?.extra['tr']??'').toString());date=widget.entry?.date??DateTime.now();}
+  @override void dispose(){title.dispose();body.dispose();trTitle.dispose();trBody.dispose();super.dispose();}
   Future<void> _pickDate() async {final d=await showDatePicker(context:context,initialDate:date,firstDate:DateTime(2000),lastDate:DateTime.now().add(const Duration(days:365)));if(d!=null)setState(()=>date=d);}
+  void _mark(String color){
+    final selection=body.selection;
+    if(!selection.isValid||selection.isCollapsed){ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('先选中一段文字哦')));return;}
+    if(selection.text.contains('\n')){ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('标记请在同一段文字内使用')));return;}
+    final selected=selection.text.replaceAllMapped(RegExp(r'\[\[(?:红|蓝)[:：]([\s\S]*?)\]\]'),(m)=>m[1]??'');
+    final value=color=='x'?selected:'[[\${color}:\$selected]]';
+    body.value=body.value.replaced(selection,value);
+    body.selection=TextSelection.collapsed(offset:selection.start+value.length);
+  }
   void _save(){
     final text=body.text.trim();if(text.isEmpty){ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('正文不能为空')));return;}
     final now=DateTime.now();
-    Navigator.pop(context,_Entry(id:widget.entry?.id??now.microsecondsSinceEpoch.toString(),type:widget.type,owner:widget.entry?.owner??'me',title:title.text.trim(),body:text,date:date,time:now,image:widget.entry?.image??'',comment:widget.entry?.comment??''));
+    final extra=<String,dynamic>{...?widget.entry?.extra,'tr':trBody.text.trim(),'trTitle':trTitle.text.trim()};
+    Navigator.pop(context,_Entry(id:widget.entry?.id??now.microsecondsSinceEpoch.toString(),type:widget.type,owner:widget.entry?.owner??'me',title:title.text.trim(),body:text,date:date,time:now,image:widget.entry?.image??'',comment:widget.entry?.comment??'',extra:extra));
   }
+  Widget _markButton(String label,String color)=>TextButton(onPressed:()=>_mark(color),child:Text(label,style:TextStyle(fontSize:12,color:color=='红'?const Color(0xFFD94A4A):color=='蓝'?const Color(0xFF3478D4):const Color(0xFF777777),decoration:color=='红'?TextDecoration.underline:null,backgroundColor:color=='蓝'?const Color(0x665BA8FF):null)));
   @override Widget build(BuildContext context){
     final note=widget.type=='note';
-    return Scaffold(backgroundColor:Colors.white,appBar:AppBar(backgroundColor:Colors.white,surfaceTintColor:Colors.transparent,elevation:0,
+    return Scaffold(backgroundColor:const Color(0xFFFAFAFA),appBar:AppBar(backgroundColor:const Color(0xFFFAFAFA),surfaceTintColor:Colors.transparent,elevation:0,
       leading:TextButton(onPressed:()=>Navigator.pop(context),child:const Text('取消',style:TextStyle(color:Color(0xFF777777)))),
       title:Text(widget.entry==null?(note?'写留言':'写日记'):'编辑',style:const TextStyle(fontSize:14,fontWeight:FontWeight.w600,color:Color(0xFF111111))),centerTitle:true,
       actions:[TextButton(onPressed:_save,child:const Text('完成',style:TextStyle(color:Colors.black,fontWeight:FontWeight.w700))),const SizedBox(width:8)]),
       body:SafeArea(child:ListView(padding:const EdgeInsets.fromLTRB(22,12,22,32),children:[
         if(!note)...[
-          Row(children:[const Icon(Icons.schedule,size:14,color:Color(0xFF999999)),const SizedBox(width:7),Text('${date.year}.${date.month}.${date.day}',style:const TextStyle(fontSize:11,color:Color(0xFF777777))),const Spacer(),TextButton(onPressed:_pickDate,child:const Text('更改日期',style:TextStyle(fontSize:11,color:Colors.black)))]),
+          Row(children:[const Icon(Icons.schedule,size:14,color:Color(0xFF999999)),const SizedBox(width:7),Text('\${date.year}.\${date.month}.\${date.day}',style:const TextStyle(fontSize:11,color:Color(0xFF777777))),const Spacer(),TextButton(onPressed:_pickDate,child:const Text('更改日期',style:TextStyle(fontSize:11,color:Colors.black)))]),
           const SizedBox(height:13),TextField(controller:title,maxLength:40,style:const TextStyle(fontSize:22,fontWeight:FontWeight.w600),decoration:const InputDecoration(counterText:'',hintText:'标题',border:InputBorder.none,hintStyle:TextStyle(color:Color(0xFFBBBBBB),fontWeight:FontWeight.w400))),
-          const Divider(height:1,color:Color(0xFFECECEC))
+          const Divider(height:1,color:Color(0xFFECECEC)),
+          Padding(padding:const EdgeInsets.only(top:10,bottom:3),child:Row(children:[_markButton('红线','红'),_markButton('荧光笔','蓝'),_markButton('清除标记','x')])),
         ],
-        const SizedBox(height:14),TextField(controller:body,autofocus:true,minLines:note?4:12,maxLines:null,keyboardType:TextInputType.multiline,
-          style:const TextStyle(fontSize:15,height:1.95,color:Color(0xFF222222)),
-          decoration:InputDecoration(hintText:note?'留下一句想说的话…':'写点什么…',border:InputBorder.none,hintStyle:const TextStyle(color:Color(0xFFBBBBBB),fontSize:14)))
+        const SizedBox(height:8),TextField(controller:body,autofocus:true,minLines:note?4:12,maxLines:null,keyboardType:TextInputType.multiline,style:const TextStyle(fontSize:15,height:1.95,color:Color(0xFF222222)),decoration:InputDecoration(hintText:note?'留下一句想说的话…':'写点什么…',border:InputBorder.none,hintStyle:const TextStyle(color:Color(0xFFBBBBBB),fontSize:14))),
+        if(!note)...[
+          const SizedBox(height:24),const Text('译文（可选）',style:TextStyle(fontSize:12,color:Color(0xFF888888))),
+          const SizedBox(height:8),TextField(controller:trTitle,decoration:const InputDecoration(hintText:'标题译文',border:InputBorder.none)),
+          TextField(controller:trBody,minLines:3,maxLines:null,decoration:const InputDecoration(hintText:'外语日记的中文译文',border:InputBorder.none)),
+        ]
       ]))
     );
   }
@@ -372,26 +387,49 @@ class _Reader extends StatefulWidget {
 }
 class _ReaderState extends State<_Reader>{
   late final TextEditingController comment;
+  bool translated=false;
   @override void initState(){super.initState();comment=TextEditingController(text:widget.entry.comment);}
   @override void dispose(){comment.dispose();super.dispose();}
+  List<InlineSpan> _marked(String source){
+    final spans=<InlineSpan>[];final reg=RegExp(r'\[\[(红|蓝)[:：]([\s\S]*?)\]\]');var at=0;
+    for(final m in reg.allMatches(source)){if(m.start>at)spans.add(TextSpan(text:source.substring(at,m.start)));final red=m[1]=='红';spans.add(TextSpan(text:m[2],style:red?const TextStyle(decoration:TextDecoration.underline,decorationColor:Color(0xFFE45B62),decorationThickness:2.2):const TextStyle(backgroundColor:Color(0x665BA8FF))));at=m.end;}
+    if(at<source.length)spans.add(TextSpan(text:source.substring(at)));return spans;
+  }
   @override Widget build(BuildContext context){
-    final e=widget.entry;
-    return Scaffold(backgroundColor:Colors.white,appBar:AppBar(backgroundColor:Colors.white,surfaceTintColor:Colors.transparent,elevation:0,
-      leading:IconButton(onPressed:()=>Navigator.pop(context),icon:const Icon(Icons.arrow_back_ios_new,size:18)),
-      title:const Text('日记',style:TextStyle(fontSize:14,fontWeight:FontWeight.w600)),centerTitle:true,
+    final e=widget.entry;final tr=(e.extra['tr']??'').toString();final trTitle=(e.extra['trTitle']??'').toString();
+    final paragraphs=(translated&&tr.isNotEmpty?tr:e.body).split('\n');
+    return Scaffold(backgroundColor:const Color(0xFFF7F7F7),appBar:AppBar(backgroundColor:const Color(0xFFF7F7F7),surfaceTintColor:Colors.transparent,elevation:0,
+      leading:IconButton(onPressed:()=>Navigator.pop(context),icon:const Icon(Icons.arrow_back_ios_new,size:18)),title:const Text('日记',style:TextStyle(fontSize:14,fontWeight:FontWeight.w600)),centerTitle:true,
       actions:[IconButton(onPressed:widget.onEdit,icon:const Icon(Icons.edit_outlined,size:19)),PopupMenuButton<String>(onSelected:(v){if(v=='delete')widget.onDelete();},itemBuilder:(_)=>const[PopupMenuItem(value:'delete',child:Text('删除'))])]),
-      body:SafeArea(child:ListView(padding:const EdgeInsets.fromLTRB(22,12,22,30),children:[
-        Row(children:[const CircleAvatar(radius:18,backgroundColor:Color(0xFFF0F0F0),child:Text('我',style:TextStyle(color:Color(0xFF111111),fontSize:12))),const SizedBox(width:10),const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('我',style:TextStyle(fontSize:14,fontWeight:FontWeight.w600)),Text('Mio Diary',style:TextStyle(fontSize:10,color:Color(0xFF999999)))]),const Spacer(),Text('${e.date.year}/${e.date.month}/${e.date.day}',style:const TextStyle(fontSize:10,color:Color(0xFF999999)))]),
-        const SizedBox(height:26),if(e.title.isNotEmpty)Text(e.title,style:const TextStyle(fontSize:23,height:1.4,fontWeight:FontWeight.w600)),
-        if(e.title.isNotEmpty)const SizedBox(height:18),Text(e.body,style:const TextStyle(fontSize:15,height:2,color:Color(0xFF222222))),
-        const SizedBox(height:24),const Divider(color:Color(0xFFECECEC)),const SizedBox(height:14),
-        const Text('留言',style:TextStyle(fontSize:12,fontWeight:FontWeight.w600,color:Color(0xFF777777))),const SizedBox(height:10),
-        TextField(controller:comment,minLines:1,maxLines:4,decoration:InputDecoration(hintText:'回复这篇日记…',filled:true,fillColor:const Color(0xFFF7F7F7),border:OutlineInputBorder(borderRadius:BorderRadius.circular(12),borderSide:BorderSide.none),
-          suffixIcon:IconButton(icon:const Icon(Icons.send_rounded,size:18),onPressed:(){widget.onComment(comment.text.trim());FocusScope.of(context).unfocus();}))),
-        if(e.comment.isNotEmpty)Padding(padding:const EdgeInsets.only(top:12),child:Text(e.comment,style:const TextStyle(fontSize:13,height:1.7)))
+      body:SafeArea(child:Column(children:[
+        Expanded(child:ListView(padding:const EdgeInsets.fromLTRB(14,6,14,24),children:[
+          Container(margin:const EdgeInsets.only(left:9),padding:const EdgeInsets.fromLTRB(28,24,20,30),constraints:const BoxConstraints(minHeight:520),
+            decoration:BoxDecoration(color:Colors.white,borderRadius:const BorderRadius.horizontal(left:Radius.circular(4),right:Radius.circular(14)),boxShadow:[BoxShadow(color:Colors.black.withValues(alpha:.05),blurRadius:22,offset:const Offset(0,8))]),
+            child:Stack(children:[
+              Positioned.fill(child:IgnorePointer(child:CustomPaint(painter:_DiaryDotPainter()))),
+              Positioned(left:-27,top:4,bottom:4,child:Column(mainAxisAlignment:MainAxisAlignment.spaceEvenly,children:List.generate(7,(_)=>Container(width:14,height:14,decoration:BoxDecoration(color:const Color(0xFFF7F7F7),shape:BoxShape.circle,border:Border.all(color:const Color(0xFFE6E6E6))))))),
+              Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                Row(children:[const CircleAvatar(radius:18,backgroundColor:Color(0xFFF0F0F0),child:Text('我',style:TextStyle(color:Color(0xFF111111),fontSize:12))),const SizedBox(width:10),const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('我',style:TextStyle(fontSize:14,fontWeight:FontWeight.w600)),Text('Mio Diary',style:TextStyle(fontSize:10,color:Color(0xFF999999)))]),const Spacer(),Text('\${e.date.year}/\${e.date.month}/\${e.date.day}',style:const TextStyle(fontSize:10,color:Color(0xFF999999)))]),
+                const SizedBox(height:26),
+                if(e.title.isNotEmpty)GestureDetector(onTap:trTitle.isEmpty?null:()=>setState(()=>translated=!translated),child:Text(translated&&trTitle.isNotEmpty?trTitle:e.title,style:const TextStyle(fontSize:23,height:1.4,fontWeight:FontWeight.w600))),
+                if(e.title.isNotEmpty)const SizedBox(height:18),
+                GestureDetector(onTap:tr.isEmpty?null:()=>setState(()=>translated=!translated),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:paragraphs.map((p)=>Padding(padding:const EdgeInsets.only(bottom:13),child:RichText(text:TextSpan(style:const TextStyle(fontSize:15,height:1.95,color:Color(0xFF222222)),children:_marked(p))))).toList())),
+                const SizedBox(height:28),const Divider(color:Color(0xFFECECEC)),const SizedBox(height:14),const Text('留言',style:TextStyle(fontSize:12,fontWeight:FontWeight.w600,color:Color(0xFF777777))),
+                if(e.comment.isNotEmpty)Padding(padding:const EdgeInsets.only(top:12),child:Text(e.comment,style:const TextStyle(fontSize:13,height:1.7))),
+              ])
+            ])
+          ),
+        ])),
+        SafeArea(top:false,child:Container(padding:const EdgeInsets.fromLTRB(12,8,12,8),decoration:const BoxDecoration(color:Colors.white,border:Border(top:BorderSide(color:Color(0xFFECECEC)))),
+          child:Row(children:[Expanded(child:TextField(controller:comment,minLines:1,maxLines:4,decoration:InputDecoration(hintText:'回复帖子 @我',isDense:true,filled:true,fillColor:const Color(0xFFF7F7F7),border:OutlineInputBorder(borderRadius:BorderRadius.circular(22),borderSide:BorderSide.none),contentPadding:const EdgeInsets.symmetric(horizontal:14,vertical:10)))),const SizedBox(width:8),IconButton(onPressed:(){widget.onComment(comment.text.trim());FocusScope.of(context).unfocus();},icon:const Icon(Icons.send_rounded,size:19))])
+        ))
       ]))
     );
   }
+}
+class _DiaryDotPainter extends CustomPainter {
+  @override void paint(Canvas canvas,Size size){final p=Paint()..color=const Color(0xFFE8E8E8);for(double y=8;y<size.height;y+=14){for(double x=8;x<size.width;x+=14){canvas.drawCircle(Offset(x,y),.65,p);}}}
+  @override bool shouldRepaint(covariant CustomPainter oldDelegate)=>false;
 }
 
 class _Entry {
