@@ -613,7 +613,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       final requestMessages = <Map<String, dynamic>>[
         {'role': 'system', 'content': systemPrompt},
         if (_activeConversationSummary.trim().isNotEmpty)
-          {'role': 'system', 'content': '上一聊天窗口交接摘要。它是帮助延续任务的背景，不代表完整聊天记录：\\n$_activeConversationSummary'},
+          {'role': 'system', 'content': '上一聊天窗口交接摘要。它是帮助延续任务的背景，不代表完整聊天记录：\n$_activeConversationSummary'},
         if (chatPrefs.additionalSystemPrompt.trim().isNotEmpty)
           {'role': 'system', 'content': chatPrefs.additionalSystemPrompt.trim()},
         if (worldbookContext.isNotEmpty)
@@ -896,9 +896,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       final speaker = message.mine ? '用户' : '家机';
       return '$speaker：${message.text.trim()}';
     }).toList();
-    var summary = lines.join('\\n');
+    var summary = lines.join('\n');
     if (summary.length > 3600) summary = summary.substring(summary.length - 3600);
-    return '最近对话交接摘录（本地从旧窗口提取，非 AI 总结）：\\n$summary';
+    return '最近对话交接摘录（本地从旧窗口提取，非 AI 总结）：\n$summary';
   }
 
   Future<void> _createNewConversation() async {
