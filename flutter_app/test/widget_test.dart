@@ -21,12 +21,14 @@ void main() {
     expect(find.text('聊天'), findsWidgets);
 
     await tester.tap(find.text('聊天').first);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
 
     expect(find.text('宋祁'), findsOneWidget);
     await tester.enterText(find.byType(TextField).first, '你好呀');
     await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
 
     // 消息会先本地显示；未配置 API 时应提示配置接口，不应导致测试失败。
     expect(find.text('你好呀'), findsOneWidget);
