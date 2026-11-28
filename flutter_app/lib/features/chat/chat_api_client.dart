@@ -88,6 +88,9 @@ class ChatStreamEvent {
     this.reasoningDelta = '',
     this.inputTokens,
     this.outputTokens,
+    this.cacheHitTokens,
+    this.cacheMissTokens,
+    this.cacheCreationTokens,
     this.finished = false,
   });
 
@@ -95,6 +98,9 @@ class ChatStreamEvent {
   final String reasoningDelta;
   final int? inputTokens;
   final int? outputTokens;
+  final int? cacheHitTokens;
+  final int? cacheMissTokens;
+  final int? cacheCreationTokens;
   final bool finished;
 }
 
@@ -108,7 +114,44 @@ class ChatApiClient {
     return decoded is Map<String, dynamic>;
   }
 
-  String _base(String url) => url.trim().replaceAll(RegExp(r'/+$'), '')
+  int? _usageValue(Map? usage, List<String> keys) {
+    if (usage == null) return null;
+    for (final key in keys) {
+      final value = usage[key];
+      if (value is num) return value.toInt();
+    }
+    return null;
+  }
+
+  int? _cacheHitTokens(Map? usage) {
+    final direct = _usageValue(usage, const [
+      'prompt_cache_hit_tokens',
+      'cached_tokens',
+      'cache_read_input_tokens',
+      'cache_read_tokens',
+      'cached_input_tokens',
+    ]);
+    if (direct != null) return direct;
+    final details = usage?['prompt_tokens_details'];
+    if (details is Map) return _usageValue(details, const ['cached_tokens', 'cache_read_tokens']);
+    return null;
+  }
+
+  int? _cacheMissTokens(Map? usage) {
+    final direct = _usageValue(usage, const ['prompt_cache_miss_tokens', 'uncached_tokens']);
+    if (direct != null) return direct;
+    final prompt = _usageValue(usage, const ['prompt_tokens', 'input_tokens']);
+    final cached = _cacheHitTokens(usage);
+    if (prompt != null && cached != null) return (prompt - cached).clamp(0, prompt);
+    return null;
+  }
+
+  int? _cacheCreationTokens(Map? usage) => _usageValue(
+    usage,
+    const ['cache_creation_input_tokens', 'cache_write_input_tokens', 'cache_creation_tokens'],
+  );
+
+  String _base(String url) => url.trim().replaceAll(RegExp(r'/+
       .replaceFirst(RegExp(r'/chat/completions$'), '');
 
   List<String> _completionCandidates(String url) {
@@ -225,6 +268,9 @@ class ChatApiClient {
           reasoningDelta: reasoning.toString(),
           inputTokens: (usage?['prompt_tokens'] as num?)?.toInt(),
           outputTokens: (usage?['completion_tokens'] as num?)?.toInt(),
+          cacheHitTokens: _cacheHitTokens(usage),
+          cacheMissTokens: _cacheMissTokens(usage),
+          cacheCreationTokens: _cacheCreationTokens(usage),
         );
         yield const ChatStreamEvent(finished: true);
         return;
@@ -259,6 +305,178 @@ class ChatApiClient {
             reasoningDelta: reasoning.toString(),
             inputTokens: (usage?['prompt_tokens'] as num?)?.toInt(),
             outputTokens: (usage?['completion_tokens'] as num?)?.toInt(),
+          cacheHitTokens: _cacheHitTokens(usage),
+          cacheMissTokens: _cacheMissTokens(usage),
+          cacheCreationTokens: _cacheCreationTokens(usage),
+          );
+        } on FormatException {
+          continue;
+        }
+      }
+      yield const ChatStreamEvent(finished: true);
+      return;
+    }
+
+    throw Exception('连接失败：$lastError');
+  }
+}
+), '')
+      .replaceFirst(RegExp(r'/chat/completions$'), '');
+
+  List<String> _completionCandidates(String url) {
+    final raw = url.trim().replaceAll(RegExp(r'/+$'), '');
+    final base = _base(raw);
+    if (base.isEmpty) return const [];
+    final candidates = <String>[];
+    if (raw.endsWith('/chat/completions')) candidates.add(raw);
+    candidates.add('$base/v1/chat/completions');
+    candidates.add('$base/chat/completions');
+    return candidates.toSet().toList();
+  }
+
+  Future<Map<String, dynamic>> _headers(ChatApiConfig config) async {
+    final result = <String, dynamic>{
+      'Content-Type': 'application/json',
+      'Accept': 'text/event-stream, application/json',
+    };
+    if (config.apiKey.trim().isNotEmpty) {
+      result['Authorization'] = 'Bearer ${config.apiKey.trim()}';
+    }
+    if (config.customHeaders.trim().isNotEmpty) {
+      final decoded = jsonDecode(config.customHeaders);
+      if (decoded is! Map<String, dynamic>) {
+        throw const FormatException('自定义请求头必须是 JSON 对象');
+      }
+      decoded.forEach((key, value) {
+        if (key.trim().isNotEmpty && value != null) result[key] = value.toString();
+      });
+    }
+    if (config.usesOpenCodeSession &&
+        !result.keys.any((key) => key.toLowerCase() == 'x-opencode-session')) {
+      final prefs = await SharedPreferences.getInstance();
+      var session = prefs.getString('chat.opencode.session');
+      if (session == null || session.isEmpty) {
+        session = 'xw-${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}';
+        await prefs.setString('chat.opencode.session', session);
+      }
+      result['x-opencode-session'] = session;
+    }
+    return result;
+  }
+
+  Stream<ChatStreamEvent> streamReply({
+    required ChatApiConfig config,
+    required List<Map<String, dynamic>> messages,
+    CancelToken? cancelToken,
+  }) async* {
+    if (config.apiKey.trim().isEmpty) {
+      throw Exception('请先在聊天设置中填写 API Key');
+    }
+    if (config.baseUrl.trim().isEmpty) {
+      throw Exception('请先填写接口地址');
+    }
+    if (config.model.trim().isEmpty) {
+      throw Exception('请先填写模型名称');
+    }
+
+    final headers = await _headers(config);
+    final candidates = _completionCandidates(config.baseUrl);
+    if (candidates.isEmpty) throw Exception('接口地址无效');
+    Object? lastError;
+
+    for (final url in candidates) {
+      Response<ResponseBody> response;
+      try {
+        response = await _dio.post<ResponseBody>(
+          url,
+          data: {
+            'model': config.model.trim(),
+            'messages': messages,
+            'stream': true,
+          },
+          options: Options(
+            responseType: ResponseType.stream,
+            headers: headers,
+            validateStatus: (status) => status != null && status < 500,
+            receiveTimeout: const Duration(minutes: 3),
+          ),
+          cancelToken: cancelToken,
+        );
+      } on DioException catch (error) {
+        lastError = error;
+        continue;
+      }
+
+      final status = response.statusCode ?? 0;
+      if (status == 404 || status == 405) {
+        lastError = Exception('接口路径不存在：$url');
+        continue;
+      }
+      if (status < 200 || status >= 300) {
+        final detail = response.data == null ? '' : await utf8.decoder.bind(response.data!.stream).join();
+        throw Exception('HTTP $status${detail.isEmpty ? '' : '：${detail.substring(0, detail.length < 240 ? detail.length : 240)}'}');
+      }
+
+      final contentType = response.headers.value('content-type') ?? '';
+      if (contentType.contains('application/json')) {
+        final raw = await utf8.decoder.bind(response.data!.stream).join();
+        final decoded = jsonDecode(raw) as Map<String, dynamic>;
+        final choices = decoded['choices'];
+        final choice = choices is List && choices.isNotEmpty ? choices.first as Map? : null;
+        final message = choice?['message'] as Map?;
+        final content = message?['content'];
+        final text = content is String
+            ? content
+            : content is List
+                ? content.map((part) => part is Map ? part['text'] ?? '' : '').join()
+                : '';
+        final reasoning = message?['reasoning_content'] ?? message?['reasoning'] ?? '';
+        final usage = decoded['usage'] as Map?;
+        yield ChatStreamEvent(
+          textDelta: text.toString(),
+          reasoningDelta: reasoning.toString(),
+          inputTokens: (usage?['prompt_tokens'] as num?)?.toInt(),
+          outputTokens: (usage?['completion_tokens'] as num?)?.toInt(),
+          cacheHitTokens: _cacheHitTokens(usage),
+          cacheMissTokens: _cacheMissTokens(usage),
+          cacheCreationTokens: _cacheCreationTokens(usage),
+        );
+        yield const ChatStreamEvent(finished: true);
+        return;
+      }
+
+      await for (final line in response.data!.stream
+          .cast<List<int>>()
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())) {
+        if (!line.startsWith('data:')) continue;
+        final data = line.substring(5).trim();
+        if (data.isEmpty) continue;
+        if (data == '[DONE]') {
+          yield const ChatStreamEvent(finished: true);
+          return;
+        }
+        try {
+          final decoded = jsonDecode(data) as Map<String, dynamic>;
+          final choices = decoded['choices'];
+          final choice = choices is List && choices.isNotEmpty ? choices.first as Map? : null;
+          final delta = choice?['delta'] as Map? ?? choice?['message'] as Map?;
+          final content = delta?['content'];
+          final text = content is String
+              ? content
+              : content is List
+                  ? content.map((part) => part is Map ? part['text'] ?? '' : '').join()
+                  : '';
+          final reasoning = delta?['reasoning_content'] ?? delta?['reasoning'] ?? '';
+          final usage = decoded['usage'] as Map?;
+          yield ChatStreamEvent(
+            textDelta: text.toString(),
+            reasoningDelta: reasoning.toString(),
+            inputTokens: (usage?['prompt_tokens'] as num?)?.toInt(),
+            outputTokens: (usage?['completion_tokens'] as num?)?.toInt(),
+          cacheHitTokens: _cacheHitTokens(usage),
+          cacheMissTokens: _cacheMissTokens(usage),
+          cacheCreationTokens: _cacheCreationTokens(usage),
           );
         } on FormatException {
           continue;
