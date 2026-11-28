@@ -22,6 +22,7 @@ import 'chat_preferences.dart';
 import 'chat_api_client.dart';
 import 'chat_message.dart';
 import 'chat_conversation_store.dart';
+import 'chat_memory_store.dart';
 import 'chat_document_generator.dart';
 
 String _resolveWorldbookContext(String raw, String conversationContext) {
@@ -336,7 +337,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   int _contextWindowLimit = 32768;
   String _contextModelKey = 'deepseek:deepseek-reasoner';
   int _lastPromptTokens = 0;
-  bool _pendingAutoRollover = false;
   int _cacheHitTokensTotal = 0;
   int _cacheMissTokensTotal = 0;
   int _cacheCreationTokensTotal = 0;
@@ -504,7 +504,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   Future<void> _send([String? quickText, String? voicePath, int? voiceDurationMs, String? stickerPath, String? stickerUrl]) async {
     if (_sending) return;
-    _pendingAutoRollover = false;
     final value = (quickText ?? _input.text).trim();
     final imagePath = quickText == null ? _pendingImagePath : stickerPath;
     final attachmentPath = quickText == null ? _pendingFilePath : null;
@@ -512,8 +511,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     final attachmentSize = quickText == null ? _pendingFileSize : null;
     final replyTarget = quickText == null ? _replyingTo : null;
     if (value.isEmpty && imagePath == null && attachmentPath == null && voicePath == null && stickerUrl == null) return;
+    final userMessageTime = DateTime.now();
     setState(() {
-      _messages.add(_ChatMessage(text: value, mine: true, time: DateTime.now(), imagePath: imagePath, stickerUrl: stickerUrl, audioPath: voicePath, audioDurationMs: voiceDurationMs, attachmentPath: attachmentPath, attachmentName: attachmentName, attachmentSize: attachmentSize, replyToText: replyTarget?.text, replyToMine: replyTarget?.mine));
+      _messages.add(_ChatMessage(text: value, mine: true, time: userMessageTime, imagePath: imagePath, stickerUrl: stickerUrl, audioPath: voicePath, audioDurationMs: voiceDurationMs, attachmentPath: attachmentPath, attachmentName: attachmentName, attachmentSize: attachmentSize, replyToText: replyTarget?.text, replyToMine: replyTarget?.mine));
       _input.clear();
       _pendingImagePath = null;
       _pendingFilePath = null;
@@ -527,6 +527,11 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     FocusScope.of(context).unfocus();
     unawaited(_saveDraft(''));
     await _persistChat();
+    await ChatMemoryStore.captureUserMessage(
+      text: value,
+      conversationId: _activeConversationId,
+      createdAt: userMessageTime,
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
 
     final cancelToken = CancelToken();
@@ -640,10 +645,29 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             )
           : '';
 
+      final recentMessageKeys = historyMessages.map((message) =>
+        '${message.time.microsecondsSinceEpoch}:${message.mine}:${message.text}').toSet();
+      final memoryMatches = await ChatMemoryStore.searchMemories(value, limit: 4);
+      final originalMatches = await ChatMemoryStore.searchOriginalMessages(
+        query: value,
+        activeConversationId: _activeConversationId,
+        recentMessageKeys: recentMessageKeys,
+        limit: 3,
+      );
+      final memoryContext = memoryMatches.isEmpty ? '' : memoryMatches.map((item) =>
+        '- [${item.category}] ${item.content}').join('\\n');
+      final originalHistoryContext = originalMatches.isEmpty ? '' : originalMatches.map((item) {
+        final date = item.createdAt;
+        final timestamp = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+        return '[原始聊天记录｜${item.conversationTitle}｜$timestamp｜${item.mine ? '用户' : '宋祁'}]\\n${item.text}';
+      }).join('\\n\\n');
+
       final requestMessages = <Map<String, dynamic>>[
         {'role': 'system', 'content': systemPrompt},
-        if (_activeConversationSummary.trim().isNotEmpty)
-          {'role': 'system', 'content': '上一聊天窗口交接摘要。它是帮助延续任务的背景，不代表完整聊天记录：\n$_activeConversationSummary'},
+        if (memoryContext.isNotEmpty)
+          {'role': 'system', 'content': '以下是从独立长期记忆库中检索到的记忆。它们是辅助背景，不得覆盖用户当前表达；必要时可结合来源原文理解：\\n$memoryContext'},
+        if (originalHistoryContext.isNotEmpty)
+          {'role': 'system', 'content': '以下是从本地完整聊天档案中按当前话题检索到的原始消息。内容保持原文，不是摘要；请将其作为真实历史参考：\\n$originalHistoryContext'},
         if (chatPrefs.additionalSystemPrompt.trim().isNotEmpty)
           {'role': 'system', 'content': chatPrefs.additionalSystemPrompt.trim()},
         if (worldbookContext.isNotEmpty)
@@ -826,9 +850,12 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         _cacheCreationTokensTotal = usage['creations'] ?? 0;
         _hasCacheMetrics = (usage['reported'] ?? 0) > 0;
       }
-      final shouldAutoRollover = _lastPromptTokens >= (_contextWindowLimit * 0.8).ceil();
       await _persistChat();
-      _pendingAutoRollover = shouldAutoRollover;
+      if (_lastPromptTokens >= (_contextWindowLimit * 0.8).ceil() && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('本次请求已接近模型上下文容量。完整聊天档案没有被压缩，后续会继续按需检索记忆和原文。')),
+        );
+      }
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
     } catch (error) {
       if (!mounted) return;
@@ -865,17 +892,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
     } finally {
       _activeCancelToken = null;
-      final shouldRollover = _pendingAutoRollover;
-      _pendingAutoRollover = false;
       if (mounted) setState(() => _sending = false);
-      if (shouldRollover && mounted) {
-        await _createNewConversation();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('当前窗口接近上下文上限，已自动开启新窗口并保留交接资料')),
-          );
-        }
-      }
     }
   }
 
@@ -1007,7 +1024,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     final updatedLimit = await showDialog<int>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('上下文容量与自动换窗'),
+        title: const Text('上下文容量与 Token 统计'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1030,7 +1047,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: '当前模型的上下文容量',
-                helperText: '请按模型说明填写。达到容量的 80% 后自动换窗。',
+                helperText: '请按模型说明填写。接近上限时会提醒，不会自动换窗或压缩聊天记录。',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -1092,8 +1109,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       return;
     }
     await _persistChat();
-    final handoff = _buildHandoffSummary();
-    final created = await ChatConversationStore.create(summary: handoff);
+    final created = await ChatConversationStore.create();
     if (!mounted) return;
     setState(() {
       _activeConversationId = created.id;
@@ -1334,7 +1350,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           if (value == 'new_window') unawaited(_createNewConversation());
           if (value == 'switch_window') unawaited(_showConversationPicker());
           if (value == 'context_usage') unawaited(_showContextUsageSettings());
-          if (value == 'handoff') unawaited(_editHandoffSummary());
+          if (value == 'memory') unawaited(_showMemoryManager());
           if (value == 'latest') {
             FocusScope.of(context).unfocus();
             _scrollToLatest();
@@ -1351,7 +1367,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           PopupMenuItem(value: 'new_window', child: Text('新建聊天窗口')),
           PopupMenuItem(value: 'switch_window', child: Text('切换聊天窗口')),
           PopupMenuItem(value: 'context_usage', child: Text('上下文用量与自动换窗')),
-          PopupMenuItem(value: 'handoff', child: Text('查看/编辑交接资料')),
+          PopupMenuItem(value: 'memory', child: Text('长期记忆库')),
           PopupMenuItem(value: 'settings', child: Text('聊天设置')),
           PopupMenuItem(value: 'latest', child: Text('回到最新消息')),
           PopupMenuItem(value: 'clear', child: Text('清空对话')),
