@@ -71,6 +71,44 @@ abstract final class ChatConversationStore {
     await prefs.setInt(_contextLimitKeyFor(modelKey), value);
   }
 
+  static String _cacheUsageKey(String modelKey) =>
+      'chat.cacheUsage.v1.${Uri.encodeComponent(modelKey)}';
+
+  static Future<Map<String, int>> loadCacheUsage(String modelKey) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_cacheUsageKey(modelKey));
+    if (raw == null || raw.isEmpty) return const {
+      'hits': 0,
+      'misses': 0,
+      'creations': 0,
+    };
+    try {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      return {
+        'hits': (decoded['hits'] as num?)?.toInt() ?? 0,
+        'misses': (decoded['misses'] as num?)?.toInt() ?? 0,
+        'creations': (decoded['creations'] as num?)?.toInt() ?? 0,
+      };
+    } catch (_) {
+      return const {'hits': 0, 'misses': 0, 'creations': 0};
+    }
+  }
+
+  static Future<void> recordCacheUsage(
+    String modelKey, {
+    int? hits,
+    int? misses,
+    int? creations,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final current = await loadCacheUsage(modelKey);
+    await prefs.setString(_cacheUsageKey(modelKey), jsonEncode({
+      'hits': current['hits']! + (hits ?? 0),
+      'misses': current['misses']! + (misses ?? 0),
+      'creations': current['creations']! + (creations ?? 0),
+    }));
+  }
+
   static Future<List<ChatConversationRecord>> loadConversations() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_indexKey);
