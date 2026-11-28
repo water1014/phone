@@ -345,7 +345,7 @@ class _EditorState extends State<_Editor> {
     if(!selection.isValid||selection.isCollapsed){ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('先选中一段文字哦')));return;}
     if(selection.text.contains('\n')){ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('标记请在同一段文字内使用')));return;}
     final selected=selection.text.replaceAllMapped(RegExp(r'\[\[(?:红|蓝)[:：]([\s\S]*?)\]\]'),(m)=>m[1]??'');
-    final value=color=='x'?selected:'[[\${color}:\$selected]]';
+    final value=color=='x'?selected:'[[${color}:\$selected]]';
     body.value=body.value.replaced(selection,value);
     body.selection=TextSelection.collapsed(offset:selection.start+value.length);
   }
@@ -364,7 +364,7 @@ class _EditorState extends State<_Editor> {
       actions:[TextButton(onPressed:_save,child:const Text('完成',style:TextStyle(color:Colors.black,fontWeight:FontWeight.w700))),const SizedBox(width:8)]),
       body:SafeArea(child:ListView(padding:const EdgeInsets.fromLTRB(22,12,22,32),children:[
         if(!note)...[
-          Row(children:[const Icon(Icons.schedule,size:14,color:Color(0xFF999999)),const SizedBox(width:7),Text('\${date.year}.\${date.month}.\${date.day}',style:const TextStyle(fontSize:11,color:Color(0xFF777777))),const Spacer(),TextButton(onPressed:_pickDate,child:const Text('更改日期',style:TextStyle(fontSize:11,color:Colors.black)))]),
+          Row(children:[const Icon(Icons.schedule,size:14,color:Color(0xFF999999)),const SizedBox(width:7),Text('${date.year}.${date.month}.${date.day}',style:const TextStyle(fontSize:11,color:Color(0xFF777777))),const Spacer(),TextButton(onPressed:_pickDate,child:const Text('更改日期',style:TextStyle(fontSize:11,color:Colors.black)))]),
           const SizedBox(height:13),TextField(controller:title,maxLength:40,style:const TextStyle(fontSize:22,fontWeight:FontWeight.w600),decoration:const InputDecoration(counterText:'',hintText:'标题',border:InputBorder.none,hintStyle:TextStyle(color:Color(0xFFBBBBBB),fontWeight:FontWeight.w400))),
           const Divider(height:1,color:Color(0xFFECECEC)),
           Padding(padding:const EdgeInsets.only(top:10,bottom:3),child:Row(children:[_markButton('红线','红'),_markButton('荧光笔','蓝'),_markButton('清除标记','x')])),
@@ -409,7 +409,7 @@ class _ReaderState extends State<_Reader>{
               Positioned.fill(child:IgnorePointer(child:CustomPaint(painter:_DiaryDotPainter()))),
               Positioned(left:-27,top:4,bottom:4,child:Column(mainAxisAlignment:MainAxisAlignment.spaceEvenly,children:List.generate(7,(_)=>Container(width:14,height:14,decoration:BoxDecoration(color:const Color(0xFFF7F7F7),shape:BoxShape.circle,border:Border.all(color:const Color(0xFFE6E6E6))))))),
               Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-                Row(children:[const CircleAvatar(radius:18,backgroundColor:Color(0xFFF0F0F0),child:Text('我',style:TextStyle(color:Color(0xFF111111),fontSize:12))),const SizedBox(width:10),const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('我',style:TextStyle(fontSize:14,fontWeight:FontWeight.w600)),Text('Mio Diary',style:TextStyle(fontSize:10,color:Color(0xFF999999)))]),const Spacer(),Text('\${e.date.year}/\${e.date.month}/\${e.date.day}',style:const TextStyle(fontSize:10,color:Color(0xFF999999)))]),
+                Row(children:[const CircleAvatar(radius:18,backgroundColor:Color(0xFFF0F0F0),child:Text('我',style:TextStyle(color:Color(0xFF111111),fontSize:12))),const SizedBox(width:10),const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('我',style:TextStyle(fontSize:14,fontWeight:FontWeight.w600)),Text('Mio Diary',style:TextStyle(fontSize:10,color:Color(0xFF999999)))]),const Spacer(),Text('${e.date.year}/${e.date.month}/${e.date.day}',style:const TextStyle(fontSize:10,color:Color(0xFF999999)))]),
                 const SizedBox(height:26),
                 if(e.title.isNotEmpty)GestureDetector(onTap:trTitle.isEmpty?null:()=>setState(()=>translated=!translated),child:Text(translated&&trTitle.isNotEmpty?trTitle:e.title,style:const TextStyle(fontSize:23,height:1.4,fontWeight:FontWeight.w600))),
                 if(e.title.isNotEmpty)const SizedBox(height:18),
