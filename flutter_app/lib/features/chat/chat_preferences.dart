@@ -15,6 +15,7 @@ class ChatPreferences {
     this.myName = '我',
     this.partnerAvatarPath,
     this.myAvatarPath,
+    this.chatWallpaperPath,
     this.fontSize = 14,
     this.bubbleRadius = 19,
     this.quickReplies = const ['在吗', '抱抱', '晚安'],
@@ -31,6 +32,7 @@ class ChatPreferences {
   final String myName;
   final String? partnerAvatarPath;
   final String? myAvatarPath;
+  final String? chatWallpaperPath;
   final double fontSize;
   final double bubbleRadius;
   final List<String> quickReplies;
@@ -47,6 +49,7 @@ class ChatPreferences {
     String? myName,
     String? partnerAvatarPath,
     String? myAvatarPath,
+    String? chatWallpaperPath,
     double? fontSize,
     double? bubbleRadius,
     List<String>? quickReplies,
@@ -62,6 +65,7 @@ class ChatPreferences {
     myName: myName ?? this.myName,
     partnerAvatarPath: partnerAvatarPath ?? this.partnerAvatarPath,
     myAvatarPath: myAvatarPath ?? this.myAvatarPath,
+    chatWallpaperPath: chatWallpaperPath ?? this.chatWallpaperPath,
     fontSize: fontSize ?? this.fontSize,
     bubbleRadius: bubbleRadius ?? this.bubbleRadius,
     quickReplies: quickReplies ?? this.quickReplies,
@@ -92,6 +96,7 @@ abstract final class ChatPreferenceStore {
       myName: prefs.getString('chat.myName') ?? '我',
       partnerAvatarPath: prefs.getString('chat.partnerAvatarPath'),
       myAvatarPath: prefs.getString('chat.myAvatarPath'),
+      chatWallpaperPath: prefs.getString('chat.wallpaperPath'),
       fontSize: prefs.getDouble('chat.fontSize') ?? 14,
       bubbleRadius: prefs.getDouble('chat.bubbleRadius') ?? 19,
       quickReplies: prefs.getStringList('chat.quickReplies') ?? const ['在吗', '抱抱', '晚安'],
@@ -113,6 +118,7 @@ abstract final class ChatPreferenceStore {
       prefs.setString('chat.myName', next.myName),
       if (next.partnerAvatarPath != null) prefs.setString('chat.partnerAvatarPath', next.partnerAvatarPath!) else prefs.remove('chat.partnerAvatarPath'),
       if (next.myAvatarPath != null) prefs.setString('chat.myAvatarPath', next.myAvatarPath!) else prefs.remove('chat.myAvatarPath'),
+      if (next.chatWallpaperPath != null && next.chatWallpaperPath!.isNotEmpty) prefs.setString('chat.wallpaperPath', next.chatWallpaperPath!) else prefs.remove('chat.wallpaperPath'),
       prefs.setDouble('chat.fontSize', next.fontSize),
       prefs.setDouble('chat.bubbleRadius', next.bubbleRadius),
       prefs.setStringList('chat.quickReplies', next.quickReplies),
