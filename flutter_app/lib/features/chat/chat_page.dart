@@ -101,6 +101,7 @@ class _ChatMessage {
     this.selectedAlternative = 0,
     this.replyToText,
     this.replyToMine,
+    this.replyLayoutOverride,
   });
   final String text;
   final bool mine;
@@ -121,6 +122,7 @@ class _ChatMessage {
   final int selectedAlternative;
   final String? replyToText;
   final bool? replyToMine;
+  final int? replyLayoutOverride;
 }
 
 // Read and encode image attachments away from the UI isolate so large images
@@ -306,6 +308,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           selectedAlternative: message.selectedAlternative,
           replyToText: message.replyToText,
           replyToMine: message.replyToMine,
+          replyLayoutOverride: message.replyLayoutOverride,
         )));
       _loadingHistory = false;
     });
@@ -332,6 +335,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       selectedAlternative: message.selectedAlternative,
       replyToText: message.replyToText,
       replyToMine: message.replyToMine,
+      replyLayoutOverride: message.replyLayoutOverride,
     )).toList(),
   );
 
@@ -1090,7 +1094,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     final mineBubble = _mineBubbleColor(prefs.bubbleStyle);
     final partnerBubble = _partnerBubbleColor(prefs.bubbleStyle);
     final isHelloTalk = prefs.bubbleStyle == 0;
-    final replyParts = _chatReplySegments(message.text, !mine && prefs.replyLayout == 1);
+    final effectiveReplyLayout = message.replyLayoutOverride ?? prefs.replyLayout;
+    final replyParts = _chatReplySegments(message.text, !mine && effectiveReplyLayout == 1);
 
     final avatarPath = mine ? prefs.myAvatarPath : prefs.partnerAvatarPath;
     final avatarFile = avatarPath == null ? null : File(avatarPath);
@@ -1388,6 +1393,17 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                 title: const Text('引用回复'),
                 onTap: () => Navigator.pop(sheetContext, 'reply'),
               ),
+            if (!message.mine && message.text.isNotEmpty)
+              ListTile(
+                leading: Icon((message.replyLayoutOverride ?? 0) == 1 ? Icons.notes_rounded : Icons.forum_outlined),
+                title: Text((message.replyLayoutOverride ?? -1) == 1 || ((message.replyLayoutOverride == null) && false)
+                    ? '改为完整长段'
+                    : (message.replyLayoutOverride ?? -1) == 0
+                        ? '改为聊天分句'
+                        : '本条回复：${message.replyLayoutOverride == null ? '使用默认排版' : message.replyLayoutOverride == 1 ? '聊天分句' : '完整长段'}'),
+                subtitle: const Text('只改变这一条消息，不影响其他回复'),
+                onTap: () => Navigator.pop(sheetContext, 'toggle_reply_layout'),
+              ),
             if (message.text.isNotEmpty)
               ListTile(
                 leading: const Icon(Icons.copy_rounded),
@@ -1437,7 +1453,40 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       ),
     );
     if (!mounted || action == null) return;
-    if (action == 'reply') {
+    if (action == 'toggle_reply_layout') {
+      final currentLayout = message.replyLayoutOverride ?? 0;
+      final nextLayout = currentLayout == 1 ? 0 : 1;
+      setState(() {
+        final index = _messages.indexOf(message);
+        if (index >= 0) {
+          _messages[index] = _ChatMessage(
+            text: message.text,
+            mine: message.mine,
+            time: message.time,
+            reasoning: message.reasoning,
+            isSystem: message.isSystem,
+            inputTokens: message.inputTokens,
+            outputTokens: message.outputTokens,
+            imagePath: message.imagePath,
+            stickerUrl: message.stickerUrl,
+            audioPath: message.audioPath,
+            audioDurationMs: message.audioDurationMs,
+            attachmentPath: message.attachmentPath,
+            attachmentName: message.attachmentName,
+            attachmentSize: message.attachmentSize,
+            alternateReplies: message.alternateReplies,
+            selectedAlternative: message.selectedAlternative,
+            replyToText: message.replyToText,
+            replyToMine: message.replyToMine,
+            replyLayoutOverride: nextLayout,
+          );
+        }
+      });
+      await _persistChat();
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(nextLayout == 1 ? '这条回复已改为聊天分句' : '这条回复已改为完整长段')),
+      );
+    } else if (action == 'reply') {
       setState(() => _replyingTo = message);
       FocusScope.of(context).requestFocus(_inputFocus);
     } else if (action == 'copy') {
