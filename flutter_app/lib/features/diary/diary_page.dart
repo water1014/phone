@@ -376,72 +376,62 @@ class _SwipeDiaryCard extends StatefulWidget {
 }
 class _SwipeDiaryCardState extends State<_SwipeDiaryCard> {
   double offset=0;
-  static const reveal=136.0;
+  static const double reveal=136;
   void _settle()=>setState(()=>offset=offset < -reveal/2 ? -reveal : 0);
   @override Widget build(BuildContext context){
     final e=widget.entry;
+    final preview=e.displayBody.replaceAll(RegExp(r'\[\[(?:红|蓝)[:：]([\s\S]*?)\]\]'),r'$1');
     return SizedBox(
       height:104,
       child:Stack(
         alignment:Alignment.centerRight,
         children:[
-          Positioned.fill(
-            child:Row(
-              mainAxisAlignment:MainAxisAlignment.end,
-              children:[
-                SizedBox(width:68,child:Material(color:const Color(0xFFF1F1F1),child:InkWell(
-                  onTap:(){setState(()=>offset=0);widget.onEdit();},
-                  child:const Center(child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
-                    Icon(Icons.edit_outlined,size:18),SizedBox(height:4),Text('编辑',style:TextStyle(fontSize:11))
-                  ]))
-                ))),
-                SizedBox(width:68,child:Material(color:const Color(0xFFE95B62),child:InkWell(
-                  onTap:widget.onDelete,
-                  child:const Center(child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
-                    Icon(Icons.delete_outline,color:Colors.white,size:18),SizedBox(height:4),Text('删除',style:TextStyle(fontSize:11,color:Colors.white))
-                  ]))
-                ))),
-              ],
-            ),
-          ),
+          Positioned.fill(child:Row(mainAxisAlignment:MainAxisAlignment.end,children:[
+            SizedBox(width:68,child:Material(color:const Color(0xFFF1F1F1),child:InkWell(
+              onTap:(){setState(()=>offset=0);widget.onEdit();},
+              child:const Center(child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
+                Icon(Icons.edit_outlined,size:18),SizedBox(height:4),Text('编辑',style:TextStyle(fontSize:11))
+              ]))
+            ))),
+            SizedBox(width:68,child:Material(color:const Color(0xFFE95B62),child:InkWell(
+              onTap:widget.onDelete,
+              child:const Center(child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
+                Icon(Icons.delete_outline,color:Colors.white,size:18),SizedBox(height:4),Text('删除',style:TextStyle(fontSize:11,color:Colors.white))
+              ]))
+            )))
+          ])),
           AnimatedContainer(
             duration:const Duration(milliseconds:180),
             curve:Curves.easeOut,
             transform:Matrix4.translationValues(offset,0,0),
             color:Colors.white,
             child:GestureDetector(
-              onHorizontalDragUpdate:(d)=>setState(()=>offset=(offset+d.delta.dx).clamp(-reveal,0)),
+              onHorizontalDragUpdate:(d)=>setState(()=>offset=(offset+d.delta.dx).clamp(-reveal,0).toDouble()),
               onHorizontalDragEnd:(_)=>_settle(),
-              child:Material(
-                color:Colors.white,
-                child:InkWell(
-                  onTap:(){if(offset!=0){setState(()=>offset=0);}else{widget.onOpen();}},
-                  child:Container(
-                    padding:const EdgeInsets.symmetric(vertical:16,horizontal:2),
-                    decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFECECEC)))),
-                    child:Row(
-                      crossAxisAlignment:CrossAxisAlignment.start,
-                      children:[
-                        SizedBox(width:44,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-                          Text('${e.date.day}',style:const TextStyle(fontSize:26,height:1.05,fontWeight:FontWeight.w500)),
-                          const SizedBox(height:3),
-                          Text('${e.date.year}.${e.date.month}',style:const TextStyle(fontSize:10,color:Color(0xFF8A8A8A)))
-                        ])),
-                        const SizedBox(width:13),
-                        Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-                          Text(e.title.isEmpty?'无标题':e.title,maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:14,fontWeight:FontWeight.w600)),
-                          const SizedBox(height:6),
-                          Text(e.body.replaceAll(RegExp(r'\[\[(?:红|蓝)[:：]([\s\S]*?)\]\]'),r'\$1'),maxLines:3,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:12.5,height:1.7,color:Color(0xFF777777)))
-                        ]))
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+              child:Material(color:Colors.white,child:InkWell(
+                onTap:(){if(offset!=0){setState(()=>offset=0);}else{widget.onOpen();}},
+                child:Container(
+                  padding:const EdgeInsets.symmetric(vertical:16,horizontal:2),
+                  decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFECECEC)))),
+                  child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                    SizedBox(width:44,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                      Text('\${e.date.day}',style:const TextStyle(fontSize:26,height:1.05,fontWeight:FontWeight.w500)),
+                      const SizedBox(height:3),
+                      Text('\${e.date.year}.\${e.date.month}',style:const TextStyle(fontSize:10,color:Color(0xFF8A8A8A)))
+                    ])),
+                    const SizedBox(width:13),
+                    Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                      Text(e.title.isEmpty?'无标题':e.title,maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:14,fontWeight:FontWeight.w600)),
+                      const SizedBox(height:6),
+                      Text(preview,maxLines:3,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:12.5,height:1.7,color:Color(0xFF777777)))
+                    ]))
+                  ])
+                )
+              ))
+            )
+          )
+        ]
+      )
     );
   }
 }
