@@ -346,13 +346,35 @@ class _ReaderState extends State<_Reader>{
 }
 
 class _Entry {
-  _Entry({required this.id,required this.type,required this.owner,required this.title,required this.body,required this.date,required this.time,this.image='',this.comment=''});
+  _Entry({required this.id,required this.type,required this.owner,required this.title,required this.body,required this.date,required this.time,this.image='',this.comment='',this.extra=const {}});
   final String id,type,owner,title,body,image;
   final DateTime date,time;
+  final Map<String,dynamic> extra;
   String comment;
-  Map<String,dynamic> toMap()=>{'id':id,'type':type,'owner':owner,'title':title,'body':body,'date':date.toIso8601String(),'time':time.toIso8601String(),'updatedAt':time.toIso8601String(),'imagePath':image,'image':image,'comment':comment};
+  Map<String,dynamic> toMap()=>{...extra,'id':id,'type':type,'owner':owner,'title':title,'body':body,'content':body,'date':date.toIso8601String(),'time':time.toIso8601String(),'updatedAt':time.toIso8601String(),'imagePath':image,'image':image,'comment':comment};
   factory _Entry.fromMap(Map m){
-    final d=DateTime.tryParse((m['date']??'').toString())??DateTime.now();
-    return _Entry(id:(m['id']??DateTime.now().microsecondsSinceEpoch).toString(),type:(m['type']??'long').toString(),owner:(m['owner']??'me').toString(),title:(m['title']??'').toString(),body:(m['body']??'').toString(),date:d,time:DateTime.tryParse((m['time']??m['updatedAt']??'').toString())??d,image:(m['imagePath']??m['image']??'').toString(),comment:(m['comment']??'').toString());
+    DateTime? parseDate(dynamic value) {
+      if (value is num) return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+      if (value == null) return null;
+      return DateTime.tryParse(value.toString());
+    }
+    final rawTime=m['time']??m['updatedAt']??m['createdAt'];
+    final d=parseDate(m['date'])??parseDate(rawTime)??DateTime.now();
+    final t=parseDate(rawTime)??d;
+    final known={'id','type','owner','title','body','content','date','time','updatedAt','createdAt','imagePath','image','comment'};
+    final extras=<String,dynamic>{};
+    for(final entry in m.entries){if(!known.contains(entry.key.toString()))extras[entry.key.toString()]=entry.value;}
+    final rawOwner=(m['owner']??m['pid']??'me').toString();
+    return _Entry(
+      id:(m['id']??DateTime.now().microsecondsSinceEpoch).toString(),
+      type:(m['type']??'long').toString(),
+      owner:rawOwner=='me'?'me':(rawOwner=='ta'?'ta':'ta'),
+      title:(m['title']??'').toString(),
+      body:(m['body']??m['content']??'').toString(),
+      date:d,time:t,
+      image:(m['imagePath']??m['image']??'').toString(),
+      comment:(m['comment']??'').toString(),
+      extra:extras,
+    );
   }
 }
