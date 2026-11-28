@@ -2759,21 +2759,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     );
   }
 }
-).hasMatch(chunk) &&
-          RegExp(r'^[A-Za-z0-9]').hasMatch(unit) ? ' ' : '';
-      final candidate = chunk.isEmpty ? unit : '$chunk$separator$unit';
-      if (chunk.isNotEmpty && chunk.length >= 12 && candidate.length > 38) {
-        result.add(chunk);
-        chunk = unit;
-      } else {
-        chunk = candidate;
-      }
-    }
-    if (chunk.isNotEmpty) result.add(chunk);
-  }
-
-  return result.isEmpty ? [text] : result;
-}
 Color _mineBubbleColor(int style) => style == 1 ? const Color(0xFF202020) : const Color(0xFF171717);
 
 Color _partnerBubbleColor(int style) => style == 1 ? const Color(0xFFF0F0F0) : const Color(0xFFF4F4F4);
