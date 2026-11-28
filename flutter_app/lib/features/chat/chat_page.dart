@@ -22,6 +22,64 @@ import 'chat_api_client.dart';
 import 'chat_message.dart';
 import 'chat_message_store.dart';
 
+String _resolveWorldbookContext(String raw, String conversationContext) {
+  try {
+    final decoded = jsonDecode(raw);
+    dynamic entries;
+    if (decoded is Map) {
+      final characterBook = decoded['character_book'];
+      final data = decoded['data'];
+      if (decoded['entries'] != null) {
+        entries = decoded['entries'];
+      } else if (decoded['worldbook'] != null) {
+        entries = decoded['worldbook'];
+      } else if (data is Map && data['entries'] != null) {
+        entries = data['entries'];
+      } else if (characterBook is Map) {
+        entries = characterBook['entries'];
+      }
+    } else if (decoded is List) {
+      entries = decoded;
+    }
+    final values = entries is Map
+        ? entries.values.whereType<Map>().toList()
+        : entries is List
+            ? entries.whereType<Map>().toList()
+            : <Map>[];
+    final context = conversationContext.toLowerCase();
+    final selected = <String>[];
+    for (final entry in values) {
+      if (entry['enabled'] == false || entry['disable'] == true) continue;
+      final content = (entry['content'] ?? '').toString().trim();
+      if (content.isEmpty) continue;
+      final primary = _worldbookKeywords(entry['key'] ?? entry['keys']);
+      final secondary = _worldbookKeywords(entry['keysecondary'] ?? entry['secondary_keys']);
+      final constant = entry['constant'] == true || entry['always_active'] == true;
+      final primaryMatch = primary.isNotEmpty && primary.any((word) => context.contains(word.toLowerCase()));
+      final secondaryMatch = secondary.isEmpty || secondary.any((word) => context.contains(word.toLowerCase()));
+      if (!constant && !(primaryMatch && secondaryMatch)) continue;
+      final title = (entry['comment'] ?? entry['name'] ?? '').toString().trim();
+      selected.add('[${title.isEmpty ? '世界书设定' : title}]\n$content');
+      if (selected.join('\n\n').length >= 10000) break;
+    }
+    if (selected.isEmpty) return '';
+    final combined = selected.join('\n\n');
+    return combined.length > 10000 ? combined.substring(0, 10000) : combined;
+  } catch (_) {
+    return '';
+  }
+}
+
+List<String> _worldbookKeywords(dynamic value) {
+  if (value is List) {
+    return value.map((item) => item.toString().trim()).where((item) => item.isNotEmpty).toList();
+  }
+  if (value is String) {
+    return value.split(RegExp(r'[,，;；\\n]')).map((item) => item.trim()).where((item) => item.isNotEmpty).toList();
+  }
+  return const [];
+}
+
 class _ChatMessage {
   const _ChatMessage({
     required this.text,
@@ -407,10 +465,19 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           ? '可以自然使用括号描写动作、神态和环境，不要每句话都写旁白。'
           : '以直接对话为主，不主动添加括号动作、神态或环境旁白。';
       final systemPrompt = '你在「小窝」这个私人空间里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。$narratorInstruction 不要列条目。用户要求制作文件时：对于 HTML、CSS、JS、TXT、Markdown、CSV、JSON、XML、SVG、代码等 UTF-8 文本格式，必须把完整成品放进一个带明确文件名的代码围栏，例如 ```html filename="作品.html"，围栏外只写简短交付说明，不要把源码散落在聊天气泡。不要把 DOCX、PPTX、XLSX、PDF 等二进制格式伪装成文本文件或声称已经生成；若当前客户端无法生成该二进制格式，要如实说明。';
+      final worldbookContext = chatPrefs.worldbookEnabled
+          ? _resolveWorldbookContext(
+              chatPrefs.worldbookJson,
+              historyMessages.where((message) => message.mine).map((message) => message.text).join('\n'),
+            )
+          : '';
+
       final requestMessages = <Map<String, dynamic>>[
         {'role': 'system', 'content': systemPrompt},
         if (chatPrefs.additionalSystemPrompt.trim().isNotEmpty)
           {'role': 'system', 'content': chatPrefs.additionalSystemPrompt.trim()},
+        if (worldbookContext.isNotEmpty)
+          {'role': 'system', 'content': '以下是本轮匹配到的世界书设定。请将其作为背景资料使用，不要逐字复述，也不要覆盖更高优先级的系统规则：\\n$worldbookContext'},
         ...history,
       ];
 
