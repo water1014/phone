@@ -162,7 +162,7 @@ abstract final class ChatDocumentGenerator {
     final doc = pw.Document();
     pw.Font? font;
     pw.Font? boldFont;
-    final cjk = RegExp(r'[\\u3400-\\u9FFF]').hasMatch(source);
+    final cjk = RegExp(r'[\u3400-\u9FFF]').hasMatch(source);
     if (cjk) {
       try {
         font = await PdfGoogleFonts.notoSansSCRegular();
@@ -194,7 +194,36 @@ abstract final class ChatDocumentGenerator {
         blocks.add(pw.SizedBox(height: 7));
         continue;
       }
-      final heading = RegExp(r'^(#{1,6})\\s+(.*)$').firstMatch(line.trim());
+      final heading = RegExp(r'^(#{1,6})\s+(.*)).firstMatch(line.trim());
+      if (heading != null) {
+        blocks.add(pw.Padding(
+          padding: const pw.EdgeInsets.only(top: 10, bottom: 5),
+          child: pw.Text(
+            heading.group(2) ?? '',
+            style: pw.TextStyle(font: font, fontBold: boldFont, fontSize: 18, fontWeight: pw.FontWeight.bold),
+          ),
+        ));
+      } else {
+        final text = line
+            .replaceFirst(RegExp(r'^[-*+]\s+'), '• ')
+            .replaceFirst(RegExp(r'^\d+[.)]\s+'), '• ')
+            .replaceAll('**', '')
+            .replaceAll(String.fromCharCode(96), '');
+        blocks.add(pw.Padding(
+          padding: const pw.EdgeInsets.only(bottom: 4),
+          child: pw.Text(text, style: pw.TextStyle(font: font, fontSize: 11, lineSpacing: 3)),
+        ));
+      }
+    }
+    if (blocks.isEmpty) blocks.add(pw.Text('空白文档'));
+    doc.addPage(pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.all(48),
+      build: (_) => blocks,
+    ));
+    return Uint8List.fromList(await doc.save());
+  }
+}).firstMatch(line.trim());
       if (heading != null) {
         blocks.add(pw.Padding(
           padding: const pw.EdgeInsets.only(top: 10, bottom: 5),

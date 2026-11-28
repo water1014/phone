@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:printing/printing.dart';
 import 'package:gal/gal.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:just_audio/just_audio.dart';
