@@ -9,7 +9,6 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'music_api_client.dart';
-import 'server_music_page.dart';
 
 const _ink = Color(0xFF202020);
 const _muted = Color(0xFF888888);
@@ -1192,8 +1191,6 @@ class _MusicPageState extends State<MusicPage> {
           const Text('音乐', style: TextStyle(fontSize: 22, color: Color(0xFF202020), fontWeight: FontWeight.w700, letterSpacing: 1)),
           Align(alignment: Alignment.centerLeft, child: _roundHeaderButton(Icons.chevron_left_rounded, () => Navigator.of(context).maybePop())),
           Align(alignment: Alignment.centerRight, child: Row(mainAxisSize: MainAxisSize.min, children: [
-            _roundHeaderButton(Icons.language_rounded, () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ServerMusicPage()))),
-            const SizedBox(width: 8),
             _roundHeaderButton(Icons.tune_rounded, _showSettings),
           ])),
         ])),
