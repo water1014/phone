@@ -77,12 +77,14 @@ abstract final class ChatConversationStore {
   static Future<Map<String, int>> loadCacheUsage(String modelKey) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_cacheUsageKey(modelKey));
-    if (raw == null || raw.isEmpty) return const {
-      'hits': 0,
-      'misses': 0,
-      'creations': 0,
-      'reported': 0,
-    };
+    if (raw == null || raw.isEmpty) {
+      return const {
+        'hits': 0,
+        'misses': 0,
+        'creations': 0,
+        'reported': 0,
+      };
+    }
     try {
       final decoded = jsonDecode(raw) as Map<String, dynamic>;
       return {
