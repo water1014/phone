@@ -127,7 +127,7 @@ class MusicApiClient {
       }
     }
     if (lastError != null) {
-      throw Exception('歌曲暂时无法播放：${prettyError(lastError!)}。已尝试自动降低音质；若仍失败，可能是版权、会员或网易云风控限制。');
+      throw Exception('歌曲暂时无法播放：${prettyError(lastError)}。已尝试自动降低音质；若仍失败，可能是版权、会员或网易云风控限制。');
     }
     throw Exception('歌曲暂时没有可用播放地址，可能受版权或会员权限限制');
   }
