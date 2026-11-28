@@ -10,7 +10,7 @@ class MemoryPage extends StatefulWidget {
 }
 
 class _MemoryPageState extends State<MemoryPage> {
-  static const _categories = ['全部', '个人信息', '偏好习惯', '重要约定', '共同回忆', '重要记忆'];
+  static const _categories = ['全部', '待确认', '个人信息', '偏好习惯', '重要约定', '共同回忆', '重要记忆'];
   List<ChatMemoryRecord> _records = [];
   String _category = '全部';
   String _query = '';
@@ -39,7 +39,8 @@ class _MemoryPageState extends State<MemoryPage> {
   List<ChatMemoryRecord> get _visible {
     final query = _query.trim().toLowerCase();
     return _records.where((item) {
-      final categoryMatch = _category == '全部' || item.category == _category;
+      final categoryMatch = _category == '全部' ||
+          (_category == '待确认' ? item.pending : !item.pending && item.category == _category);
       final queryMatch = query.isEmpty ||
           item.content.toLowerCase().contains(query) ||
           item.sourceText.toLowerCase().contains(query);
@@ -100,6 +101,11 @@ class _MemoryPageState extends State<MemoryPage> {
       await _load();
     }
     content.dispose();
+  }
+
+  Future<void> _approve(ChatMemoryRecord record) async {
+    await ChatMemoryStore.update(record.copyWith(pending: false));
+    await _load();
   }
 
   Future<void> _toggleLock(ChatMemoryRecord record) async {
@@ -228,6 +234,7 @@ class _MemoryPageState extends State<MemoryPage> {
                             onEdit: () => _edit(visible[index]),
                             onLock: () => _toggleLock(visible[index]),
                             onDelete: () => _delete(visible[index]),
+                            onApprove: () => _approve(visible[index]),
                           ),
                         ),
             ),
@@ -239,11 +246,12 @@ class _MemoryPageState extends State<MemoryPage> {
 }
 
 class _MemoryCard extends StatelessWidget {
-  const _MemoryCard({required this.record, required this.onEdit, required this.onLock, required this.onDelete});
+  const _MemoryCard({required this.record, required this.onEdit, required this.onLock, required this.onDelete, required this.onApprove});
   final ChatMemoryRecord record;
   final VoidCallback onEdit;
   final VoidCallback onLock;
   final VoidCallback onDelete;
+  final VoidCallback onApprove;
 
   @override
   Widget build(BuildContext context) {
@@ -267,16 +275,20 @@ class _MemoryCard extends StatelessWidget {
           if (record.origin == 'manual')
             const Text('手动添加', style: TextStyle(fontSize: 10, color: Color(0xFF999999))),
           const Spacer(),
+          if (record.pending)
+            const Text('待确认', style: TextStyle(fontSize: 10, color: Color(0xFF9A7441))),
           if (record.locked) const Icon(Icons.lock_rounded, size: 15, color: Color(0xFF8A7652)),
           PopupMenuButton<String>(
             tooltip: '更多操作',
             icon: const Icon(Icons.more_horiz_rounded, color: Color(0xFF888888)),
             onSelected: (value) {
+              if (value == 'approve') onApprove();
               if (value == 'edit') onEdit();
               if (value == 'lock') onLock();
               if (value == 'delete') onDelete();
             },
             itemBuilder: (context) => [
+              if (record.pending) const PopupMenuItem(value: 'approve', child: Text('确认收录')),
               const PopupMenuItem(value: 'edit', child: Text('编辑记忆')),
               PopupMenuItem(value: 'lock', child: Text(record.locked ? '解除锁定' : '锁定记忆')),
               if (!record.locked) const PopupMenuItem(value: 'delete', child: Text('删除记忆')),
@@ -284,6 +296,11 @@ class _MemoryCard extends StatelessWidget {
           ),
         ]),
         const SizedBox(height: 7),
+        if (record.pending) ...[
+          const SizedBox(height: 8),
+          OutlinedButton.icon(onPressed: onApprove, icon: const Icon(Icons.check_rounded, size: 16), label: const Text('确认收录这条记忆')),
+        ],
+        const SizedBox(height: 4),
         Text(record.content, style: const TextStyle(fontSize: 14, height: 1.65, color: Color(0xFF292929))),
         if (record.sourceText.isNotEmpty) ...[
           const SizedBox(height: 11),
