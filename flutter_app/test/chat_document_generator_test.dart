@@ -46,7 +46,7 @@ void main() {
     final archive = ZipDecoder().decodeBytes(bytes);
     final xml = utf8.decode(archive.findFile('xl/worksheets/sheet1.xml')!.content as List<int>);
     expect(xml, contains('fresh, red'));
-    expect(xml, contains('line one\\nline two'));
+    expect(xml, contains('line one${String.fromCharCode(10)}line two'));
     expect(xml, contains('<c r="C2"><v>12.5</v></c>'));
     expect(xml, contains('<c r="C3"><v>-3</v></c>'));
   });
