@@ -160,16 +160,18 @@ _GeneratedTextArtifact? _extractGeneratedTextArtifact(
 
   final request = userRequest.toLowerCase();
   String? requestedExtension;
-  if (RegExp(r'(docx|word|word文档|word文件|文档|简历|合同|报告)').hasMatch(request)) {
+  if (RegExp(r'(pdf|便携式文档)').hasMatch(request)) {
+    requestedExtension = 'pdf';
+  } else if (RegExp(r'(docx|word|word文档|word文件|文档|简历|合同|报告)').hasMatch(request)) {
     requestedExtension = 'docx';
   } else if (RegExp(r'(pptx|powerpoint|power point|ppt|幻灯片|演示文稿|课件|做.*ppt)').hasMatch(request)) {
     requestedExtension = 'pptx';
   } else if (RegExp(r'(xlsx|excel|表格|电子表格|工作簿|做.*表)').hasMatch(request)) {
     requestedExtension = 'xlsx';
-  } else if (RegExp(r'(pdf|便携式文档)').hasMatch(request)) {
-    requestedExtension = 'pdf';
   } else if (RegExp(r'(html|网页|网页文件|网站|前端页面)').hasMatch(request)) {
     requestedExtension = 'html';
+  } else if (RegExp(r'\.(txt|md|csv|json|xml|html|css|js)\b').hasMatch(request)) {
+    requestedExtension = RegExp(r'\.([a-z0-9]+)\b').firstMatch(request)?.group(1);
   }
 
   final explicitPattern = RegExp(
@@ -183,7 +185,7 @@ _GeneratedTextArtifact? _extractGeneratedTextArtifact(
     artifactContent = explicitMatch.group(3) ?? '';
   } else {
     final genericFence = RegExp(
-      r'\`\`\`([A-Za-z0-9_+#.-]*)[^\r\n]*\r?\n([\s\S]*?)\`\`\`',
+      r'\x60\x60\x60([A-Za-z0-9_+#.-]*)[^\r\n]*\r?\n([\s\S]*?)\x60\x60\x60',
     );
     final fence = genericFence.firstMatch(response);
     if (requestedExtension != null) {
