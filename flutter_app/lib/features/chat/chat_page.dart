@@ -1122,8 +1122,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                   wallpaperFile,
                   fit: BoxFit.contain,
                   alignment: Alignment(
-                    prefs.wallpaperPositionX.clamp(-1, 1),
-                    prefs.wallpaperPositionY.clamp(-1, 1),
+                    prefs.wallpaperPositionX.clamp(-1, 1).toDouble(),
+                    prefs.wallpaperPositionY.clamp(-1, 1).toDouble(),
                   ),
                   errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFFFAFAFA)),
                 ),
