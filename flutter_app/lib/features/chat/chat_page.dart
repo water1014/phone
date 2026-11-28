@@ -184,13 +184,52 @@ _GeneratedTextArtifact? _extractGeneratedTextArtifact(String response) {
 List<String> _chatReplySegments(String text, bool splitMode) {
   final trimmed = text.trim();
   if (!splitMode || trimmed.isEmpty) return [text];
-  // Keep source code and Markdown tables intact.
-  if (trimmed.contains('```') || trimmed.split('\n').any((line) => line.trim().startsWith('|'))) return [text];
-  var parts = trimmed.split('\n').map((part) => part.trim()).where((part) => part.isNotEmpty).toList();
-  if (parts.length == 1 && trimmed.length > 100) {
-    parts = trimmed.split(RegExp(r'(?<=[。！？!?])')).map((part) => part.trim()).where((part) => part.isNotEmpty).toList();
+
+  final lines = trimmed.split('\n');
+  // Keep code, tables, lists, headings and quoted Markdown as one readable unit.
+  final hasStructuredMarkdown = trimmed.contains('```') ||
+      lines.any((line) =>
+          line.trim().startsWith('|') ||
+          RegExp(r'^\s{0,3}(#{1,6}\s|>|[-*+]\s|\d+[.)]\s)').hasMatch(line));
+  if (hasStructuredMarkdown) return [text];
+
+  // Blank lines are intentional paragraph boundaries. Never split every short line
+  // into its own bubble; merge them into a natural paragraph first.
+  final paragraphs = trimmed
+      .split(RegExp(r'\n\s*\n+'))
+      .map((part) => part.trim())
+      .where((part) => part.isNotEmpty);
+
+  final result = <String>[];
+  for (final paragraph in paragraphs) {
+    if (paragraph.length <= 110) {
+      result.add(paragraph);
+      continue;
+    }
+
+    final sentences = paragraph
+        .split(RegExp(r'(?<=[。！？!?])'))
+        .map((part) => part.trim())
+        .where((part) => part.isNotEmpty)
+        .toList();
+    if (sentences.length <= 1) {
+      result.add(paragraph);
+      continue;
+    }
+
+    var chunk = '';
+    for (final sentence in sentences) {
+      final candidate = chunk.isEmpty ? sentence : '$chunk$sentence';
+      if (chunk.isNotEmpty && chunk.length >= 65 && candidate.length > 125) {
+        result.add(chunk);
+        chunk = sentence;
+      } else {
+        chunk = candidate;
+      }
+    }
+    if (chunk.isNotEmpty) result.add(chunk);
   }
-  return parts.isEmpty ? [text] : parts;
+  return result.isEmpty ? [text] : result;
 }
 Color _mineBubbleColor(int style) => style == 1 ? const Color(0xFF202020) : const Color(0xFF171717);
 
