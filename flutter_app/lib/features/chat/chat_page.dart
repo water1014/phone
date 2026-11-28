@@ -146,9 +146,10 @@ class _GeneratedTextArtifact {
   final String message;
 }
 
-_GeneratedTextArtifact? _extractGeneratedTextArtifact(String response) {
-  // Only accept explicitly named, UTF-8 text artifacts. Binary Office/PDF
-  // formats need real format encoders and must never be faked with text files.
+_GeneratedTextArtifact? _extractGeneratedTextArtifact(
+  String response, {
+  String userRequest = '',
+}) {
   const supportedExtensions = {
     'html', 'htm', 'txt', 'md', 'markdown', 'csv', 'json', 'xml',
     'yaml', 'yml', 'log', 'css', 'js', 'mjs', 'ts', 'tsx', 'jsx',
@@ -156,33 +157,74 @@ _GeneratedTextArtifact? _extractGeneratedTextArtifact(String response) {
     'hpp', 'rs', 'go', 'php', 'rb', 'sh', 'bash', 'sql', 'toml',
     'ini', 'conf', 'properties', 'gradle', 'svg', 'pdf', 'docx', 'pptx', 'xlsx',
   };
-  final pattern = RegExp(
+
+  final request = userRequest.toLowerCase();
+  String? requestedExtension;
+  if (RegExp(r'(docx|word|word文档|word文件|文档|简历|合同|报告)').hasMatch(request)) {
+    requestedExtension = 'docx';
+  } else if (RegExp(r'(pptx|powerpoint|power point|ppt|幻灯片|演示文稿|课件|做.*ppt)').hasMatch(request)) {
+    requestedExtension = 'pptx';
+  } else if (RegExp(r'(xlsx|excel|表格|电子表格|工作簿|做.*表)').hasMatch(request)) {
+    requestedExtension = 'xlsx';
+  } else if (RegExp(r'(pdf|便携式文档)').hasMatch(request)) {
+    requestedExtension = 'pdf';
+  } else if (RegExp(r'(html|网页|网页文件|网站|前端页面)').hasMatch(request)) {
+    requestedExtension = 'html';
+  }
+
+  final explicitPattern = RegExp(
     r"""\x60\x60\x60([A-Za-z0-9_+#.-]*)[ \t]+(?:filename|file)=["']([^"']+)["'][^\r\n]*\r?\n([\s\S]*?)\x60\x60\x60""",
   );
-  final match = pattern.firstMatch(response);
-  if (match == null) return null;
-  final requestedName = match.group(2)?.trim() ?? '';
-  if (requestedName.isEmpty) return null;
-  final fileName = requestedName
-      .split(RegExp(r'[/\\\\]'))
-      .last
-      .replaceAll(RegExp(r'[<>:"|?*]'), '_')
-      .trim();
-  if (fileName.isEmpty || !fileName.contains('.')) return null;
-  final extension = fileName.split('.').last.toLowerCase();
+  final explicitMatch = explicitPattern.firstMatch(response);
+  String? fileName;
+  String? artifactContent;
+  if (explicitMatch != null) {
+    fileName = explicitMatch.group(2)?.trim();
+    artifactContent = explicitMatch.group(3) ?? '';
+  } else {
+    final genericFence = RegExp(
+      r'\`\`\`([A-Za-z0-9_+#.-]*)[^\r\n]*\r?\n([\s\S]*?)\`\`\`',
+    );
+    final fence = genericFence.firstMatch(response);
+    if (requestedExtension != null) {
+      final extension = requestedExtension;
+      fileName = '作品.$extension';
+      artifactContent = fence?.group(2) ?? response.trim();
+    } else if (fence != null &&
+        RegExp(r'(文件|附件|下载|保存|生成|制作|做一个)').hasMatch(userRequest)) {
+      final language = (fence.group(1) ?? '').toLowerCase();
+      const languageExtensions = {
+        'html': 'html', 'htm': 'html', 'css': 'css',
+        'javascript': 'js', 'js': 'js', 'typescript': 'ts', 'ts': 'ts',
+        'dart': 'dart', 'python': 'py', 'py': 'py', 'json': 'json',
+        'xml': 'xml', 'svg': 'svg', 'sql': 'sql', 'bash': 'sh', 'sh': 'sh',
+      };
+      final extension = languageExtensions[language];
+      if (extension != null) {
+        fileName = '作品.$extension';
+        artifactContent = fence.group(2) ?? '';
+      }
+    }
+  }
+
+  if (fileName == null || artifactContent == null || artifactContent.trim().isEmpty) {
+    return null;
+  }
+  final normalizedName = fileName.replaceAll(RegExp(r'[/\\:*?"<>|]'), '_');
+  final extension = normalizedName.contains('.')
+      ? normalizedName.split('.').last.toLowerCase()
+      : '';
   if (!supportedExtensions.contains(extension)) return null;
-  final content = match.group(3) ?? '';
-  if (content.trim().isEmpty) return null;
-  final message = (response.substring(0, match.start) +
-          response.substring(match.end))
-      .trim();
+  final cleanName = normalizedName.contains('.') ? normalizedName : '$normalizedName.txt';
+  final message = explicitMatch != null
+      ? (response.substring(0, explicitMatch.start) + response.substring(explicitMatch.end)).trim()
+      : '已经整理成文件啦，点下面的附件卡片就可以预览或保存。';
   return _GeneratedTextArtifact(
-    fileName: fileName,
-    content: content,
+    fileName: cleanName,
+    content: artifactContent,
     message: message,
   );
 }
-
 List<String> _chatReplySegments(String text, bool splitMode) {
   final trimmed = text.trim();
   if (!splitMode || trimmed.isEmpty) return [text];
@@ -653,7 +695,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           );
         });
       }
-      final artifact = _extractGeneratedTextArtifact(_messages[replyIndex].text);
+      final latestUserRequest = _messages.take(replyIndex).lastWhere((message) => message.mine && !message.isSystem, orElse: () => _ChatMessage(text: '', mine: true, time: DateTime.now())).text;
+      final artifact = _extractGeneratedTextArtifact(_messages[replyIndex].text, userRequest: latestUserRequest);
       if (artifact != null) {
         final appDir = await getApplicationDocumentsDirectory();
         final outputDir = Directory('${appDir.path}/chat_generated');
@@ -1715,18 +1758,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             ),
           ),
           const SizedBox(width: 8),
-          IconButton(
-            tooltip: '表情',
-            visualDensity: VisualDensity.compact,
-            onPressed: _showEmojiPicker,
-            icon: const Icon(Icons.emoji_emotions_outlined, size: 21, color: Color(0xFF777777)),
-          ),
-          IconButton(
-            tooltip: '表情包',
-            visualDensity: VisualDensity.compact,
-            onPressed: _showStickerPicker,
-            icon: const Icon(Icons.sticky_note_2_outlined, size: 20, color: Color(0xFF777777)),
-          ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 2),
@@ -1750,14 +1781,12 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
               ),
             ),
           ),
-          const SizedBox(width: 3),
           IconButton(
-            tooltip: _recordingVoice ? '结束并发送语音' : '录制语音',
+            tooltip: '表情',
             visualDensity: VisualDensity.compact,
-            onPressed: _toggleVoiceRecording,
-            icon: Icon(_recordingVoice ? Icons.stop_circle_rounded : Icons.mic_none_rounded, color: _recordingVoice ? const Color(0xFF333333) : const Color(0xFF777777), size: 22),
+            onPressed: _showEmojiPicker,
+            icon: const Icon(Icons.emoji_emotions_outlined, size: 21, color: Color(0xFF777777)),
           ),
-          const SizedBox(width: 3),
           Material(
             color: const Color(0xFF333333),
             borderRadius: BorderRadius.circular(15),
@@ -2256,24 +2285,57 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       showDragHandle: true,
       builder: (sheetContext) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(22, 8, 22, 24),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.image_outlined, color: AppColors.secondary),
-              title: const Text('从相册选择图片'),
-              subtitle: const Text('图片会单独显示，不放进聊天气泡'),
-              onTap: () { Navigator.pop(sheetContext); _pickImage(); },
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.attach_file_rounded, color: AppColors.secondary),
-              title: const Text('选择文件'),
-              subtitle: const Text('支持文档、文本、表格及其他常见文件，单个最大 15 MB'),
-              onTap: () { Navigator.pop(sheetContext); _pickFile(); },
-            ),
-          ]),
+          padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),
+          child: GridView.count(
+            shrinkWrap: true,
+            crossAxisCount: 4,
+            mainAxisSpacing: 18,
+            crossAxisSpacing: 10,
+            childAspectRatio: .95,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              _composerAction(Icons.photo_outlined, '相册', () {
+                Navigator.pop(sheetContext);
+                _pickImage();
+              }),
+              _composerAction(Icons.insert_drive_file_outlined, '文件', () {
+                Navigator.pop(sheetContext);
+                _pickFile();
+              }),
+              _composerAction(Icons.sticky_note_2_outlined, '表情包', () {
+                Navigator.pop(sheetContext);
+                _showStickerPicker();
+              }),
+              _composerAction(_recordingVoice ? Icons.stop_circle_outlined : Icons.mic_none_rounded, _recordingVoice ? '结束录音' : '语音', () {
+                Navigator.pop(sheetContext);
+                _toggleVoiceRecording();
+              }),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _composerAction(IconData icon, String label, VoidCallback onTap) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(15),
+      onTap: onTap,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F3F3),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(icon, size: 24, color: const Color(0xFF444444)),
+          ),
+          const SizedBox(height: 7),
+          Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF666666))),
+        ],
       ),
     );
   }
