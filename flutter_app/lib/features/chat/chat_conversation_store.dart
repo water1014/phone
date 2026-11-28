@@ -58,14 +58,17 @@ abstract final class ChatConversationStore {
   static const _contextLimitKey = 'chat.contextWindowTokens.v1';
   static String _messagesKey(String id) => 'chat.messages.v2.$id';
 
-  static Future<int> loadContextLimit() async {
+  static String _contextLimitKeyFor(String modelKey) =>
+      '$_contextLimitKey.${Uri.encodeComponent(modelKey)}';
+
+  static Future<int> loadContextLimit(String modelKey) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(_contextLimitKey) ?? 32768;
+    return prefs.getInt(_contextLimitKeyFor(modelKey)) ?? 32768;
   }
 
-  static Future<void> saveContextLimit(int value) async {
+  static Future<void> saveContextLimit(String modelKey, int value) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_contextLimitKey, value);
+    await prefs.setInt(_contextLimitKeyFor(modelKey), value);
   }
 
   static Future<List<ChatConversationRecord>> loadConversations() async {
