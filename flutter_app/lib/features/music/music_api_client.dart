@@ -55,30 +55,6 @@ class MusicApiClient {
     receiveTimeout: const Duration(seconds: 25),
   ));
   final Dio _dio;
-  static const defaultWorker = 'https://proxy.friedsully.com';
-
-  String worker(String value) => value.trim().replaceAll(RegExp(r'/+$'), '').isEmpty
-      ? defaultWorker
-      : value.trim().replaceAll(RegExp(r'/+$'), '');
-
-  Future<Map<String, dynamic>> call(String base, String action, {String cookie = '', Map<String, dynamic> body = const {}}) async {
-    final headers = <String, dynamic>{'Content-Type': 'application/json'};
-    if (cookie.trim().isNotEmpty) headers['X-Netease-Cookie'] = cookie.trim();
-    final response = await _dio.post<dynamic>(
-      '${worker(base)}/netease/$action',
-      data: body,
-      options: Options(headers: headers, validateStatus: (s) => s != null && s < 500),
-    );
-    final raw = response.data;
-    if ((response.statusCode ?? 0) < 200 || (response.statusCode ?? 0) >= 300) {
-      final message = raw is Map ? raw['error'] ?? raw['message'] ?? raw['hint'] : null;
-      throw Exception(message ?? 'HTTP ${response.statusCode}');
-    }
-    if (raw is Map<String, dynamic>) return raw;
-    if (raw is Map) return Map<String, dynamic>.from(raw);
-    throw Exception('音乐服务返回了无法识别的数据');
-  }
-
   Future<List<MusicSong>> search(String base, String keyword, {String cookie = ''}) async {
     final r = await _eapiPost(
       path: '/api/cloudsearch/pc',
@@ -330,12 +306,6 @@ class MusicApiClient {
   static String? qrKeyValue(Map<String, dynamic> r) {
     final d = r['data'];
     return (d is Map ? d['unikey'] : r['unikey'])?.toString();
-  }
-  static String? qrImage(Map<String, dynamic> r) {
-    final d = r['data'];
-    final value = (d is Map ? d['qrimg'] : r['qrimg'])?.toString();
-    if (value == null || value.isEmpty) return null;
-    return value.contains(',') ? value.substring(value.indexOf(',') + 1) : value;
   }
   static int? qrCode(Map<String, dynamic> r) => (r['code'] as num?)?.toInt();
   static int? userId(Map<String, dynamic> r) {
