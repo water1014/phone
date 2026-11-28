@@ -194,7 +194,7 @@ abstract final class ChatDocumentGenerator {
         blocks.add(pw.SizedBox(height: 7));
         continue;
       }
-      final heading = RegExp(r'^(#{1,6})\s+(.*)
+      final heading = RegExp(r'^(#{1,6})\s+(.*)$').firstMatch(line.trim());
       if (heading != null) {
         blocks.add(pw.Padding(
           padding: const pw.EdgeInsets.only(top: 10, bottom: 5),
