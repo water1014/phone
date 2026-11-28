@@ -232,49 +232,55 @@ List<String> _chatReplySegments(String text, bool splitMode) {
   if (!splitMode || trimmed.isEmpty) return [text];
 
   final lines = trimmed.split('\n');
-  // Keep code, tables, lists, headings and quoted Markdown as one readable unit.
+  // Keep structured content intact. Splitting a code sample or Markdown table
+  // into chat bubbles would make it harder to read and copy.
   final hasStructuredMarkdown = trimmed.contains('```') ||
       lines.any((line) =>
           line.trim().startsWith('|') ||
           RegExp(r'^\s{0,3}(#{1,6}\s|>|[-*+]\s|\d+[.)]\s)').hasMatch(line));
   if (hasStructuredMarkdown) return [text];
 
-  // Blank lines are intentional paragraph boundaries. Never split every short line
-  // into its own bubble; merge them into a natural paragraph first.
   final paragraphs = trimmed
       .split(RegExp(r'\n\s*\n+'))
       .map((part) => part.trim())
       .where((part) => part.isNotEmpty);
-
   final result = <String>[];
-  for (final paragraph in paragraphs) {
-    if (paragraph.length <= 110) {
-      result.add(paragraph);
-      continue;
-    }
 
-    final sentences = paragraph
-        .split(RegExp(r'(?<=[。！？!?])'))
+  for (final paragraph in paragraphs) {
+    var units = paragraph
+        .split(RegExp(r'(?<=[。！？!?；;])'))
         .map((part) => part.trim())
         .where((part) => part.isNotEmpty)
         .toList();
-    if (sentences.length <= 1) {
-      result.add(paragraph);
+
+    // Long single sentences can still be divided at natural pause marks.
+    if (units.length == 1 && units.first.length > 42) {
+      final clauses = units.first
+          .split(RegExp(r'(?<=[，,、])'))
+          .map((part) => part.trim())
+          .where((part) => part.isNotEmpty)
+          .toList();
+      if (clauses.length > 1) units = clauses;
+    }
+
+    if (units.length == 1 && units.first.length <= 42) {
+      result.add(units.first);
       continue;
     }
 
     var chunk = '';
-    for (final sentence in sentences) {
-      final candidate = chunk.isEmpty ? sentence : '$chunk$sentence';
-      if (chunk.isNotEmpty && chunk.length >= 65 && candidate.length > 125) {
+    for (final unit in units) {
+      final candidate = chunk.isEmpty ? unit : '$chunk$unit';
+      if (chunk.isNotEmpty && chunk.length >= 12 && candidate.length > 38) {
         result.add(chunk);
-        chunk = sentence;
+        chunk = unit;
       } else {
         chunk = candidate;
       }
     }
     if (chunk.isNotEmpty) result.add(chunk);
   }
+
   return result.isEmpty ? [text] : result;
 }
 Color _mineBubbleColor(int style) => style == 1 ? const Color(0xFF202020) : const Color(0xFF171717);
@@ -1104,10 +1110,23 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       children: [
         if (hasWallpaper)
           Positioned.fill(
-            child: Image.file(
-              wallpaperFile,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFFFAFAFA)),
+            child: ClipRect(
+              child: Transform.scale(
+                scale: prefs.wallpaperScale.clamp(1, 2.5),
+                alignment: Alignment(
+                  prefs.wallpaperPositionX.clamp(-1, 1),
+                  prefs.wallpaperPositionY.clamp(-1, 1),
+                ),
+                child: Image.file(
+                  wallpaperFile,
+                  fit: BoxFit.cover,
+                  alignment: Alignment(
+                    prefs.wallpaperPositionX.clamp(-1, 1),
+                    prefs.wallpaperPositionY.clamp(-1, 1),
+                  ),
+                  errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFFFAFAFA)),
+                ),
+              ),
             ),
           ),
         if (hasWallpaper)
