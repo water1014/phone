@@ -1480,9 +1480,11 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         }
       });
       await _persistChat();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(nextLayout == 1 ? '这条回复已改为聊天分句' : '这条回复已改为完整长段')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(nextLayout == 1 ? '这条回复已改为聊天分句' : '这条回复已改为完整长段')),
+        );
+      }
     } else if (action == 'reply') {
       setState(() => _replyingTo = message);
       FocusScope.of(context).requestFocus(_inputFocus);
