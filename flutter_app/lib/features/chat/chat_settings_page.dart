@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -214,6 +216,35 @@ class ChatSettingsPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 13),
                 _SettingsSection(
+                  icon: Icons.menu_book_outlined,
+                  title: '世界书',
+                  subtitle: '导入 Tavern / SillyTavern JSON 设定并按关键词注入',
+                  children: [
+                    _PreferenceSwitch(
+                      icon: Icons.auto_stories_outlined,
+                      title: '启用世界书',
+                      subtitle: '匹配当前聊天内容后，将相关设定加入本轮请求',
+                      value: prefs.worldbookEnabled,
+                      onChanged: (v) => _update(prefs.copyWith(worldbookEnabled: v)),
+                    ),
+                    _SettingsAction(
+                      icon: Icons.file_open_outlined,
+                      title: '导入世界书 JSON',
+                      value: prefs.worldbookJson.isEmpty ? '选择文件' : '${_countWorldbookEntries(prefs.worldbookJson)} 条设定 · 更换',
+                      onTap: () => _importWorldbook(context, prefs),
+                    ),
+                    if (prefs.worldbookJson.isNotEmpty)
+                      _SettingsAction(
+                        icon: Icons.delete_outline_rounded,
+                        title: '移除当前世界书',
+                        value: '清除已导入内容',
+                        onTap: () => _update(prefs.copyWith(worldbookJson: '', worldbookEnabled: false)),
+                      ),
+                    const SizedBox(height: 4),
+                  ],
+                ),
+                const SizedBox(height: 13),
+                _SettingsSection(
                   icon: Icons.keyboard_alt_outlined,
                   title: '输入方式',
                   subtitle: '按自己的习惯发送消息',
@@ -277,6 +308,32 @@ class ChatSettingsPage extends StatelessWidget {
       ),
     ),
   );
+
+  Future<void> _importWorldbook(BuildContext context, ChatPreferences prefs) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        withData: true,
+      );
+      if (result == null || result.files.isEmpty) return;
+      final selected = result.files.single;
+      final bytes = selected.bytes ?? (selected.path == null ? null : await File(selected.path!).readAsBytes());
+      if (bytes == null || bytes.isEmpty) throw Exception('无法读取所选文件');
+      if (bytes.length > 2 * 1024 * 1024) throw Exception('世界书文件不能超过 2 MB');
+      final raw = utf8.decode(bytes);
+      final count = _countWorldbookEntries(raw);
+      if (count == 0) throw Exception('没有找到可用的世界书条目，请选择 Tavern / SillyTavern JSON');
+      await _update(prefs.copyWith(worldbookJson: raw, worldbookEnabled: true));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已导入 $count 条世界书设定')));
+      }
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('导入世界书失败：$error')));
+      }
+    }
+  }
 
   Future<void> _editAdditionalPrompt(BuildContext context, ChatPreferences prefs) async {
     final controller = TextEditingController(text: prefs.additionalSystemPrompt);
@@ -598,6 +655,21 @@ class _SettingsSection extends StatelessWidget {
       ...children,
     ]),
   );
+}
+
+int _countWorldbookEntries(String raw) {
+  try {
+    final decoded = jsonDecode(raw);
+    dynamic entries;
+    if (decoded is Map) {
+      entries = decoded['entries'] ?? decoded['worldbook'] ?? decoded['data']?['entries'];
+    } else if (decoded is List) {
+      entries = decoded;
+    }
+    if (entries is Map) return entries.values.where((entry) => entry is Map && (entry['content'] ?? '').toString().trim().isNotEmpty).length;
+    if (entries is List) return entries.where((entry) => entry is Map && (entry['content'] ?? '').toString().trim().isNotEmpty).length;
+  } catch (_) {}
+  return 0;
 }
 
 class _SettingIcon extends StatelessWidget {
