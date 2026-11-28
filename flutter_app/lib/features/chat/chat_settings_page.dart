@@ -169,7 +169,7 @@ class ChatSettingsPage extends StatelessWidget {
                 _SettingsSection(
                   icon: Icons.wallpaper_outlined,
                   title: '聊天壁纸',
-                  subtitle: '设置聊天消息区域的背景',
+                  subtitle: '可缩放并调整图片上下左右的显示范围，避免主体被裁掉',
                   children: [
                     _SettingsAction(
                       icon: Icons.image_outlined,
@@ -177,13 +177,71 @@ class ChatSettingsPage extends StatelessWidget {
                       value: prefs.chatWallpaperPath == null || prefs.chatWallpaperPath!.isEmpty ? '尚未设置' : '已设置 · 更换',
                       onTap: () => _pickWallpaper(context, prefs),
                     ),
-                    if (prefs.chatWallpaperPath != null && prefs.chatWallpaperPath!.isNotEmpty)
+                    if (prefs.chatWallpaperPath != null && prefs.chatWallpaperPath!.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 5, bottom: 2),
+                        child: Row(children: [
+                          const _SettingIcon(icon: Icons.zoom_in_rounded),
+                          const SizedBox(width: 11),
+                          const Expanded(child: Text('背景缩放', style: TextStyle(fontSize: 12, color: _ink))),
+                          Text('${prefs.wallpaperScale.toStringAsFixed(2)}×', style: const TextStyle(fontSize: 11, color: _muted)),
+                        ]),
+                      ),
+                      Slider(
+                        value: prefs.wallpaperScale.clamp(1, 2.5),
+                        min: 1,
+                        max: 2.5,
+                        divisions: 30,
+                        activeColor: _accent,
+                        onChanged: (v) => _update(prefs.copyWith(wallpaperScale: v)),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Row(children: [
+                          const _SettingIcon(icon: Icons.swap_horiz_rounded),
+                          const SizedBox(width: 11),
+                          const Expanded(child: Text('左右调整显示范围', style: TextStyle(fontSize: 12, color: _ink))),
+                          Text('${prefs.wallpaperPositionX.toStringAsFixed(1)}', style: const TextStyle(fontSize: 11, color: _muted)),
+                        ]),
+                      ),
+                      Slider(
+                        value: prefs.wallpaperPositionX.clamp(-1, 1),
+                        min: -1,
+                        max: 1,
+                        divisions: 40,
+                        activeColor: _accent,
+                        onChanged: (v) => _update(prefs.copyWith(wallpaperPositionX: v)),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Row(children: [
+                          const _SettingIcon(icon: Icons.swap_vert_rounded),
+                          const SizedBox(width: 11),
+                          const Expanded(child: Text('上下调整显示范围', style: TextStyle(fontSize: 12, color: _ink))),
+                          Text('${prefs.wallpaperPositionY.toStringAsFixed(1)}', style: const TextStyle(fontSize: 11, color: _muted)),
+                        ]),
+                      ),
+                      Slider(
+                        value: prefs.wallpaperPositionY.clamp(-1, 1),
+                        min: -1,
+                        max: 1,
+                        divisions: 40,
+                        activeColor: _accent,
+                        onChanged: (v) => _update(prefs.copyWith(wallpaperPositionY: v)),
+                      ),
+                      _SettingsAction(
+                        icon: Icons.center_focus_weak_rounded,
+                        title: '重置背景范围',
+                        value: '恢复默认',
+                        onTap: () => _update(prefs.copyWith(wallpaperScale: 1, wallpaperPositionX: 0, wallpaperPositionY: 0)),
+                      ),
                       _SettingsAction(
                         icon: Icons.delete_outline_rounded,
                         title: '恢复默认背景',
                         value: '清除壁纸',
                         onTap: () => _update(prefs.copyWith(chatWallpaperPath: '')),
                       ),
+                    ],
                     const SizedBox(height: 4),
                   ],
                 ),
@@ -563,7 +621,7 @@ class _ReplyLayoutPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final options = [
       (value: 0, icon: Icons.notes_rounded, title: '完整长段', subtitle: '保留连贯的大段回复，适合沉浸阅读'),
-      (value: 1, icon: Icons.forum_outlined, title: '聊天分句', subtitle: '按自然语意拆成多个小气泡，更像即时聊天'),
+      (value: 1, icon: Icons.forum_outlined, title: '聊天分句', subtitle: '每个完整句子独立成泡，短句自然合并，长句按语意停顿'),
     ];
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 7),
