@@ -460,9 +460,9 @@ class _EditorState extends State<_Editor> {
   void _mark(String color){
     final selection=body.selection;
     if(!selection.isValid||selection.isCollapsed){ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('先选中一段文字哦')));return;}
-    if(selection.text.contains('\n')){ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('标记请在同一段文字内使用')));return;}
+    if(body.text.substring(selection.start,selection.end).contains('\n')){ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('标记请在同一段文字内使用')));return;}
     final selected=body.text.substring(selection.start,selection.end).replaceAllMapped(RegExp(r'\[\[(?:红|蓝)[:：]([\s\S]*?)\]\]'),(m)=>m[1]??'');
-    final value=color=='x'?selected:'[[${color}:\$selected]]';
+    final value=color=='x'?selected:'[[${color}:$selected]]';
     final next=body.text.replaceRange(selection.start,selection.end,value);\n    body.value=TextEditingValue(text:next,selection:TextSelection.collapsed(offset:selection.start.toInt()+value.length));
     body.selection=TextSelection.collapsed(offset:selection.start.toInt()+value.length);
   }
