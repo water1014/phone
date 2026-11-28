@@ -1799,14 +1799,76 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                   for (final category in categories)
                     Padding(
                       padding: const EdgeInsets.only(right: 7),
-                      child: ChoiceChip(
-                        label: Text(category),
-                        selected: selectedCategory == category,
-                        onSelected: (_) => refresh(() => selectedCategory = category),
-                        selectedColor: const Color(0xFFEAEAEA),
-                        backgroundColor: const Color(0xFFF7F7F7),
-                        labelStyle: const TextStyle(fontSize: 11, color: Color(0xFF333333)),
-                        side: BorderSide.none,
+                      child: GestureDetector(
+                        onLongPress: category == '全部'
+                            ? null
+                            : () async {
+                                final action = await showModalBottomSheet<String>(
+                                  context: context,
+                                  backgroundColor: Colors.white,
+                                  showDragHandle: true,
+                                  builder: (menuContext) => SafeArea(
+                                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(18, 5, 18, 12),
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text('管理「$category」分类', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                                        ),
+                                      ),
+                                      ListTile(
+                                        leading: const Icon(Icons.edit_outlined),
+                                        title: const Text('重命名分类'),
+                                        onTap: () => Navigator.pop(menuContext, 'rename'),
+                                      ),
+                                      ListTile(
+                                        leading: const Icon(Icons.delete_outline_rounded),
+                                        title: const Text('删除分类'),
+                                        subtitle: const Text('分类中的表情包会移动到「常用」'),
+                                        onTap: () => Navigator.pop(menuContext, 'delete'),
+                                      ),
+                                    ]),
+                                  ),
+                                );
+                                if (action == 'rename' && sheetContext.mounted) {
+                                  final renamed = await _renameStickerCategory(category);
+                                  if (renamed != null && renamed != category) {
+                                    for (final sticker in _stickers) {
+                                      if (sticker['category'] == category) sticker['category'] = renamed;
+                                    }
+                                    await _saveStickers();
+                                    if (sheetContext.mounted) refresh(() => selectedCategory = renamed);
+                                  }
+                                } else if (action == 'delete' && sheetContext.mounted) {
+                                  final confirmed = await showDialog<bool>(
+                                    context: sheetContext,
+                                    builder: (dialogContext) => AlertDialog(
+                                      title: const Text('删除这个分类？'),
+                                      content: Text('分类「$category」中的表情包会保留，并移动到「常用」。'),
+                                      actions: [
+                                        TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('取消')),
+                                        TextButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('删除')),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirmed == true) {
+                                    for (final sticker in _stickers) {
+                                      if (sticker['category'] == category) sticker['category'] = '常用';
+                                    }
+                                    await _saveStickers();
+                                    if (sheetContext.mounted) refresh(() => selectedCategory = '全部');
+                                  }
+                                }
+                              },
+                        child: ChoiceChip(
+                          label: Text(category),
+                          selected: selectedCategory == category,
+                          onSelected: (_) => refresh(() => selectedCategory = category),
+                          selectedColor: const Color(0xFFEAEAEA),
+                          backgroundColor: const Color(0xFFF7F7F7),
+                          labelStyle: const TextStyle(fontSize: 11, color: Color(0xFF333333)),
+                          side: BorderSide.none,
+                        ),
                       ),
                     ),
                 ]),
@@ -1853,6 +1915,32 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         );
       }),
     );
+  }
+
+  Future<String?> _renameStickerCategory(String category) async {
+    final controller = TextEditingController(text: category);
+    final renamed = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('重命名分类'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLength: 16,
+          decoration: const InputDecoration(hintText: '输入新的分类名称'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, controller.text.trim()),
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (renamed == null || renamed.isEmpty) return null;
+    return renamed;
   }
 
   Future<String?> _askStickerCategory() async {
