@@ -1212,7 +1212,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             if (message.stickerUrl != null)
               GestureDetector(
                 onTap: () => _showStickerImage(message.stickerUrl!),
-                onLongPress: () => _showMessageActions(message),
+                onLongPress: () => _showMessageActions(message, prefs),
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 7),
                   child: ClipRRect(
@@ -1229,12 +1229,12 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             if (message.attachmentPath != null)
               GestureDetector(
                 onTap: () => _openAttachment(message),
-                onLongPress: () => _showMessageActions(message),
+                onLongPress: () => _showMessageActions(message, prefs),
                 child: _buildAttachmentCard(message),
               ),
             if (message.text.isNotEmpty || message.isTyping)
               GestureDetector(
-                onLongPress: () => _showMessageActions(message),
+                onLongPress: () => _showMessageActions(message, prefs),
                 child: Column(
                   crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
