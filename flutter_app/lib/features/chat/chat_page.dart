@@ -349,6 +349,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           .reversed;
       final history = <Map<String, dynamic>>[];
       for (final message in historyMessages) {
+        final requestText = message.replyToText == null
+            ? message.text
+            : '[引用消息：${message.replyToMine == true ? '我' : '宋祁'}：${message.replyToText}]\\n${message.text}';
         final imagePath = message.imagePath;
         if (imagePath != null && await File(imagePath).exists()) {
           final extension = imagePath.toLowerCase().split('.').last;
@@ -359,8 +362,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           history.add({
             'role': message.mine ? 'user' : 'assistant',
             'content': [
-              if (message.text.trim().isNotEmpty)
-                {'type': 'text', 'text': message.text},
+              if (requestText.trim().isNotEmpty)
+                {'type': 'text', 'text': requestText},
               {
                 'type': 'image_url',
                 'image_url': {'url': 'data:$mime;base64,$encodedImage'},
@@ -371,7 +374,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           history.add({
             'role': message.mine ? 'user' : 'assistant',
             'content': [
-              if (message.text.trim().isNotEmpty) {'type': 'text', 'text': message.text},
+              if (requestText.trim().isNotEmpty) {'type': 'text', 'text': requestText},
               {'type': 'image_url', 'image_url': {'url': message.stickerUrl}},
             ],
           });
@@ -387,14 +390,14 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           const readable = {'txt', 'md', 'csv', 'json', 'xml', 'yaml', 'yml', 'log', 'html', 'htm', 'css', 'js', 'mjs', 'ts', 'tsx', 'jsx', 'dart', 'py', 'java', 'kt', 'kts', 'swift', 'c', 'h', 'cpp', 'hpp', 'rs', 'go', 'php', 'rb', 'sh', 'bash', 'sql', 'toml', 'ini', 'conf', 'properties', 'gradle', 'svg'};
           if (readable.contains(extension)) {
             final content = await file.readAsString();
-            history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${message.text.isEmpty ? '' : '${message.text}\n'}[附件：${message.attachmentName}]\n$content'});
+            history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${requestText.isEmpty ? '' : '${requestText}\n'}[附件：${message.attachmentName}]\n$content'});
           } else {
-            history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${message.text.isEmpty ? '' : '${message.text}\n'}[用户附加了文件：${message.attachmentName}。当前接口适配层尚未解析此文件格式。]'});
+            history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${requestText.isEmpty ? '' : '${requestText}\n'}[用户附加了文件：${message.attachmentName}。当前接口适配层尚未解析此文件格式。]'});
           }
         } else {
           history.add({
             'role': message.mine ? 'user' : 'assistant',
-            'content': message.replyToText == null ? message.text : '[回复${message.replyToMine == true ? '自己' : '对方'}的消息：${message.replyToText}]\\n${message.text}',
+            'content': requestText,
           });
         }
       }
