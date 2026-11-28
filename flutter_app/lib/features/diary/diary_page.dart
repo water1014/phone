@@ -86,7 +86,10 @@ class _DiaryPageState extends State<DiaryPage> {
       ),
     );
     if (confirm != true) return;
-    setState(() => _entries.removeWhere((e) => e.id == entry.id));
+    setState(() {
+      _entries.removeWhere((e) => e.id == entry.id);
+      if (_selectedEntry?.id == entry.id) _selectedEntry = null;
+    });
     await _persist();
   }
 
@@ -96,6 +99,7 @@ class _DiaryPageState extends State<DiaryPage> {
   }
 
   String _mode = 'daily';
+  _DiaryEntry? _selectedEntry;
 
   DateTime _weekStart(DateTime date) {
     final d = DateTime(date.year, date.month, date.day);
@@ -122,7 +126,7 @@ class _DiaryPageState extends State<DiaryPage> {
       decoration: BoxDecoration(color: const Color(0xFFF0F0F0), borderRadius: BorderRadius.circular(13)),
       child: Row(children: tabs.map((tab) => Expanded(
         child: GestureDetector(
-          onTap: () => setState(() => _mode = tab.$1),
+          onTap: () => setState(() { _mode = tab.$1; _selectedEntry = null; }),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
@@ -184,6 +188,116 @@ class _DiaryPageState extends State<DiaryPage> {
       Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: _muted)),
     ]),
   ));
+
+  Widget _diaryDateRail(List<_DiaryEntry> visible) {
+    if (visible.isEmpty) {
+      return _emptyState(_entries.isEmpty ? '还没有日记' : '没有找到相关记录', '点右上角的 +，写下今天的一点心情。');
+    }
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(20, 2, 20, 10),
+        child: Row(children: [
+          const Text('全部日记', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
+          const Spacer(),
+          Text('${visible.length} 篇', style: const TextStyle(fontSize: 10, color: _muted)),
+        ]),
+      ),
+      Expanded(child: ListView.separated(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
+        itemCount: visible.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 0),
+        itemBuilder: (context, index) {
+          final entry = visible[index];
+          final selected = _selectedEntry?.id == entry.id;
+          return InkWell(
+            onTap: () => setState(() => _selectedEntry = entry),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 13),
+              decoration: BoxDecoration(
+                color: selected ? const Color(0xFFF0F0F0) : Colors.transparent,
+                border: const Border(bottom: BorderSide(color: _line)),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                SizedBox(width: 48, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(entry.date.day.toString().padLeft(2, '0'), style: const TextStyle(fontSize: 21, height: 1.1, fontWeight: FontWeight.w500, color: _ink)),
+                  const SizedBox(height: 4),
+                  Text('${entry.date.year}/${entry.date.month.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 9, color: _muted)),
+                ])),
+                const SizedBox(width: 10),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(entry.title.isEmpty ? '当天记录' : entry.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
+                  const SizedBox(height: 5),
+                  Text(entry.locked ? '这篇日记已锁定' : entry.body, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, height: 1.65, color: Color(0xFF777777))),
+                  if (entry.tags.isNotEmpty) ...[
+                    const SizedBox(height: 7),
+                    Wrap(spacing: 5, children: entry.tags.take(3).map((tag) => Text('#$tag', style: const TextStyle(fontSize: 9, color: Color(0xFF999999)))).toList()),
+                  ],
+                ])),
+                const Icon(Icons.chevron_right_rounded, size: 18, color: Color(0xFFBBBBBB)),
+              ]),
+            ),
+          );
+        },
+      )),
+    ]);
+  }
+
+  Widget _diaryReader(_DiaryEntry entry) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(12, 0, 16, 12),
+        child: Row(children: [
+          IconButton(onPressed: () => setState(() => _selectedEntry = null), icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 17), tooltip: '返回日记列表'),
+          const Text('日记详情', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
+          const Spacer(),
+          IconButton(onPressed: () => _edit(entry), icon: const Icon(Icons.edit_outlined, size: 18), tooltip: '编辑'),
+          PopupMenuButton<String>(
+            onSelected: (value) => value == 'lock' ? _toggleLock(entry) : _delete(entry),
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'lock', child: Text(entry.locked ? '解除锁定' : '锁定日记')),
+              const PopupMenuItem(value: 'delete', child: Text('删除日记')),
+            ],
+          ),
+        ]),
+      ),
+      const Divider(height: 1, color: _line),
+      Expanded(child: ListView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 34),
+        children: [
+          Text('${entry.date.year}年${entry.date.month}月${entry.date.day}日', style: const TextStyle(fontSize: 10, letterSpacing: 1.3, color: _muted)),
+          const SizedBox(height: 12),
+          Text(entry.title.isEmpty ? '那一天' : entry.title, style: const TextStyle(fontSize: 25, height: 1.35, fontWeight: FontWeight.w600, color: _ink)),
+          const SizedBox(height: 9),
+          Row(children: [
+            if (entry.city.isNotEmpty) ...[
+              const Icon(Icons.location_on_outlined, size: 13, color: _muted),
+              const SizedBox(width: 3),
+              Text(entry.city, style: const TextStyle(fontSize: 10, color: _muted)),
+              const SizedBox(width: 12),
+            ],
+            Text('更新于 ${entry.updatedAt.month}/${entry.updatedAt.day}', style: const TextStyle(fontSize: 10, color: _muted)),
+            if (entry.locked) ...[
+              const SizedBox(width: 8),
+              const Icon(Icons.lock_outline_rounded, size: 13, color: _muted),
+            ],
+          ]),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 20), child: Divider(color: _line)),
+          Text(entry.locked ? '这篇日记已锁定，解锁后可以阅读。' : entry.body, style: const TextStyle(fontSize: 14, height: 2, color: Color(0xFF333333))),
+          if (entry.tags.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            Wrap(spacing: 8, runSpacing: 8, children: entry.tags.map((tag) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+              decoration: BoxDecoration(color: const Color(0xFFF1F1F1), borderRadius: BorderRadius.circular(20)),
+              child: Text('#$tag', style: const TextStyle(fontSize: 10, color: Color(0xFF777777))),
+            )).toList()),
+          ],
+        ],
+      )),
+    ]);
+  }
 
   Widget _growthView() {
     final totalWords = _entries.fold<int>(0, (sum, e) => sum + e.body.trim().length);
@@ -279,20 +393,11 @@ class _DiaryPageState extends State<DiaryPage> {
                   ),
                 ),
               ),
-              Expanded(child: visible.isEmpty
-                ? _emptyState(_entries.isEmpty ? '还没有日记' : '没有找到相关记录', '点右上角的 +，写下今天的一点心情。')
-                : ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(18, 0, 18, 28),
-                    itemCount: visible.length,
-                    itemBuilder: (context, index) {
-                      final entry = visible[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 11),
-                        child: _DiaryCard(entry: entry, onTap: () => _edit(entry), onLock: () => _toggleLock(entry), onDelete: () => _delete(entry)),
-                      );
-                    },
-                  )),
+              Expanded(
+                child: _selectedEntry == null
+                    ? _diaryDateRail(visible)
+                    : _diaryReader(_selectedEntry!),
+              ),
             ] else if (_mode == 'weekly') Expanded(child: _reviewList(true))
             else if (_mode == 'monthly') Expanded(child: _reviewList(false))
             else Expanded(child: _growthView()),
