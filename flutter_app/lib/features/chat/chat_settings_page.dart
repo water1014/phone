@@ -192,6 +192,28 @@ class ChatSettingsPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 13),
                 _SettingsSection(
+                  icon: Icons.record_voice_over_outlined,
+                  title: '旁白与角色表达',
+                  subtitle: '控制动作、神态和场景描写',
+                  children: [
+                    _PreferenceSwitch(
+                      icon: Icons.record_voice_over_rounded,
+                      title: '允许旁白描写',
+                      subtitle: '允许角色自然使用动作、神态和环境描写',
+                      value: prefs.narratorEnabled,
+                      onChanged: (v) => _update(prefs.copyWith(narratorEnabled: v)),
+                    ),
+                    _SettingsAction(
+                      icon: Icons.edit_note_rounded,
+                      title: '附加系统提示',
+                      value: prefs.additionalSystemPrompt.trim().isEmpty ? '未设置' : '已设置 · 编辑',
+                      onTap: () => _editAdditionalPrompt(context, prefs),
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                ),
+                const SizedBox(height: 13),
+                _SettingsSection(
                   icon: Icons.keyboard_alt_outlined,
                   title: '输入方式',
                   subtitle: '按自己的习惯发送消息',
@@ -255,6 +277,41 @@ class ChatSettingsPage extends StatelessWidget {
       ),
     ),
   );
+
+  Future<void> _editAdditionalPrompt(BuildContext context, ChatPreferences prefs) async {
+    final controller = TextEditingController(text: prefs.additionalSystemPrompt);
+    final value = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        title: const Text('附加系统提示', style: TextStyle(fontSize: 17, color: _ink)),
+        content: SizedBox(
+          width: 420,
+          child: TextField(
+            controller: controller,
+            autofocus: true,
+            minLines: 5,
+            maxLines: 10,
+            maxLength: 3000,
+            decoration: InputDecoration(
+              hintText: '写下希望角色长期遵守的补充规则……',
+              filled: true,
+              fillColor: _soft,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: BorderSide.none),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(dialogContext, controller.text.trim()), child: const Text('保存')),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (value == null) return;
+    await _update(prefs.copyWith(additionalSystemPrompt: value));
+  }
 
   Future<void> _pickWallpaper(BuildContext context, ChatPreferences prefs) async {
     try {
