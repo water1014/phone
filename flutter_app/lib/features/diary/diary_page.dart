@@ -203,21 +203,7 @@ class _DiaryPageState extends State<DiaryPage> {
     if(longs.isEmpty)return _empty('还没有日记','把今天想记住的事写下来吧。');
     return ListView.builder(padding:const EdgeInsets.only(bottom:24),itemCount:longs.length,itemBuilder:(c,i){
       final e=longs[i];
-      return Dismissible(key:ValueKey(e.id),direction:DismissDirection.endToStart,
-        background:Container(alignment:Alignment.centerRight,padding:const EdgeInsets.only(right:22),color:const Color(0xFFE5484D),child:const Icon(Icons.delete_outline,color:Colors.white)),
-        confirmDismiss:(_)async{await _delete(e);return false;},
-        child:InkWell(onTap:()=>_reader(e),child:Container(padding:const EdgeInsets.symmetric(vertical:16,horizontal:2),
-          decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:line))),
-          child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[
-            SizedBox(width:44,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-              Text('${e.date.day}',style:const TextStyle(fontSize:26,height:1.05,fontWeight:FontWeight.w500)),
-              const SizedBox(height:3),Text('${e.date.year}.${e.date.month}',style:const TextStyle(fontSize:10,color:muted))
-            ])),
-            const SizedBox(width:13),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-              Text(e.title.isEmpty?'无标题':e.title,maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:14,fontWeight:FontWeight.w600)),
-              const SizedBox(height:6),Text(e.body,maxLines:3,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:12.5,height:1.7,color:Color(0xFF777777)))
-            ]))
-          ]))));
+      return _SwipeDiaryCard(entry:e,onOpen:()=>_reader(e),onEdit:()=>_edit(e),onDelete:()=>_delete(e));
     });
   }
 
@@ -326,6 +312,33 @@ class _DiaryPageState extends State<DiaryPage> {
     final found=longs.where((e)=>e.title.contains(v)||e.body.contains(v)).toList();
     c.dispose();
     if(found.isEmpty){if(mounted)ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('没有找到相关日记')));}else if(mounted){_reader(found.first);}
+  }
+}
+
+class _SwipeDiaryCard extends StatefulWidget {
+  const _SwipeDiaryCard({required this.entry,required this.onOpen,required this.onEdit,required this.onDelete});
+  final _Entry entry;
+  final VoidCallback onOpen,onEdit,onDelete;
+  @override State<_SwipeDiaryCard> createState()=>_SwipeDiaryCardState();
+}
+class _SwipeDiaryCardState extends State<_SwipeDiaryCard> {
+  double offset=0;
+  static const reveal=136.0;
+  void _settle(){setState(()=>offset=offset < -reveal/2 ? -reveal : 0);}
+  @override Widget build(BuildContext context){
+    final e=widget.entry;
+    return SizedBox(height:104,child:Stack(alignment:Alignment.centerRight,children:[
+      Positioned.fill(child:Row(mainAxisAlignment:MainAxisAlignment.end,children:[
+        SizedBox(width:68,child:Material(color:const Color(0xFFF1F1F1),child:InkWell(onTap:(){setState(()=>offset=0);widget.onEdit();},child:const Center(child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[Icon(Icons.edit_outlined,size:18),SizedBox(height:4),Text('编辑',style:TextStyle(fontSize:11))]))))),
+        SizedBox(width:68,child:Material(color:const Color(0xFFE95B62),child:InkWell(onTap:widget.onDelete,child:const Center(child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[Icon(Icons.delete_outline,color:Colors.white,size:18),SizedBox(height:4),Text('删除',style:TextStyle(fontSize:11,color:Colors.white))]))))),
+      ])),
+      AnimatedContainer(duration:const Duration(milliseconds:180),curve:Curves.easeOut,transform:Matrix4.translationValues(offset,0,0),color:Colors.white,
+        child:GestureDetector(onHorizontalDragUpdate:(d)=>setState(()=>offset=(offset+d.delta.dx).clamp(-reveal,0)),onHorizontalDragEnd:(_)=>_settle(),
+          child:Material(color:Colors.white,child:InkWell(onTap:(){if(offset!=0){setState(()=>offset=0);}else{widget.onOpen();}},child:Container(padding:const EdgeInsets.symmetric(vertical:16,horizontal:2),decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFECECEC))),),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[
+            SizedBox(width:44,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('${e.date.day}',style:const TextStyle(fontSize:26,height:1.05,fontWeight:FontWeight.w500)),const SizedBox(height:3),Text('${e.date.year}.${e.date.month}',style:const TextStyle(fontSize:10,color:Color(0xFF8A8A8A)))])),
+            const SizedBox(width:13),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(e.title.isEmpty?'无标题':e.title,maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:14,fontWeight:FontWeight.w600)),const SizedBox(height:6),Text(e.body.replaceAll(RegExp(r'\[\[(?:红|蓝)[:：]([\s\S]*?)\]\]'),'\$1'),maxLines:3,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:12.5,height:1.7,color:Color(0xFF777777)))]))
+          ]))))),
+    ]));
   }
 }
 
