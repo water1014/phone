@@ -375,7 +375,7 @@ class _ChatBeautifyPageState extends State<ChatBeautifyPage> {
       if (parts['css'] is String && (parts['css'] as String).trim().isNotEmpty) unsupported.add('自定义 CSS（Flutter 原生界面不能直接执行 CSS）');
       if (parts.containsKey('sound')) unsupported.add('消息提示音');
       if (bubbles is Map && ((bubbles['user'] is Map && (bubbles['user']['decoration'] != null || bubbles['user']['avatarDecoration'] != null)) || (bubbles['ai'] is Map && (bubbles['ai']['decoration'] != null || bubbles['ai']['avatarDecoration'] != null)))) unsupported.add('气泡/头像装饰贴图');
-      if (mounted) setState(() => _notice = unsupported.isEmpty ? '导入完成，已应用可兼容的布局、背景与气泡样式。' : '已导入并应用可兼容部分；暂未适配：${unsupported.join('、')}。');
+      if (mounted) setState(() => _notice = unsupported.isEmpty ? '导入完成，已应用可兼容的布局、背景与气泡样式。' : '已导入并应用可兼容部分；暂未适配：${unsupported.join("、")}。');
     } catch (error) {
       if (mounted) setState(() => _notice = '导入失败：$error');
     }

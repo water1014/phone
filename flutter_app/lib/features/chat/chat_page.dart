@@ -1829,7 +1829,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                 maxLines: 5,
                 textInputAction: prefs.enterSend ? TextInputAction.send : TextInputAction.newline,
                 onSubmitted: prefs.enterSend ? (_) => _send() : null,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: '说点什么吧…',
                   hintStyle: TextStyle(color: _chatColor(prefs.partnerTextColor, const Color(0xFF999999)).withValues(alpha: .55), fontSize: 14),
                   isDense: true,
