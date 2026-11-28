@@ -201,7 +201,7 @@ class ChatSettingsPage extends StatelessWidget {
                           const _SettingIcon(icon: Icons.swap_horiz_rounded),
                           const SizedBox(width: 11),
                           const Expanded(child: Text('左右调整显示范围', style: TextStyle(fontSize: 12, color: _ink))),
-                          Text('${prefs.wallpaperPositionX.toStringAsFixed(1)}', style: const TextStyle(fontSize: 11, color: _muted)),
+                          Text(prefs.wallpaperPositionX.toStringAsFixed(1), style: const TextStyle(fontSize: 11, color: _muted)),
                         ]),
                       ),
                       Slider(
@@ -218,7 +218,7 @@ class ChatSettingsPage extends StatelessWidget {
                           const _SettingIcon(icon: Icons.swap_vert_rounded),
                           const SizedBox(width: 11),
                           const Expanded(child: Text('上下调整显示范围', style: TextStyle(fontSize: 12, color: _ink))),
-                          Text('${prefs.wallpaperPositionY.toStringAsFixed(1)}', style: const TextStyle(fontSize: 11, color: _muted)),
+                          Text(prefs.wallpaperPositionY.toStringAsFixed(1), style: const TextStyle(fontSize: 11, color: _muted)),
                         ]),
                       ),
                       Slider(
