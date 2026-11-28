@@ -96,7 +96,7 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   final _input = TextEditingController();
   final _inputFocus = FocusNode();
   final _search = TextEditingController();
@@ -128,6 +128,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _messagesScroll.addListener(_handleScroll);
     unawaited(ChatPreferenceStore.load());
     unawaited(_loadChat());
@@ -214,7 +215,15 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && !_showJumpLatest) {
+      _scrollToLatest(immediate: true);
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _activeCancelToken?.cancel('聊天页面已关闭');
     _draftSaveTimer?.cancel();
     _messagesScroll.removeListener(_handleScroll);
