@@ -260,7 +260,7 @@ class _DiaryPageState extends State<DiaryPage> {
     });
   }
 
-  void _reader(_Entry e) => Navigator.push(context,MaterialPageRoute(builder:(_)=>_Reader(entry:e,
+  void _reader(_Entry e) => Navigator.push(context,MaterialPageRoute(builder:(_)=>_Reader(entry:e,decorText:_decorText,ownerName:owner=='me'?'我':'TA',
     onEdit:()async{Navigator.pop(context);await _edit(e);},
     onDelete:()async{Navigator.pop(context);await _delete(e);},
     onComment:(v)async{e.comment=v;await _upsert(e);})));
@@ -447,8 +447,8 @@ class _EditorState extends State<_Editor> {
 }
 
 class _Reader extends StatefulWidget {
-  const _Reader({required this.entry,required this.onEdit,required this.onDelete,required this.onComment});
-  final _Entry entry;final VoidCallback onEdit,onDelete;final ValueChanged<String> onComment;
+  const _Reader({required this.entry,required this.onEdit,required this.onDelete,required this.onComment,required this.decorText,required this.ownerName});
+  final _Entry entry;final VoidCallback onEdit,onDelete;final ValueChanged<String> onComment;final String decorText,ownerName;
   @override State<_Reader> createState()=>_ReaderState();
 }
 class _ReaderState extends State<_Reader>{
@@ -475,8 +475,11 @@ class _ReaderState extends State<_Reader>{
               Positioned.fill(child:IgnorePointer(child:CustomPaint(painter:_DiaryDotPainter()))),
               Positioned(left:-27,top:4,bottom:4,child:Column(mainAxisAlignment:MainAxisAlignment.spaceEvenly,children:List.generate(7,(_)=>Container(width:14,height:14,decoration:BoxDecoration(color:const Color(0xFFF7F7F7),shape:BoxShape.circle,border:Border.all(color:const Color(0xFFE6E6E6))))))),
               Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-                Row(children:[const CircleAvatar(radius:18,backgroundColor:Color(0xFFF0F0F0),child:Text('我',style:TextStyle(color:Color(0xFF111111),fontSize:12))),const SizedBox(width:10),const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('我',style:TextStyle(fontSize:14,fontWeight:FontWeight.w600)),Text('Mio Diary',style:TextStyle(fontSize:10,color:Color(0xFF999999)))]),const Spacer(),Text('${e.date.year}/${e.date.month}/${e.date.day}',style:const TextStyle(fontSize:10,color:Color(0xFF999999)))]),
-                const SizedBox(height:26),
+                Row(children:[CircleAvatar(radius:18,backgroundColor:const Color(0xFFF0F0F0),child:Text(widget.ownerName=='我'?'我':'T',style:const TextStyle(color:Color(0xFF111111),fontSize:12))),const SizedBox(width:10),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(widget.ownerName,style:const TextStyle(fontSize:14,fontWeight:FontWeight.w600)),Text(widget.ownerName=='我'?'@me':'@companion',style:const TextStyle(fontSize:10,color:Color(0xFF999999)))])),Text('${e.date.year}/${e.date.month}/${e.date.day}  ${e.time.hour.toString().padLeft(2,'0')}:${e.time.minute.toString().padLeft(2,'0')}',style:const TextStyle(fontSize:10,color:Color(0xFF999999)))]),
+                const SizedBox(height:17),
+                if(widget.decorText.isNotEmpty)Padding(padding:const EdgeInsets.only(bottom:18),child:Text(widget.decorText,style:const TextStyle(fontSize:13,height:1.6,color:Color(0xFF777777)))),
+                Row(children:[const Icon(Icons.chat_bubble_outline_rounded,size:15,color:Color(0xFF999999)),const SizedBox(width:7),const Text('写于 Mio Diary',style:TextStyle(fontSize:11,color:Color(0xFF999999),fontStyle:FontStyle.italic))]),
+                const SizedBox(height:24),
                 if(e.title.isNotEmpty)GestureDetector(onTap:trTitle.isEmpty?null:()=>setState(()=>translated=!translated),child:Text(translated&&trTitle.isNotEmpty?trTitle:e.title,style:const TextStyle(fontSize:23,height:1.4,fontWeight:FontWeight.w600))),
                 if(e.title.isNotEmpty)const SizedBox(height:18),
                 GestureDetector(onTap:tr.isEmpty?null:()=>setState(()=>translated=!translated),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:paragraphs.map((p)=>Padding(padding:const EdgeInsets.only(bottom:13),child:RichText(text:TextSpan(style:const TextStyle(fontSize:15,height:1.95,color:Color(0xFF222222)),children:_marked(p))))).toList())),
