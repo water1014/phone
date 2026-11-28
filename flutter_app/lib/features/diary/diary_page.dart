@@ -94,12 +94,65 @@ class _DiaryPageState extends State<DiaryPage> {
       title:const Text('给这张拍立得写一句话'),
       content:TextField(controller:caption,maxLength:24,decoration:const InputDecoration(hintText:'留下一句小小的注释')),
       actions:[TextButton(onPressed:()=>Navigator.pop(c,false),child:const Text('取消')),TextButton(onPressed:()=>Navigator.pop(c,true),child:const Text('打印'))]));
-    if (ok==true) {
-      final now=DateTime.now(), day=DateTime(now.year,now.month,now.day);
-      setState(()=>entries.removeWhere((e)=>e.type=='polaroid'&&e.owner==who&&e.date.year==day.year&&e.date.month==day.month&&e.date.day==day.day));
-      await _upsert(_Entry(id:now.microsecondsSinceEpoch.toString(),type:'polaroid',owner:who,title:'',body:caption.text.trim(),date:day,time:now,image:path));
+    if (ok==true && mounted) {
+      final printed=await _printPolaroid(path,caption.text.trim());
+      if(printed==true){
+        final now=DateTime.now(), day=DateTime(now.year,now.month,now.day);
+        setState(()=>entries.removeWhere((e)=>e.type=='polaroid'&&e.owner==who&&e.date.year==day.year&&e.date.month==day.month&&e.date.day==day.day));
+        await _upsert(_Entry(id:now.microsecondsSinceEpoch.toString(),type:'polaroid',owner:who,title:'',body:caption.text.trim(),date:day,time:now,image:path));
+      }
     }
     caption.dispose();
+  }
+
+  Future<bool?> _printPolaroid(String path,String caption) async {
+    var printing=true;
+    return showDialog<bool>(context:context,barrierDismissible:false,builder:(dialogContext){
+      return StatefulBuilder(builder:(context,setDialogState){
+        if(printing){
+          Future.delayed(const Duration(milliseconds:2600),(){
+            if(dialogContext.mounted){setDialogState(()=>printing=false);}
+          });
+        }
+        final file=File(path);
+        return Dialog(
+          backgroundColor:Colors.transparent,
+          insetPadding:const EdgeInsets.symmetric(horizontal:28),
+          child:Container(
+            padding:const EdgeInsets.fromLTRB(22,26,22,22),
+            decoration:BoxDecoration(color:const Color(0xFFF7F7F7),borderRadius:BorderRadius.circular(24)),
+            child:Column(mainAxisSize:MainAxisSize.min,children:[
+              AnimatedContainer(duration:const Duration(milliseconds:350),width:210,height:printing?172:210,
+                decoration:BoxDecoration(color:const Color(0xFF242424),borderRadius:BorderRadius.circular(34),
+                  boxShadow:[BoxShadow(color:Colors.black.withValues(alpha:.2),blurRadius:22,offset:const Offset(0,12))]),
+                child:Stack(alignment:Alignment.topCenter,children:[
+                  Positioned(top:23,left:22,right:22,child:Container(height:17,decoration:BoxDecoration(color:Colors.black,borderRadius:BorderRadius.circular(10)))),
+                  Positioned(top:57,right:27,child:Container(width:8,height:8,decoration:BoxDecoration(color:printing?Colors.white:const Color(0xFF8FD6A3),shape:BoxShape.circle))),
+                  AnimatedPositioned(duration:const Duration(milliseconds:850),curve:Curves.easeOutCubic,
+                    top:printing?54:82,left:35,right:35,
+                    child:AnimatedOpacity(duration:const Duration(milliseconds:500),opacity:printing?.0:1,
+                      child:Container(padding:const EdgeInsets.fromLTRB(6,6,6,0),color:Colors.white,
+                        child:Column(mainAxisSize:MainAxisSize.min,children:[
+                          AspectRatio(aspectRatio:1,child:file.existsSync()?Image.file(file,fit:BoxFit.cover):const ColoredBox(color:Color(0xFFE6E6E6))),
+                          SizedBox(height:printing?0:20,child:Text(caption,maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(color:Colors.black,fontSize:10)))
+                        ])))
+                  )
+                ])
+              ),
+              const SizedBox(height:22),
+              Text(printing?'正在打印今天的拍立得…':'打印完成',style:const TextStyle(fontSize:14,fontWeight:FontWeight.w600,color:Color(0xFF222222))),
+              const SizedBox(height:6),
+              Text(printing?'照片正在慢慢显影':'把这张照片收进你们的相册吧',style:const TextStyle(fontSize:11,color:Color(0xFF888888))),
+              const SizedBox(height:18),
+              if(!printing)SizedBox(width:double.infinity,child:ElevatedButton(
+                style:ElevatedButton.styleFrom(backgroundColor:const Color(0xFF171717),foregroundColor:Colors.white,padding:const EdgeInsets.symmetric(vertical:13)),
+                onPressed:()=>Navigator.pop(dialogContext,true),child:const Text('收进相册')))
+              else const SizedBox(height:3,child:LinearProgressIndicator(minHeight:2,color:Color(0xFF222222),backgroundColor:Color(0xFFE3E3E3)))
+            ])
+          )
+        );
+      });
+    });
   }
 
   String _date(DateTime d)=>'${d.year}.${d.month}.${d.day.toString().padLeft(2,'0')}';
