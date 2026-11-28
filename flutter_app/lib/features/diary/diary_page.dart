@@ -151,9 +151,9 @@ class _DiaryPageState extends State<DiaryPage> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(color: Colors.white, border: Border.all(color: _line), borderRadius: BorderRadius.circular(16)),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(weekly ? '第 ${key.split('W').last} 周 · ${key.split('-W').first}' : key.replaceFirst('-', ' 年 ') + ' 月', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _ink)),
+            Text(weekly ? '第 ${key.split('W').last} 周 · ${key.split('-W').first}' : '${key.replaceFirst('-', ' 年 ')} 月', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _ink)),
             const SizedBox(height: 8),
-            Text('${items.length} 篇记录  ·  ${words} 字', style: const TextStyle(fontSize: 11, color: _muted)),
+            Text('${items.length} 篇记录  ·  $words 字', style: const TextStyle(fontSize: 11, color: _muted)),
             if (tags.isNotEmpty) ...[
               const SizedBox(height: 10),
               Wrap(spacing: 6, children: tags.map((tag) => Chip(label: Text('#$tag', style: const TextStyle(fontSize: 10)), visualDensity: VisualDensity.compact, padding: EdgeInsets.zero, backgroundColor: const Color(0xFFF5F5F5), side: BorderSide.none)).toList()),
