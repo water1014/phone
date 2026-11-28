@@ -21,6 +21,7 @@ class ChatMessageRecord {
     this.selectedAlternative = 0,
     this.replyToText,
     this.replyToMine,
+    this.replyLayoutOverride,
   });
 
   final String text;
@@ -42,6 +43,7 @@ class ChatMessageRecord {
   final int selectedAlternative;
   final String? replyToText;
   final bool? replyToMine;
+  final int? replyLayoutOverride;
 
   Map<String, dynamic> toJson() => {
     'text': text,
@@ -62,6 +64,7 @@ class ChatMessageRecord {
     'selectedAlternative': selectedAlternative,
     'replyToText': replyToText,
     'replyToMine': replyToMine,
+    'replyLayoutOverride': replyLayoutOverride,
   };
 
   factory ChatMessageRecord.fromJson(Map<String, dynamic> json) =>
@@ -84,6 +87,7 @@ class ChatMessageRecord {
         selectedAlternative: json['selectedAlternative'] as int? ?? 0,
         replyToText: json['replyToText'] as String?,
         replyToMine: json['replyToMine'] as bool?,
+        replyLayoutOverride: json['replyLayoutOverride'] as int?,
       );
 
   static String encodeList(List<ChatMessageRecord> messages) =>
