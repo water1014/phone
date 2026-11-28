@@ -552,7 +552,7 @@ class _Entry {
     final lines=body.split('\n').toList();
     var first=0;
     while(first<lines.length&&lines[first].trim().isEmpty){first++;}
-    String norm(String value)=>value
+    final norm=(String value)=>value
       .replaceAll(RegExp(r'\[\[(?:红|蓝)[:：]([\s\S]*?)\]\]'),r'$1')
       .replaceAll(RegExp(r'[\s\p{P}\p{S}]',unicode:true),'')
       .toLowerCase();
