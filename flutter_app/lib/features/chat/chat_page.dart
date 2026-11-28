@@ -639,7 +639,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       final replyLayoutInstruction = chatPrefs.replyLayout == 1
           ? '回复时采用即时聊天分句模式：像微信连续发消息一样，把每个自然完整的短句或短意群分开，句与句之间留一个空行；一条消息尽量控制在一到两句，不要把几句话连成一个大段，也不要把每个词拆成碎片。长回复应自然分成多条独立消息。代码、表格、列表和文件内容必须保持原样，不要拆坏。'
           : '回复时采用完整长段模式：允许根据情境写连贯、完整的长段落，不要为了短而刻意拆成多条消息。';
-      final systemPrompt = '你在「小窝」这个私人空间里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。$narratorInstruction $replyLayoutInstruction 不要列条目。用户要求制作文件时，必须把完整成品放进一个带明确文件名的代码围栏，围栏外只写简短交付说明，不要把源码散落在聊天气泡。格式要求：HTML/CSS/JS/TXT/Markdown/CSV/JSON/XML/SVG/代码等文本文件使用对应语言围栏并写 filename="作品.扩展名"；DOCX 使用 ```docx filename="作品.docx"，正文用 Markdown 标题、段落和表格；XLSX 使用 ```xlsx filename="作品.xlsx"，正文优先输出 CSV，每行一条记录，字段用逗号分隔，含逗号的字段用双引号包裹，或输出 Markdown 表格；PPTX 使用 ```pptx filename="作品.pptx"，每页以单独的 Markdown 标题开头，页面之间用单独一行 --- 分隔，正文使用短段落和项目符号；PDF 使用 ```pdf filename="作品.pdf"，正文使用 Markdown 标题和段落。DOCX/PPTX/XLSX/PDF 会由客户端生成真实二进制文件，不要输出 Base64，也不要只给伪代码。';
+      final systemPrompt = '你在「小窝」这个私人空间里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。$narratorInstruction $replyLayoutInstruction 如果检索到的记忆或原始聊天记录没有明确答案，不要假装记得，也不要编造共同经历。不要列条目。用户要求制作文件时，必须把完整成品放进一个带明确文件名的代码围栏，围栏外只写简短交付说明，不要把源码散落在聊天气泡。格式要求：HTML/CSS/JS/TXT/Markdown/CSV/JSON/XML/SVG/代码等文本文件使用对应语言围栏并写 filename="作品.扩展名"；DOCX 使用 ```docx filename="作品.docx"，正文用 Markdown 标题、段落和表格；XLSX 使用 ```xlsx filename="作品.xlsx"，正文优先输出 CSV，每行一条记录，字段用逗号分隔，含逗号的字段用双引号包裹，或输出 Markdown 表格；PPTX 使用 ```pptx filename="作品.pptx"，每页以单独的 Markdown 标题开头，页面之间用单独一行 --- 分隔，正文使用短段落和项目符号；PDF 使用 ```pdf filename="作品.pdf"，正文使用 Markdown 标题和段落。DOCX/PPTX/XLSX/PDF 会由客户端生成真实二进制文件，不要输出 Base64，也不要只给伪代码。';
       final worldbookContext = chatPrefs.worldbookEnabled
           ? _resolveWorldbookContext(
               chatPrefs.worldbookJson,
@@ -885,8 +885,17 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           }
         }
         if (!cancelled) {
+          final rawError = error.toString().replaceFirst('Exception: ', '');
+          final lowerError = rawError.toLowerCase();
+          final isContextLimit = lowerError.contains('context_length') ||
+              lowerError.contains('maximum context') ||
+              lowerError.contains('context window') ||
+              lowerError.contains('too many tokens') ||
+              lowerError.contains('token limit');
           _messages.add(_ChatMessage(
-            text: '连接没有成功：${error.toString().replaceFirst('Exception: ', '')}',
+            text: isContextLimit
+                ? '这次请求超过了当前模型的上下文容量。原始聊天记录没有被压缩或删除。你可以减少本轮附带的内容，或手动开启一个新窗口后继续。'
+                : '连接没有成功：$rawError',
             mine: false,
             isSystem: true,
             time: DateTime.now(),
