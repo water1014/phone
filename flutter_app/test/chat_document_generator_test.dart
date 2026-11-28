@@ -42,7 +42,7 @@ void main() {
   });
 
   test('XLSX preserves quoted commas and multiline CSV cells', () async {
-    final bytes = await ChatDocumentGenerator.generate('sample.xlsx', 'Name,Note,Amount\\nApple,"fresh, red",12.5\\nPear,"line one\\nline two",-3');
+    final bytes = await ChatDocumentGenerator.generate('sample.xlsx', 'Name,Note,Amount\nApple,"fresh, red",12.5\nPear,"line one\nline two",-3');
     final archive = ZipDecoder().decodeBytes(bytes);
     final xml = utf8.decode(archive.findFile('xl/worksheets/sheet1.xml')!.content as List<int>);
     expect(xml, contains('fresh, red'));
