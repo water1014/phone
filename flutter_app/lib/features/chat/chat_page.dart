@@ -22,6 +22,7 @@ import 'chat_preferences.dart';
 import 'chat_api_client.dart';
 import 'chat_message.dart';
 import 'chat_message_store.dart';
+import 'chat_conversation_store.dart';
 import 'chat_document_generator.dart';
 
 String _resolveWorldbookContext(String raw, String conversationContext) {
@@ -331,6 +332,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   String? _pendingFileName;
   int? _pendingFileSize;
   final List<_ChatMessage> _messages = [];
+  String _activeConversationId = '';
+  String _activeConversationSummary = '';
+  List<ChatConversationRecord> _conversations = [];
   bool _searching = false;
   bool _loadingHistory = true;
   bool _sending = false;
@@ -376,9 +380,14 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   }
 
   Future<void> _loadChat() async {
-    final saved = await ChatMessageStore.load();
+    final active = await ChatConversationStore.ensureActive();
+    final saved = await ChatConversationStore.loadMessages(active.id);
+    final conversations = await ChatConversationStore.loadConversations();
     if (!mounted) return;
     setState(() {
+      _activeConversationId = active.id;
+      _activeConversationSummary = active.summary;
+      _conversations = conversations;
       _messages
         ..clear()
         ..addAll(saved.map((message) => _ChatMessage(
@@ -412,29 +421,34 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _persistChat() => ChatMessageStore.save(
-    _messages.where((message) => !message.isTyping).map((message) => ChatMessageRecord(
-      text: message.text,
-      mine: message.mine,
-      createdAt: message.time,
-      reasoning: message.reasoning,
-      isSystem: message.isSystem,
-      inputTokens: message.inputTokens,
-      outputTokens: message.outputTokens,
-      imagePath: message.imagePath,
-      stickerUrl: message.stickerUrl,
-      audioPath: message.audioPath,
-      audioDurationMs: message.audioDurationMs,
-      attachmentPath: message.attachmentPath,
-      attachmentName: message.attachmentName,
-      attachmentSize: message.attachmentSize,
-      alternateReplies: message.alternateReplies,
-      selectedAlternative: message.selectedAlternative,
-      replyToText: message.replyToText,
-      replyToMine: message.replyToMine,
-      replyLayoutOverride: message.replyLayoutOverride,
-    )).toList(),
-  );
+  Future<void> _persistChat() async {
+    if (_activeConversationId.isEmpty) return;
+    final records = _messages
+        .where((message) => !message.isTyping)
+        .map((message) => ChatMessageRecord(
+          text: message.text,
+          mine: message.mine,
+          createdAt: message.time,
+          reasoning: message.reasoning,
+          isSystem: message.isSystem,
+          inputTokens: message.inputTokens,
+          outputTokens: message.outputTokens,
+          imagePath: message.imagePath,
+          stickerUrl: message.stickerUrl,
+          audioPath: message.audioPath,
+          audioDurationMs: message.audioDurationMs,
+          attachmentPath: message.attachmentPath,
+          attachmentName: message.attachmentName,
+          attachmentSize: message.attachmentSize,
+          alternateReplies: message.alternateReplies,
+          selectedAlternative: message.selectedAlternative,
+          replyToText: message.replyToText,
+          replyToMine: message.replyToMine,
+          replyLayoutOverride: message.replyLayoutOverride,
+        ))
+        .toList();
+    await ChatConversationStore.saveMessages(_activeConversationId, records);
+  }
 
   void _handleScroll() {
     if (!_messagesScroll.hasClients) return;
@@ -599,6 +613,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
       final requestMessages = <Map<String, dynamic>>[
         {'role': 'system', 'content': systemPrompt},
+        if (_activeConversationSummary.trim().isNotEmpty)
+          {'role': 'system', 'content': '上一聊天窗口交接摘要。它是帮助延续任务的背景，不代表完整聊天记录：\\n$_activeConversationSummary'},
         if (chatPrefs.additionalSystemPrompt.trim().isNotEmpty)
           {'role': 'system', 'content': chatPrefs.additionalSystemPrompt.trim()},
         if (worldbookContext.isNotEmpty)
@@ -868,6 +884,154 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     }
   }
 
+  String _buildHandoffSummary() {
+    final recent = _messages
+        .where((message) => !message.isSystem && !message.isTyping && message.text.trim().isNotEmpty)
+        .toList()
+        .reversed
+        .take(12)
+        .toList()
+        .reversed;
+    if (recent.isEmpty) return '';
+    final lines = recent.map((message) {
+      final speaker = message.mine ? '用户' : '家机';
+      return '$speaker：${message.text.trim()}';
+    }).toList();
+    var summary = lines.join('\\n');
+    if (summary.length > 3600) summary = summary.substring(summary.length - 3600);
+    return '最近对话交接摘录（本地从旧窗口提取，非 AI 总结）：\\n$summary';
+  }
+
+  Future<void> _createNewConversation() async {
+    if (_sending) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('等当前回复完成后再换窗哦')),
+      );
+      return;
+    }
+    await _persistChat();
+    final handoff = _buildHandoffSummary();
+    final created = await ChatConversationStore.create(summary: handoff);
+    final conversations = await ChatConversationStore.loadConversations();
+    if (!mounted) return;
+    setState(() {
+      _activeConversationId = created.id;
+      _activeConversationSummary = created.summary;
+      _conversations = conversations;
+      _messages.clear();
+      _searching = false;
+      _query = '';
+      _search.clear();
+      _selectedDay = null;
+      _replyingTo = null;
+      _showJumpLatest = false;
+      _loadingHistory = false;
+    });
+    _scrollToLatest(immediate: true);
+  }
+
+  Future<void> _switchConversation(String id) async {
+    if (_sending || id == _activeConversationId) return;
+    await _persistChat();
+    await ChatConversationStore.switchTo(id);
+    final conversations = await ChatConversationStore.loadConversations();
+    ChatConversationRecord? selected;
+    for (final item in conversations) {
+      if (item.id == id) selected = item;
+    }
+    if (selected == null) return;
+    final saved = await ChatConversationStore.loadMessages(id);
+    if (!mounted) return;
+    setState(() {
+      _activeConversationId = selected!.id;
+      _activeConversationSummary = selected!.summary;
+      _conversations = conversations;
+      _messages
+        ..clear()
+        ..addAll(saved.map((message) => _ChatMessage(
+          text: message.text,
+          mine: message.mine,
+          time: message.createdAt,
+          reasoning: message.reasoning,
+          isSystem: message.isSystem,
+          inputTokens: message.inputTokens,
+          outputTokens: message.outputTokens,
+          imagePath: message.imagePath,
+          stickerUrl: message.stickerUrl,
+          audioPath: message.audioPath,
+          audioDurationMs: message.audioDurationMs,
+          attachmentPath: message.attachmentPath,
+          attachmentName: message.attachmentName,
+          attachmentSize: message.attachmentSize,
+          alternateReplies: message.alternateReplies,
+          selectedAlternative: message.selectedAlternative,
+          replyToText: message.replyToText,
+          replyToMine: message.replyToMine,
+          replyLayoutOverride: message.replyLayoutOverride,
+        )));
+      _searching = false;
+      _query = '';
+      _search.clear();
+      _selectedDay = null;
+      _replyingTo = null;
+      _showJumpLatest = false;
+      _loadingHistory = false;
+    });
+    _scrollToLatest(immediate: true);
+  }
+
+  Future<void> _showConversationPicker() async {
+    if (_sending) return;
+    final conversations = await ChatConversationStore.loadConversations();
+    if (!mounted) return;
+    setState(() => _conversations = conversations);
+    final selectedId = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: SizedBox(
+          height: MediaQuery.of(sheetContext).size.height * 0.62,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 4, 20, 14),
+                child: Text('聊天窗口', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              ),
+              Expanded(
+                child: conversations.isEmpty
+                    ? const Center(child: Text('还没有其他聊天窗口'))
+                    : ListView.separated(
+                        itemCount: conversations.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1, indent: 64),
+                        itemBuilder: (context, index) {
+                          final item = conversations[index];
+                          final date = item.updatedAt;
+                          final timeLabel = '${date.month}月${date.day}日 ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: item.id == _activeConversationId ? const Color(0xFFE9E9E9) : const Color(0xFFF5F5F5),
+                              child: Icon(item.id == _activeConversationId ? Icons.chat_bubble_rounded : Icons.chat_bubble_outline_rounded, size: 18, color: const Color(0xFF555555)),
+                            ),
+                            title: Text(item.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                            subtitle: Text(timeLabel),
+                            trailing: item.id == _activeConversationId ? const Icon(Icons.check_circle_rounded, color: Color(0xFF555555)) : null,
+                            onTap: () => Navigator.pop(sheetContext, item.id),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (selectedId != null && selectedId != _activeConversationId) {
+      await _switchConversation(selectedId);
+    }
+  }
+
   void _stopGeneration() {
     _activeCancelToken?.cancel('用户停止生成');
   }
@@ -988,6 +1152,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         onSelected: (value) {
           if (value == 'settings') context.push('/chat/settings');
+          if (value == 'new_window') unawaited(_createNewConversation());
+          if (value == 'switch_window') unawaited(_showConversationPicker());
           if (value == 'latest') {
             FocusScope.of(context).unfocus();
             _scrollToLatest();
@@ -1001,6 +1167,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           PopupMenuItem(value: 'search', child: Text('搜索聊天记录')),
           PopupMenuItem(value: 'date', child: Text('按日期查看')),
           PopupMenuItem(value: 'all', child: Text('显示全部消息')),
+          PopupMenuItem(value: 'new_window', child: Text('新建聊天窗口')),
+          PopupMenuItem(value: 'switch_window', child: Text('切换聊天窗口')),
           PopupMenuItem(value: 'settings', child: Text('聊天设置')),
           PopupMenuItem(value: 'latest', child: Text('回到最新消息')),
           PopupMenuItem(value: 'clear', child: Text('清空对话')),
