@@ -270,8 +270,16 @@ List<String> _chatReplySegments(String text, bool splitMode) {
 
     var chunk = '';
     for (final unit in units) {
-      final separator = chunk.isNotEmpty &&
-          RegExp(r'[A-Za-z0-9]
+      final lastCode = chunk.isEmpty ? 0 : chunk.codeUnitAt(chunk.length - 1);
+      final firstCode = unit.isEmpty ? 0 : unit.codeUnitAt(0);
+      final lastIsAsciiWord = (lastCode >= 48 && lastCode <= 57) ||
+          (lastCode >= 65 && lastCode <= 90) ||
+          (lastCode >= 97 && lastCode <= 122);
+      final firstIsAsciiWord = (firstCode >= 48 && firstCode <= 57) ||
+          (firstCode >= 65 && firstCode <= 90) ||
+          (firstCode >= 97 && firstCode <= 122);
+      final separator = chunk.isNotEmpty && lastIsAsciiWord && firstIsAsciiWord ? ' ' : '';
+      final candidate = chunk.isEmpty ? unit : '$chunk$separator$unit';
       if (chunk.isNotEmpty && chunk.length >= 12 && candidate.length > 38) {
         result.add(chunk);
         chunk = unit;
