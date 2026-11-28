@@ -122,7 +122,7 @@ abstract final class ChatMemoryStore {
   }
 
   static bool _isExplicitMemoryRequest(String text) => RegExp(
-    r'^(?:请)?(?:帮我)?(?:记住|记一下|记下来|记得)：?\\s*',
+    r'^(?:请)?(?:帮我)?(?:记住|记一下|记下来|记得)：?\s*',
   ).hasMatch(text.trim());
 
   static String? _memoryCandidate(String text) {
