@@ -661,7 +661,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       int? pendingInputTokens;
       int? pendingOutputTokens;
       int? reportedInputTokens;
-      int? reportedOutputTokens;
       int? pendingCacheHitTokens;
       int? pendingCacheMissTokens;
       int? pendingCacheCreationTokens;
@@ -677,7 +676,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         pendingInputTokens = event.inputTokens ?? pendingInputTokens;
         pendingOutputTokens = event.outputTokens ?? pendingOutputTokens;
         reportedInputTokens = event.inputTokens ?? reportedInputTokens;
-        reportedOutputTokens = event.outputTokens ?? reportedOutputTokens;
         pendingCacheHitTokens = event.cacheHitTokens ?? pendingCacheHitTokens;
         pendingCacheMissTokens = event.cacheMissTokens ?? pendingCacheMissTokens;
         pendingCacheCreationTokens = event.cacheCreationTokens ?? pendingCacheCreationTokens;
