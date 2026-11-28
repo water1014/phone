@@ -1191,7 +1191,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             if (message.imagePath != null && File(message.imagePath!).existsSync())
               GestureDetector(
                 onTap: () => _showFullImage(message.imagePath!),
-                onLongPress: () => _showMessageActions(message),
+                onLongPress: () => _showMessageActions(message, prefs),
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 7),
                   child: ClipRRect(
@@ -1369,12 +1369,14 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         imagePath: current.imagePath, stickerUrl: current.stickerUrl, audioPath: current.audioPath, audioDurationMs: current.audioDurationMs, attachmentPath: current.attachmentPath,
         attachmentName: current.attachmentName, attachmentSize: current.attachmentSize,
         alternateReplies: nextVersions,
+        replyLayoutOverride: current.replyLayoutOverride,
       );
     });
     await _persistChat();
   }
 
-  Future<void> _showMessageActions(_ChatMessage message) async {
+  Future<void> _showMessageActions(_ChatMessage message, ChatPreferences prefs) async {
+    final currentReplyLayout = message.replyLayoutOverride ?? prefs.replyLayout;
     if (message.isTyping || message.isSystem ||
         (message.text.isEmpty && message.imagePath == null && message.stickerUrl == null && message.audioPath == null && message.attachmentPath == null)) {
       return;
@@ -1395,12 +1397,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
               ),
             if (!message.mine && message.text.isNotEmpty)
               ListTile(
-                leading: Icon((message.replyLayoutOverride ?? 0) == 1 ? Icons.notes_rounded : Icons.forum_outlined),
-                title: Text((message.replyLayoutOverride ?? -1) == 1 || ((message.replyLayoutOverride == null) && false)
-                    ? '改为完整长段'
-                    : (message.replyLayoutOverride ?? -1) == 0
-                        ? '改为聊天分句'
-                        : '本条回复：${message.replyLayoutOverride == null ? '使用默认排版' : message.replyLayoutOverride == 1 ? '聊天分句' : '完整长段'}'),
+                leading: Icon(currentReplyLayout == 1 ? Icons.notes_rounded : Icons.forum_outlined),
+                title: Text(currentReplyLayout == 1 ? '改为完整长段' : '改为聊天分句'),
                 subtitle: const Text('只改变这一条消息，不影响其他回复'),
                 onTap: () => Navigator.pop(sheetContext, 'toggle_reply_layout'),
               ),
@@ -1454,8 +1452,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     );
     if (!mounted || action == null) return;
     if (action == 'toggle_reply_layout') {
-      final currentLayout = message.replyLayoutOverride ?? 0;
-      final nextLayout = currentLayout == 1 ? 0 : 1;
+      final nextLayout = currentReplyLayout == 1 ? 0 : 1;
       setState(() {
         final index = _messages.indexOf(message);
         if (index >= 0) {
