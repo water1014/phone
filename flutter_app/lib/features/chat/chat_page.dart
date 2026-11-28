@@ -1474,7 +1474,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           PopupMenuItem(value: 'all', child: Text('显示全部消息')),
           PopupMenuItem(value: 'new_window', child: Text('新建聊天窗口')),
           PopupMenuItem(value: 'switch_window', child: Text('切换聊天窗口')),
-          PopupMenuItem(value: 'context_usage', child: Text('上下文用量与自动换窗')),
+          PopupMenuItem(value: 'context_usage', child: Text('上下文容量与 Token 统计')),
           PopupMenuItem(value: 'memory', child: Text('长期记忆库')),
           PopupMenuItem(value: 'settings', child: Text('聊天设置')),
           PopupMenuItem(value: 'latest', child: Text('回到最新消息')),
