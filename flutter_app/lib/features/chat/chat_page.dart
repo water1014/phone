@@ -2359,12 +2359,45 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     if (extension == 'html' || extension == 'htm') {
       await _previewHtml(path);
     } else if (extension == 'pdf') {
-      await OpenFilex.open(path);
+      await _previewPdf(path, message.attachmentName ?? 'PDF 预览');
     } else if ({'mp3', 'm4a', 'aac', 'wav', 'ogg', 'flac'}.contains(extension)) {
       await _playAudio(path);
     } else {
       await OpenFilex.open(path);
     }
+  }
+
+  Future<void> _previewPdf(String path, String fileName) async {
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        insetPadding: const EdgeInsets.all(10),
+        clipBehavior: Clip.antiAlias,
+        child: SizedBox(
+          width: double.maxFinite,
+          height: MediaQuery.sizeOf(context).height * .86,
+          child: Column(children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
+              child: Row(children: [
+                const Icon(Icons.picture_as_pdf_outlined, size: 18),
+                const SizedBox(width: 8),
+                Expanded(child: Text(fileName, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
+                IconButton(onPressed: () => Navigator.pop(dialogContext), icon: const Icon(Icons.close_rounded)),
+              ]),
+            ),
+            const Divider(height: 1),
+            Expanded(child: PdfPreview(
+              build: (_) => File(path).readAsBytes(),
+              pdfFileName: fileName,
+              canChangeOrientation: false,
+              canChangePageFormat: false,
+            )),
+          ]),
+        ),
+      ),
+    );
   }
 
   Future<void> _previewHtml(String path) async {

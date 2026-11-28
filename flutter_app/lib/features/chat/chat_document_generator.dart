@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 abstract final class ChatDocumentGenerator {
   static Future<Uint8List> generate(String name, String content) async {
@@ -160,28 +161,66 @@ abstract final class ChatDocumentGenerator {
   static Future<Uint8List> _pdf(String source) async {
     final doc = pw.Document();
     pw.Font? font;
-    final cjk = RegExp(r'[\u3400-\u9FFF]').hasMatch(source);
-    const paths = ['/system/fonts/NotoSansCJKsc-Regular.otf', '/system/fonts/NotoSansSC-Regular.ttf', '/system/fonts/DroidSansFallback.ttf', '/system/fonts/NotoSansCJK-Regular.ttc'];
-    for (final path in paths) {
-      final file = File(path);
-      if (!await file.exists()) continue;
-      try { font = pw.Font.ttf(ByteData.sublistView(await file.readAsBytes())); break; } catch (_) {}
+    pw.Font? boldFont;
+    final cjk = RegExp(r'[\\u3400-\\u9FFF]').hasMatch(source);
+    if (cjk) {
+      try {
+        font = await PdfGoogleFonts.notoSansSCRegular();
+        boldFont = await PdfGoogleFonts.notoSansSCBold();
+      } catch (_) {
+        const paths = [
+          '/system/fonts/NotoSansCJKsc-Regular.otf',
+          '/system/fonts/NotoSansSC-Regular.ttf',
+          '/system/fonts/DroidSansFallback.ttf',
+          '/system/fonts/NotoSansCJK-Regular.ttc',
+        ];
+        for (final path in paths) {
+          final file = File(path);
+          if (!await file.exists()) continue;
+          try {
+            font = pw.Font.ttf(ByteData.sublistView(await file.readAsBytes()));
+            break;
+          } catch (_) {}
+        }
+      }
+      if (font == null) {
+        throw StateError('中文字体暂时无法加载，请连接网络后重试 PDF 生成');
+      }
     }
-    if (cjk && font == null) throw StateError('设备没有可嵌入的中文字体，无法生成中文 PDF');
     final blocks = <pw.Widget>[];
     for (final raw in _lines(source)) {
       final line = raw.trimRight();
-      if (line.trim().isEmpty) { blocks.add(pw.SizedBox(height: 7)); continue; }
-      final heading = RegExp(r'^(#{1,6})\s+(.*)$').firstMatch(line.trim());
+      if (line.trim().isEmpty) {
+        blocks.add(pw.SizedBox(height: 7));
+        continue;
+      }
+      final heading = RegExp(r'^(#{1,6})\\s+(.*)$').firstMatch(line.trim());
       if (heading != null) {
-        blocks.add(pw.Padding(padding: const pw.EdgeInsets.only(top: 10, bottom: 5), child: pw.Text(heading.group(2) ?? '', style: pw.TextStyle(font: font, fontSize: 18, fontWeight: pw.FontWeight.bold))));
+        blocks.add(pw.Padding(
+          padding: const pw.EdgeInsets.only(top: 10, bottom: 5),
+          child: pw.Text(
+            heading.group(2) ?? '',
+            style: pw.TextStyle(font: font, fontBold: boldFont, fontSize: 18, fontWeight: pw.FontWeight.bold),
+          ),
+        ));
       } else {
-        final text = line.replaceFirst(RegExp(r'^[-*+]\s+'), '• ').replaceFirst(RegExp(r'^\d+[.)]\s+'), '• ').replaceAll('**', '').replaceAll(String.fromCharCode(96), '');
-        blocks.add(pw.Padding(padding: const pw.EdgeInsets.only(bottom: 4), child: pw.Text(text, style: pw.TextStyle(font: font, fontSize: 11, lineSpacing: 3))));
+        final text = line
+            .replaceFirst(RegExp(r'^[-*+]\\s+'), '• ')
+            .replaceFirst(RegExp(r'^\\d+[.)]\\s+'), '• ')
+            .replaceAll('**', '')
+            .replaceAll(String.fromCharCode(96), '');
+        blocks.add(pw.Padding(
+          padding: const pw.EdgeInsets.only(bottom: 4),
+          child: pw.Text(text, style: pw.TextStyle(font: font, fontSize: 11, lineSpacing: 3)),
+        ));
       }
     }
     if (blocks.isEmpty) blocks.add(pw.Text('空白文档'));
-    doc.addPage(pw.MultiPage(pageFormat: PdfPageFormat.a4, margin: const pw.EdgeInsets.all(48), build: (_) => blocks));
+    doc.addPage(pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.all(48),
+      build: (_) => blocks,
+    ));
     return Uint8List.fromList(await doc.save());
   }
 }
