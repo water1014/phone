@@ -1,654 +1,358 @@
 import 'dart:convert';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DiaryPage extends StatefulWidget {
   const DiaryPage({super.key});
-
   @override
   State<DiaryPage> createState() => _DiaryPageState();
 }
 
 class _DiaryPageState extends State<DiaryPage> {
-  static const _ink = Color(0xFF171717);
-  static const _muted = Color(0xFF999999);
-  static const _line = Color(0xFFE7E7E7);
-  static const _storeKey = 'flutter_diary_entries';
-  List<_DiaryEntry> _entries = [];
-  bool _loading = true;
-  String _filter = '';
+  static const key = 'flutter_diary_entries';
+  static const ink = Color(0xFF111111);
+  static const muted = Color(0xFF8A8A8A);
+  static const line = Color(0xFFECECEC);
+  final picker = ImagePicker();
+  List<_Entry> entries = [];
+  bool loading = true;
+  String tab = 'long', owner = 'me';
+
+  List<_Entry> get longs => _sorted('long', owner);
+  List<_Entry> get notes => _sorted('note', owner);
+  List<_Entry> get polas => entries.where((e) => e.type == 'polaroid').toList()..sort((a,b)=>b.time.compareTo(a.time));
+  List<_Entry> _sorted(String type, String who) => entries.where((e)=>e.type==type&&e.owner==who).toList()..sort((a,b)=>b.time.compareTo(a.time));
 
   @override
-  void initState() {
-    super.initState();
-    _load();
-  }
+  void initState() { super.initState(); _load(); }
 
   Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_storeKey);
-    final entries = <_DiaryEntry>[];
+    final p = await SharedPreferences.getInstance();
+    final raw = p.getString(key);
+    final list = <_Entry>[];
     if (raw != null) {
-      try {
-        for (final item in jsonDecode(raw) as List) {
-          if (item is Map) entries.add(_DiaryEntry.fromMap(item));
-        }
-      } catch (_) {}
+      try { for (final x in jsonDecode(raw) as List) { if (x is Map) list.add(_Entry.fromMap(x)); } } catch (_) {}
     }
     if (!mounted) return;
+    setState(() { entries = list; loading = false; });
+  }
+
+  Future<void> _save() async {
+    final p = await SharedPreferences.getInstance();
+    await p.setString(key, jsonEncode(entries.map((e)=>e.toMap()).toList()));
+  }
+
+  Future<void> _upsert(_Entry e) async {
     setState(() {
-      _entries = entries..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-      _loading = false;
+      final i = entries.indexWhere((x)=>x.id==e.id);
+      if (i < 0) { entries.insert(0,e); } else { entries[i]=e; }
+    });
+    await _save();
+  }
+
+  Future<void> _delete(_Entry e) async {
+    final ok = await showDialog<bool>(context:context,builder:(c)=>AlertDialog(
+      title:const Text('删除这条记录？'), content:const Text('删除后无法恢复。'),
+      actions:[TextButton(onPressed:()=>Navigator.pop(c,false),child:const Text('取消')),TextButton(onPressed:()=>Navigator.pop(c,true),child:const Text('删除'))]));
+    if (ok != true) return;
+    setState(()=>entries.removeWhere((x)=>x.id==e.id)); await _save();
+  }
+
+  Future<void> _edit([_Entry? entry, String type='long']) async {
+    final result = await Navigator.push<_Entry>(context,MaterialPageRoute(builder:(_)=>_Editor(entry:entry,type:entry?.type??type)));
+    if (result != null) await _upsert(result);
+  }
+
+  Future<String> _persistPhoto(XFile x) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final folder = Directory('${dir.path}/mio_diary_photos');
+    if (!await folder.exists()) await folder.create(recursive:true);
+    final ext = x.path.contains('.') ? x.path.substring(x.path.lastIndexOf('.')) : '.jpg';
+    final path = '${folder.path}/${DateTime.now().microsecondsSinceEpoch}${ext}';
+    return (await File(x.path).copy(path)).path;
+  }
+
+  Future<void> _addPolaroid(String who) async {
+    final source = await showModalBottomSheet<ImageSource>(context:context,backgroundColor:Colors.white,builder:(c)=>SafeArea(child:Column(mainAxisSize:MainAxisSize.min,children:[
+      ListTile(leading:const Icon(Icons.photo_library_outlined),title:const Text('从相册选择'),onTap:()=>Navigator.pop(c,ImageSource.gallery)),
+      ListTile(leading:const Icon(Icons.photo_camera_outlined),title:const Text('拍一张照片'),onTap:()=>Navigator.pop(c,ImageSource.camera)),
+    ])));
+    if (source==null) return;
+    final x = await picker.pickImage(source:source,imageQuality:88,maxWidth:1800);
+    if (x==null) return;
+    final path = await _persistPhoto(x);
+    if (!mounted) return;
+    final caption = TextEditingController();
+    final ok = await showDialog<bool>(context:context,builder:(c)=>AlertDialog(
+      title:const Text('给这张拍立得写一句话'),
+      content:TextField(controller:caption,maxLength:24,decoration:const InputDecoration(hintText:'留下一句小小的注释')),
+      actions:[TextButton(onPressed:()=>Navigator.pop(c,false),child:const Text('取消')),TextButton(onPressed:()=>Navigator.pop(c,true),child:const Text('打印'))]));
+    if (ok==true) {
+      final now=DateTime.now(), day=DateTime(now.year,now.month,now.day);
+      setState(()=>entries.removeWhere((e)=>e.type=='polaroid'&&e.owner==who&&e.date.year==day.year&&e.date.month==day.month&&e.date.day==day.day));
+      await _upsert(_Entry(id:now.microsecondsSinceEpoch.toString(),type:'polaroid',owner:who,title:'',body:caption.text.trim(),date:day,time:now,image:path));
+    }
+    caption.dispose();
+  }
+
+  String _date(DateTime d)=>'${d.year}.${d.month}.${d.day.toString().padLeft(2,'0')}';
+  String _clock(DateTime d)=>'${d.hour.toString().padLeft(2,'0')}:${d.minute.toString().padLeft(2,'0')}';
+
+  Widget _ownerChip(String id,String label) {
+    final on=owner==id;
+    return GestureDetector(onTap:()=>setState(()=>owner=id),child:AnimatedContainer(duration:const Duration(milliseconds:160),
+      padding:const EdgeInsets.fromLTRB(4,4,13,4),
+      decoration:BoxDecoration(color:on?ink:Colors.white,border:Border.all(color:on?ink:line),borderRadius:BorderRadius.circular(30)),
+      child:Row(children:[CircleAvatar(radius:13,backgroundColor:on?Colors.white:const Color(0xFFF1F1F1),child:Text(id=='me'?'我':'T',style:TextStyle(fontSize:11,color:on?ink:muted))),const SizedBox(width:7),Text(label,style:TextStyle(fontSize:12,color:on?Colors.white:muted))])));
+  }
+
+  Widget _profile() => Container(
+    decoration:BoxDecoration(border:Border.all(color:line),borderRadius:BorderRadius.circular(14)),
+    child:Column(children:[
+      Padding(padding:const EdgeInsets.fromLTRB(16,16,16,13),child:Row(children:[
+        CircleAvatar(radius:24,backgroundColor:const Color(0xFFF1F1F1),child:Text(owner=='me'?'我':'T',style:const TextStyle(fontSize:18,color:ink))),
+        const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+          Text(owner=='me'?'我':'TA',style:const TextStyle(fontSize:15,fontWeight:FontWeight.w600)),
+          Text(owner=='me'?'@my-diary':'@your-person',style:const TextStyle(fontSize:11,color:muted)),
+        ])),const Icon(Icons.more_horiz,color:muted)
+      ])),
+      const Padding(padding:EdgeInsets.fromLTRB(16,0,16,13),child:Align(alignment:Alignment.centerLeft,child:Text('点这里写一句装饰文案',style:TextStyle(fontSize:13,color:muted)))),
+      const Divider(height:1,color:line),
+      Padding(padding:const EdgeInsets.symmetric(horizontal:16,vertical:11),child:Row(children:[
+        Text('${longs.length+notes.length}',style:const TextStyle(fontSize:14,fontWeight:FontWeight.w600)),
+        const SizedBox(width:5),const Text('篇记录',style:TextStyle(fontSize:11,color:muted)),
+        const Spacer(),Text('${DateTime.now().year}',style:const TextStyle(fontSize:11,color:muted))
+      ]))
+    ]));
+
+  Widget _tabs() {
+    final data=[('long','长日记',longs.length),('pola','拍立得',polas.length),('note','留言板',notes.length)];
+    return Container(margin:const EdgeInsets.only(top:18,bottom:14),decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:line))),
+      child:Row(children:data.map((v){
+        final on=tab==v.$1;
+        return Expanded(child:GestureDetector(behavior:HitTestBehavior.opaque,onTap:()=>setState(()=>tab=v.$1),
+          child:Container(padding:const EdgeInsets.fromLTRB(2,11,2,12),
+            decoration:BoxDecoration(border:Border(bottom:BorderSide(color:on?ink:Colors.transparent,width:2))),
+            child:Row(mainAxisAlignment:MainAxisAlignment.center,children:[
+              Text(v.$2,style:TextStyle(fontSize:14,color:on?ink:muted,fontWeight:on?FontWeight.w600:FontWeight.w400)),
+              const SizedBox(width:5),Text('${v.$3}',style:const TextStyle(fontSize:10,color:muted))
+            ]))));
+      }).toList()));
+  }
+
+  Widget _button(String text,VoidCallback action,{bool filled=false})=>Material(color:filled?ink:Colors.white,borderRadius:BorderRadius.circular(30),
+    child:InkWell(onTap:action,borderRadius:BorderRadius.circular(30),child:Container(
+      padding:const EdgeInsets.symmetric(horizontal:17,vertical:9),
+      decoration:BoxDecoration(borderRadius:BorderRadius.circular(30),border:Border.all(color:filled?ink:line)),
+      child:Text(text,style:TextStyle(fontSize:12,fontWeight:FontWeight.w500,color:filled?Colors.white:ink)))));
+
+  Widget _longList() {
+    if(longs.isEmpty)return _empty('还没有日记','把今天想记住的事写下来吧。');
+    return ListView.builder(padding:const EdgeInsets.only(bottom:24),itemCount:longs.length,itemBuilder:(c,i){
+      final e=longs[i];
+      return Dismissible(key:ValueKey(e.id),direction:DismissDirection.endToStart,
+        background:Container(alignment:Alignment.centerRight,padding:const EdgeInsets.only(right:22),color:const Color(0xFFE5484D),child:const Icon(Icons.delete_outline,color:Colors.white)),
+        confirmDismiss:(_)async{await _delete(e);return false;},
+        child:InkWell(onTap:()=>_reader(e),child:Container(padding:const EdgeInsets.symmetric(vertical:16,horizontal:2),
+          decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:line))),
+          child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[
+            SizedBox(width:44,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+              Text('${e.date.day}',style:const TextStyle(fontSize:26,height:1.05,fontWeight:FontWeight.w500)),
+              const SizedBox(height:3),Text('${e.date.year}.${e.date.month}',style:const TextStyle(fontSize:10,color:muted))
+            ])),
+            const SizedBox(width:13),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+              Text(e.title.isEmpty?'无标题':e.title,maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:14,fontWeight:FontWeight.w600)),
+              const SizedBox(height:6),Text(e.body,maxLines:3,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:12.5,height:1.7,color:Color(0xFF777777)))
+            ]))
+          ]))));
     });
   }
 
-  Future<void> _persist() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_storeKey, jsonEncode(_entries.map((e) => e.toMap()).toList()));
-  }
+  void _reader(_Entry e) => Navigator.push(context,MaterialPageRoute(builder:(_)=>_Reader(entry:e,
+    onEdit:()async{Navigator.pop(context);await _edit(e);},
+    onDelete:()async{Navigator.pop(context);await _delete(e);},
+    onComment:(v)async{e.comment=v;await _upsert(e);})));
 
-  Future<void> _edit([_DiaryEntry? entry]) async {
-    final result = await showModalBottomSheet<_DiaryEntry>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _DiaryEditor(entry: entry),
-    );
-    if (result == null || !mounted) return;
-    setState(() {
-      final index = _entries.indexWhere((e) => e.id == result.id);
-      if (index >= 0) {
-        _entries[index] = result;
-      } else {
-        _entries.insert(0, result);
-      }
-      _entries.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-      _selectedEntry = result;
+  Widget _noteBoard() {
+    if(notes.isEmpty)return _empty('留言板还是空的','写下一句随手的话，留给对方。');
+    return ListView.separated(padding:const EdgeInsets.only(bottom:24),itemCount:notes.length,separatorBuilder:(_,__)=>const SizedBox(height:10),itemBuilder:(c,i){
+      final e=notes[i];
+      return Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(border:Border.all(color:line),borderRadius:BorderRadius.circular(14)),
+        child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[
+          CircleAvatar(radius:17,backgroundColor:const Color(0xFFF0F0F0),child:Text(e.owner=='me'?'我':'T',style:const TextStyle(fontSize:12,color:ink))),
+          const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+            Row(children:[Text(e.owner=='me'?'我':'TA',style:const TextStyle(fontSize:13,fontWeight:FontWeight.w600)),
+              const SizedBox(width:8),Text('${_date(e.time)}  ${_clock(e.time)}',style:const TextStyle(fontSize:10.5,color:muted)),
+              const Spacer(),GestureDetector(onTap:()=>_delete(e),child:const Icon(Icons.close,size:16,color:muted))]),
+            const SizedBox(height:7),Text(e.body,style:const TextStyle(fontSize:14,height:1.7,color:ink))
+          ]))
+        ]));
     });
-    await _persist();
   }
 
-  Future<void> _delete(_DiaryEntry entry) async {
-    if (entry.locked) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('这篇日记已锁定，请先解锁')));
-      return;
+  Widget _empty(String title,String sub)=>Center(child:Padding(padding:const EdgeInsets.all(30),child:Column(mainAxisSize:MainAxisSize.min,children:[
+    const Icon(Icons.menu_book_outlined,size:30,color:Color(0xFFBBBBBB)),const SizedBox(height:12),
+    Text(title,style:const TextStyle(fontSize:13,color:muted)),const SizedBox(height:6),
+    Text(sub,textAlign:TextAlign.center,style:const TextStyle(fontSize:11,color:muted))
+  ])));
+
+  _Entry? _today(String who) {
+    final n=DateTime.now();
+    for(final e in polas){if(e.owner==who&&e.date.year==n.year&&e.date.month==n.month&&e.date.day==n.day)return e;}
+    return null;
+  }
+
+  Widget _photoCard(_Entry e,{bool small=false}) {
+    final f=File(e.image);
+    return Container(width:double.infinity,padding:EdgeInsets.all(small?5:10),
+      decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(3),boxShadow:[BoxShadow(color:Colors.black.withValues(alpha:.10),blurRadius:small?8:16,offset:const Offset(0,5))]),
+      child:Column(children:[
+        AspectRatio(aspectRatio:1,child:ClipRect(child:f.existsSync()?Image.file(f,fit:BoxFit.cover,width:double.infinity,errorBuilder:(_,__,___)=>_photoPlaceholder()):_photoPlaceholder())),
+        SizedBox(height:small?5:9),SizedBox(height:small?17:24,child:Text(e.body,maxLines:1,overflow:TextOverflow.ellipsis,style:TextStyle(fontSize:small?9:12,color:ink))),
+        if(!small)Align(alignment:Alignment.centerRight,child:Text('${e.date.month}.${e.date.day}',style:const TextStyle(fontSize:9,color:muted)))
+      ]));
+  }
+  Widget _photoPlaceholder()=>Container(color:const Color(0xFFE6E6E6),child:const Center(child:Icon(Icons.image_outlined,color:Colors.white)));
+
+  Widget _polaroids() {
+    Widget slot(String who,int tilt) {
+      final e=_today(who);
+      return Expanded(child:Column(children:[
+        Row(mainAxisAlignment:MainAxisAlignment.center,children:[CircleAvatar(radius:11,backgroundColor:const Color(0xFFF0F0F0),child:Text(who=='me'?'我':'T',style:const TextStyle(fontSize:9,color:ink))),const SizedBox(width:6),Text(who=='me'?'我':'TA',style:const TextStyle(fontSize:12,color:muted))]),
+        const SizedBox(height:12),
+        GestureDetector(onTap:()=>e==null?_addPolaroid(who):_showPolaroid(e),child:Transform.rotate(angle:tilt==0?-.035:.035,child:e==null
+          ?AspectRatio(aspectRatio:190/236,child:Container(decoration:BoxDecoration(border:Border.all(color:line,width:1.5),borderRadius:BorderRadius.circular(3)),child:const Column(mainAxisAlignment:MainAxisAlignment.center,children:[Icon(Icons.add_photo_alternate_outlined,size:25,color:muted),SizedBox(height:8),Text('今天还没有',style:TextStyle(fontSize:11,color:muted))])))
+          :_photoCard(e))),
+        const SizedBox(height:12),_button(e==null?(who=='me'?'上传并打印':'让 TA 自己选'):(who=='me'?'重新打印':'让 TA 重新选'),()=>_addPolaroid(who),filled:e==null)
+      ]));
     }
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('删除这篇日记？'),
-        content: const Text('删除后无法恢复。'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('删除')),
-        ],
-      ),
-    );
-    if (confirm != true) return;
-    setState(() {
-      _entries.removeWhere((e) => e.id == entry.id);
-      if (_selectedEntry?.id == entry.id) _selectedEntry = null;
-    });
-    await _persist();
-  }
-
-  Future<void> _toggleLock(_DiaryEntry entry) async {
-    setState(() => entry.locked = !entry.locked);
-    await _persist();
-  }
-
-  String _mode = 'daily';
-  _DiaryEntry? _selectedEntry;
-  String? _selectedReviewKey;
-
-  DateTime _weekStart(DateTime date) {
-    final d = DateTime(date.year, date.month, date.day);
-    return d.subtract(Duration(days: d.weekday - 1));
-  }
-
-  Map<String, List<_DiaryEntry>> _groupEntries(bool weekly) {
-    final groups = <String, List<_DiaryEntry>>{};
-    for (final entry in _entries) {
-      final d = weekly ? _weekStart(entry.date) : DateTime(entry.date.year, entry.date.month);
-      final key = weekly
-          ? '${d.year}-W${((d.difference(DateTime(d.year, 1, 1)).inDays) / 7).floor() + 1}'
-          : '${d.year}-${d.month.toString().padLeft(2, '0')}';
-      groups.putIfAbsent(key, () => []).add(entry);
-    }
-    return groups;
-  }
-
-  Widget _modeTabs() {
-    const tabs = [('daily', '日记'), ('weekly', '周记'), ('monthly', '月记'), ('growth', '成长回顾')];
-    return Container(
-      margin: const EdgeInsets.fromLTRB(18, 0, 18, 16),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(color: const Color(0xFFF0F0F0), borderRadius: BorderRadius.circular(13)),
-      child: Row(children: tabs.map((tab) => Expanded(
-        child: GestureDetector(
-          onTap: () => setState(() { _mode = tab.$1; _selectedEntry = null; _selectedReviewKey = null; }),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
-            decoration: BoxDecoration(color: _mode == tab.$1 ? Colors.white : Colors.transparent, borderRadius: BorderRadius.circular(10), boxShadow: _mode == tab.$1 ? [const BoxShadow(color: Color(0x0D000000), blurRadius: 5, offset: Offset(0, 1))] : []),
-            child: Text(tab.$2, textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: _mode == tab.$1 ? FontWeight.w600 : FontWeight.w400, color: _mode == tab.$1 ? _ink : _muted)),
-          ),
-        ),
-      )).toList()),
-    );
-  }
-
-  Widget _reviewList(bool weekly) {
-    final groups = _groupEntries(weekly);
-    final keys = groups.keys.toList()..sort((a, b) => b.compareTo(a));
-    if (keys.isEmpty) return _emptyState('还没有足够的记录', '写下第一篇日记后，这里会自动整理回顾。');
-
-    final selectedKey = _selectedReviewKey;
-    final selectedItems = selectedKey == null ? null : groups[selectedKey];
-    if (selectedItems != null) {
-      final words = selectedItems.fold<int>(0, (sum, e) => sum + e.body.trim().length);
-      final tags = selectedItems.expand((e) => e.tags).toSet().toList();
-      final title = weekly
-          ? '第 ${selectedKey!.split('W').last} 周 · ${selectedKey.split('-W').first}'
-          : '${selectedKey!.replaceFirst('-', ' 年 ')} 月';
-      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(18, 2, 18, 14),
-          child: Row(children: [
-            IconButton(
-              onPressed: () => setState(() => _selectedReviewKey = null),
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 17),
-              tooltip: '返回时间列表',
-            ),
-            const SizedBox(width: 4),
-            Expanded(child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _ink))),
-            Text('${selectedItems.length} 篇', style: const TextStyle(fontSize: 10, color: _muted)),
-          ]),
-        ),
-        Expanded(child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-          children: [
-            Container(
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
-              decoration: BoxDecoration(color: Colors.white, border: Border.all(color: _line), borderRadius: BorderRadius.circular(14)),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(weekly ? 'WEEKLY REVIEW' : 'MONTHLY REVIEW', style: const TextStyle(fontSize: 9, letterSpacing: 1.8, color: _muted)),
-                const SizedBox(height: 8),
-                Text(title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w600, color: _ink)),
-                const SizedBox(height: 12),
-                Row(children: [
-                  _stat('${selectedItems.length}', '日记篇数'),
-                  _stat('$words', '记录字数'),
-                  _stat('${selectedItems.map((e) => '${e.date.year}-${e.date.month}-${e.date.day}').toSet().length}', '记录天数'),
-                ]),
-                if (tags.isNotEmpty) ...[
-                  const SizedBox(height: 14),
-                  Wrap(spacing: 6, runSpacing: 6, children: tags.take(8).map((tag) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                    decoration: BoxDecoration(color: const Color(0xFFF2F2F2), borderRadius: BorderRadius.circular(20)),
-                    child: Text('#$tag', style: const TextStyle(fontSize: 10, color: Color(0xFF666666))),
-                  )).toList()),
-                ],
-              ]),
-            ),
-            const SizedBox(height: 16),
-            const Text('本期日记', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
-            const SizedBox(height: 8),
-            ...selectedItems.map((entry) => InkWell(
-              onTap: () => setState(() { _mode = 'daily'; _selectedEntry = entry; }),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: _line))),
-                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  SizedBox(width: 52, child: Text('${entry.date.month}/${entry.date.day.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 11, color: _muted))),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(entry.title.isEmpty ? '无标题日记' : entry.title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _ink)),
-                    const SizedBox(height: 5),
-                    Text(entry.body, maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, height: 1.7, color: Color(0xFF777777))),
-                  ])),
-                  const Icon(Icons.chevron_right_rounded, size: 17, color: _muted),
-                ]),
-              ),
-            )),
-          ],
-        )),
-      ]);
-    }
-
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Padding(
-        padding: const EdgeInsets.fromLTRB(20, 2, 20, 10),
-        child: Row(children: [
-          Text(weekly ? '全部周记' : '全部月记', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
-          const Spacer(),
-          Text('${keys.length} 期', style: const TextStyle(fontSize: 10, color: _muted)),
-        ]),
-      ),
-      Expanded(child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(18, 0, 18, 28),
-        itemCount: keys.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 0),
-        itemBuilder: (context, index) {
-          final key = keys[index];
-          final items = groups[key]!;
-          final words = items.fold<int>(0, (sum, e) => sum + e.body.trim().length);
-          final tags = items.expand((e) => e.tags).toSet().take(4).toList();
-          final title = weekly
-              ? '第 ${key.split('W').last} 周 · ${key.split('-W').first}'
-              : '${key.replaceFirst('-', ' 年 ')} 月';
-          return InkWell(
-            onTap: () => setState(() => _selectedReviewKey = key),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 13),
-              decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: _line))),
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Container(
-                  width: 42, height: 42,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(color: const Color(0xFFF1F1F1), borderRadius: BorderRadius.circular(11)),
-                  child: Icon(weekly ? Icons.view_week_outlined : Icons.calendar_month_outlined, size: 19, color: const Color(0xFF777777)),
-                ),
-                const SizedBox(width: 13),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _ink)),
-                  const SizedBox(height: 6),
-                  Text('${items.length} 篇记录  ·  $words 字', style: const TextStyle(fontSize: 10, color: _muted)),
-                  if (tags.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text(tags.map((tag) => '#$tag').join('   '), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: Color(0xFF888888))),
-                  ],
-                ])),
-                const Icon(Icons.chevron_right_rounded, size: 18, color: _muted),
-              ]),
-            ),
-          );
-        },
-      )),
+    return ListView(padding:const EdgeInsets.only(bottom:24),children:[
+      Row(crossAxisAlignment:CrossAxisAlignment.start,children:[slot('me',0),const SizedBox(width:16),slot('ta',1)]),
+      Padding(padding:const EdgeInsets.symmetric(vertical:18),child:Text('${_date(DateTime.now())}  ·  今日拍立得',textAlign:TextAlign.center,style:const TextStyle(fontSize:11,color:muted))),
+      if(polas.isNotEmpty)...[
+        const Padding(padding:EdgeInsets.only(bottom:11),child:Text('相册',style:TextStyle(fontSize:12,letterSpacing:1.8,color:muted))),
+        GridView.builder(shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),itemCount:polas.length,
+          gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount:3,crossAxisSpacing:11,mainAxisSpacing:14,childAspectRatio:.78),
+          itemBuilder:(c,i)=>GestureDetector(onTap:()=>_showPolaroid(polas[i]),child:_photoCard(polas[i],small:true)))
+      ]
     ]);
   }
 
-  Widget _emptyState(String title, String subtitle) => Center(child: Padding(
-    padding: const EdgeInsets.all(30),
-    child: Column(mainAxisSize: MainAxisSize.min, children: [
-      const Icon(Icons.menu_book_outlined, size: 34, color: Color(0xFFBBBBBB)),
-      const SizedBox(height: 12),
-      Text(title, style: const TextStyle(fontSize: 13, color: _muted)),
-      const SizedBox(height: 6),
-      Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: _muted)),
-    ]),
-  ));
-
-  Widget _diaryDateRail(List<_DiaryEntry> visible) {
-    if (visible.isEmpty) {
-      return _emptyState(_entries.isEmpty ? '还没有日记' : '没有找到相关记录', '点右上角的 +，写下今天的一点心情。');
-    }
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Padding(
-        padding: const EdgeInsets.fromLTRB(20, 2, 20, 10),
-        child: Row(children: [
-          const Text('全部日记', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
-          const Spacer(),
-          Text('${visible.length} 篇', style: const TextStyle(fontSize: 10, color: _muted)),
-        ]),
-      ),
-      Expanded(child: ListView.separated(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
-        itemCount: visible.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 0),
-        itemBuilder: (context, index) {
-          final entry = visible[index];
-          final selected = _selectedEntry?.id == entry.id;
-          return InkWell(
-            onTap: () => setState(() => _selectedEntry = entry),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 13),
-              decoration: BoxDecoration(
-                color: selected ? const Color(0xFFF0F0F0) : Colors.transparent,
-                border: const Border(bottom: BorderSide(color: _line)),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                SizedBox(width: 48, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(entry.date.day.toString().padLeft(2, '0'), style: const TextStyle(fontSize: 21, height: 1.1, fontWeight: FontWeight.w500, color: _ink)),
-                  const SizedBox(height: 4),
-                  Text('${entry.date.year}/${entry.date.month.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 9, color: _muted)),
-                ])),
-                const SizedBox(width: 10),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(entry.title.isEmpty ? '当天记录' : entry.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
-                  const SizedBox(height: 5),
-                  Text(entry.locked ? '这篇日记已锁定' : entry.body, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, height: 1.65, color: Color(0xFF777777))),
-                  if (entry.tags.isNotEmpty) ...[
-                    const SizedBox(height: 7),
-                    Wrap(spacing: 5, children: entry.tags.take(3).map((tag) => Text('#$tag', style: const TextStyle(fontSize: 9, color: Color(0xFF999999)))).toList()),
-                  ],
-                ])),
-                const Icon(Icons.chevron_right_rounded, size: 18, color: Color(0xFFBBBBBB)),
-              ]),
-            ),
-          );
-        },
-      )),
-    ]);
-  }
-
-  Widget _diaryReader(_DiaryEntry entry) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Padding(
-        padding: const EdgeInsets.fromLTRB(12, 0, 16, 12),
-        child: Row(children: [
-          IconButton(onPressed: () => setState(() => _selectedEntry = null), icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 17), tooltip: '返回日记列表'),
-          const Text('日记详情', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
-          const Spacer(),
-          IconButton(onPressed: () => _edit(entry), icon: const Icon(Icons.edit_outlined, size: 18), tooltip: '编辑'),
-          PopupMenuButton<String>(
-            onSelected: (value) => value == 'lock' ? _toggleLock(entry) : _delete(entry),
-            itemBuilder: (_) => [
-              PopupMenuItem(value: 'lock', child: Text(entry.locked ? '解除锁定' : '锁定日记')),
-              const PopupMenuItem(value: 'delete', child: Text('删除日记')),
-            ],
-          ),
-        ]),
-      ),
-      const Divider(height: 1, color: _line),
-      Expanded(child: ListView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 34),
-        children: [
-          Text('${entry.date.year}年${entry.date.month}月${entry.date.day}日', style: const TextStyle(fontSize: 10, letterSpacing: 1.3, color: _muted)),
-          const SizedBox(height: 12),
-          Text(entry.title.isEmpty ? '那一天' : entry.title, style: const TextStyle(fontSize: 25, height: 1.35, fontWeight: FontWeight.w600, color: _ink)),
-          const SizedBox(height: 9),
-          Row(children: [
-            if (entry.city.isNotEmpty) ...[
-              const Icon(Icons.location_on_outlined, size: 13, color: _muted),
-              const SizedBox(width: 3),
-              Text(entry.city, style: const TextStyle(fontSize: 10, color: _muted)),
-              const SizedBox(width: 12),
-            ],
-            Text('更新于 ${entry.updatedAt.month}/${entry.updatedAt.day}', style: const TextStyle(fontSize: 10, color: _muted)),
-            if (entry.locked) ...[
-              const SizedBox(width: 8),
-              const Icon(Icons.lock_outline_rounded, size: 13, color: _muted),
-            ],
-          ]),
-          const Padding(padding: EdgeInsets.symmetric(vertical: 20), child: Divider(color: _line)),
-          Text(entry.locked ? '这篇日记已锁定，解锁后可以阅读。' : entry.body, style: const TextStyle(fontSize: 14, height: 2, color: Color(0xFF333333))),
-          if (entry.tags.isNotEmpty) ...[
-            const SizedBox(height: 24),
-            Wrap(spacing: 8, runSpacing: 8, children: entry.tags.map((tag) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
-              decoration: BoxDecoration(color: const Color(0xFFF1F1F1), borderRadius: BorderRadius.circular(20)),
-              child: Text('#$tag', style: const TextStyle(fontSize: 10, color: Color(0xFF777777))),
-            )).toList()),
-          ],
-        ],
-      )),
-    ]);
-  }
-
-  Widget _growthView() {
-    final totalWords = _entries.fold<int>(0, (sum, e) => sum + e.body.trim().length);
-    final activeDays = _entries.map((e) => '${e.date.year}-${e.date.month}-${e.date.day}').toSet().length;
-    final tagCounts = <String, int>{};
-    for (final entry in _entries) {
-      for (final tag in entry.tags) {
-        tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
-      }
-    }
-    final topTags = tagCounts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-    return ListView(padding: const EdgeInsets.fromLTRB(18, 0, 18, 28), children: [
-      Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(17), border: Border.all(color: _line)),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('写给时间的记录', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _ink)),
-          const SizedBox(height: 6),
-          const Text('每一次认真记录，都在悄悄拼成自己的故事。', style: TextStyle(fontSize: 11, color: _muted)),
-          const SizedBox(height: 20),
-          Row(children: [
-            _stat('${_entries.length}', '日记篇数'),
-            _stat('$activeDays', '记录天数'),
-            _stat('$totalWords', '累计字数'),
-          ]),
-        ]),
-      ),
-      const SizedBox(height: 12),
-      if (topTags.isNotEmpty) Container(
-        padding: const EdgeInsets.all(17),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: _line)),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('常出现的主题', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
-          const SizedBox(height: 12),
-          ...topTags.take(8).map((e) => Padding(padding: const EdgeInsets.only(bottom: 9), child: Row(children: [
-            Expanded(child: Text('#${e.key}', style: const TextStyle(fontSize: 11, color: Color(0xFF555555)))),
-            Text('${e.value} 次', style: const TextStyle(fontSize: 10, color: _muted)),
-          ]))),
-        ]),
-      ),
-      if (_entries.isEmpty) SizedBox(height: 220, child: _emptyState('故事还在第一页', '开始写日记，成长回顾就会慢慢丰富起来。')),
-    ]);
-  }
-
-  Widget _stat(String value, String label) => Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: _ink)),
-    const SizedBox(height: 4),
-    Text(label, style: const TextStyle(fontSize: 10, color: _muted)),
-  ]));
-
-  @override
-  Widget build(BuildContext context) {
-    final visible = _entries.where((e) =>
-      _filter.isEmpty || e.title.toLowerCase().contains(_filter.toLowerCase()) ||
-      e.body.toLowerCase().contains(_filter.toLowerCase()) ||
-      e.city.toLowerCase().contains(_filter.toLowerCase()) ||
-      e.tags.any((tag) => tag.contains(_filter))).toList();
-    return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFFAFAFA), surfaceTintColor: Colors.transparent, elevation: 0,
-        leading: IconButton(onPressed: () => context.pop(), icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18)),
-        title: const Text('日记', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _ink)),
-        centerTitle: true,
-        actions: [IconButton(onPressed: () => _edit(), tooltip: '写日记', icon: const Icon(Icons.add_rounded, size: 25)), const SizedBox(width: 4)],
-      ),
-      body: SafeArea(top: false, child: _loading
-        ? const Center(child: CircularProgressIndicator(strokeWidth: 1.5))
-        : Column(children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('A LITTLE JOURNAL', style: TextStyle(fontSize: 9, letterSpacing: 2.2, color: _muted)),
-                const SizedBox(height: 8),
-                const Text('把日子，慢慢整理成故事。', style: TextStyle(fontSize: 22, height: 1.3, fontWeight: FontWeight.w500, color: _ink)),
-                const SizedBox(height: 7),
-                Text('${_entries.length} 篇记录  ·  ${DateTime.now().year} 年', style: const TextStyle(fontSize: 11, color: _muted)),
-              ]),
-            ),
-            _modeTabs(),
-            if (_mode == 'daily') ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
-                child: TextField(
-                  onChanged: (value) => setState(() => _filter = value.trim()),
-                  decoration: InputDecoration(
-                    hintText: '搜索日记、城市或标签', hintStyle: const TextStyle(fontSize: 12, color: Color(0xFFB5B5B5)),
-                    prefixIcon: const Icon(Icons.search_rounded, size: 18, color: _muted),
-                    filled: true, fillColor: Colors.white, contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: const BorderSide(color: _line)),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: const BorderSide(color: _line)),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: const BorderSide(color: _ink)),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: _selectedEntry == null
-                    ? _diaryDateRail(visible)
-                    : _diaryReader(_selectedEntry!),
-              ),
-            ] else if (_mode == 'weekly') Expanded(child: _reviewList(true))
-            else if (_mode == 'monthly') Expanded(child: _reviewList(false))
-            else Expanded(child: _growthView()),
-          ]),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _edit(), backgroundColor: _ink, foregroundColor: Colors.white, elevation: 2,
-        child: const Icon(Icons.edit_rounded),
-      ),
-    );
-  }
-}
-
-class _DiaryEditor extends StatefulWidget {
-  const _DiaryEditor({this.entry});
-  final _DiaryEntry? entry;
-
-  @override
-  State<_DiaryEditor> createState() => _DiaryEditorState();
-}
-
-class _DiaryEditorState extends State<_DiaryEditor> {
-  late final TextEditingController _title;
-  late final TextEditingController _body;
-  late final TextEditingController _tags;
-  late final TextEditingController _city;
-  late DateTime _date;
-  late bool _locked;
-
-  @override
-  void initState() {
-    super.initState();
-    final entry = widget.entry;
-    _title = TextEditingController(text: entry?.title ?? '');
-    _body = TextEditingController(text: entry?.body ?? '');
-    _tags = TextEditingController(text: entry?.tags.join(', ') ?? '');
-    _city = TextEditingController(text: entry?.city ?? '');
-    _date = entry?.date ?? DateTime.now();
-    _locked = entry?.locked ?? false;
+  Future<void> _showPolaroid(_Entry e) async {
+    await showDialog<void>(context:context,builder:(c)=>Dialog(backgroundColor:Colors.transparent,child:Column(mainAxisSize:MainAxisSize.min,children:[
+      _photoCard(e),const SizedBox(height:14),TextButton(onPressed:(){Navigator.pop(c);_delete(e);},child:const Text('删除这张拍立得',style:TextStyle(color:Colors.white)))
+    ])));
   }
 
   @override
-  void dispose() {
-    _title.dispose();
-    _body.dispose();
-    _tags.dispose();
-    _city.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-    child: Container(
-      height: MediaQuery.of(context).size.height * .88,
-      decoration: const BoxDecoration(color: Color(0xFFFAFAFA), borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
-      child: Column(children: [
-        const SizedBox(height: 10),
-        Container(width: 34, height: 4, decoration: BoxDecoration(color: const Color(0xFFD8D8D8), borderRadius: BorderRadius.circular(4))),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(18, 12, 12, 8),
-          child: Row(children: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消', style: TextStyle(color: Color(0xFF777777)))),
-            const Spacer(),
-            const Text('写日记', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-            const Spacer(),
-            TextButton(
-              onPressed: () {
-                final body = _body.text.trim();
-                if (body.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('先写下一点内容吧')));
-                  return;
-                }
-                final now = DateTime.now();
-                final tags = _tags.text.split(RegExp(r'[,，、]')).map((e) => e.trim().replaceFirst(RegExp(r'^#'), '')).where((e) => e.isNotEmpty).toSet().toList();
-                Navigator.pop(context, _DiaryEntry(
-                  id: widget.entry?.id ?? now.microsecondsSinceEpoch.toString(),
-                  title: _title.text.trim(),
-                  body: body,
-                  date: _date,
-                  updatedAt: now,
-                  tags: tags,
-                  city: _city.text.trim(),
-                  locked: _locked,
-                ));
-              },
-              child: const Text('保存', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600)),
-            ),
-          ]),
-        ),
-        const Divider(height: 1, color: Color(0xFFE7E7E7)),
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(22, 18, 22, 28),
-            children: [
-              Row(children: [
-                const Icon(Icons.calendar_today_outlined, size: 14, color: Color(0xFF999999)),
-                const SizedBox(width: 8),
-                Text('${_date.year}年${_date.month}月${_date.day}日', style: const TextStyle(fontSize: 11, color: Color(0xFF777777))),
-                const Spacer(),
-                TextButton(
-                  onPressed: () async {
-                    final picked = await showDatePicker(context: context, initialDate: _date, firstDate: DateTime(2000), lastDate: DateTime.now().add(const Duration(days: 365)));
-                    if (picked != null) setState(() => _date = picked);
-                  },
-                  child: const Text('更改日期', style: TextStyle(fontSize: 11, color: Colors.black)),
-                ),
-              ]),
-              const SizedBox(height: 15),
-              TextField(controller: _title, textCapitalization: TextCapitalization.sentences, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w600), decoration: const InputDecoration(hintText: '给今天起个标题', border: InputBorder.none, hintStyle: TextStyle(color: Color(0xFFBBBBBB), fontWeight: FontWeight.w400))),
-              const Divider(height: 1, color: Color(0xFFE7E7E7)),
-              TextField(controller: _body, autofocus: true, minLines: 8, maxLines: null, keyboardType: TextInputType.multiline, textCapitalization: TextCapitalization.sentences, style: const TextStyle(fontSize: 14, height: 1.9, color: Color(0xFF333333)), decoration: const InputDecoration(hintText: '今天发生了什么？有什么想记住的？', border: InputBorder.none, hintStyle: TextStyle(color: Color(0xFFBBBBBB), fontSize: 13))),
-              const SizedBox(height: 14),
-              TextField(controller: _city, decoration: const InputDecoration(labelText: '城市（选填）', hintText: '例如：米兰、南京', prefixIcon: Icon(Icons.location_on_outlined, size: 17), border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12)))), style: const TextStyle(fontSize: 12)),
-              const SizedBox(height: 10),
-              TextField(controller: _tags, decoration: const InputDecoration(labelText: '标签', hintText: '用逗号分隔，例如：日常, 开心', prefixIcon: Icon(Icons.tag_rounded, size: 17), border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12)))), style: const TextStyle(fontSize: 12)),
-              const SizedBox(height: 12),
-              SwitchListTile.adaptive(
-                contentPadding: EdgeInsets.zero,
-                value: _locked,
-                onChanged: (value) => setState(() => _locked = value),
-                title: const Text('锁定这篇日记', style: TextStyle(fontSize: 12)),
-                subtitle: const Text('锁定后在列表中隐藏正文，避免误删', style: TextStyle(fontSize: 10, color: Color(0xFF999999))),
-                activeColor: Colors.black,
-              ),
-            ],
-          ),
-        ),
-      ]),
-    ),
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor:Colors.white,
+    appBar:AppBar(backgroundColor:Colors.white,surfaceTintColor:Colors.transparent,elevation:0,
+      leading:IconButton(onPressed:()=>context.pop(),icon:const Icon(Icons.arrow_back_ios_new_rounded,size:18,color:ink)),
+      title:const Text('日记',style:TextStyle(fontSize:16,fontWeight:FontWeight.w600,color:ink)),centerTitle:true,
+      actions:[if(tab!='pola')IconButton(onPressed:()=>_edit(null,tab=='note'?'note':'long'),icon:const Icon(Icons.add,color:ink)),const SizedBox(width:4)]),
+    body:SafeArea(top:false,child:loading?const Center(child:CircularProgressIndicator(strokeWidth:1.5,color:ink)):Column(children:[
+      Expanded(child:ListView(padding:const EdgeInsets.fromLTRB(18,8,18,0),children:[
+        SingleChildScrollView(scrollDirection:Axis.horizontal,child:Row(children:[_ownerChip('me','我'),const SizedBox(width:6),_ownerChip('ta','TA')])),
+        const SizedBox(height:14),_profile(),_tabs(),
+        if(tab!='pola')Padding(padding:const EdgeInsets.only(bottom:12),child:Row(children:[
+          _button(tab=='note'?'写留言':'写日记',()=>_edit(null,tab=='note'?'note':'long'),filled:true),
+          if(tab=='long')... [const SizedBox(width:8),_button('搜索',_search)]
+        ])),
+        SizedBox(height:MediaQuery.of(context).size.height*.58,child:tab=='long'?_longList():tab=='note'?_noteBoard():_polaroids())
+      ]))
+    ]))
   );
+
+  Future<void> _search() async {
+    final c=TextEditingController();
+    final v=await showDialog<String>(context:context,builder:(ctx)=>AlertDialog(title:const Text('搜索日记'),content:TextField(controller:c,autofocus:true,decoration:const InputDecoration(hintText:'输入标题或正文')),actions:[
+      TextButton(onPressed:()=>Navigator.pop(ctx),child:const Text('取消')),TextButton(onPressed:()=>Navigator.pop(ctx,c.text.trim()),child:const Text('搜索'))
+    ]));
+    if(v==null||v.isEmpty){c.dispose();return;}
+    final found=longs.where((e)=>e.title.contains(v)||e.body.contains(v)).toList();
+    c.dispose();
+    if(found.isEmpty){if(mounted)ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('没有找到相关日记')));}else if(mounted){_reader(found.first);}
+  }
 }
 
-class _DiaryEntry {
-  _DiaryEntry({required this.id, required this.title, required this.body, required this.date, required this.updatedAt, required this.tags, this.city = '', this.locked = false});
+class _Editor extends StatefulWidget {
+  const _Editor({this.entry,required this.type});
+  final _Entry? entry; final String type;
+  @override State<_Editor> createState()=>_EditorState();
+}
+class _EditorState extends State<_Editor> {
+  late final TextEditingController title,body;
+  late DateTime date;
+  @override void initState(){super.initState();title=TextEditingController(text:widget.entry?.title??'');body=TextEditingController(text:widget.entry?.body??'');date=widget.entry?.date??DateTime.now();}
+  @override void dispose(){title.dispose();body.dispose();super.dispose();}
+  Future<void> _pickDate() async {final d=await showDatePicker(context:context,initialDate:date,firstDate:DateTime(2000),lastDate:DateTime.now().add(const Duration(days:365)));if(d!=null)setState(()=>date=d);}
+  void _save(){
+    final text=body.text.trim();if(text.isEmpty){ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('正文不能为空')));return;}
+    final now=DateTime.now();
+    Navigator.pop(context,_Entry(id:widget.entry?.id??now.microsecondsSinceEpoch.toString(),type:widget.type,owner:widget.entry?.owner??'me',title:title.text.trim(),body:text,date:date,time:now,image:widget.entry?.image??'',comment:widget.entry?.comment??''));
+  }
+  @override Widget build(BuildContext context){
+    final note=widget.type=='note';
+    return Scaffold(backgroundColor:Colors.white,appBar:AppBar(backgroundColor:Colors.white,surfaceTintColor:Colors.transparent,elevation:0,
+      leading:TextButton(onPressed:()=>Navigator.pop(context),child:const Text('取消',style:TextStyle(color:Color(0xFF777777)))),
+      title:Text(widget.entry==null?(note?'写留言':'写日记'):'编辑',style:const TextStyle(fontSize:14,fontWeight:FontWeight.w600,color:Color(0xFF111111))),centerTitle:true,
+      actions:[TextButton(onPressed:_save,child:const Text('完成',style:TextStyle(color:Colors.black,fontWeight:FontWeight.w700))),const SizedBox(width:8)]),
+      body:SafeArea(child:ListView(padding:const EdgeInsets.fromLTRB(22,12,22,32),children:[
+        if(!note)...[
+          Row(children:[const Icon(Icons.schedule,size:14,color:Color(0xFF999999)),const SizedBox(width:7),Text('${date.year}.${date.month}.${date.day}',style:const TextStyle(fontSize:11,color:Color(0xFF777777))),const Spacer(),TextButton(onPressed:_pickDate,child:const Text('更改日期',style:TextStyle(fontSize:11,color:Colors.black)))]),
+          const SizedBox(height:13),TextField(controller:title,maxLength:40,style:const TextStyle(fontSize:22,fontWeight:FontWeight.w600),decoration:const InputDecoration(counterText:'',hintText:'标题',border:InputBorder.none,hintStyle:TextStyle(color:Color(0xFFBBBBBB),fontWeight:FontWeight.w400))),
+          const Divider(height:1,color:Color(0xFFECECEC))
+        ],
+        const SizedBox(height:14),TextField(controller:body,autofocus:true,minLines:note?4:12,maxLines:null,keyboardType:TextInputType.multiline,
+          style:const TextStyle(fontSize:15,height:1.95,color:Color(0xFF222222)),
+          decoration:InputDecoration(hintText:note?'留下一句想说的话…':'写点什么…',border:InputBorder.none,hintStyle:const TextStyle(color:Color(0xFFBBBBBB),fontSize:14)))
+      ]))
+    );
+  }
+}
 
-  final String id;
-  final String title;
-  final String body;
-  final DateTime date;
-  final DateTime updatedAt;
-  final List<String> tags;
-  final String city;
-  bool locked;
+class _Reader extends StatefulWidget {
+  const _Reader({required this.entry,required this.onEdit,required this.onDelete,required this.onComment});
+  final _Entry entry;final VoidCallback onEdit,onDelete;final ValueChanged<String> onComment;
+  @override State<_Reader> createState()=>_ReaderState();
+}
+class _ReaderState extends State<_Reader>{
+  late final TextEditingController comment;
+  @override void initState(){super.initState();comment=TextEditingController(text:widget.entry.comment);}
+  @override void dispose(){comment.dispose();super.dispose();}
+  @override Widget build(BuildContext context){
+    final e=widget.entry;
+    return Scaffold(backgroundColor:Colors.white,appBar:AppBar(backgroundColor:Colors.white,surfaceTintColor:Colors.transparent,elevation:0,
+      leading:IconButton(onPressed:()=>Navigator.pop(context),icon:const Icon(Icons.arrow_back_ios_new,size:18)),
+      title:const Text('日记',style:TextStyle(fontSize:14,fontWeight:FontWeight.w600)),centerTitle:true,
+      actions:[IconButton(onPressed:widget.onEdit,icon:const Icon(Icons.edit_outlined,size:19)),PopupMenuButton<String>(onSelected:(v){if(v=='delete')widget.onDelete();},itemBuilder:(_)=>const[PopupMenuItem(value:'delete',child:Text('删除'))])]),
+      body:SafeArea(child:ListView(padding:const EdgeInsets.fromLTRB(22,12,22,30),children:[
+        Row(children:[const CircleAvatar(radius:18,backgroundColor:Color(0xFFF0F0F0),child:Text('我',style:TextStyle(color:Color(0xFF111111),fontSize:12))),const SizedBox(width:10),const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('我',style:TextStyle(fontSize:14,fontWeight:FontWeight.w600)),Text('Mio Diary',style:TextStyle(fontSize:10,color:Color(0xFF999999)))]),const Spacer(),Text('${e.date.year}/${e.date.month}/${e.date.day}',style:const TextStyle(fontSize:10,color:Color(0xFF999999)))]),
+        const SizedBox(height:26),if(e.title.isNotEmpty)Text(e.title,style:const TextStyle(fontSize:23,height:1.4,fontWeight:FontWeight.w600)),
+        if(e.title.isNotEmpty)const SizedBox(height:18),Text(e.body,style:const TextStyle(fontSize:15,height:2,color:Color(0xFF222222))),
+        const SizedBox(height:24),const Divider(color:Color(0xFFECECEC)),const SizedBox(height:14),
+        const Text('留言',style:TextStyle(fontSize:12,fontWeight:FontWeight.w600,color:Color(0xFF777777))),const SizedBox(height:10),
+        TextField(controller:comment,minLines:1,maxLines:4,decoration:InputDecoration(hintText:'回复这篇日记…',filled:true,fillColor:const Color(0xFFF7F7F7),border:OutlineInputBorder(borderRadius:BorderRadius.circular(12),borderSide:BorderSide.none),
+          suffixIcon:IconButton(icon:const Icon(Icons.send_rounded,size:18),onPressed:(){widget.onComment(comment.text.trim());FocusScope.of(context).unfocus();}))),
+        if(e.comment.isNotEmpty)Padding(padding:const EdgeInsets.only(top:12),child:Text(e.comment,style:const TextStyle(fontSize:13,height:1.7)))
+      ]))
+    );
+  }
+}
 
-  String get dateLabel => '${date.year.toString().padLeft(4, '0')} / ${date.month.toString().padLeft(2, '0')} / ${date.day.toString().padLeft(2, '0')}';
-
-  Map<String, dynamic> toMap() => {
-    'id': id, 'title': title, 'body': body, 'date': date.toIso8601String(),
-    'updatedAt': updatedAt.toIso8601String(), 'tags': tags, 'city': city, 'locked': locked,
-  };
-
-  factory _DiaryEntry.fromMap(Map map) => _DiaryEntry(
-    id: (map['id'] ?? '').toString(),
-    title: (map['title'] ?? '').toString(),
-    body: (map['body'] ?? '').toString(),
-    date: DateTime.tryParse((map['date'] ?? '').toString()) ?? DateTime.now(),
-    updatedAt: DateTime.tryParse((map['updatedAt'] ?? '').toString()) ?? DateTime.now(),
-    tags: (map['tags'] is List ? map['tags'] as List : const []).map((e) => e.toString()).toList(),
-    city: (map['city'] ?? '').toString(),
-    locked: map['locked'] == true,
-  );
+class _Entry {
+  _Entry({required this.id,required this.type,required this.owner,required this.title,required this.body,required this.date,required this.time,this.image='',this.comment=''});
+  final String id,type,owner,title,body,image;
+  final DateTime date,time;
+  String comment;
+  Map<String,dynamic> toMap()=>{'id':id,'type':type,'owner':owner,'title':title,'body':body,'date':date.toIso8601String(),'time':time.toIso8601String(),'updatedAt':time.toIso8601String(),'imagePath':image,'image':image,'comment':comment};
+  factory _Entry.fromMap(Map m){
+    final d=DateTime.tryParse((m['date']??'').toString())??DateTime.now();
+    return _Entry(id:(m['id']??DateTime.now().microsecondsSinceEpoch).toString(),type:(m['type']??'long').toString(),owner:(m['owner']??'me').toString(),title:(m['title']??'').toString(),body:(m['body']??'').toString(),date:d,time:DateTime.tryParse((m['time']??m['updatedAt']??'').toString())??d,image:(m['imagePath']??m['image']??'').toString(),comment:(m['comment']??'').toString());
+  }
 }
