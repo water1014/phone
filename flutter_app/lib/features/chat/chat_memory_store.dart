@@ -120,7 +120,7 @@ abstract final class ChatMemoryStore {
     final value = text.trim();
     if (value.length < 5 || value.length > 1200) return null;
     final explicit = RegExp(
-      r'^(?:请)?(?:帮我)?(?:记住|记一下|记下来|记得)：?\\s*',
+      r'^(?:请)?(?:帮我)?(?:记住|记一下|记下来|记得)：?\s*',
     );
     if (explicit.hasMatch(value)) {
       final cleaned = value.replaceFirst(explicit, '').trim();
@@ -204,7 +204,7 @@ abstract final class ChatMemoryStore {
 
   static List<String> _queryTerms(String query) {
     final terms = <String>{};
-    for (final match in RegExp(r'[a-zA-Z0-9_]{2,}|[\\u4e00-\\u9fff]{2,}').allMatches(query.toLowerCase())) {
+    for (final match in RegExp(r'[a-zA-Z0-9_]{2,}|[\u4e00-\u9fff]{2,}').allMatches(query.toLowerCase())) {
       final value = match.group(0)!;
       if (value.length <= 5) {
         terms.add(value);
