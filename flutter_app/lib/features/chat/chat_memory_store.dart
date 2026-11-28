@@ -140,6 +140,44 @@ abstract final class ChatMemoryStore {
     return '重要记忆';
   }
 
+  static const _backfillKey = 'chat.longTermMemories.backfilled.v1';
+
+  static Future<void> backfillFromArchive() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_backfillKey) == true) return;
+    final records = await load();
+    final knownSources = records
+        .map((item) => '${item.sourceConversationId}:${item.sourceCreatedAt.microsecondsSinceEpoch}')
+        .toSet();
+    final conversations = await ChatConversationStore.loadConversations();
+    for (final conversation in conversations) {
+      final messages = await ChatConversationStore.loadMessages(conversation.id);
+      for (final message in messages) {
+        if (!message.mine || message.isSystem || message.isTyping) continue;
+        final candidate = _memoryCandidate(message.text);
+        if (candidate == null) continue;
+        final sourceKey = '${conversation.id}:${message.createdAt.microsecondsSinceEpoch}';
+        if (knownSources.contains(sourceKey)) continue;
+        if (records.any((item) => item.sourceConversationId == conversation.id && item.content == candidate)) {
+          knownSources.add(sourceKey);
+          continue;
+        }
+        records.insert(0, ChatMemoryRecord(
+          id: 'memory_${message.createdAt.microsecondsSinceEpoch}',
+          content: candidate,
+          category: _categoryFor(candidate),
+          sourceConversationId: conversation.id,
+          sourceCreatedAt: message.createdAt,
+          sourceText: message.text,
+          createdAt: DateTime.now(),
+        ));
+        knownSources.add(sourceKey);
+      }
+    }
+    await _save(records);
+    await prefs.setBool(_backfillKey, true);
+  }
+
   static Future<void> captureUserMessage({
     required String text,
     required String conversationId,
