@@ -950,6 +950,36 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _editHandoffSummary() async {
+    final controller = TextEditingController(text: _activeConversationSummary);
+    final updated = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('窗口交接资料'),
+        content: SizedBox(
+          width: 420,
+          child: TextField(
+            controller: controller,
+            minLines: 5,
+            maxLines: 12,
+            decoration: const InputDecoration(
+              hintText: '可以补充重要约定、未完成事项或需要延续的内容',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(dialogContext, controller.text), child: const Text('保存')),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (updated == null) return;
+    await ChatConversationStore.updateSummary(_activeConversationId, updated);
+    if (mounted) setState(() => _activeConversationSummary = updated.trim());
+  }
+
   int _estimatePromptTokens(List<Map<String, dynamic>> messages) {
     var characters = 0;
     for (final message in messages) {
@@ -1302,6 +1332,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           if (value == 'new_window') unawaited(_createNewConversation());
           if (value == 'switch_window') unawaited(_showConversationPicker());
           if (value == 'context_usage') unawaited(_showContextUsageSettings());
+          if (value == 'handoff') unawaited(_editHandoffSummary());
           if (value == 'latest') {
             FocusScope.of(context).unfocus();
             _scrollToLatest();
@@ -1318,6 +1349,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           PopupMenuItem(value: 'new_window', child: Text('新建聊天窗口')),
           PopupMenuItem(value: 'switch_window', child: Text('切换聊天窗口')),
           PopupMenuItem(value: 'context_usage', child: Text('上下文用量与自动换窗')),
+          PopupMenuItem(value: 'handoff', child: Text('查看/编辑交接资料')),
           PopupMenuItem(value: 'settings', child: Text('聊天设置')),
           PopupMenuItem(value: 'latest', child: Text('回到最新消息')),
           PopupMenuItem(value: 'clear', child: Text('清空对话')),
