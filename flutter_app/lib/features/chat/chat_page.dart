@@ -460,6 +460,17 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         ))
         .toList();
     await ChatConversationStore.saveMessages(_activeConversationId, records);
+    try {
+      final conversations = await ChatConversationStore.loadConversations();
+      final current = conversations.where((item) => item.id == _activeConversationId).firstOrNull;
+      await ChatMemoryStore.updateOriginalMessageIndex(
+        conversationId: _activeConversationId,
+        title: current?.title ?? '聊天记录',
+        messages: records,
+      );
+    } catch (_) {
+      // The archive remains authoritative; a failed index refresh is recoverable.
+    }
   }
 
   void _handleScroll() {
