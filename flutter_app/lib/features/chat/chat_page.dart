@@ -41,6 +41,8 @@ class _ChatMessage {
     this.attachmentSize,
     this.alternateReplies = const [],
     this.selectedAlternative = 0,
+    this.replyToText,
+    this.replyToMine,
   });
   final String text;
   final bool mine;
@@ -59,6 +61,8 @@ class _ChatMessage {
   final int? attachmentSize;
   final List<String> alternateReplies;
   final int selectedAlternative;
+  final String? replyToText;
+  final bool? replyToMine;
 }
 
 // Read and encode image attachments away from the UI isolate so large images
@@ -173,6 +177,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   Timer? _draftSaveTimer;
   String _query = '';
   DateTime? _selectedDay;
+  _ChatMessage? _replyingTo;
 
   @override
   void initState() {
@@ -230,6 +235,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           attachmentSize: message.attachmentSize,
           alternateReplies: message.alternateReplies,
           selectedAlternative: message.selectedAlternative,
+          replyToText: message.replyToText,
+          replyToMine: message.replyToMine,
         )));
       _loadingHistory = false;
     });
@@ -254,6 +261,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       attachmentSize: message.attachmentSize,
       alternateReplies: message.alternateReplies,
       selectedAlternative: message.selectedAlternative,
+      replyToText: message.replyToText,
+      replyToMine: message.replyToMine,
     )).toList(),
   );
 
@@ -292,14 +301,16 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     final attachmentPath = quickText == null ? _pendingFilePath : null;
     final attachmentName = quickText == null ? _pendingFileName : null;
     final attachmentSize = quickText == null ? _pendingFileSize : null;
+    final replyTarget = quickText == null ? _replyingTo : null;
     if (value.isEmpty && imagePath == null && attachmentPath == null && voicePath == null && stickerUrl == null) return;
     setState(() {
-      _messages.add(_ChatMessage(text: value, mine: true, time: DateTime.now(), imagePath: imagePath, stickerUrl: stickerUrl, audioPath: voicePath, audioDurationMs: voiceDurationMs, attachmentPath: attachmentPath, attachmentName: attachmentName, attachmentSize: attachmentSize));
+      _messages.add(_ChatMessage(text: value, mine: true, time: DateTime.now(), imagePath: imagePath, stickerUrl: stickerUrl, audioPath: voicePath, audioDurationMs: voiceDurationMs, attachmentPath: attachmentPath, attachmentName: attachmentName, attachmentSize: attachmentSize, replyToText: replyTarget?.text, replyToMine: replyTarget?.mine));
       _input.clear();
       _pendingImagePath = null;
       _pendingFilePath = null;
       _pendingFileName = null;
       _pendingFileSize = null;
+      _replyingTo = null;
       _query = '';
       _search.clear();
       _sending = true;
@@ -383,7 +394,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         } else {
           history.add({
             'role': message.mine ? 'user' : 'assistant',
-            'content': message.text,
+            'content': message.replyToText == null ? message.text : '[回复${message.replyToMine == true ? '自己' : '对方'}的消息：${message.replyToText}]\\n${message.text}',
           });
         }
       }
@@ -1147,13 +1158,29 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                           height: 17,
                           child: Center(child: Text('···', style: TextStyle(fontSize: 20, letterSpacing: 2, color: Color(0xFF777777)))),
                         )
-                      : Text(
-                          message.text,
-                          style: TextStyle(
-                            fontSize: prefs.fontSize,
-                            height: 1.5,
-                            color: mine ? Colors.white : const Color(0xFF222222),
-                          ),
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (message.replyToText != null && message.replyToText!.isNotEmpty)
+                              Container(
+                                width: double.infinity,
+                                margin: const EdgeInsets.only(bottom: 7),
+                                padding: const EdgeInsets.fromLTRB(9, 6, 9, 6),
+                                decoration: BoxDecoration(
+                                  color: mine ? Colors.white.withValues(alpha: .16) : const Color(0xFFEAEAEA),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border(left: BorderSide(color: mine ? Colors.white70 : const Color(0xFF999999), width: 2)),
+                                ),
+                                child: Text(
+                                  '${message.replyToMine == true ? '我' : '宋祁'}：${message.replyToText}',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 11, height: 1.35, color: mine ? Colors.white70 : const Color(0xFF777777)),
+                                ),
+                              ),
+                            Text(message.text, style: TextStyle(fontSize: prefs.fontSize, height: 1.5, color: mine ? Colors.white : const Color(0xFF222222))),
+                          ],
                         ),
                 ),
               ),
@@ -1264,6 +1291,12 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             if (message.text.isNotEmpty)
               ListTile(
+                leading: const Icon(Icons.reply_rounded),
+                title: const Text('引用回复'),
+                onTap: () => Navigator.pop(sheetContext, 'reply'),
+              ),
+            if (message.text.isNotEmpty)
+              ListTile(
                 leading: const Icon(Icons.copy_rounded),
                 title: const Text('复制消息'),
                 onTap: () => Navigator.pop(sheetContext, 'copy'),
@@ -1311,7 +1344,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       ),
     );
     if (!mounted || action == null) return;
-    if (action == 'copy') {
+    if (action == 'reply') {
+      setState(() => _replyingTo = message);
+      FocusScope.of(context).requestFocus(_inputFocus);
+    } else if (action == 'copy') {
       await Clipboard.setData(ClipboardData(text: message.text));
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已复制')));
     } else if (action == 'reroll') {
@@ -1362,6 +1398,22 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       border: Border(top: BorderSide(color: Color(0xFFE7E7E7))),
     ),
     child: Column(mainAxisSize: MainAxisSize.min, children: [
+      if (_replyingTo != null)
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 9),
+          padding: const EdgeInsets.fromLTRB(11, 8, 5, 8),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(13), border: Border.all(color: const Color(0xFFE7E7E7))),
+          child: Row(children: [
+            Container(width: 2, height: 30, color: const Color(0xFF888888)),
+            const SizedBox(width: 9),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('回复${_replyingTo!.mine ? '我' : '宋祁'}', style: const TextStyle(fontSize: 10, color: Color(0xFF888888))),
+              Text(_replyingTo!.text.isEmpty ? '媒体消息' : _replyingTo!.text, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Color(0xFF444444))),
+            ])),
+            IconButton(tooltip: '取消引用', visualDensity: VisualDensity.compact, onPressed: () => setState(() => _replyingTo = null), icon: const Icon(Icons.close_rounded, size: 17)),
+          ]),
+        ),
       if (_pendingImagePath != null)
         Container(
           margin: const EdgeInsets.only(bottom: 9),
