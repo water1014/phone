@@ -48,6 +48,8 @@ class AppSideDrawer extends StatelessWidget {
       context.push('/music');
     } else if (entry.id == 'workspace') {
       context.push('/workspace');
+    } else if (entry.id == 'memory') {
+      context.push('/memory');
     } else if (entry.id == 'home') {
       context.go('/');
     } else {
