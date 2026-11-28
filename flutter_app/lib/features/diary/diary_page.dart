@@ -65,6 +65,7 @@ class _DiaryPageState extends State<DiaryPage> {
         _entries.insert(0, result);
       }
       _entries.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      _selectedEntry = result;
     });
     await _persist();
   }
