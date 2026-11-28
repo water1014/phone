@@ -2022,7 +2022,14 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           const SizedBox(height: 4),
           Text('$ext · ${_formatFileSize(message.attachmentSize ?? 0)}', style: const TextStyle(fontSize: 9, color: Color(0xFF999999))),
         ])),
-        const Icon(Icons.open_in_new_rounded, size: 15, color: Color(0xFF999999)),
+        IconButton(
+          tooltip: '保存到手机',
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+          onPressed: () => _saveAttachmentToDevice(message),
+          icon: const Icon(Icons.download_rounded, size: 19, color: Color(0xFF666666)),
+        ),
       ]),
     );
   }
