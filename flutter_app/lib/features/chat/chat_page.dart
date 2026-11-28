@@ -390,9 +390,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           const readable = {'txt', 'md', 'csv', 'json', 'xml', 'yaml', 'yml', 'log', 'html', 'htm', 'css', 'js', 'mjs', 'ts', 'tsx', 'jsx', 'dart', 'py', 'java', 'kt', 'kts', 'swift', 'c', 'h', 'cpp', 'hpp', 'rs', 'go', 'php', 'rb', 'sh', 'bash', 'sql', 'toml', 'ini', 'conf', 'properties', 'gradle', 'svg'};
           if (readable.contains(extension)) {
             final content = await file.readAsString();
-            history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${requestText.isEmpty ? '' : '${requestText}\n'}[附件：${message.attachmentName}]\n$content'});
+            history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${requestText.isEmpty ? '' : '$requestText\n'}[附件：${message.attachmentName}]\n$content'});
           } else {
-            history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${requestText.isEmpty ? '' : '${requestText}\n'}[用户附加了文件：${message.attachmentName}。当前接口适配层尚未解析此文件格式。]'});
+            history.add({'role': message.mine ? 'user' : 'assistant', 'content': '${requestText.isEmpty ? '' : '$requestText\n'}[用户附加了文件：${message.attachmentName}。当前接口适配层尚未解析此文件格式。]'});
           }
         } else {
           history.add({
@@ -402,9 +402,15 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         }
       }
 
-      const systemPrompt = '你在「小窝」这个私人空间里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。可以用（括号）写神情和动作当旁白，也可以直接说话，不要列条目。用户要求制作文件时：对于 HTML、CSS、JS、TXT、Markdown、CSV、JSON、XML、SVG、代码等 UTF-8 文本格式，必须把完整成品放进一个带明确文件名的代码围栏，例如 ```html filename="作品.html"，围栏外只写简短交付说明，不要把源码散落在聊天气泡。不要把 DOCX、PPTX、XLSX、PDF 等二进制格式伪装成文本文件或声称已经生成；若当前客户端无法生成该二进制格式，要如实说明。';
+      final chatPrefs = ChatPreferenceStore.value.value;
+      final narratorInstruction = chatPrefs.narratorEnabled
+          ? '可以自然使用括号描写动作、神态和环境，不要每句话都写旁白。'
+          : '以直接对话为主，不主动添加括号动作、神态或环境旁白。';
+      final systemPrompt = '你在「小窝」这个私人空间里。你就是你自己，不是客服。说话自然、有体温，偶尔走神、偶尔说重一点。$narratorInstruction 不要列条目。用户要求制作文件时：对于 HTML、CSS、JS、TXT、Markdown、CSV、JSON、XML、SVG、代码等 UTF-8 文本格式，必须把完整成品放进一个带明确文件名的代码围栏，例如 ```html filename="作品.html"，围栏外只写简短交付说明，不要把源码散落在聊天气泡。不要把 DOCX、PPTX、XLSX、PDF 等二进制格式伪装成文本文件或声称已经生成；若当前客户端无法生成该二进制格式，要如实说明。';
       final requestMessages = <Map<String, dynamic>>[
         {'role': 'system', 'content': systemPrompt},
+        if (chatPrefs.additionalSystemPrompt.trim().isNotEmpty)
+          {'role': 'system', 'content': chatPrefs.additionalSystemPrompt.trim()},
         ...history,
       ];
 
