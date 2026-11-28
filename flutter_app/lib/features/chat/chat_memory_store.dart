@@ -270,12 +270,23 @@ abstract final class ChatMemoryStore {
     final terms = _queryTerms(query);
     final records = await load();
     final ranked = records
-        .map((item) => (item: item, score: _score(item.content, terms, query)))
+        .map((item) {
+          // Search both the editable memory and its untouched source message.
+          // This lets a short memory remain discoverable through the wording
+          // that originally appeared in the conversation archive.
+          final searchableText = '${item.content}\\n${item.sourceText}';
+          final baseScore = _score(searchableText, terms, query);
+          return (
+            item: item,
+            score: baseScore + (item.locked && baseScore > 0 ? 5 : 0),
+          );
+        })
         .where((entry) => entry.score > 0)
         .toList()
       ..sort((a, b) {
         final score = b.score.compareTo(a.score);
-        return score != 0 ? score : b.item.createdAt.compareTo(a.item.createdAt);
+        if (score != 0) return score;
+        return b.item.createdAt.compareTo(a.item.createdAt);
       });
     return ranked.take(limit).map((entry) => entry.item).toList();
   }
