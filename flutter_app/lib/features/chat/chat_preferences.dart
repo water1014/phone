@@ -22,6 +22,9 @@ class ChatPreferences {
     this.partnerAvatarPath,
     this.myAvatarPath,
     this.chatWallpaperPath,
+    this.wallpaperScale = 1,
+    this.wallpaperPositionX = 0,
+    this.wallpaperPositionY = 0,
     this.fontSize = 14,
     this.bubbleRadius = 19,
     this.quickReplies = const ['在吗', '抱抱', '晚安'],
@@ -45,6 +48,9 @@ class ChatPreferences {
   final String? partnerAvatarPath;
   final String? myAvatarPath;
   final String? chatWallpaperPath;
+  final double wallpaperScale;
+  final double wallpaperPositionX;
+  final double wallpaperPositionY;
   final double fontSize;
   final double bubbleRadius;
   final List<String> quickReplies;
@@ -68,6 +74,9 @@ class ChatPreferences {
     String? partnerAvatarPath,
     String? myAvatarPath,
     String? chatWallpaperPath,
+    double? wallpaperScale,
+    double? wallpaperPositionX,
+    double? wallpaperPositionY,
     double? fontSize,
     double? bubbleRadius,
     List<String>? quickReplies,
@@ -90,6 +99,9 @@ class ChatPreferences {
     partnerAvatarPath: partnerAvatarPath ?? this.partnerAvatarPath,
     myAvatarPath: myAvatarPath ?? this.myAvatarPath,
     chatWallpaperPath: chatWallpaperPath ?? this.chatWallpaperPath,
+    wallpaperScale: wallpaperScale ?? this.wallpaperScale,
+    wallpaperPositionX: wallpaperPositionX ?? this.wallpaperPositionX,
+    wallpaperPositionY: wallpaperPositionY ?? this.wallpaperPositionY,
     fontSize: fontSize ?? this.fontSize,
     bubbleRadius: bubbleRadius ?? this.bubbleRadius,
     quickReplies: quickReplies ?? this.quickReplies,
@@ -127,6 +139,9 @@ abstract final class ChatPreferenceStore {
       partnerAvatarPath: prefs.getString('chat.partnerAvatarPath'),
       myAvatarPath: prefs.getString('chat.myAvatarPath'),
       chatWallpaperPath: prefs.getString('chat.wallpaperPath'),
+      wallpaperScale: prefs.getDouble('chat.wallpaperScale') ?? 1,
+      wallpaperPositionX: prefs.getDouble('chat.wallpaperPositionX') ?? 0,
+      wallpaperPositionY: prefs.getDouble('chat.wallpaperPositionY') ?? 0,
       fontSize: prefs.getDouble('chat.fontSize') ?? 14,
       bubbleRadius: prefs.getDouble('chat.bubbleRadius') ?? 19,
       quickReplies: prefs.getStringList('chat.quickReplies') ?? const ['在吗', '抱抱', '晚安'],
@@ -155,6 +170,9 @@ abstract final class ChatPreferenceStore {
       if (next.partnerAvatarPath != null) prefs.setString('chat.partnerAvatarPath', next.partnerAvatarPath!) else prefs.remove('chat.partnerAvatarPath'),
       if (next.myAvatarPath != null) prefs.setString('chat.myAvatarPath', next.myAvatarPath!) else prefs.remove('chat.myAvatarPath'),
       if (next.chatWallpaperPath != null && next.chatWallpaperPath!.isNotEmpty) prefs.setString('chat.wallpaperPath', next.chatWallpaperPath!) else prefs.remove('chat.wallpaperPath'),
+      prefs.setDouble('chat.wallpaperScale', next.wallpaperScale),
+      prefs.setDouble('chat.wallpaperPositionX', next.wallpaperPositionX),
+      prefs.setDouble('chat.wallpaperPositionY', next.wallpaperPositionY),
       prefs.setDouble('chat.fontSize', next.fontSize),
       prefs.setDouble('chat.bubbleRadius', next.bubbleRadius),
       prefs.setStringList('chat.quickReplies', next.quickReplies),
