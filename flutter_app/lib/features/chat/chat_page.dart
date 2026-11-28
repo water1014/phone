@@ -388,7 +388,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   Future<void> _loadChat() async {
     final active = await ChatConversationStore.ensureActive();
     final saved = await ChatConversationStore.loadMessages(active.id);
-    final conversations = await ChatConversationStore.loadConversations();
     final apiConfig = await ChatApiConfigStore.load();
     final contextModelKey = '${apiConfig.provider}:${apiConfig.model}';
     final contextLimit = await ChatConversationStore.loadContextLimit(contextModelKey);
@@ -1063,7 +1062,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     await _persistChat();
     final handoff = _buildHandoffSummary();
     final created = await ChatConversationStore.create(summary: handoff);
-    final conversations = await ChatConversationStore.loadConversations();
     if (!mounted) return;
     setState(() {
       _activeConversationId = created.id;
