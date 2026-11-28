@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'chat_conversation_store.dart';
+import 'chat_message.dart';
 
 class ChatMemoryRecord {
   const ChatMemoryRecord({
