@@ -310,7 +310,7 @@ abstract final class ChatMemoryStore {
 
   static Set<String> _indexTerms(String text) {
     final terms = <String>{};
-    final tokens = RegExp(r'[a-zA-Z0-9_]+|[\\u4e00-\\u9fff]+');
+    final tokens = RegExp(r'[a-zA-Z0-9_]+|[\u4e00-\u9fff]+');
     for (final match in tokens.allMatches(text.toLowerCase())) {
       final token = match.group(0)!;
       if (RegExp(r'^[a-z0-9_]+
