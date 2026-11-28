@@ -151,7 +151,7 @@ class _DiaryPageState extends State<DiaryPage> {
       final words = selectedItems.fold<int>(0, (sum, e) => sum + e.body.trim().length);
       final tags = selectedItems.expand((e) => e.tags).toSet().toList();
       final title = weekly
-          ? '第 ${selectedKey!.split('W').last} 周 · ${selectedKey!.split('-W').first}'
+          ? '第 ${selectedKey!.split('W').last} 周 · ${selectedKey.split('-W').first}'
           : '${selectedKey!.replaceFirst('-', ' 年 ')} 月';
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Padding(
