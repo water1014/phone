@@ -144,13 +144,13 @@ class _ChatBeautifyPageState extends State<ChatBeautifyPage> {
           decoration: BoxDecoration(color: header, border: Border(bottom: BorderSide(color: _beautyColor(p.chatBorderColor, _line)))),
           child: const Row(children: [
             Icon(Icons.menu_rounded, size: 18, color: _muted),
-            const Spacer(),
-            const Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Spacer(),
+            Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Text('宋祁', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _ink)),
               Text('在这里陪你', style: TextStyle(fontSize: 8, color: _muted)),
             ]),
-            const Spacer(),
-            const Icon(Icons.more_horiz_rounded, size: 18, color: _muted),
+            Spacer(),
+            Icon(Icons.more_horiz_rounded, size: 18, color: _muted),
           ]),
         ),
         Container(
