@@ -333,7 +333,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   final List<_ChatMessage> _messages = [];
   String _activeConversationId = '';
   String _activeConversationSummary = '';
-  List<ChatConversationRecord> _conversations = [];
   int _contextWindowLimit = 32768;
   String _contextModelKey = 'deepseek:deepseek-reasoner';
   int _lastPromptTokens = 0;
@@ -398,7 +397,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     setState(() {
       _activeConversationId = active.id;
       _activeConversationSummary = active.summary;
-      _conversations = conversations;
       _contextWindowLimit = contextLimit;
       _contextModelKey = contextModelKey;
       _cacheHitTokensTotal = cacheUsage['hits'] ?? 0;
@@ -827,8 +825,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         _cacheCreationTokensTotal = usage['creations'] ?? 0;
         _hasCacheMetrics = (usage['reported'] ?? 0) > 0;
       }
-      _pendingAutoRollover = _lastPromptTokens >= (_contextWindowLimit * 0.8).ceil();
+      final shouldAutoRollover = _lastPromptTokens >= (_contextWindowLimit * 0.8).ceil();
       await _persistChat();
+      _pendingAutoRollover = shouldAutoRollover;
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
     } catch (error) {
       if (!mounted) return;
@@ -1069,7 +1068,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     setState(() {
       _activeConversationId = created.id;
       _activeConversationSummary = created.summary;
-      _conversations = conversations;
       _messages.clear();
       _searching = false;
       _query = '';
@@ -1098,7 +1096,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     setState(() {
       _activeConversationId = selectedConversation.id;
       _activeConversationSummary = selectedConversation.summary;
-      _conversations = conversations;
       _messages
         ..clear()
         ..addAll(saved.map((message) => _ChatMessage(
@@ -1137,7 +1134,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     if (_sending) return;
     final conversations = await ChatConversationStore.loadConversations();
     if (!mounted) return;
-    setState(() => _conversations = conversations);
     final selectedId = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.white,
