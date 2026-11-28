@@ -24,6 +24,7 @@ dependencies:
   just_audio_background: ^0.0.1-beta.17
   record: ^6.1.2
   webview_flutter: ^4.10.0
+  qr_flutter: ^4.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
