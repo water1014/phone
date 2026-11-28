@@ -8,6 +8,7 @@ import '../features/chat/chat_connection_settings_page.dart';
 import '../features/music/music_page.dart';
 import '../features/diary/diary_page.dart';
 import '../features/workspace/workspace_page.dart';
+import '../features/memory/memory_page.dart';
 import 'theme/app_theme.dart';
 
 class XiaowoApp extends StatelessWidget {
@@ -19,6 +20,7 @@ class XiaowoApp extends StatelessWidget {
       GoRoute(path: '/music', builder: (context, state) => const MusicPage()),
       GoRoute(path: '/diary', builder: (context, state) => const DiaryPage()),
       GoRoute(path: '/workspace', builder: (context, state) => const WorkspacePage()),
+      GoRoute(path: '/memory', builder: (context, state) => const MemoryPage()),
       GoRoute(
         path: '/chat',
         builder: (context, state) => const ChatPage(),
