@@ -1890,9 +1890,28 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                           _sendSticker(item);
                         },
                         onLongPress: () async {
-                          _stickers.remove(item);
-                          await _saveStickers();
-                          if (sheetContext.mounted) refresh(() {});
+                          final confirmed = await showDialog<bool>(
+                            context: sheetContext,
+                            builder: (dialogContext) => AlertDialog(
+                              title: const Text('删除这个表情包？'),
+                              content: const Text('只会删除表情包收藏，不会影响已经发送的聊天记录。'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(dialogContext, false),
+                                  child: const Text('取消'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(dialogContext, true),
+                                  child: const Text('删除'),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed == true) {
+                            _stickers.remove(item);
+                            await _saveStickers();
+                            if (sheetContext.mounted) refresh(() {});
+                          }
                         },
                         child: Container(
                           padding: const EdgeInsets.all(5),
