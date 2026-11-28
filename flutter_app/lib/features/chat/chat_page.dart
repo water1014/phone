@@ -1112,14 +1112,14 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           Positioned.fill(
             child: ClipRect(
               child: Transform.scale(
-                scale: prefs.wallpaperScale.clamp(1, 2.5),
+                scale: prefs.wallpaperScale.clamp(1, 2.5).toDouble(),
                 alignment: Alignment(
-                  prefs.wallpaperPositionX.clamp(-1, 1),
-                  prefs.wallpaperPositionY.clamp(-1, 1),
+                  prefs.wallpaperPositionX.clamp(-1, 1).toDouble(),
+                  prefs.wallpaperPositionY.clamp(-1, 1).toDouble(),
                 ),
                 child: Image.file(
                   wallpaperFile,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                   alignment: Alignment(
                     prefs.wallpaperPositionX.clamp(-1, 1),
                     prefs.wallpaperPositionY.clamp(-1, 1),
