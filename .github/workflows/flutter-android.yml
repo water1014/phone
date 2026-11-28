@@ -1,6 +1,7 @@
 name: Flutter Android APK
 # Rebuild the direct-NetEase music transport revision
 # Include the latest direct account API endpoint correction
+# Rebuild after the Mio-inspired diary analyzer cleanup
 
 on:
   workflow_dispatch:
