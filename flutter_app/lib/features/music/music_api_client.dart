@@ -84,25 +84,52 @@ class MusicApiClient {
   }
 
   Future<String> songUrl(String base, int id, {String cookie = '', String quality = 'exhigh'}) async {
-    // A playback URL can be account/entitlement dependent. Never reuse it across
-    // different NetEase sessions, even when the worker and song are identical.
+    // NetEase playback links are short-lived and depend on the account session.
+    // Keep the cache shorter than the upstream link lifetime and never share it
+    // between different login sessions.
     final session = cookie.trim().hashCode;
+    final requested = ['hires', 'lossless', 'exhigh', 'higher', 'standard', '低音质'];
+    final start = requested.indexOf(quality);
+    final qualities = start < 0 ? ['exhigh', 'higher', 'standard'] : requested.skip(start).toList();
     final key = '${worker(base)}|$id|$quality|$session';
     final cached = _songUrlCache[key];
-    if (cached != null && DateTime.now().difference(cached['time'] as DateTime) < const Duration(minutes: 8)) {
+    if (cached != null && DateTime.now().difference(cached['time'] as DateTime) < const Duration(minutes: 2)) {
       return cached['url'] as String;
     }
-    final r = await call(base, 'song/url', cookie: cookie, body: {'ids': [id], 'level': quality});
-    final rows = r['data'];
-    if (rows is List && rows.isNotEmpty && rows.first is Map) {
-      final url = (rows.first['url'] ?? '').toString();
-      if (url.isNotEmpty) {
-        final normalized = url.replaceFirst(RegExp(r'^http:'), 'https:');
-        _songUrlCache[key] = {'url': normalized, 'time': DateTime.now()};
-        return normalized;
+
+    Object? lastError;
+    for (final level in qualities) {
+      try {
+        final r = await call(base, 'song/url', cookie: cookie, body: {'ids': [id], 'level': level});
+        final code = (r['code'] as num?)?.toInt();
+        if (code != null && code != 200) {
+          lastError = Exception('网易云返回状态码 $code');
+          if (code == -460 || code == -7) break;
+          continue;
+        }
+        final rows = r['data'];
+        if (rows is List && rows.isNotEmpty && rows.first is Map) {
+          final row = rows.first as Map;
+          final url = (row['url'] ?? '').toString().trim();
+          final parsed = Uri.tryParse(url);
+          if (parsed != null && (parsed.scheme == 'https' || parsed.scheme == 'http') && parsed.host.isNotEmpty) {
+            final normalized = url.replaceFirst(RegExp(r'^http:'), 'https:');
+            _songUrlCache[key] = {'url': normalized, 'time': DateTime.now()};
+            return normalized;
+          }
+          lastError = Exception((row['message'] ?? row['msg'] ?? '当前音质没有可用播放地址').toString());
+        } else {
+          lastError = Exception('音乐服务没有返回播放地址');
+        }
+      } catch (error) {
+        lastError = error;
+        if (error is DioException) rethrow;
       }
     }
-    throw Exception('暂无可用播放地址，可能受版权或会员权限限制');
+    if (lastError != null) {
+      throw Exception('歌曲暂时无法播放：${prettyError(lastError!)}。已尝试自动降低音质；若仍失败，可能是版权、会员或网易云风控限制。');
+    }
+    throw Exception('歌曲暂时没有可用播放地址，可能受版权或会员权限限制');
   }
 
   Future<Map<String, dynamic>> lyric(String base, int id, {String cookie = ''}) async {
