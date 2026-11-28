@@ -18,16 +18,16 @@ Color _beautyColor(String value, Color fallback) {
   } catch (_) {}
   final rgba = RegExp(r'rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)', caseSensitive: false).firstMatch(value);
   if (rgba != null) {
-    final r = int.parse(rgba.group(1)!).clamp(0, 255);
-    final g = int.parse(rgba.group(2)!).clamp(0, 255);
-    final b = int.parse(rgba.group(3)!).clamp(0, 255);
+    final r = int.parse(rgba.group(1)!).clamp(0, 255).toInt();
+    final g = int.parse(rgba.group(2)!).clamp(0, 255).toInt();
+    final b = int.parse(rgba.group(3)!).clamp(0, 255).toInt();
     final a = ((double.tryParse(rgba.group(4) ?? '1') ?? 1).clamp(0, 1) * 255).round();
     return Color.fromARGB(a, r, g, b);
   }
   return fallback;
 }
 
-String _hex(Color color) => '#\${color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
+String _hex(Color color) => '#${color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
 
 class ChatBeautifyPage extends StatefulWidget {
   const ChatBeautifyPage({super.key});
@@ -265,7 +265,7 @@ class _ChatBeautifyPageState extends State<ChatBeautifyPage> {
     child: Column(children: [
       Row(children: [
         Expanded(child: Text(label, style: const TextStyle(fontSize: 11, color: _ink))),
-        Text(percent ? '\${(value * 100).round()}%' : '\${value.round()}$suffix', style: const TextStyle(fontSize: 10, color: _muted)),
+        Text(percent ? '${(value * 100).round()}%' : '${value.round()}$suffix', style: const TextStyle(fontSize: 10, color: _muted)),
       ]),
       Slider(value: value.clamp(min, max).toDouble(), min: min, max: max, activeColor: const Color(0xFF789EA4), onChanged: onChanged),
     ]),
@@ -282,10 +282,10 @@ class _ChatBeautifyPageState extends State<ChatBeautifyPage> {
     final bytes = base64Decode(value.substring(comma + 1));
     if (bytes.length > 18 * 1024 * 1024) throw Exception('图片素材超过 18 MB');
     final dir = await getApplicationDocumentsDirectory();
-    final folder = Directory('\${dir.path}/chat_beauty_assets');
+    final folder = Directory('${dir.path}/chat_beauty_assets');
     if (!await folder.exists()) await folder.create(recursive: true);
     final ext = mime.group(1)!.toLowerCase().replaceAll('jpeg', 'jpg');
-    final file = File('\${folder.path}/\${prefix}_\${DateTime.now().microsecondsSinceEpoch}.$ext');
+    final file = File('${folder.path}/${prefix}_${DateTime.now().microsecondsSinceEpoch}.$ext');
     await file.writeAsBytes(bytes, flush: true);
     return file.path;
   }
@@ -297,7 +297,7 @@ class _ChatBeautifyPageState extends State<ChatBeautifyPage> {
     final bytes = await file.readAsBytes();
     final ext = path.split('.').last.toLowerCase();
     final mime = ext == 'jpg' || ext == 'jpeg' ? 'image/jpeg' : ext == 'webp' ? 'image/webp' : 'image/png';
-    return 'data:$mime;base64,\${base64Encode(bytes)}';
+    return 'data:$mime;base64,${base64Encode(bytes)}';
   }
 
   Future<void> _importDecoration() async {
@@ -334,11 +334,15 @@ class _ChatBeautifyPageState extends State<ChatBeautifyPage> {
         if (timestamp == 'never') next = next.copyWith(showTime: false);
         final bubbleStyle = layout['chatBubbleStyle']?.toString();
         if (bubbleStyle != null) next = next.copyWith(bubbleStyle: ['wechat','ios','flat'].contains(bubbleStyle) ? 1 : 0);
-        final fontSize = num.tryParse('\${layout['chatBubbleFontSize'] ?? ''}');
-        if (fontSize != null && fontSize > 0) next = next.copyWith(fontSize: fontSize.toDouble().clamp(12, 20));
+        final fontSize = num.tryParse('${layout['chatBubbleFontSize'] ?? ''}');
+        if (fontSize != null && fontSize > 0) next = next.copyWith(fontSize: fontSize.toDouble().clamp(12, 20).toDouble());
         final headerStyle = layout['chatHeaderStyle']?.toString();
         if (headerStyle == 'minimal') next = next.copyWith(chatHeaderColor: next.chatPageColor);
         if (layout['chatChromeStyle'] == 'flat') next = next.copyWith(chatComposerColor: next.chatPageColor);
+        final inputStyle = layout['chatInputStyle']?.toString();
+        if (inputStyle == 'flat') next = next.copyWith(chatInputRadius: 12);
+        if (inputStyle == 'wechat') next = next.copyWith(chatInputRadius: 16);
+        if (inputStyle == 'ios' || inputStyle == 'rounded' || inputStyle == 'telegram') next = next.copyWith(chatInputRadius: 24);
       }
       final bubbles = parts['bubbles'];
       if (bubbles is Map) {
@@ -348,14 +352,14 @@ class _ChatBeautifyPageState extends State<ChatBeautifyPage> {
         if (ai['backgroundColor'] is String) next = next.copyWith(partnerBubbleColor: _hex(_beautyColor(ai['backgroundColor'], _beautyColor(next.partnerBubbleColor, Colors.white))));
         if (user['textColor'] is String) next = next.copyWith(myTextColor: _hex(_beautyColor(user['textColor'], Colors.white)));
         if (ai['textColor'] is String) next = next.copyWith(partnerTextColor: _hex(_beautyColor(ai['textColor'], _ink)));
-        final userOpacity = num.tryParse('\${user['opacity'] ?? ''}');
-        final aiOpacity = num.tryParse('\${ai['opacity'] ?? ''}');
-        if (userOpacity != null) next = next.copyWith(myBubbleOpacity: userOpacity.toDouble().clamp(0, 1));
-        if (aiOpacity != null) next = next.copyWith(partnerBubbleOpacity: aiOpacity.toDouble().clamp(0, 1));
-        final userRadius = num.tryParse('\${user['borderRadius'] ?? ''}');
-        final aiRadius = num.tryParse('\${ai['borderRadius'] ?? ''}');
+        final userOpacity = num.tryParse('${user['opacity'] ?? ''}');
+        final aiOpacity = num.tryParse('${ai['opacity'] ?? ''}');
+        if (userOpacity != null) next = next.copyWith(myBubbleOpacity: userOpacity.toDouble().clamp(0, 1).toDouble());
+        if (aiOpacity != null) next = next.copyWith(partnerBubbleOpacity: aiOpacity.toDouble().clamp(0, 1).toDouble());
+        final userRadius = num.tryParse('${user['borderRadius'] ?? ''}');
+        final aiRadius = num.tryParse('${ai['borderRadius'] ?? ''}');
         final radii = [if (userRadius != null) userRadius.toDouble(), if (aiRadius != null) aiRadius.toDouble()];
-        if (radii.isNotEmpty) next = next.copyWith(bubbleRadius: (radii.reduce((a,b)=>a+b) / radii.length).clamp(8, 30));
+        if (radii.isNotEmpty) next = next.copyWith(bubbleRadius: (radii.reduce((a,b)=>a+b) / radii.length).clamp(8, 30).toDouble());
         final userImage = await _storeResource(user['backgroundImage']?.toString(), 'my_bubble');
         final aiImage = await _storeResource(ai['backgroundImage']?.toString(), 'partner_bubble');
         if (userImage != null) next = next.copyWith(myBubbleImagePath: userImage);
@@ -371,7 +375,7 @@ class _ChatBeautifyPageState extends State<ChatBeautifyPage> {
       if (parts['css'] is String && (parts['css'] as String).trim().isNotEmpty) unsupported.add('自定义 CSS（Flutter 原生界面不能直接执行 CSS）');
       if (parts.containsKey('sound')) unsupported.add('消息提示音');
       if (bubbles is Map && ((bubbles['user'] is Map && (bubbles['user']['decoration'] != null || bubbles['user']['avatarDecoration'] != null)) || (bubbles['ai'] is Map && (bubbles['ai']['decoration'] != null || bubbles['ai']['avatarDecoration'] != null)))) unsupported.add('气泡/头像装饰贴图');
-      if (mounted) setState(() => _notice = unsupported.isEmpty ? '导入完成，已应用可兼容的布局、背景与气泡样式。' : '已导入并应用可兼容部分；暂未适配：\${unsupported.join('、')}。');
+      if (mounted) setState(() => _notice = unsupported.isEmpty ? '导入完成，已应用可兼容的布局、背景与气泡样式。' : '已导入并应用可兼容部分；暂未适配：${unsupported.join('、')}。');
     } catch (error) {
       if (mounted) setState(() => _notice = '导入失败：$error');
     }
@@ -415,7 +419,7 @@ class _ChatBeautifyPageState extends State<ChatBeautifyPage> {
         },
       };
       final bytes = Uint8List.fromList(utf8.encode(const JsonEncoder.withIndent('  ').convert(data)));
-      await FilePicker.platform.saveFile(fileName: '\${p.chatThemeName}_糯米机兼容装扮.json', bytes: bytes);
+      await FilePicker.platform.saveFile(fileName: '${p.chatThemeName}_糯米机兼容装扮.json', bytes: bytes);
       if (mounted) setState(() => _notice = '已生成糯米机兼容 JSON 文件。');
     } catch (error) {
       if (mounted) setState(() => _notice = '导出失败：$error');
@@ -443,10 +447,5 @@ class _ChatBeautifyPageState extends State<ChatBeautifyPage> {
       chatSpacing: 9,
     ));
     if (mounted) setState(() => _notice = '已恢复默认聊天美化。');
-  }
-
-  @override
-  void setState(VoidCallback fn) {
-    if (mounted) super.setState(fn);
   }
 }
