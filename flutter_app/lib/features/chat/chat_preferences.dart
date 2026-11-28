@@ -15,6 +15,8 @@ class ChatPreferences {
     this.worldbookEnabled = false,
     this.worldbookJson = '',
     this.bubbleStyle = 0,
+    this.showBubbles = true,
+    this.replyLayout = 0,
     this.partnerName = '宋祁',
     this.myName = '我',
     this.partnerAvatarPath,
@@ -36,6 +38,8 @@ class ChatPreferences {
   final bool worldbookEnabled;
   final String worldbookJson;
   final int bubbleStyle;
+  final bool showBubbles;
+  final int replyLayout;
   final String partnerName;
   final String myName;
   final String? partnerAvatarPath;
@@ -57,6 +61,8 @@ class ChatPreferences {
     bool? worldbookEnabled,
     String? worldbookJson,
     int? bubbleStyle,
+    bool? showBubbles,
+    int? replyLayout,
     String? partnerName,
     String? myName,
     String? partnerAvatarPath,
@@ -77,6 +83,8 @@ class ChatPreferences {
     worldbookEnabled: worldbookEnabled ?? this.worldbookEnabled,
     worldbookJson: worldbookJson ?? this.worldbookJson,
     bubbleStyle: bubbleStyle ?? this.bubbleStyle,
+    showBubbles: showBubbles ?? this.showBubbles,
+    replyLayout: replyLayout ?? this.replyLayout,
     partnerName: partnerName ?? this.partnerName,
     myName: myName ?? this.myName,
     partnerAvatarPath: partnerAvatarPath ?? this.partnerAvatarPath,
@@ -112,6 +120,8 @@ abstract final class ChatPreferenceStore {
       worldbookEnabled: prefs.getBool('chat.worldbookEnabled') ?? false,
       worldbookJson: prefs.getString('chat.worldbookJson') ?? '',
       bubbleStyle: (prefs.getInt('chat.bubbleStyle') ?? 0).clamp(0, 1),
+      showBubbles: prefs.getBool('chat.showBubbles') ?? true,
+      replyLayout: (prefs.getInt('chat.replyLayout') ?? 0).clamp(0, 1),
       partnerName: prefs.getString('chat.partnerName') ?? '宋祁',
       myName: prefs.getString('chat.myName') ?? '我',
       partnerAvatarPath: prefs.getString('chat.partnerAvatarPath'),
@@ -138,6 +148,8 @@ abstract final class ChatPreferenceStore {
       prefs.setBool('chat.worldbookEnabled', next.worldbookEnabled),
       prefs.setString('chat.worldbookJson', next.worldbookJson),
       prefs.setInt('chat.bubbleStyle', next.bubbleStyle),
+      prefs.setBool('chat.showBubbles', next.showBubbles),
+      prefs.setInt('chat.replyLayout', next.replyLayout),
       prefs.setString('chat.partnerName', next.partnerName),
       prefs.setString('chat.myName', next.myName),
       if (next.partnerAvatarPath != null) prefs.setString('chat.partnerAvatarPath', next.partnerAvatarPath!) else prefs.remove('chat.partnerAvatarPath'),
