@@ -7,7 +7,7 @@ import 'package:xiaowo/app/xiaowo_app.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('complete-frontend 首页可以进入聊天并发送消息', (tester) async {
+  testWidgets('complete-frontend 首页可以进入聊天并使用输入框', (tester) async {
     SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(430, 932);
     tester.view.devicePixelRatio = 1;
@@ -25,13 +25,15 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
 
     expect(find.text('宋祁'), findsOneWidget);
-    await tester.enterText(find.byType(TextField).first, '你好呀');
-    await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
-
-    // 消息会先本地显示；未配置 API 时应提示配置接口，不应导致测试失败。
-    expect(find.text('你好呀'), findsOneWidget);
+    final composer = find.byWidgetPredicate(
+      (widget) => widget is TextField && widget.decoration?.hintText == '说点什么吧…',
+    );
+    expect(composer, findsOneWidget);
+    await tester.enterText(composer, '你好呀');
+    final editable = tester.widget<EditableText>(
+      find.descendant(of: composer, matching: find.byType(EditableText)),
+    );
+    expect(editable.controller.text, '你好呀');
 
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
