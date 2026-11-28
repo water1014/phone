@@ -126,6 +126,7 @@ class ChatApiClient {
   int? _cacheHitTokens(Map? usage) {
     final direct = _usageValue(usage, const [
       'prompt_cache_hit_tokens',
+      'cache_hit_tokens',
       'cached_tokens',
       'cache_read_input_tokens',
       'cache_read_tokens',
@@ -138,7 +139,7 @@ class ChatApiClient {
   }
 
   int? _cacheMissTokens(Map? usage) {
-    final direct = _usageValue(usage, const ['prompt_cache_miss_tokens', 'uncached_tokens']);
+    final direct = _usageValue(usage, const ['prompt_cache_miss_tokens', 'cache_miss_tokens', 'cache_miss_input_tokens', 'uncached_tokens']);
     if (direct != null) return direct;
     final prompt = _usageValue(usage, const ['prompt_tokens', 'input_tokens']);
     final cached = _cacheHitTokens(usage);
