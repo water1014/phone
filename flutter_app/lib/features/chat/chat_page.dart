@@ -338,6 +338,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   String _contextModelKey = 'deepseek:deepseek-reasoner';
   int _lastPromptTokens = 0;
   bool _pendingAutoRollover = false;
+  int _cacheHitTokensTotal = 0;
+  int _cacheMissTokensTotal = 0;
+  int _cacheCreationTokensTotal = 0;
+  bool _hasCacheMetrics = false;
   bool _searching = false;
   bool _loadingHistory = true;
   bool _sending = false;
@@ -389,6 +393,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     final apiConfig = await ChatApiConfigStore.load();
     final contextModelKey = '${apiConfig.provider}:${apiConfig.model}';
     final contextLimit = await ChatConversationStore.loadContextLimit(contextModelKey);
+    final cacheUsage = await ChatConversationStore.loadCacheUsage(contextModelKey);
     if (!mounted) return;
     setState(() {
       _activeConversationId = active.id;
@@ -396,6 +401,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       _conversations = conversations;
       _contextWindowLimit = contextLimit;
       _contextModelKey = contextModelKey;
+      _cacheHitTokensTotal = cacheUsage['hits'] ?? 0;
+      _cacheMissTokensTotal = cacheUsage['misses'] ?? 0;
+      _cacheCreationTokensTotal = cacheUsage['creations'] ?? 0;
+      _hasCacheMetrics = (cacheUsage['reported'] ?? 0) > 0;
       _messages
         ..clear()
         ..addAll(saved.map((message) => _ChatMessage(
@@ -640,6 +649,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       var pendingReasoning = '';
       int? pendingInputTokens;
       int? pendingOutputTokens;
+      int? pendingCacheHitTokens;
+      int? pendingCacheMissTokens;
+      int? pendingCacheCreationTokens;
       var lastUiFlush = DateTime.now();
       await for (final event in _api.streamReply(
         config: config,
@@ -651,10 +663,16 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         pendingReasoning += event.reasoningDelta;
         pendingInputTokens = event.inputTokens ?? pendingInputTokens;
         pendingOutputTokens = event.outputTokens ?? pendingOutputTokens;
+        pendingCacheHitTokens = event.cacheHitTokens ?? pendingCacheHitTokens;
+        pendingCacheMissTokens = event.cacheMissTokens ?? pendingCacheMissTokens;
+        pendingCacheCreationTokens = event.cacheCreationTokens ?? pendingCacheCreationTokens;
         final hasPending = pendingText.isNotEmpty ||
             pendingReasoning.isNotEmpty ||
             pendingInputTokens != null ||
-            pendingOutputTokens != null;
+            pendingOutputTokens != null ||
+            pendingCacheHitTokens != null ||
+            pendingCacheMissTokens != null ||
+            pendingCacheCreationTokens != null;
         final shouldFlush = event.finished ||
             DateTime.now().difference(lastUiFlush) >= const Duration(milliseconds: 48);
         if (hasPending && shouldFlush) {
@@ -780,6 +798,21 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         });
       }
       _lastPromptTokens = pendingInputTokens ?? _estimatePromptTokens(requestMessages);
+      if (pendingCacheHitTokens != null ||
+          pendingCacheMissTokens != null ||
+          pendingCacheCreationTokens != null) {
+        await ChatConversationStore.recordCacheUsage(
+          _contextModelKey,
+          hits: pendingCacheHitTokens,
+          misses: pendingCacheMissTokens,
+          creations: pendingCacheCreationTokens,
+        );
+        final usage = await ChatConversationStore.loadCacheUsage(_contextModelKey);
+        _cacheHitTokensTotal = usage['hits'] ?? 0;
+        _cacheMissTokensTotal = usage['misses'] ?? 0;
+        _cacheCreationTokensTotal = usage['creations'] ?? 0;
+        _hasCacheMetrics = (usage['reported'] ?? 0) > 0;
+      }
       _pendingAutoRollover = _lastPromptTokens >= (_contextWindowLimit * 0.8).ceil();
       await _persistChat();
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
@@ -937,6 +970,14 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             Text('当前窗口上限：$_contextWindowLimit tokens'),
             const SizedBox(height: 8),
             Text('最近一次请求：${_lastPromptTokens == 0 ? '尚无统计' : '约 $_lastPromptTokens tokens'}'),
+            const SizedBox(height: 8),
+            if (_hasCacheMetrics) ...[
+              Text('累计缓存命中：$_cacheHitTokensTotal tokens'),
+              Text('累计未命中：$_cacheMissTokensTotal tokens'),
+              Text('累计缓存写入：$_cacheCreationTokensTotal tokens'),
+              Text('缓存命中率：${(_cacheHitTokensTotal + _cacheMissTokensTotal) == 0 ? '暂无有效样本' : '${(_cacheHitTokensTotal * 100 / (_cacheHitTokensTotal + _cacheMissTokensTotal)).toStringAsFixed(1)}%'}'),
+            ] else
+              const Text('当前服务商尚未返回缓存用量字段，暂时无法计算命中率。', style: TextStyle(fontSize: 11, color: Color(0xFF777777))),
             const SizedBox(height: 12),
             TextField(
               controller: controller,
