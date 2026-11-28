@@ -100,7 +100,7 @@ _GeneratedTextArtifact? _extractGeneratedTextArtifact(String response) {
   final fileName = requestedName
       .split(RegExp(r'[/\\\\]'))
       .last
-      .replaceAll(RegExp(r'[<>:"|?*\\u0000-\\u001F]'), '_')
+      .replaceAll(RegExp(r'[<>:"|?*]'), '_')
       .trim();
   if (fileName.isEmpty || !fileName.contains('.')) return null;
   final extension = fileName.split('.').last.toLowerCase();
