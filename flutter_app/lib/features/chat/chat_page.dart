@@ -100,7 +100,7 @@ _GeneratedTextArtifact? _extractGeneratedTextArtifact(String response) {
   final fileName = requestedName
       .split(RegExp(r'[/\\\\]'))
       .last
-      .replaceAll(RegExp(r'[^\\p{L}\\p{N}._ -]', unicode: true), '_')
+      .replaceAll(RegExp(r'[<>:"|?*\\u0000-\\u001F]'), '_')
       .trim();
   if (fileName.isEmpty || !fileName.contains('.')) return null;
   final extension = fileName.split('.').last.toLowerCase();
@@ -517,6 +517,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         final safeName = '${DateTime.now().microsecondsSinceEpoch}_${artifact.fileName}';
         final outputFile = File('${outputDir.path}/$safeName');
         await outputFile.writeAsString(artifact.content, flush: true);
+        final outputSize = await outputFile.length();
         final current = _messages[replyIndex];
         setState(() {
           _messages[replyIndex] = _ChatMessage(
@@ -528,7 +529,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             outputTokens: current.outputTokens,
             attachmentPath: outputFile.path,
             attachmentName: artifact.fileName,
-            attachmentSize: await outputFile.length(),
+            attachmentSize: outputSize,
             alternateReplies: current.alternateReplies,
             selectedAlternative: current.selectedAlternative,
           );
