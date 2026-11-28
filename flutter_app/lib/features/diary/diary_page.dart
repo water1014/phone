@@ -416,8 +416,8 @@ class _SwipeDiaryCardState extends State<_SwipeDiaryCard> {
                   child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[
                     SizedBox(width:44,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
                       Text('${e.date.day}',style:const TextStyle(fontSize:26,height:1.05,fontWeight:FontWeight.w500)),
-                      SizedBox(height:3),
-                      Text('${e.date.year}.${e.date.month}',style:TextStyle(fontSize:10,color:Color(0xFF8A8A8A)))
+                      const SizedBox(height:3),
+                      Text('${e.date.year}.${e.date.month}',style:const TextStyle(fontSize:10,color:Color(0xFF8A8A8A)))
                     ])),
                     const SizedBox(width:13),
                     Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
